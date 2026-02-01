@@ -15,54 +15,64 @@ import { eventDispatcherMock } from "./mocks/eventDispatcher.js";
 
 vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
   attachCooldownRenderer: vi.fn((timer, initialRemaining, options = {}) => {
-    // Mock implementation that sets up the countdown sequence
-    // This allows tests to verify the countdown behavior
+    // Mock implementation that simulates the countdown renderer behavior
+    // In production, this attaches UI handlers and ticks. In tests, we just need
+    // to ensure the timer's callbacks are invoked properly when time expires.
     if (!timer) return () => {};
 
-    // Track expiration handler
-    let expiredHandler = null;
-    const expiredHandlers = [];
+    // Track the expired callback so we can call it when the timer "expires"
+    let expiredCallback = null;
+    let timerHandle = null;
 
-    // Override timer.on to capture handlers
-    const originalOn = timer.on.bind(timer);
-    timer.on = vi.fn((eventName, handler) => {
-      if (eventName === "expired") {
-        expiredHandler = handler;
-        expiredHandlers.push(handler);
-      }
-      return originalOn(eventName, handler);
-    });
-
-    // When timer starts in test mode, schedule the expiration callback
-    const originalStart = timer.start.bind(timer);
-    timer.start = vi.fn((duration) => {
-      // Call original start
-      originalStart(duration);
-
-      // In test mode with fake timers, schedule the expiration after duration
-      if (typeof vi !== "undefined" && typeof globalThis.setTimeout === "function") {
-        try {
-          globalThis.setTimeout(() => {
-            if (typeof expiredHandler === "function") {
-              expiredHandler();
-            }
-          }, duration * 1000);
-        } catch (e) {
-          // ignore
+    // Capture the expired callback by wrapping timer.on
+    const originalOn = timer.on && typeof timer.on === "function" ? timer.on.bind(timer) : null;
+    if (originalOn) {
+      timer.on = vi.fn((eventType, handler) => {
+        if (eventType === "expired") {
+          expiredCallback = handler;
         }
-      }
-    });
+        return originalOn(eventType, handler);
+      });
+    }
 
-    // Return cleanup function
-    return () => {
-      if (timer.off) {
-        expiredHandlers.forEach((handler) => {
-          try {
-            timer.off("expired", handler);
-          } catch {
-            // ignore
+    // When timer starts, schedule the expired callback to fire after the duration
+    const originalStart = timer.start && typeof timer.start === "function" ? timer.start.bind(timer) : null;
+    if (originalStart) {
+      timer.start = vi.fn((duration) => {
+        // Call the original start
+        const result = originalStart(duration);
+        
+        // Schedule the expiration callback to fire when the timer expires
+        // Use setTimeout with the duration to fire at the right time
+        if (typeof expiredCallback === "function" && typeof globalThis.setTimeout === "function") {
+          // Clear any previous timer
+          if (timerHandle !== null) {
+            try {
+              globalThis.clearTimeout(timerHandle);
+            } catch {}
           }
-        });
+          // Set new timer - duration is in seconds, setTimeout uses milliseconds
+          const durationMs = typeof duration === "number" ? duration * 1000 : 1000;
+          timerHandle = globalThis.setTimeout(() => {
+            try {
+              expiredCallback();
+            } catch (e) {
+              // Silently ignore errors
+            }
+          }, durationMs);
+        }
+        
+        return result;
+      });
+    }
+
+    // Return a cleanup function
+    return () => {
+      expiredCallback = null;
+      if (timerHandle !== null) {
+        try {
+          globalThis.clearTimeout(timerHandle);
+        } catch {}
       }
     };
   })
