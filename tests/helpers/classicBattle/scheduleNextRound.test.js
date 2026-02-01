@@ -427,6 +427,11 @@ describe("classicBattle startCooldown", () => {
 
     await vi.advanceTimersByTimeAsync(1000);
     await currentNextRound.ready;
+    
+    // AGENT_FIX: Wait for guardAsync microtask to complete
+    // The finish() function calls guardAsync which schedules the machine.dispatch("ready")
+    // as a microtask. We need to flush the microtask queue to ensure it executes.
+    await new Promise(resolve => setImmediate(resolve));
 
     expect(readyResolutionSpy).toHaveBeenCalledTimes(1);
     expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);

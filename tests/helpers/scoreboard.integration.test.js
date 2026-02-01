@@ -206,11 +206,12 @@ describe("Scoreboard integration without setupScoreboard", () => {
     const api = await import("../../src/helpers/setupScoreboard.js");
     const showMessageSpy = vi.spyOn(api, "showMessage");
     const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
-    startTimer(async () => {}, { selectionMade: false });
+    const timer = await startTimer(async () => {}, { selectionMade: false });
     await vi.advanceTimersByTimeAsync(1);
     if (typeof roundDrift !== "function") {
     }
     roundDrift(2);
     expect(showMessageSpy).toHaveBeenCalledWith("Waiting…");
+    timer?.stop?.();
   });
 });
