@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 // Avoid matchMedia usage in jsdom via reduced motion stub
-vi.mock("../../../../src/helpers/motionUtils.js", () => ({
+vi.mock("../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
 
@@ -28,7 +28,7 @@ const { mockSetupScoreboard, mockGetDefaultTimer, mockStartRound } = vi.hoisted(
 }));
 
 // ===== Top-level vi.mock() calls =====
-vi.mock("../../../../src/helpers/setupScoreboard.js", () => ({
+vi.mock("../../src/helpers/setupScoreboard.js", () => ({
   setupScoreboard: mockSetupScoreboard,
   showMessage: (...args) => scoreboard.showMessage(...args),
   updateScore: (...args) => scoreboard.updateScore(...args),
@@ -41,12 +41,12 @@ vi.mock("../../../../src/helpers/setupScoreboard.js", () => ({
   clearRoundCounter: (...args) => scoreboard.clearRoundCounter(...args)
 }));
 
-vi.mock("../../../../src/helpers/timerUtils.js", () => ({
+vi.mock("../../src/helpers/timerUtils.js", () => ({
   getDefaultTimer: mockGetDefaultTimer,
   _resetForTest: vi.fn()
 }));
 
-vi.mock("../../../../src/helpers/BattleEngine.js", () => ({
+vi.mock("../../src/helpers/BattleEngine.js", () => ({
   startRound: mockStartRound,
   stopTimer: vi.fn(),
   pauseTimer: vi.fn(),
@@ -54,7 +54,7 @@ vi.mock("../../../../src/helpers/BattleEngine.js", () => ({
   STATS: ["power"]
 }));
 
-vi.mock("../../../../src/helpers/showSnackbar.js", () => ({
+vi.mock("../../src/helpers/showSnackbar.js", () => ({
   showSnackbar: vi.fn(),
   updateSnackbar: vi.fn()
 }));
@@ -120,9 +120,9 @@ describe("Scoreboard integration without setupScoreboard", () => {
       window.__OVERRIDE_TIMERS = { roundTimer: 3 };
     }
 
-    const { Scoreboard } = await import("../../../../src/components/Scoreboard.js");
-    const { ScoreboardModel } = await import("../../../../src/components/ScoreboardModel.js");
-    const { ScoreboardView } = await import("../../../../src/components/ScoreboardView.js");
+    const { Scoreboard } = await import("../../src/components/Scoreboard.js");
+    const { ScoreboardModel } = await import("../../src/components/ScoreboardModel.js");
+    const { ScoreboardView } = await import("../../src/components/ScoreboardView.js");
     const model = new ScoreboardModel();
     const view = new ScoreboardView(model, {
       messageEl: document.getElementById("round-message"),
@@ -160,8 +160,7 @@ describe("Scoreboard integration without setupScoreboard", () => {
     expect(scoreText).toContain("You: 2");
     expect(scoreText).toContain("Opponent: 1");
 
-    // Round timer (selection phase) updates #next-round-timer via scoreboard.updateTimer
-    const { startTimer } = await import("../../../../src/helpers/classicBattle/timerService.js");
+    const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
     const promise = startTimer(async () => {}, { selectionMade: false });
     // Initial tick shows 3 (debounced)
     await vi.advanceTimersByTimeAsync(220);
@@ -183,7 +182,7 @@ describe("Scoreboard integration without setupScoreboard", () => {
   });
 
   it.skip("shows fallback message on round timer drift", async () => {
-    const api = await import("../../../../src/helpers/setupScoreboard.js");
+    const api = await import("../../src/helpers/setupScoreboard.js");
     const showMessageSpy = vi.spyOn(api, "showMessage");
     const { startTimer } = await import("../../../../src/helpers/classicBattle/timerService.js");
     startTimer(async () => {}, { selectionMade: false });

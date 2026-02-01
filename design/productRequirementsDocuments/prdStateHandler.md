@@ -140,6 +140,7 @@ stateDiagram-v2
 **Rematch loop:** `matchOver` → `waitingForMatchStart` (label: "rematch | home") allows match repetition without returning to lobby
 
 **Interrupt recovery:** All three interrupt states have explicit exit paths:
+
 - `interruptRound` → `cooldown` (resume), `waitingForMatchStart` (to lobby), or `matchOver` (abort)
 - `interruptMatch` → `matchStart` (restart) or `waitingForMatchStart` (to lobby)
 - `roundModification` → `roundDecision` (apply) or `interruptRound` (cancel)
