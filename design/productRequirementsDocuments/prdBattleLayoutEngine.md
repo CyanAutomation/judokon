@@ -290,6 +290,64 @@ This schema defines the canonical layout payload used by the Layout Engine. It i
 - Lightweight validation extends beyond shape checks: validate schema version, ensure regions stay within grid bounds, guard against overlapping rects, and flag orphaned `[data-layout-id]`.
 - Compose engine telemetry with `{ appliedLayoutId, durationMs, skippedRegions, usedFallback }` and surface it through the existing debug panel for deterministic testing.
 
+---
+
+## Layout Selection & Application Flow
+
+The flowchart below illustrates the complete layout selection, validation, and application pipeline:
+
+```mermaid
+flowchart LR
+    Start([Layout Request<br/>modeId, variantId?]) --> RegistryLookup{"Registry<br/>Lookup"}
+
+    RegistryLookup -->|Found| ValidateRegistry["Validate<br/>Registry"]
+    RegistryLookup -->|Not Found| FallbackLookup["Fallback<br/>Lookup"]
+
+    ValidateRegistry -->|Valid| ResolveRegistry["Resolve<br/>Module"]
+    ValidateRegistry -->|Invalid| FallbackLookup
+
+    ResolveRegistry --> ResolveSuccess{Resolved?}
+    ResolveSuccess -->|Yes| FeatureGate1["For Each Region<br/>in Layout"]
+    ResolveSuccess -->|No| FallbackLookup
+
+    FallbackLookup --> ValidateFallback["Validate<br/>Fallback"]
+    ValidateFallback -->|Valid| FeatureGate1
+    ValidateFallback -->|Invalid| FallbackInvalid["Fallback Invalid"]
+
+    FallbackInvalid --> Telemetry["Log Error<br/>to Telemetry"]
+    Telemetry --> End1([No Layout Applied<br/>Use Default CSS])
+
+    FeatureGate1 --> CheckFlag{"Feature Flag<br/>Enabled?"}
+
+    CheckFlag -->|Yes| ApplyRect["Apply Rect<br/>x, y, w, h"]
+    CheckFlag -->|No| SkipRegion["Skip Region<br/>Log Skipped"]
+
+    ApplyRect --> NextRegion
+    SkipRegion --> NextRegion{"More<br/>Regions?"}
+
+    NextRegion -->|Yes| FeatureGate1
+    NextRegion -->|No| Batch["Batch Mutations<br/>in RAF"]
+
+    Batch --> ApplySuccess["Set data-layout-id<br/>Toggle Visibility"]
+    ApplySuccess --> EmitEvent["Emit layout:applied<br/>Event"]
+    EmitEvent --> Telemetry2["Log Success<br/>to Telemetry"]
+    Telemetry2 --> End2([Layout Applied<br/>Render Complete])
+```
+
+**Key Design Notes:**
+
+- **Feature-Flag Gating Priority:** Feature flag evaluation uses the established priority order: **Overrides > Persisted Settings > Default Values**. Flags are checked per-region; if a flag is not found or resolves to `false`, the region is not rendered.
+
+- **Fallback Strategy:** Layout selection follows a two-tier fallback hierarchy: (1) **Registry Lookup** (static module import via `layoutRegistry`), then (2) **Inline JSON Fallback** (embedded in `<script id="layout-default">`). If both fail validation, telemetry is logged with error context, and the page falls back to its default CSS-based layout.
+
+- **Validation Nodes (Collapsed):** Both Registry and Fallback validation check schema version, region bounds against grid dimensions, duplicate anchors, and matching feature-flag IDs. Specific validation rules and error types are documented in the **Battle Layout Schema v1** section and enforced by the lightweight schema validator (no external dependencies).
+
+- **Inline Fallback Parsing:** If inline JSON fails validation (e.g., malformed JSON, schema violation), the fallback is marked as invalid and logged to telemetry with details (e.g., "Fallback hash mismatch," "Invalid schema version"). Specific parse errors are captured in logging for observability.
+
+- **RAF Batching:** Layout mutations (style updates for position, size, z-order) are batched within a single `requestAnimationFrame` callback to minimise layout thrashing and reflows. The RAF pattern ensures all DOM updates are flushed in one animation frame, keeping average application time under 50 ms. RAF scheduling and callback internals are documented separately in implementation code; the diagram keeps focus on the selection logic.
+
+---
+
 ## Recommended Enhancements
 
 1. **Schema & validation contract**
