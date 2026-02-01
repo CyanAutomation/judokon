@@ -74,6 +74,32 @@ function isWinConditionMet(context) {
 }
 
 /**
+ * Evaluate a guard condition string against the current context.
+ *
+ * @param {string} guardCondition - Guard condition name or expression
+ * @param {object} context - Machine context
+ * @param {Record<string, boolean>} guardOverrides - Explicit guard overrides
+ * @returns {boolean} True if guard passes, false otherwise
+ */
+function evaluateGuard(guardCondition, context, guardOverrides) {
+  if (!guardCondition) return true;
+
+  switch (guardCondition) {
+    case GUARD_CONDITIONS.AUTO_SELECT_ENABLED:
+      return isAutoSelectEnabled(context, guardOverrides);
+    case GUARD_CONDITIONS.AUTO_SELECT_DISABLED:
+      return !isAutoSelectEnabled(context, guardOverrides);
+    case GUARD_CONDITIONS.FF_ROUND_MODIFY:
+      return isRoundModifyEnabled(context, guardOverrides);
+    case GUARD_CONDITIONS.WIN_CONDITION_MET:
+      return isWinConditionMet(context);
+    default:
+      logWarn(`Unknown guard condition: ${guardCondition}`);
+      return false;
+  }
+}
+
+/**
  * Build a lookup map from state table and find initial state.
  *
  * @param {Array} stateTable - Array of state definitions.
@@ -317,7 +343,7 @@ function resolveRoundDecisionTransition(eventName) {
 
 function resolveRoundOverTransition(eventName, context) {
   if (eventName === "matchPointReached") {
-    return isWinConditionMet(context) ? "matchDecision" : "cooldown";
+    return isWinConditionMet(context) ? "matchDecision" : null;
   }
   if (eventName === "continue") return "cooldown";
   if (eventName === "interrupt") return "interruptRound";
@@ -621,9 +647,17 @@ export async function createStateManager(
       // Prefer explicit trigger from the provided state table if available (allows test-provided overrides)
       let target = null;
       try {
-        const explicitTrigger = (currentStateDef?.triggers || []).find((t) => t.on === eventName);
-        if (explicitTrigger && explicitTrigger.target) {
-          target = explicitTrigger.target;
+        const triggers = (currentStateDef?.triggers || []).filter((t) => t.on === eventName);
+        for (const trigger of triggers) {
+          // Evaluate guard condition if present
+          if (trigger.guard) {
+            const guardPassed = evaluateGuard(trigger.guard, context, resolvedGuardOverrides);
+            if (!guardPassed) {
+              continue; // Try next trigger if this guard failed
+            }
+          }
+          target = trigger.target;
+          break; // Found matching trigger with passing guard
         }
       } catch {}
 
