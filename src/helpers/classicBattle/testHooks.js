@@ -10,6 +10,7 @@ import * as selectionHandlerModule from "./selectionHandler.js";
 import * as eventDispatcherModule from "./eventDispatcher.js";
 import * as autoSelectModule from "./autoSelectStat.js";
 import * as autoSelectHandlersModule from "./autoSelectHandlers.js";
+import { bindCountdownEventHandlersOnce } from "./timerService.js";
 import { showMessage as scoreboardShowMessage } from "../../components/Scoreboard.js";
 import { createStatsPanel as createStatsPanelDefault } from "../../components/StatsPanel.js";
 
@@ -206,6 +207,9 @@ export async function ensureBindings(opts = {}) {
     if (typeof uiService.bindUIServiceEventHandlersOnce === "function") {
       uiService.bindUIServiceEventHandlersOnce();
     }
+    if (typeof bindCountdownEventHandlersOnce === "function") {
+      bindCountdownEventHandlersOnce();
+    }
     __uiBound = true;
     if (force) {
       try {
@@ -216,6 +220,9 @@ export async function ensureBindings(opts = {}) {
       }
       if (typeof uiService.bindUIServiceEventHandlersOnce === "function") {
         uiService.bindUIServiceEventHandlersOnce();
+      }
+      if (typeof bindCountdownEventHandlersOnce === "function") {
+        bindCountdownEventHandlersOnce();
       }
       if (typeof uiEventHandlers.bindUIHelperEventHandlersDynamic === "function") {
         uiEventHandlers.bindUIHelperEventHandlersDynamic();
@@ -231,6 +238,9 @@ export async function ensureBindings(opts = {}) {
     }
     if (typeof uiService.bindUIServiceEventHandlersOnce === "function") {
       uiService.bindUIServiceEventHandlersOnce();
+    }
+    if (typeof bindCountdownEventHandlersOnce === "function") {
+      bindCountdownEventHandlersOnce();
     }
     if (typeof uiEventHandlers.bindUIHelperEventHandlersDynamic === "function") {
       uiEventHandlers.bindUIHelperEventHandlersDynamic();

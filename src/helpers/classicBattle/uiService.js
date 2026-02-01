@@ -1,22 +1,7 @@
 import * as scoreboard from "../setupScoreboard.js";
 import { updateDebugPanel } from "./debugPanel.js";
 import { onBattleEvent, getBattleEventTarget, emitBattleEvent } from "./battleEvents.js";
-import { bindCountdownEventHandlersOnce } from "./timerService.js";
-import * as battleEvents from "./battleEvents.js";
-import { attachCooldownRenderer } from "../CooldownRenderer.js";
-import { createRoundTimer } from "../timers/createRoundTimer.js";
-import { setSkipHandler } from "./skipHandler.js";
-import {
-  computeOpponentPromptWaitBudget,
-  waitForDelayedOpponentPromptDisplay,
-  DEFAULT_PROMPT_POLL_INTERVAL_MS
-} from "./opponentPromptWaiter.js";
-import { isOpponentPromptReady } from "./opponentPromptTracker.js";
-import { writeScoreDisplay } from "./scoreDisplay.js";
 import { roundState } from "./roundState.js";
-
-/** @type {{ timer: ReturnType<typeof createRoundTimer>, onExpired: Function }|null} */
-let activeCountdown = null;
 let scoreboardBindingsReady = Promise.resolve();
 
 /**
@@ -198,115 +183,6 @@ function bindScoreboardEventHandlers() {
   });
 }
 
-function handleCountdownExpired() {
-  setSkipHandler(null);
-  activeCountdown = null;
-  battleEvents.emitBattleEvent("countdownFinished");
-  battleEvents.emitBattleEvent("round.start");
-}
-
-/**
- * Synchronizes the score display on the scoreboard with the current scores from the battle engine.
- *
- * @pseudocode
- * 1. Retrieve the current `playerScore` and `opponentScore` from the battle engine using `getScores()`.
- * 2. If `scoreboard.updateScore` function is available, call it to update the scoreboard component.
- * 3. Locate the `#score-display` element in the DOM.
- * 4. If `#score-display` exists:
- *    a. Check for existing `<span>` elements with `data-side="player"` and `data-side="opponent"`.
- *    b. If these spans are not found, clear the `#score-display` content and create new `<span>` elements for player and opponent scores, appending them to `#score-display`.
- *    c. Update the `textContent` of the player and opponent score spans with the latest scores.
- * 5. Includes debug logging for test environments.
- *
- * @returns {void}
- */
-export function syncScoreDisplay() {
-  const { playerScore, opponentScore } = getScores();
-
-  // Debug logging for tests
-  try {
-    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      console.log("[DEBUG] syncScoreDisplay called:", { playerScore, opponentScore });
-    }
-  } catch {}
-
-  // Update via the component API when available
-  if (typeof scoreboard.updateScore === "function") {
-    try {
-      scoreboard.updateScore(playerScore, opponentScore);
-    } catch {}
-  }
-  // Always ensure the DOM reflects current scores as a robust fallback
-  try {
-    writeScoreDisplay(playerScore, opponentScore);
-    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      const el = document.getElementById("score-display");
-      if (el) {
-        console.log("[DEBUG] syncScoreDisplay updated DOM:", el.textContent);
-      }
-    }
-  } catch {}
-}
-
-/**
- * Show a match summary modal with result message and scores.
- *
- * @pseudocode
- * 1. Build title and score elements.
- * 2. Create Quit and Next buttons using `createButton`.
- * 3. Assemble the modal via `createModal` and append it to the DOM.
- * 4. Both buttons close and destroy the modal:
- *    - Quit navigates to `index.html`.
- *    - Next runs `onNext`.
- *
- * @param {{message: string, playerScore: number, opponentScore: number}} result
- * @param {Function} onNext Callback invoked when starting the next match.
- * @returns {ReturnType<typeof createModal>} Created modal instance.
- */
-export function showMatchSummaryModal(result, onNext) {
-  const title = document.createElement("h2");
-  title.id = "match-summary-title";
-  title.textContent = result.message;
-
-  const scoreEl = document.createElement("p");
-  scoreEl.id = "match-summary-score";
-  scoreEl.textContent = `Final Score – You: ${result.playerScore} Opponent: ${result.opponentScore}`;
-
-  const actions = document.createElement("div");
-  actions.className = "modal-actions";
-
-  const quit = createButton("Quit Match", {
-    id: "match-summary-quit",
-    className: "secondary-button"
-  });
-
-  const next = createButton("Next Match", { id: "match-summary-next" });
-
-  actions.append(quit, next);
-
-  const frag = document.createDocumentFragment();
-  frag.append(title, scoreEl, actions);
-
-  const modal = createModal(frag, { labelledBy: title });
-
-  quit.addEventListener("click", () => {
-    modal.close();
-    modal.destroy();
-    // Navigate to home (robust base path handling)
-    navigateToHome();
-  });
-
-  next.addEventListener("click", () => {
-    modal.close();
-    modal.destroy();
-    if (typeof onNext === "function") onNext();
-  });
-
-  document.body.appendChild(modal.element);
-  modal.open();
-  return modal;
-}
-
 // --- Event bindings ---
 function bindUIServiceEventHandlers() {
   // Register listeners exactly once per EventTarget instance
@@ -407,7 +283,4 @@ export function bindUIServiceEventHandlersOnce() {
   if (shouldBind) {
     bindUIServiceEventHandlers();
   }
-  try {
-    bindCountdownEventHandlersOnce();
-  } catch {}
 }
