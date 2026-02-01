@@ -305,8 +305,8 @@ describe("timerService next round handling", () => {
       expect(setupFallbackTimer).toHaveBeenCalled();
       expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
       expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
-      expect(machine.dispatch).toHaveBeenCalledWith("ready");
-      expect(machine.dispatch).toHaveBeenCalledTimes(1);
+      // When shared dispatcher succeeds, machine dispatch should NOT be called
+      expect(machine.dispatch).not.toHaveBeenCalled();
       expect(getStateSnapshot).toHaveBeenCalled();
     } finally {
       debugHooks.exposeDebugState("getClassicBattleMachine", undefined);

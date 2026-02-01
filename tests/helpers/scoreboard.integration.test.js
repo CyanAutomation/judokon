@@ -28,17 +28,38 @@ const { mockSetupScoreboard, mockGetDefaultTimer, mockStartRound } = vi.hoisted(
 }));
 
 // ===== Top-level vi.mock() calls =====
+// Use getters to ensure late binding to the current scoreboard instance
 vi.mock("../../src/helpers/setupScoreboard.js", () => ({
-  setupScoreboard: mockSetupScoreboard,
-  showMessage: (...args) => scoreboard.showMessage(...args),
-  updateScore: (...args) => scoreboard.updateScore(...args),
-  clearMessage: (...args) => scoreboard.clearMessage(...args),
-  showTemporaryMessage: (...args) => scoreboard.showTemporaryMessage(...args),
-  clearTimer: (...args) => scoreboard.clearTimer(...args),
-  updateTimer: (...args) => scoreboard.updateTimer(...args),
-  showAutoSelect: (...args) => scoreboard.showAutoSelect(...args),
-  updateRoundCounter: (...args) => scoreboard.updateRoundCounter(...args),
-  clearRoundCounter: (...args) => scoreboard.clearRoundCounter(...args)
+  get setupScoreboard() {
+    return mockSetupScoreboard;
+  },
+  showMessage(...args) {
+    return scoreboard.showMessage(...args);
+  },
+  updateScore(...args) {
+    return scoreboard.updateScore(...args);
+  },
+  clearMessage(...args) {
+    return scoreboard.clearMessage(...args);
+  },
+  showTemporaryMessage(...args) {
+    return scoreboard.showTemporaryMessage(...args);
+  },
+  clearTimer(...args) {
+    return scoreboard.clearTimer(...args);
+  },
+  updateTimer(...args) {
+    return scoreboard.updateTimer(...args);
+  },
+  showAutoSelect(...args) {
+    return scoreboard.showAutoSelect(...args);
+  },
+  updateRoundCounter(...args) {
+    return scoreboard.updateRoundCounter(...args);
+  },
+  clearRoundCounter(...args) {
+    return scoreboard.clearRoundCounter(...args);
+  }
 }));
 
 vi.mock("../../src/helpers/timerUtils.js", () => ({
