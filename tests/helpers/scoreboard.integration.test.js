@@ -182,7 +182,7 @@ describe("Scoreboard integration without setupScoreboard", () => {
     expect(scoreText).toContain("Opponent: 1");
 
     const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
-    const promise = startTimer(async () => {}, { selectionMade: false });
+    const timer = await startTimer(async () => {}, { selectionMade: false });
     // Initial tick shows 3 (debounced)
     await vi.advanceTimersByTimeAsync(220);
     const timerEl = document.getElementById("next-round-timer");
@@ -199,7 +199,7 @@ describe("Scoreboard integration without setupScoreboard", () => {
 
     // Cleanup any pending timers
     await vi.runOnlyPendingTimersAsync();
-    await promise;
+    timer?.stop?.();
   });
 
   it.skip("shows fallback message on round timer drift", async () => {

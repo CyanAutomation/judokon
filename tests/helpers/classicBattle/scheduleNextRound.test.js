@@ -201,7 +201,10 @@ describe("classicBattle startCooldown", () => {
       {
         name: "waitingForMatchStart",
         type: "initial",
-        triggers: [{ on: "continue", target: "cooldown" }]
+        triggers: [
+          { on: "continue", target: "cooldown" },
+          { on: "roundOver", target: "roundOver" }
+        ]
       },
       {
         name: "roundOver",
