@@ -349,7 +349,6 @@ function bindUIServiceEventHandlers() {
       emitBattleEvent("ui.roundReset");
     } catch {}
   });
-
 }
 
 /**

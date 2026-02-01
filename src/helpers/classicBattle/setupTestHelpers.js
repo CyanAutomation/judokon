@@ -105,7 +105,7 @@ export function createClassicBattleDebugAPI(view) {
     round: {
       get: () => {
         try {
-        return roundState.getCurrentRound();
+          return roundState.getCurrentRound();
         } catch {
           return {};
         }

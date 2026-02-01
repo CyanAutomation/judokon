@@ -66,9 +66,7 @@ describe("syncScoreDisplay", () => {
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({
       getSetting: () => true
     }));
-    const { syncScoreDisplay } = await import(
-      "../../src/helpers/classicBattle/scoreDisplay.js"
-    );
+    const { syncScoreDisplay } = await import("../../src/helpers/classicBattle/scoreDisplay.js");
     const { showMatchSummaryModal } = await import(
       "../../src/helpers/classicBattle/matchSummaryModal.js"
     );
