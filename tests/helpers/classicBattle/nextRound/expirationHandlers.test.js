@@ -219,7 +219,8 @@ describe("dispatchReadyDirectly", () => {
     expect(mocked).toHaveBeenCalledTimes(1);
     expect(mocked).toHaveBeenCalledWith("ready");
     expect(mocked.mock.results[0]?.value).toBeTruthy();
-    expect(dispatch).toHaveBeenCalledWith("ready");
+    // When shared dispatcher succeeds, machine dispatch should NOT be called
+    expect(dispatch).not.toHaveBeenCalled();
     expect(emit).toHaveBeenCalledWith("handleNextRound_dispatchReadyDirectly_result", true);
   });
 
