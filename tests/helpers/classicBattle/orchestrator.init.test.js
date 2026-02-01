@@ -1,15 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // ===== Top-level vi.hoisted() for shared mock state =====
-const { preloadTimerUtils1, bindScoreboardEventHandlersOnce1, preloadTimerUtils2, bindScoreboardEventHandlersOnce2 } =
-  vi.hoisted(() => ({
-    preloadTimerUtils1: vi.fn().mockResolvedValue(),
-    bindScoreboardEventHandlersOnce1: vi.fn(),
-    preloadTimerUtils2: vi.fn().mockRejectedValue(new Error("fail")),
-    bindScoreboardEventHandlersOnce2: vi.fn().mockImplementation(() => {
-      throw new Error("fail");
-    })
-  }));
+const {
+  preloadTimerUtils1,
+  bindScoreboardEventHandlersOnce1,
+  preloadTimerUtils2,
+  bindScoreboardEventHandlersOnce2
+} = vi.hoisted(() => ({
+  preloadTimerUtils1: vi.fn().mockResolvedValue(),
+  bindScoreboardEventHandlersOnce1: vi.fn(),
+  preloadTimerUtils2: vi.fn().mockRejectedValue(new Error("fail")),
+  bindScoreboardEventHandlersOnce2: vi.fn().mockImplementation(() => {
+    throw new Error("fail");
+  })
+}));
 
 // ===== Top-level vi.mock() calls (static paths) =====
 vi.mock("../../../src/helpers/TimerController.js", () => ({
@@ -37,7 +41,8 @@ describe("classic battle orchestrator init preloads", () => {
     vi.doMock("../../../src/helpers/TimerController.js", () => ({ preloadTimerUtils }));
     vi.doMock("../../../src/helpers/classicBattle/uiService.js", () => ({
       bindScoreboardEventHandlersOnce,
-      bindCountdownEventHandlersOnce: vi.fn()
+      bindCountdownEventHandlersOnce: vi.fn(),
+      bindUIServiceEventHandlersOnce: vi.fn()
     }));
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
     await initClassicBattleTest({ afterMock: true });
@@ -55,7 +60,8 @@ describe("classic battle orchestrator init preloads", () => {
     vi.doMock("../../../src/helpers/TimerController.js", () => ({ preloadTimerUtils }));
     vi.doMock("../../../src/helpers/classicBattle/uiService.js", () => ({
       bindScoreboardEventHandlersOnce,
-      bindCountdownEventHandlersOnce: vi.fn()
+      bindCountdownEventHandlersOnce: vi.fn(),
+      bindUIServiceEventHandlersOnce: vi.fn()
     }));
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
     await initClassicBattleTest({ afterMock: true });

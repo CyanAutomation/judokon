@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 // Enable fake timers before any scheduler/timer modules load.
-vi.useFakeTimers();
+vi.useFakeTimers({
+  toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "Date", "performance"]
+});
 import "./commonMocks.js";
 import { setupClassicBattleDom } from "./utils.js";
 import { createTimerNodes } from "./domUtils.js";
@@ -26,7 +28,8 @@ vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
 
     // Store original methods if they exist
     const originalOn = timer.on && typeof timer.on === "function" ? timer.on.bind(timer) : null;
-    const originalStart = timer.start && typeof timer.start === "function" ? timer.start.bind(timer) : null;
+    const originalStart =
+      timer.start && typeof timer.start === "function" ? timer.start.bind(timer) : null;
 
     // Intercept timer.on to capture the expired callback
     // But still call the original to maintain normal behavior
@@ -374,7 +377,7 @@ describe("classicBattle startCooldown", () => {
       getState: typeof machine?.getState,
       currentState: machine?.getState?.()
     });
-    
+
     // AGENT_DEBUG: Check if debug getter is set up
     const debugReadFn = globalThis.__classicBattleDebugRead;
     console.log("[AGENT_DEBUG] debugRead available:", typeof debugReadFn);
@@ -415,12 +418,12 @@ describe("classicBattle startCooldown", () => {
 
     expect(readyResolutionSpy).toHaveBeenCalledTimes(1);
     expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
-    
+
     // AGENT_DEBUG: Check if timer expired
     const timerExpired = debugRead("timerEmitExpiredCalled");
     console.log("[AGENT_DEBUG] Timer emitExpired called:", timerExpired);
     expect(timerExpired).toBe(true);
-    
+
     const getterInfo = debugRead("handleNextRoundMachineGetter");
     debugHooks.exposeDebugState("latestGetterInfo", getterInfo ?? null);
     expect(getterInfo?.sourceReadDebug).toBe("function");
