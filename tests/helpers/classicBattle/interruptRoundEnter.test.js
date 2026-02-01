@@ -21,6 +21,16 @@ async function setupInterruptHarness(storeOverrides = {}) {
     playerChoice: null,
     __lastSelectionMade: false,
     roundsPlayed: 1,
+    currentPlayerJudoka: {
+      id: 1,
+      name: "TestJudoka1",
+      stats: { power: 5, speed: 6, technique: 7, kumikata: 4, newaza: 5 }
+    },
+    currentOpponentJudoka: {
+      id: 2,
+      name: "TestJudoka2",
+      stats: { power: 4, speed: 5, technique: 6, kumikata: 7, newaza: 8 }
+    },
     ...storeOverrides
   };
 
@@ -104,6 +114,10 @@ describe.sequential("classic battle orchestrator interrupt flows", () => {
     const { store, transitions, scoreboardMessages, cleanup } = env;
     try {
       await advanceToPlayerActionState();
+      
+      // Flush any pending timers/microtasks
+      await flushFallbackTimers();
+      await new Promise(resolve => setTimeout(resolve, 50));
 
       const selectionTask = beginSelection(store, "speed");
       await (selectionTask.selectionAppliedPromise ?? Promise.resolve());
@@ -137,6 +151,10 @@ describe.sequential("classic battle orchestrator interrupt flows", () => {
     const { store, transitions, scoreboardMessages, cleanup } = env;
     try {
       await advanceToPlayerActionState();
+      
+      // Flush any pending timers/microtasks
+      await flushFallbackTimers();
+      await new Promise(resolve => setTimeout(resolve, 50));
 
       const selectionTask = beginSelection(store, "technique");
       await (selectionTask.selectionAppliedPromise ?? Promise.resolve());
