@@ -24,46 +24,31 @@ vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
     let expiredCallback = null;
     let timerHandle = null;
 
-    // Capture the expired callback by wrapping timer.on
+    // Store original methods if they exist
     const originalOn = timer.on && typeof timer.on === "function" ? timer.on.bind(timer) : null;
+    const originalStart = timer.start && typeof timer.start === "function" ? timer.start.bind(timer) : null;
+
+    // Intercept timer.on to capture the expired callback
+    // But still call the original to maintain normal behavior
     if (originalOn) {
-      timer.on = vi.fn((eventType, handler) => {
+      const mockOn = vi.fn((eventType, handler) => {
         if (eventType === "expired") {
           expiredCallback = handler;
         }
         return originalOn(eventType, handler);
       });
+      Object.setPrototypeOf(mockOn, originalOn);
+      timer.on = mockOn;
     }
 
-    // When timer starts, schedule the expired callback to fire after the duration
-    const originalStart = timer.start && typeof timer.start === "function" ? timer.start.bind(timer) : null;
+    // Intercept timer.start but DON'T add our own setTimeout
+    // The real timer will handle timing, we just let it work
     if (originalStart) {
-      timer.start = vi.fn((duration) => {
-        // Call the original start
-        const result = originalStart(duration);
-        
-        // Schedule the expiration callback to fire when the timer expires
-        // Use setTimeout with the duration to fire at the right time
-        if (typeof expiredCallback === "function" && typeof globalThis.setTimeout === "function") {
-          // Clear any previous timer
-          if (timerHandle !== null) {
-            try {
-              globalThis.clearTimeout(timerHandle);
-            } catch {}
-          }
-          // Set new timer - duration is in seconds, setTimeout uses milliseconds
-          const durationMs = typeof duration === "number" ? duration * 1000 : 1000;
-          timerHandle = globalThis.setTimeout(() => {
-            try {
-              expiredCallback();
-            } catch (e) {
-              // Silently ignore errors
-            }
-          }, durationMs);
-        }
-        
-        return result;
+      const mockStart = vi.fn((duration) => {
+        return originalStart(duration);
       });
+      Object.setPrototypeOf(mockStart, originalStart);
+      timer.start = mockStart;
     }
 
     // Return a cleanup function
@@ -427,14 +412,15 @@ describe("classicBattle startCooldown", () => {
 
     await vi.advanceTimersByTimeAsync(1000);
     await currentNextRound.ready;
-    
-    // AGENT_FIX: Wait for guardAsync microtask to complete
-    // The finish() function calls guardAsync which schedules the machine.dispatch("ready")
-    // as a microtask. We need to flush the microtask queue to ensure it executes.
-    await new Promise(resolve => setImmediate(resolve));
 
     expect(readyResolutionSpy).toHaveBeenCalledTimes(1);
     expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
+    
+    // AGENT_DEBUG: Check if timer expired
+    const timerExpired = debugRead("timerEmitExpiredCalled");
+    console.log("[AGENT_DEBUG] Timer emitExpired called:", timerExpired);
+    expect(timerExpired).toBe(true);
+    
     const getterInfo = debugRead("handleNextRoundMachineGetter");
     debugHooks.exposeDebugState("latestGetterInfo", getterInfo ?? null);
     expect(getterInfo?.sourceReadDebug).toBe("function");

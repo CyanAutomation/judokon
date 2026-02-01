@@ -158,13 +158,13 @@ describe.sequential("classicBattle round resolver once", () => {
   it("dispatches draw path and updates scoreboard", async () => {
     const store = createBattleStore();
     _resetForTest(store);
-    const { evaluateRound } = await import("../../../src/helpers/api/battleUI.js");
-    vi.mocked(evaluateRound).mockReturnValueOnce({
-      message: "",
+    const { handleStatSelection } = await import("../../../src/helpers/BattleEngine.js");
+    vi.mocked(handleStatSelection).mockReturnValueOnce({
+      delta: 0,
+      outcome: "draw",
       matchEnded: false,
       playerScore: 2,
-      opponentScore: 2,
-      outcome: "draw"
+      opponentScore: 2
     });
     const { updateScore } = await import("../../../src/helpers/setupScoreboard.js");
     const { dispatchBattleEvent } = await import(
