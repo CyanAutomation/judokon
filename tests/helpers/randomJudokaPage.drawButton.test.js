@@ -154,36 +154,36 @@ describe("randomJudokaPage draw button", () => {
     expect(label()).toBe("Custom Label");
   });
 
-  it("re-enables draw button immediately when card markup is missing", async () => {
+  it("shows fallback and transitions to IDLE when card markup is missing", async () => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
-    const originalRaf = globalThis.requestAnimationFrame;
-    globalThis.requestAnimationFrame = vi.fn();
 
-    try {
-      const generateRandomCard = vi.fn().mockResolvedValue({ name: "Ghost Judoka" });
-      // Update module-level mock for this test
-      mocks.generateRandomCard.mockImplementation(generateRandomCard);
+    const generateRandomCard = vi.fn().mockResolvedValue({ name: "Ghost Judoka" });
+    // Update module-level mock for this test
+    mocks.generateRandomCard.mockImplementation(generateRandomCard);
 
-      const { section } = createRandomCardDom();
-      document.body.append(section);
+    const { section, container } = createRandomCardDom();
+    document.body.append(section);
 
-      const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
-      await initRandomJudokaPage();
+    const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
+    await initRandomJudokaPage();
 
-      const button = document.getElementById("draw-card-btn");
-      const label = button.querySelector(".button-label");
+    const button = document.getElementById("draw-card-btn");
+    const label = button.querySelector(".button-label");
 
-      button.click();
+    button.click();
 
-      await button.drawPromise;
+    await button.drawPromise;
 
-      expect(button.disabled).toBe(false);
-      expect(button).not.toHaveAttribute("aria-disabled");
-      expect(button.classList.contains("is-loading")).toBe(false);
-      expect(label.textContent).toBe("Draw Card!");
-    } finally {
-      globalThis.requestAnimationFrame = originalRaf;
-    }
+    // Missing card markup is now treated as an error, so fallback is rendered
+    // and button transitions to IDLE after error handling
+    expect(button.disabled).toBe(false);
+    expect(button).not.toHaveAttribute("aria-disabled");
+    expect(button.classList.contains("is-loading")).toBe(false);
+    expect(label.textContent).toBe("Draw Card!");
+
+    // Verify fallback card was rendered
+    const fallbackCard = container.querySelector(".card-container");
+    expect(fallbackCard).toBeTruthy();
   });
 
   it("disables draw button when data load fails", async () => {
