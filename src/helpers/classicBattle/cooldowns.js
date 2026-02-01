@@ -234,7 +234,6 @@ export function createCooldownCompletion({ machine, timer, button, scheduler, on
   const finish = () => {
     if (completed) return;
     completed = true;
-    console.log("[AGENT_DEBUG_FINISH] Starting finish()");
     clearFallback();
     if (typeof onCleanup === "function") {
       try {
@@ -251,17 +250,9 @@ export function createCooldownCompletion({ machine, timer, button, scheduler, on
     }
     const shouldDispatchReady = () => {
       const canDispatchViaMachine = typeof machine?.dispatch === "function";
-      const notYetDispatched = !hasReadyBeenDispatchedForCurrentCooldown();
-      console.log("[AGENT_DEBUG_FINISH] shouldDispatchReady check:", {
-        canDispatchViaMachine,
-        notYetDispatched,
-        machineExists: !!machine,
-        dispatchType: typeof machine?.dispatch
-      });
-      return canDispatchViaMachine && notYetDispatched;
+      return canDispatchViaMachine && !hasReadyBeenDispatchedForCurrentCooldown();
     };
     const shouldDispatchViaMachine = shouldDispatchReady();
-    console.log("[AGENT_DEBUG_FINISH] shouldDispatchViaMachine:", shouldDispatchViaMachine);
     if (shouldDispatchViaMachine) {
       setReadyDispatchedForCurrentCooldown(true);
     }
@@ -273,15 +264,11 @@ export function createCooldownCompletion({ machine, timer, button, scheduler, on
     ]) {
       guard(() => emitBattleEvent(evt));
     }
-    console.log("[AGENT_DEBUG_FINISH] About to guardAsync dispatch");
     if (shouldDispatchViaMachine) {
       guardAsync(async () => {
-        console.log("[AGENT_DEBUG_FINISH] Inside guardAsync, calling machine.dispatch('ready')");
         try {
           await machine.dispatch("ready");
-          console.log("[AGENT_DEBUG_FINISH] machine.dispatch('ready') completed");
         } catch (error) {
-          console.log("[AGENT_DEBUG_FINISH] machine.dispatch('ready') threw error:", error);
           setReadyDispatchedForCurrentCooldown(false);
           guard(() =>
             emitBattleEvent("cooldown.dispatch.failed", {
@@ -297,7 +284,6 @@ export function createCooldownCompletion({ machine, timer, button, scheduler, on
         }
       });
     }
-    console.log("[AGENT_DEBUG_FINISH] Finish() completed");
   };
 
   return {

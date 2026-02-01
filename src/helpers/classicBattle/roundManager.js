@@ -984,7 +984,6 @@ function createReadyDispatchConfiguration({
 }
 
 function finalizeReadyControls(controls, dispatched, options = {}) {
-  console.log("AGENT_TRACE: finalizeReadyControls called");
   if (!controls) return;
   const forceResolve = options.forceResolve === true;
   controls.readyInFlight = false;
@@ -1016,12 +1015,6 @@ function finalizeReadyControls(controls, dispatched, options = {}) {
     }
 
     // Debug logging
-    console.log("AGENT_TRACE: [finalizeReadyControls]", {
-      shouldSetFinalized,
-      dispatched,
-      forceResolve: options.forceResolve,
-      ...debugInfo
-    });
     if (typeof console !== "undefined" && typeof process !== "undefined" && process.env?.VITEST) {
       console.log("[finalizeReadyControls]", {
         shouldSetFinalized,
