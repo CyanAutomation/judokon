@@ -382,6 +382,30 @@ describe("classicBattle startCooldown", () => {
     await machine.dispatch("continue");
     expect(machine.getState()).toBe("cooldown");
 
+    // AGENT_DEBUG: Log machine info before cooldownEnter
+    console.log("[AGENT_DEBUG] Machine before cooldownEnter:", {
+      machine: !!machine,
+      dispatch: typeof machine?.dispatch,
+      getState: typeof machine?.getState,
+      currentState: machine?.getState?.()
+    });
+    
+    // AGENT_DEBUG: Check if debug getter is set up
+    const debugReadFn = globalThis.__classicBattleDebugRead;
+    console.log("[AGENT_DEBUG] debugRead available:", typeof debugReadFn);
+    if (typeof debugReadFn === "function") {
+      const getter = debugReadFn("getClassicBattleMachine");
+      console.log("[AGENT_DEBUG] getClassicBattleMachine getter:", typeof getter);
+      if (typeof getter === "function") {
+        const retrievedMachine = getter();
+        console.log("[AGENT_DEBUG] Retrieved machine from getter:", {
+          exists: !!retrievedMachine,
+          sameAsMachine: retrievedMachine === machine,
+          hasDispatch: typeof retrievedMachine?.dispatch
+        });
+      }
+    }
+
     await cooldownEnter(machine);
 
     dispatchBattleEventSpy.mockClear();

@@ -38,7 +38,9 @@ export default defineConfig({
       "tests/playwright/**",
       "playwright/**",
       "scripts/**/*.spec.*",
-      "tests/styles/**"
+      "tests/styles/**",
+      "tests/battles-regressions/**",
+      "tests/helpers/scoreboardTests/**"
     ],
     // Use compact dot reporter to reduce captured stdout noise
     reporters: ["dot"],
