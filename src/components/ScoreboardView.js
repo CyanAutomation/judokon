@@ -38,7 +38,7 @@ function ensureLabelValueSpacing(container, labelSpan, valueSpan) {
 
 function updateTimerElement(container, valueText, { labelText = "Time Left:" } = {}) {
   if (!container) return;
-  const labelSpan = container.querySelector('[data-part="label"]');
+  let labelSpan = container.querySelector('[data-part="label"]');
   const valueSpan = container.querySelector('[data-part="value"]');
   if (valueSpan) {
     if (!labelSpan && labelText) {
@@ -49,8 +49,7 @@ function updateTimerElement(container, valueText, { labelText = "Time Left:" } =
           createdLabel.dataset.part = "label";
           createdLabel.textContent = labelText;
           container.insertBefore(createdLabel, container.firstChild);
-          ensureLabelValueSpacing(container, createdLabel, valueSpan);
-          return;
+          labelSpan = createdLabel;
         }
       } catch {}
     }
@@ -58,7 +57,7 @@ function updateTimerElement(container, valueText, { labelText = "Time Left:" } =
       labelSpan.textContent = valueText ? labelText : "";
     }
     valueSpan.textContent = valueText;
-    ensureLabelValueSpacing(container, labelSpan || container.querySelector('[data-part="label"]'), valueSpan);
+    ensureLabelValueSpacing(container, labelSpan, valueSpan);
   } else {
     container.textContent = valueText ? `${labelText} ${valueText}` : "";
   }
