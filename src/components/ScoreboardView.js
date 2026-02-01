@@ -50,7 +50,7 @@ function updateTimerElement(container, valueText, { labelText = "Time Left:" } =
           createdLabel.textContent = labelText;
           container.insertBefore(createdLabel, container.firstChild);
           ensureLabelValueSpacing(container, createdLabel, valueSpan);
-          return updateTimerElement(container, valueText, { labelText });
+          return;
         }
       } catch {}
     }
