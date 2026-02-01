@@ -85,6 +85,86 @@ Canonical events emitted:
 - **Only** `control.state.changed` is authoritative for view/state progression.
 - Domain/timer events update values, not transitions.
 
+### Event Authority Sequence Diagram
+
+The diagram below shows one complete round lifecycle, emphasizing the **critical authority boundary**: only `control.state.changed` is authoritative for state transitions. The three-hop event propagation chain (Engine → Orchestrator → UI) ensures clear separation of concerns and deterministic behavior.
+
+```mermaid
+sequenceDiagram
+  participant Orch as Orchestrator (FSM)
+  participant Engine as Engine Core
+  participant UI as UI Layer
+  participant Player
+
+  Note over Orch,Player: Round Start Phase
+  Orch->>Engine: startRound()
+  Engine->>Engine: initialize timer (30s)
+  Engine-->>Orch: emit roundStarted
+  Orch->>Orch: bridge event
+  Orch-->>UI: emit round.started
+  Orch-->>UI: emit control.state.changed(to="selection")
+  UI->>UI: enable stat buttons
+
+  Note over Orch,Player: Player Action Phase (Manual Selection)
+  Player->>UI: click stat button
+  UI->>Orch: dispatchBattleEvent("statSelected")
+  Orch->>Engine: lockSelection(statKey)
+  Engine-->>Orch: emit roundEnded
+  Orch->>Orch: bridge event
+  Orch-->>UI: emit round.selection.locked
+  Orch-->>UI: emit round.evaluated(outcome)
+  Orch-->>UI: emit control.state.changed(to="evaluation")
+  UI->>UI: show result (You Won/Lost/Draw)
+
+  alt Manual Selection (Instant)
+    Note over Orch,Engine: Selection locked immediately
+  else Timer Expiry (30s Auto-Select)
+    Note over Engine,UI: 30s Selection Timer Expires
+    Engine->>Engine: emit timerTick(remainingMs=0)
+    Engine-->>Orch: emit timerTick
+    Orch->>Orch: detect timeout
+    Orch->>Engine: autoSelectStat()
+    Engine-->>Orch: emit roundEnded
+    Orch-->>UI: emit round.evaluated(outcome)
+    Orch-->>UI: emit control.state.changed(to="evaluation")
+    UI->>UI: show "Auto-selected: [stat]"
+  end
+
+  Note over Orch,Player: Cooldown Phase (3s)
+  Orch->>Orch: start cooldown (3s)
+  Orch-->>UI: emit control.countdown.started
+  loop Every 1 second
+    Orch-->>UI: emit cooldown.timer.tick(remainingMs)
+    UI->>UI: update countdown display
+  end
+  Orch-->>UI: emit control.countdown.completed
+  Orch-->>UI: emit control.state.changed(to="selection")
+
+  Note over Orch,Player: Authority Boundary Enforcement
+  Note over UI: ⚠️ UI listens to domain events<br/>(round.started, round.evaluated)<br/>for VALUE updates only
+  Note over UI: ⭐ UI MUST wait for<br/>control.state.changed<br/>to advance UI state
+```
+
+**Critical Authority Rules (enforced by event taxonomy):**
+
+- **`control.state.changed`** (emitted by Orchestrator FSM) — **ONLY** authoritative signal for view state transitions. Payload includes `from`, `to`, `context`, `catalogVersion`.
+- **Domain events** (`round.started`, `round.evaluated`, etc.) — Update values (scores, outcomes), NOT transitions. Useful for snackbars, counters, but insufficient for state progression.
+- **Timer events** (`round.timer.tick`, `cooldown.timer.tick`) — Provide tick counts for countdown displays; NOT transition triggers.
+- **Validation events** (`input.invalid`, `input.ignored`) — Inform UI of rejected inputs; state unchanged.
+
+**Event Propagation Chain (3-hop):**
+
+1. **Engine Core emits:** `roundStarted`, `roundEnded`, `timerTick` (domain/timer events)
+2. **Orchestrator bridges:** Subscribes to Engine.on(), maps to canonical names, emits `round.started`, `control.state.changed` (with FSM authority)
+3. **UI listeners:** Consume events via `dispatchBattleEvent` subscriptions; render based on **`control.state.changed` only** for transitions
+
+**Design Rationale:**
+
+- Separates concerns: Engine is deterministic logic, Orchestrator is FSM coordination, UI is presentation.
+- Guards against invalid state transitions: UIs cannot skip states by listening to intermediate events alone.
+- Enables test snapshots: `control.state.changed` provides verifiable FSM trace.
+- Allows adapter flexibility: Legacy UIs can read all events; new UIs respect authority boundaries.
+
 ---
 
 ## 6. State Model
