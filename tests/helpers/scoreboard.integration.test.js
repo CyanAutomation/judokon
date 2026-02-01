@@ -184,7 +184,7 @@ describe("Scoreboard integration without setupScoreboard", () => {
   it.skip("shows fallback message on round timer drift", async () => {
     const api = await import("../../src/helpers/setupScoreboard.js");
     const showMessageSpy = vi.spyOn(api, "showMessage");
-    const { startTimer } = await import("../../../../src/helpers/classicBattle/timerService.js");
+    const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
     startTimer(async () => {}, { selectionMade: false });
     await vi.advanceTimersByTimeAsync(1);
     if (typeof roundDrift !== "function") {
