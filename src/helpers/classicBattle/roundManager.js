@@ -119,7 +119,8 @@ export function createBattleStore() {
     matchDeck: [],
     matchDeckSize: DEFAULT_MATCH_DECK_SIZE,
     pendingOpponentFromDeck: null,
-    usedOpponentIds: new Set()
+    usedOpponentIds: new Set(),
+    roundsPlayed: 0
   };
 }
 
