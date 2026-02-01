@@ -24,6 +24,7 @@ import { logStateTransition } from "./debugLogger.js";
 import { preloadTimerUtils } from "../TimerController.js";
 import { createStateManager } from "./stateManager.js";
 import { bindScoreboardEventHandlersOnce } from "./uiService.js";
+import { bindCountdownEventHandlersOnce } from "./timerService.js";
 import { debugLog } from "./debugLog.js";
 import { STATS, onEngineCreated } from "../BattleEngine.js";
 import { updateScore } from "../setupScoreboard.js";
@@ -618,6 +619,9 @@ async function preloadDependencies() {
   } catch {}
   try {
     bindScoreboardEventHandlersOnce();
+  } catch {}
+  try {
+    bindCountdownEventHandlersOnce();
   } catch {}
 }
 
