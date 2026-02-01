@@ -96,6 +96,82 @@ Round resolution is implemented as a helper chain for clarity and testing hooks.
 
 To avoid repeated DOM queries inside timers and handlers, the shared round store caches references to the player card, opponent card, stat buttons, and scoreboard containers.
 
+#### Round UI Sequence Diagram
+
+The sequence below visualizes the event flow, actor interactions, and snackbar message transitions across a complete round, including conditional branches for stat selection timing and opponent delay messaging.
+
+```mermaid
+sequenceDiagram
+  actor Player
+  participant UI as UI (Stat Buttons)
+  participant Engine
+  participant Scoreboard
+  participant Snackbar
+  participant Timer as Cooldown Timer
+
+  Note over Player,Timer: Round Initialization
+  Engine->>Scoreboard: emit roundStarted
+  Scoreboard->>UI: reset buttons (enabled)
+  Scoreboard->>Snackbar: show "Choose a stat"
+  Engine->>Engine: start selection timer (30s)
+
+  Note over Player,Timer: Player Action (Manual Selection)
+  Player->>UI: click stat button
+  UI->>Engine: fire statSelected event
+  Engine->>UI: disable all buttons
+  Snackbar->>Snackbar: show "You picked: [Stat]"
+
+  alt opponentDelayMessage flag enabled
+    Note over Engine,Snackbar: Opponent Delay Window (300–700ms)
+    Engine->>Engine: schedule opponent delay timer
+    Snackbar->>Snackbar: suppress cooldown counter
+    Engine->>Engine: after delay, show "Opponent is choosing…"
+  else opponentDelayMessage flag disabled
+    Snackbar->>Snackbar: "Opponent is choosing…" shows immediately
+  end
+
+  Note over Player,Timer: Opponent Reveal & Round Resolution
+  Engine->>Engine: evaluate outcome (compare stats)
+  Engine->>Scoreboard: emit roundResolved
+  Scoreboard->>Snackbar: clear "Opponent is choosing…"
+  Scoreboard->>Snackbar: show result ("You Won!", "You Lost", or "Draw")
+  Scoreboard->>Scoreboard: update score display
+
+  Note over Player,Timer: Inter-Round Cooldown (3s default)
+  Engine->>Timer: emit countdownStart (duration)
+  Timer->>Snackbar: show "Next round in: 3"
+  loop Every 1 second
+    Timer->>Snackbar: update "Next round in: [X]"
+  end
+  Timer->>Engine: emit countdownFinished
+  alt Player skips cooldown
+    Player->>UI: click Next button
+    Snackbar->>Snackbar: clear countdown
+    UI->>Engine: trigger next roundStarted
+  else Cooldown expires naturally
+    Snackbar->>Snackbar: clear countdown
+    Engine->>Engine: auto-advance to next roundStarted
+  end
+
+  Note over Player,Timer: Next Round Begins
+  Engine->>Scoreboard: emit roundStarted
+  Scoreboard->>UI: reset buttons (enabled)
+  Scoreboard->>Snackbar: show "Choose a stat"
+```
+
+**Key branches:**
+
+- **Stat selection:** Manual click (instant) or timer expiry (auto-select if `autoSelect = true`)
+- **Opponent delay:** Controlled by `opponentDelayMessage` feature flag; suppresses cooldown countdown display during opponent reveal window
+- **Cooldown termination:** Player clicks Next button (instant) or timer expires (auto-advance)
+
+**Timing constraints:**
+
+- Selection timer: 30s
+- Opponent reveal delay: 300–700ms (randomized, applied only if `opponentDelayMessage` enabled)
+- Cooldown countdown: 3s (configurable)
+- Cooldown tick update: every 1s
+
 ### Headless Fast-Forward Mode
 
 Automated simulations can enable headless mode to bypass reveal delays and cooldown waits:
