@@ -3,23 +3,9 @@ import { useCanonicalTimers } from "../../../setup/fakeTimers.js";
 // Enable fake timers before any scheduler/timer modules load.
 useCanonicalTimers();
 
-// Import only the mocks we need (NOT commonMocks.js which has scheduler mock that conflicts with fake timers)
-vi.mock("../../../src/helpers/motionUtils.js", () => ({
-  shouldReduceMotionSync: () => true
-}));
-
-vi.mock("node:url", () => ({
-  fileURLToPath: (url) => {
-    try {
-      return new URL(url).pathname;
-    } catch {
-      return String(url).replace("file://", "");
-    }
-  },
-  pathToFileURL: (path) => {
-    return `file://${path}`;
-  }
-}));
+// NOW import commonMocks which contains scheduler mock
+// The scheduler mock uses globalThis.setInterval which fake timers will intercept
+import "./commonMocks.js";
 
 import { setupClassicBattleDom } from "./utils.js";
 import { createTimerNodes } from "./domUtils.js";
@@ -428,19 +414,13 @@ describe("classicBattle startCooldown", () => {
     const readyResolutionSpy = vi.fn();
     currentNextRound.ready.then(readyResolutionSpy);
 
-    process.stderr.write(`[AGENT_DEBUG] About to advance timers by 1000ms\n`);
-    process.stderr.write(`[AGENT_DEBUG] vi.getTimerCount(): ${vi.getTimerCount()}\n`);
-
     await vi.advanceTimersByTimeAsync(1000);
 
-    process.stderr.write(`[AGENT_DEBUG] After advancing timers\n`);
-    process.stderr.write(`[AGENT_DEBUG] vi.getTimerCount(): ${vi.getTimerCount()}\n`);
     expect(readyResolutionSpy).toHaveBeenCalledTimes(1);
     expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
 
     // AGENT_DEBUG: Check if timer expired
     const timerExpired = debugRead("timerEmitExpiredCalled");
-    console.log("[AGENT_DEBUG] Timer emitExpired called:", timerExpired);
     expect(timerExpired).toBe(true);
 
     const getterInfo = debugRead("handleNextRoundMachineGetter");

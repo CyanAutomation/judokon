@@ -14,28 +14,39 @@ vi.mock("../../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
 
-vi.mock("../../../src/utils/scheduler.js", () => ({
-  onFrame: (cb) => {
-    const id = globalThis.setTimeout(() => cb(performance.now()), 16);
-    return id;
-  },
-  onSecondTick: (cb) => {
-    const id = globalThis.setInterval(() => cb(performance.now()), 1000);
-    return id;
-  },
-  cancel: vi.fn((id) => {
-    try {
-      globalThis.clearTimeout(id);
-    } catch {}
-    try {
-      globalThis.clearInterval(id);
-    } catch {}
-  }),
-  start: vi.fn(),
-  stop: vi.fn(),
-  pause: vi.fn(),
-  resume: vi.fn()
-}));
+vi.mock("../../../src/utils/scheduler.js", () => {
+  // Use late-binding via getters to ensure fake timers can intercept
+  const getMockScheduler = () => ({
+    onFrame: (cb) => {
+      // Call setInterval through global lookup each time
+      const id = (globalThis).setTimeout(() => cb(performance.now()), 16);
+      return id;
+    },
+    onSecondTick: (cb) => {
+      // Call setInterval through global lookup each time
+      const id = (globalThis).setInterval(() => cb(performance.now()), 1000);
+      return id;
+    },
+    cancel: vi.fn((id) => {
+      try {
+        (globalThis).clearTimeout(id);
+      } catch {}
+      try {
+        (globalThis).clearInterval(id);
+      } catch {}
+    }),
+    start: vi.fn(),
+    stop: vi.fn(),
+    pause: vi.fn(),
+    resume: vi.fn()
+  });
+  
+  return new Proxy({}, {
+    get(target, prop) {
+      return getMockScheduler()[prop];
+    }
+  });
+});
 
 vi.mock("node:url", () => ({
   fileURLToPath: (url) => {
