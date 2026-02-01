@@ -33,7 +33,7 @@ import * as debugHooks from "../../../src/helpers/classicBattle/debugHooks.js";
 import { eventDispatcherMock } from "./mocks/eventDispatcher.js";
 
 vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
-  attachCooldownRenderer: vi.fn((timer, initialRemaining) => {
+  attachCooldownRenderer: vi.fn((timer) => {
     // Mock implementation that simulates the countdown renderer behavior
     // In production, this attaches UI handlers and ticks. In tests, we just need
     // to ensure the timer's callbacks are invoked properly when time expires.
@@ -428,7 +428,14 @@ describe("classicBattle startCooldown", () => {
     const readyResolutionSpy = vi.fn();
     currentNextRound.ready.then(readyResolutionSpy);
 
+    console.log("[AGENT_DEBUG] About to advance timers by 1000ms");
+    console.log("[AGENT_DEBUG] vi.getTimerCount():", vi.getTimerCount());
+
     await vi.advanceTimersByTimeAsync(1000);
+
+    console.log("[AGENT_DEBUG] After advancing timers");
+    console.log("[AGENT_DEBUG] vi.getTimerCount():", vi.getTimerCount());
+
     await currentNextRound.ready;
 
     expect(readyResolutionSpy).toHaveBeenCalledTimes(1);

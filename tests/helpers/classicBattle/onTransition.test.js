@@ -39,12 +39,19 @@ const createEngineMock = () => {
 
 vi.mock("../../../src/helpers/classicBattle/stateManager.js", () => ({
   createStateManager: async (_onEnter, { store }, onTransition) => {
+    // State transition map: event -> next state
+    const transitionMap = {
+      startClicked: "matchStart",
+      ready: "cooldown",
+      restartMatch: "waitingForMatchStart"
+    };
+
     const machine = {
       context: { store, engine: createEngineMock() },
-      current: "init",
+      current: "waitingForMatchStart",
       async dispatch(event) {
         const from = this.current;
-        const to = event;
+        const to = transitionMap[event] || event;
         this.current = to;
         await onTransition({ from, to, event });
       },
