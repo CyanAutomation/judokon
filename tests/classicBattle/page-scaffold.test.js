@@ -195,7 +195,8 @@ vi.mock("../../src/helpers/classicBattle/timerService.js", () => {
   return {
     startTimer,
     onNextButtonClick: vi.fn(),
-    getNextRoundControls
+    getNextRoundControls,
+    bindCountdownEventHandlersOnce: vi.fn()
   };
 });
 

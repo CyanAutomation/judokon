@@ -154,17 +154,23 @@ describe("randomJudokaPage draw button", () => {
     expect(label()).toBe("Custom Label");
   });
 
-  it("re-enables draw button immediately when card markup is missing", async () => {
-    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
-    const originalRaf = globalThis.requestAnimationFrame;
-    globalThis.requestAnimationFrame = vi.fn();
+  it("shows fallback and transitions to IDLE when card markup is missing", async () => {
+    await withMutedConsole(async () => {
+      window.matchMedia = vi.fn().mockReturnValue({ matches: false });
 
-    try {
       const generateRandomCard = vi.fn().mockResolvedValue({ name: "Ghost Judoka" });
       // Update module-level mock for this test
       mocks.generateRandomCard.mockImplementation(generateRandomCard);
 
-      const { section } = createRandomCardDom();
+      // Mock renderJudokaCard to actually create the fallback card element
+      mocks.renderJudokaCard.mockImplementation(async (judoka, gokyo, container) => {
+        const card = document.createElement("div");
+        card.className = "card-container";
+        card.textContent = `Fallback: ${judoka.name}`;
+        container.appendChild(card);
+      });
+
+      const { section, container } = createRandomCardDom();
       document.body.append(section);
 
       const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
@@ -172,18 +178,24 @@ describe("randomJudokaPage draw button", () => {
 
       const button = document.getElementById("draw-card-btn");
       const label = button.querySelector(".button-label");
+      button.fallbackDelayMs = 0;
 
       button.click();
 
       await button.drawPromise;
+      await harness.timerControl.runAllTimersAsync();
 
+      // Missing card markup is now treated as an error, so fallback is rendered
+      // and button transitions to IDLE after error handling
       expect(button.disabled).toBe(false);
       expect(button).not.toHaveAttribute("aria-disabled");
       expect(button.classList.contains("is-loading")).toBe(false);
       expect(label.textContent).toBe("Draw Card!");
-    } finally {
-      globalThis.requestAnimationFrame = originalRaf;
-    }
+
+      // Verify fallback card was rendered
+      const fallbackCard = container.querySelector(".card-container");
+      expect(fallbackCard).toBeTruthy();
+    });
   });
 
   it("disables draw button when data load fails", async () => {
@@ -191,6 +203,27 @@ describe("randomJudokaPage draw button", () => {
 
     // Update module-level mocks for this test
     mocks.preloadRandomCardData.mockRejectedValue(new Error("fail"));
+
+    const { section } = createRandomCardDom();
+    document.body.append(section);
+
+    await withMutedConsole(async () => {
+      const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
+      await initRandomJudokaPage();
+    });
+
+    const button = document.getElementById("draw-card-btn");
+    expect(button.disabled).toBe(true);
+    expect(button.getAttribute("aria-disabled")).toBe("true");
+    const errorEl = document.getElementById("draw-error-message");
+    expect(errorEl?.textContent).toMatch(/Unable to load judoka data/);
+  });
+
+  it("disables draw button when preload resolves to invalid value", async () => {
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+
+    // preload resolves to a non-object value
+    mocks.preloadRandomCardData.mockResolvedValue("invalid");
 
     const { section } = createRandomCardDom();
     document.body.append(section);

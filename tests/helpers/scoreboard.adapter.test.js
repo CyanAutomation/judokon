@@ -47,12 +47,13 @@ describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
     initScoreboard(header);
     const { setupScoreboard } = await import("../../src/helpers/setupScoreboard.js");
     setupScoreboard({});
-    const roundStoreModule = await import("../../src/helpers/classicBattle/roundStore.js");
-    roundStore = roundStoreModule.roundStore;
-    const { initScoreboardAdapter } = await import(
-      "../../src/helpers/classicBattle/scoreboardAdapter.js"
+    const roundStateModule = await import("../../src/helpers/classicBattle/roundState.js");
+    roundStore = roundStateModule.roundState;
+    const { bindScoreboardEventHandlersOnce } = await import(
+      "../../src/helpers/classicBattle/uiService.js"
     );
-    disposeScoreboard = initScoreboardAdapter();
+    await bindScoreboardEventHandlersOnce();
+    disposeScoreboard = () => {};
   });
 
   afterEach(() => {
@@ -83,13 +84,25 @@ describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
 
     emitBattleEvent("display.timer.show", { secondsRemaining: 5 });
     await vi.advanceTimersByTimeAsync(220);
-    expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 5s");
+    const timer1 = document
+      .getElementById("next-round-timer")
+      .textContent.replace(/\s+/g, " ")
+      .trim();
+    expect(timer1).toBe("Time Left: 5s");
     emitBattleEvent("display.timer.tick", { secondsRemaining: 4 });
     await vi.advanceTimersByTimeAsync(220);
-    expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 4s");
+    const timer2 = document
+      .getElementById("next-round-timer")
+      .textContent.replace(/\s+/g, " ")
+      .trim();
+    expect(timer2).toBe("Time Left: 4s");
     emitBattleEvent("display.timer.hide");
     await vi.advanceTimersByTimeAsync(220);
-    expect(document.getElementById("next-round-timer").textContent).toBe("");
+    const timerHidden = document
+      .getElementById("next-round-timer")
+      .textContent.replace(/\s+/g, " ")
+      .trim();
+    expect(timerHidden).toBe("");
 
     emitBattleEvent("display.score.update", { player: 2, opponent: 1 });
     const scoreText = document

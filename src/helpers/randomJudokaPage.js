@@ -69,8 +69,8 @@ export async function initFeatureFlagState() {
   let settings;
   try {
     settings = await initFeatureFlags();
-  } catch (err) {
-    console.error("Error loading settings:", err);
+  } catch (_err) {
+    console.error("Error loading settings:", _err);
     settings = {
       sound: true,
       motionEffects: hasMatchMedia
@@ -380,6 +380,14 @@ async function displayCard({
     }
 
     // Transition to DRAWING state
+    // Debug: trace draw state changes during tests
+    /* istanbul ignore next: debug logging for failing test investigations */
+    try {
+      console.debug?.("displayCard: transitioning to DRAWING", {
+        current: stateMachine.currentState,
+        disabled: drawButton?.disabled
+      });
+    } catch {}
     stateMachine.transition("DRAWING");
     announceCard("Drawing card…");
     const errorEl = document.getElementById("draw-error-message");
@@ -395,6 +403,7 @@ async function displayCard({
     }
 
     let announcedJudoka;
+    let cardEl = null;
     try {
       announcedJudoka = await generateRandomCard(
         cachedJudokaData,
@@ -404,9 +413,16 @@ async function displayCard({
         onSelect,
         { enableInspector: isEnabled("enableCardInspector") }
       );
+
+      // Validate that card element was actually created in the DOM
+      cardEl = cardContainer.querySelector(".card-container");
+      if (!cardEl) {
+        throw new Error("Card element not found after generation");
+      }
+
       stateMachine.transition("SUCCESS");
-    } catch (err) {
-      console.error("Error generating card:", err);
+    } catch (_err) {
+      console.error("Error generating card:", _err);
       const fallbackJudoka = await getFallbackJudoka();
       announcedJudoka = fallbackJudoka;
       if (typeof onSelect === "function") {
@@ -422,6 +438,7 @@ async function displayCard({
       );
       showSnackbar("Unable to draw a new card. Showing a fallback.");
       stateMachine.transition("ERROR");
+      cardEl = null;
     }
 
     // Announce the card to screen readers
@@ -430,20 +447,9 @@ async function displayCard({
     }
 
     // Handle animation and button re-enabling
-    const cardEl = cardContainer.querySelector(".card-container");
-
     if (prefersReducedMotion || stateMachine.currentState === "ERROR") {
-      // No animation: transition back to IDLE immediately
+      // No animation or error state: transition back to IDLE immediately
       stateMachine.transition("IDLE");
-      settle();
-    } else if (!cardEl) {
-      // Card element not found: transition to IDLE with fallback timer
-      stateMachine.transition("IDLE");
-      globalThis.requestAnimationFrame?.(() => {
-        if (drawButton.disabled) {
-          stateMachine.transition("IDLE");
-        }
-      });
       settle();
     } else {
       // Animation exists: wait for animationend or timeout before returning to IDLE
@@ -496,7 +502,28 @@ export async function setupRandomJudokaPage() {
     cardContainer.appendChild(placeholderTemplate.content.cloneNode(true));
   }
 
-  const { judokaData, gokyoData, error: preloadError } = await preloadRandomCardData();
+  // Preload data with robust error handling. If the preload rejects,
+  // or resolves to a non-object value, treat as an error and ensure
+  // `judokaData`, `gokyoData`, and `preloadError` are set accordingly.
+  let judokaData = null;
+  let gokyoData = null;
+  let preloadError = null;
+  try {
+    const result = await preloadRandomCardData();
+    if (result && typeof result === "object") {
+      judokaData = result.judokaData ?? null;
+      gokyoData = result.gokyoData ?? null;
+      preloadError = result.error ?? null;
+    } else {
+      preloadError = new Error("preloadRandomCardData returned invalid value");
+      // Log for diagnostics but don't throw so page can render a graceful error
+      console.error("preloadRandomCardData returned invalid value:", result);
+    }
+  } catch (_err) {
+    preloadError = _err || new Error("Unknown error preloading data");
+    judokaData = null;
+    gokyoData = null;
+  }
   const dataLoaded = !preloadError;
   const historyManager = createHistoryManager();
   const { historyPanel, historyList, toggleHistoryBtn } =

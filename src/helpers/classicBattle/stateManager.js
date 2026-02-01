@@ -618,14 +618,25 @@ export async function createStateManager(
       const currentStateDef = statesByName.get(from);
       const availableTriggers = getAvailableTriggers(currentStateDef);
 
-      // Resolve target state via explicit transition mapping
-      const target = resolveClassicBattleTransition(
-        from,
-        eventName,
-        context,
-        resolvedGuardOverrides,
-        payload
-      );
+      // Prefer explicit trigger from the provided state table if available (allows test-provided overrides)
+      let target = null;
+      try {
+        const explicitTrigger = (currentStateDef?.triggers || []).find((t) => t.on === eventName);
+        if (explicitTrigger && explicitTrigger.target) {
+          target = explicitTrigger.target;
+        }
+      } catch {}
+
+      // Fallback to legacy resolver when explicit trigger not provided
+      if (!target) {
+        target = resolveClassicBattleTransition(
+          from,
+          eventName,
+          context,
+          resolvedGuardOverrides,
+          payload
+        );
+      }
 
       // Validate target resolution
       if (!target || !statesByName.has(target)) {

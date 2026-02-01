@@ -31,7 +31,8 @@ describe("randomJudokaPage history panel", () => {
       generateRandomCard,
       loadGokyoLookup,
       renderJudokaCard,
-      preloadRandomCardData
+      preloadRandomCardData,
+      createHistoryManager: vi.fn(() => ({ add: vi.fn(), get: vi.fn(() => []) }))
     }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
@@ -93,12 +94,16 @@ describe("randomJudokaPage history panel", () => {
       .fn()
       .mockResolvedValue({ judokaData: [], gokyoData: [], error: null });
 
-    vi.doMock("../../src/helpers/randomCard.js", () => ({
-      generateRandomCard,
-      loadGokyoLookup,
-      renderJudokaCard,
-      preloadRandomCardData
-    }));
+    vi.doMock("../../src/helpers/randomCard.js", async () => {
+      const actual = await vi.importActual("../../src/helpers/randomCard.js");
+      return {
+        generateRandomCard,
+        loadGokyoLookup,
+        renderJudokaCard,
+        preloadRandomCardData,
+        createHistoryManager: actual.createHistoryManager
+      };
+    });
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
       fetchJson
@@ -154,7 +159,8 @@ describe("randomJudokaPage history panel", () => {
       generateRandomCard,
       loadGokyoLookup,
       renderJudokaCard,
-      preloadRandomCardData
+      preloadRandomCardData,
+      createHistoryManager: vi.fn(() => ({ add: vi.fn(), get: vi.fn(() => []) }))
     }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
@@ -200,7 +206,8 @@ describe("randomJudokaPage history panel", () => {
       generateRandomCard,
       loadGokyoLookup,
       renderJudokaCard,
-      preloadRandomCardData
+      preloadRandomCardData,
+      createHistoryManager: vi.fn(() => ({ add: vi.fn(), get: vi.fn(() => []) }))
     }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),

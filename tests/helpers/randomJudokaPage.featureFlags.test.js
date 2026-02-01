@@ -222,7 +222,8 @@ describe("randomJudokaPage feature flags", () => {
       generateRandomCard,
       loadGokyoLookup,
       renderJudokaCard,
-      preloadRandomCardData
+      preloadRandomCardData,
+      createHistoryManager: vi.fn(() => ({ add: vi.fn(), get: vi.fn(() => []) }))
     }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
@@ -300,7 +301,8 @@ describe("randomJudokaPage feature flags", () => {
       generateRandomCard,
       loadGokyoLookup,
       renderJudokaCard,
-      preloadRandomCardData
+      preloadRandomCardData,
+      createHistoryManager: vi.fn(() => ({ add: vi.fn(), get: vi.fn(() => []) }))
     }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),

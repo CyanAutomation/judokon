@@ -57,7 +57,11 @@ function updateTimerElement(container, valueText, { labelText = "Time Left:" } =
       labelSpan.textContent = valueText ? labelText : "";
     }
     valueSpan.textContent = valueText;
-    ensureLabelValueSpacing(container, labelSpan, valueSpan);
+    ensureLabelValueSpacing(
+      container,
+      labelSpan || container.querySelector('[data-part="label"]'),
+      valueSpan
+    );
   } else {
     container.textContent = valueText ? `${labelText} ${valueText}` : "";
   }
