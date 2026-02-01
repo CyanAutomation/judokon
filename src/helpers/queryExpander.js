@@ -166,30 +166,28 @@ async function loadSynonyms() {
  */
 function matchesAnyToken(term, termComparison, tokens, tokenComparisons, maxDistance) {
   const minFuzzyLength = maxDistance + 2;
-  return tokens.some(
-    (token, index) => {
-      if (term.length < minFuzzyLength || token.length < minFuzzyLength) {
-        return false;
-      }
-
-      if (
-        Math.abs(term.length - token.length) <= maxDistance &&
-        levenshteinDistance(term, token, maxDistance) <= maxDistance
-      ) {
-        return true;
-      }
-
-      const tokenComparison = tokenComparisons[index];
-      if (!termComparison || !tokenComparison) {
-        return false;
-      }
-
-      return (
-        Math.abs(termComparison.length - tokenComparison.length) <= maxDistance &&
-        levenshteinDistance(termComparison, tokenComparison, maxDistance) <= maxDistance
-      );
+  return tokens.some((token, index) => {
+    if (term.length < minFuzzyLength || token.length < minFuzzyLength) {
+      return false;
     }
-  );
+
+    if (
+      Math.abs(term.length - token.length) <= maxDistance &&
+      levenshteinDistance(term, token, maxDistance) <= maxDistance
+    ) {
+      return true;
+    }
+
+    const tokenComparison = tokenComparisons[index];
+    if (!termComparison || !tokenComparison) {
+      return false;
+    }
+
+    return (
+      Math.abs(termComparison.length - tokenComparison.length) <= maxDistance &&
+      levenshteinDistance(termComparison, tokenComparison, maxDistance) <= maxDistance
+    );
+  });
 }
 
 /**
@@ -281,9 +279,7 @@ function findSynonymMatches(query, synonymMap) {
 
   for (const [key, synonyms] of Object.entries(synonymMap)) {
     const variants = Array.isArray(synonyms) ? synonyms : [];
-    const allTerms = [key, ...variants]
-      .map((term) => normalizeQuery(term))
-      .filter(Boolean);
+    const allTerms = [key, ...variants].map((term) => normalizeQuery(term)).filter(Boolean);
 
     const isMatched = allTerms.some((term) =>
       isSynonymMatch(

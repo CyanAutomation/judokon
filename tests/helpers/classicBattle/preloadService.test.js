@@ -60,9 +60,7 @@ describe("Classic Battle Preload Registry", () => {
       const loader = getClassicBattleModuleLoader("battleEngine");
 
       expect(typeof loader).toBe("function");
-      expect(getClassicBattleModuleSource("battleEngine")).toContain(
-        "BattleEngine"
-      );
+      expect(getClassicBattleModuleSource("battleEngine")).toContain("BattleEngine");
     });
   });
 });
