@@ -428,16 +428,13 @@ describe("classicBattle startCooldown", () => {
     const readyResolutionSpy = vi.fn();
     currentNextRound.ready.then(readyResolutionSpy);
 
-    console.log("[AGENT_DEBUG] About to advance timers by 1000ms");
-    console.log("[AGENT_DEBUG] vi.getTimerCount():", vi.getTimerCount());
+    process.stderr.write(`[AGENT_DEBUG] About to advance timers by 1000ms\n`);
+    process.stderr.write(`[AGENT_DEBUG] vi.getTimerCount(): ${vi.getTimerCount()}\n`);
 
     await vi.advanceTimersByTimeAsync(1000);
 
-    console.log("[AGENT_DEBUG] After advancing timers");
-    console.log("[AGENT_DEBUG] vi.getTimerCount():", vi.getTimerCount());
-
-    await currentNextRound.ready;
-
+    process.stderr.write(`[AGENT_DEBUG] After advancing timers\n`);
+    process.stderr.write(`[AGENT_DEBUG] vi.getTimerCount(): ${vi.getTimerCount()}\n`);
     expect(readyResolutionSpy).toHaveBeenCalledTimes(1);
     expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
 
