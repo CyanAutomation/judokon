@@ -14,7 +14,58 @@ import * as debugHooks from "../../../src/helpers/classicBattle/debugHooks.js";
 import { eventDispatcherMock } from "./mocks/eventDispatcher.js";
 
 vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
-  attachCooldownRenderer: vi.fn()
+  attachCooldownRenderer: vi.fn((timer, initialRemaining, options = {}) => {
+    // Mock implementation that sets up the countdown sequence
+    // This allows tests to verify the countdown behavior
+    if (!timer) return () => {};
+
+    // Track expiration handler
+    let expiredHandler = null;
+    const expiredHandlers = [];
+
+    // Override timer.on to capture handlers
+    const originalOn = timer.on.bind(timer);
+    timer.on = vi.fn((eventName, handler) => {
+      if (eventName === "expired") {
+        expiredHandler = handler;
+        expiredHandlers.push(handler);
+      }
+      return originalOn(eventName, handler);
+    });
+
+    // When timer starts in test mode, schedule the expiration callback
+    const originalStart = timer.start.bind(timer);
+    timer.start = vi.fn((duration) => {
+      // Call original start
+      originalStart(duration);
+
+      // In test mode with fake timers, schedule the expiration after duration
+      if (typeof vi !== "undefined" && typeof globalThis.setTimeout === "function") {
+        try {
+          globalThis.setTimeout(() => {
+            if (typeof expiredHandler === "function") {
+              expiredHandler();
+            }
+          }, duration * 1000);
+        } catch (e) {
+          // ignore
+        }
+      }
+    });
+
+    // Return cleanup function
+    return () => {
+      if (timer.off) {
+        expiredHandlers.forEach((handler) => {
+          try {
+            timer.off("expired", handler);
+          } catch {
+            // ignore
+          }
+        });
+      }
+    };
+  })
 }));
 
 vi.mock("../../../src/config/constants.js", () => ({
@@ -478,6 +529,10 @@ describe("classicBattle startCooldown", () => {
     const uiService = await import("../../../src/helpers/classicBattle/uiService.js");
     uiService.bindUIServiceEventHandlersOnce();
 
+    // Bind timer service handlers to handle countdownStart events
+    const timerService = await import("../../../src/helpers/classicBattle/timerService.js");
+    timerService.bindCountdownEventHandlersOnce();
+
     const { attachCooldownRenderer } = await import("../../../src/helpers/CooldownRenderer.js");
     attachCooldownRenderer.mockClear();
 
@@ -511,6 +566,10 @@ describe("classicBattle startCooldown", () => {
     const emitSpy = vi.spyOn(battleEventsMod, "emitBattleEvent");
     const uiService = await import("../../../src/helpers/classicBattle/uiService.js");
     uiService.bindUIServiceEventHandlersOnce();
+
+    // Bind timer service handlers to handle countdownStart events
+    const timerService = await import("../../../src/helpers/classicBattle/timerService.js");
+    timerService.bindCountdownEventHandlersOnce();
 
     const onFinished = vi.fn();
     await battleEventsMod.emitBattleEvent("countdownStart", { duration: 2, onFinished });
