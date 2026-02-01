@@ -383,7 +383,10 @@ async function displayCard({
     // Debug: trace draw state changes during tests
     /* istanbul ignore next: debug logging for failing test investigations */
     try {
-      console.debug?.("displayCard: transitioning to DRAWING", { current: stateMachine.currentState, disabled: drawButton?.disabled });
+      console.debug?.("displayCard: transitioning to DRAWING", {
+        current: stateMachine.currentState,
+        disabled: drawButton?.disabled
+      });
     } catch {}
     stateMachine.transition("DRAWING");
     announceCard("Drawing card…");
@@ -411,12 +414,19 @@ async function displayCard({
       );
       /* istanbul ignore next: debug logging for failing test investigations */
       try {
-        console.debug?.("displayCard: generateRandomCard completed", { announcedJudoka, current: stateMachine.currentState, disabled: drawButton?.disabled });
+        console.debug?.("displayCard: generateRandomCard completed", {
+          announcedJudoka,
+          current: stateMachine.currentState,
+          disabled: drawButton?.disabled
+        });
       } catch {}
       stateMachine.transition("SUCCESS");
       /* istanbul ignore next: debug logging for failing test investigations */
       try {
-        console.debug?.("displayCard: after SUCCESS transition", { current: stateMachine.currentState, disabled: drawButton?.disabled });
+        console.debug?.("displayCard: after SUCCESS transition", {
+          current: stateMachine.currentState,
+          disabled: drawButton?.disabled
+        });
       } catch {}
     } catch (err) {
       console.error("Error generating card:", err);
@@ -452,11 +462,17 @@ async function displayCard({
     } else if (!cardEl) {
       // Card element not found: transition to IDLE with fallback timer
       try {
-        console.debug?.("displayCard: card element missing, transitioning to IDLE", { current: stateMachine.currentState, disabled: drawButton?.disabled });
+        console.debug?.("displayCard: card element missing, transitioning to IDLE", {
+          current: stateMachine.currentState,
+          disabled: drawButton?.disabled
+        });
       } catch {}
       stateMachine.transition("IDLE");
       try {
-        console.debug?.("displayCard: after IDLE transition", { current: stateMachine.currentState, disabled: drawButton?.disabled });
+        console.debug?.("displayCard: after IDLE transition", {
+          current: stateMachine.currentState,
+          disabled: drawButton?.disabled
+        });
       } catch {}
 
       // Ensure button is re-enabled synchronously in the missing-markup case to avoid
@@ -480,7 +496,9 @@ async function displayCard({
       globalThis.requestAnimationFrame?.(() => {
         if (drawButton.disabled) {
           try {
-            console.debug?.("displayCard: RAF found drawButton still disabled, reapplying IDLE", { disabled: drawButton?.disabled });
+            console.debug?.("displayCard: RAF found drawButton still disabled, reapplying IDLE", {
+              disabled: drawButton?.disabled
+            });
           } catch {}
           stateMachine.transition("IDLE");
         }
