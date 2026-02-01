@@ -58,6 +58,92 @@ The canonical state machine for Classic Battle (starter):
 - `roundResolved` — results displayed, scoreboard updated
 - `matchEnded` — match completion and cleanup
 
+#### Canonical State Machine Diagram
+
+The state diagram below visualizes the complete state machine including all 13 states, timeout-triggered transitions, feature-flag guarded branches (auto-select decision), and interrupt recovery paths. This is the authoritative reference for state names, valid transitions, and timeout semantics.
+
+```mermaid
+stateDiagram-v2
+  [*] --> waitingForMatchStart
+
+  waitingForMatchStart --> matchStart: startClicked
+  waitingForMatchStart --> interruptMatch: interrupt
+
+  matchStart --> cooldown: ready
+  matchStart --> interruptMatch: interrupt
+
+  cooldown --> roundStart: ready (after 3s)
+  cooldown --> interruptRound: interrupt
+
+  roundStart --> waitingForPlayerAction: cardsRevealed
+  roundStart --> interruptRound: interrupt
+
+  waitingForPlayerAction --> waitingForOpponentDecision: statSelected
+  waitingForPlayerAction --> waitingForOpponentDecision: timeout [autoSelectEnabled]
+  waitingForPlayerAction --> interruptRound: timeout [!autoSelectEnabled]
+  waitingForPlayerAction --> interruptRound: interrupt
+
+  note right of waitingForPlayerAction
+    30s selection timer
+    Stall detection @ 5s:
+    • Show "Still choosing..."
+    • Then 800ms → countdown
+    • Then 250ms → auto-select
+  end note
+
+  waitingForOpponentDecision --> roundDecision: opponentDecisionReady
+  waitingForOpponentDecision --> interruptRound: interrupt
+
+  roundDecision --> roundOver: outcome resolved
+  roundDecision --> interruptRound: interrupt
+
+  roundOver --> cooldown: continue
+  roundOver --> matchDecision: matchPointReached
+  roundOver --> interruptRound: interrupt
+
+  matchDecision --> matchOver: finalize
+  matchDecision --> interruptMatch: interrupt
+
+  matchOver --> waitingForMatchStart: rematch | home
+  matchOver --> [*]
+
+  interruptRound --> roundModification: [FF_ROUND_MODIFY]
+  interruptRound --> cooldown: restartRound
+  interruptRound --> waitingForMatchStart: resumeLobby
+  interruptRound --> matchOver: abortMatch
+
+  roundModification --> roundDecision: modifyRoundDecision
+  roundModification --> interruptRound: cancelModification
+
+  interruptMatch --> matchStart: restartMatch
+  interruptMatch --> waitingForMatchStart: toLobby
+```
+
+**Key state machine properties:**
+
+- **Initial state:** `waitingForMatchStart` (P0)
+- **Final state:** `matchOver` (type: final)
+- **Match phases:** Setup (`waitingForMatchStart` → `matchStart` → `cooldown`) → Round Loop (repeats `roundStart` → `waitingForPlayerAction` → `roundDecision` → `roundOver`) → Resolution (`matchDecision` → `matchOver`)
+- **Interrupt states:** `interruptRound`, `roundModification` (admin-only), `interruptMatch`
+
+**Critical timeout transitions:**
+
+- **Cooldown (3s):** `cooldown` → `roundStart` on timer expiry; configurable via settings
+- **Selection (30s):** `waitingForPlayerAction` → `waitingForOpponentDecision` [if `autoSelectEnabled`] OR `interruptRound` [if `!autoSelectEnabled`]; triggers stall detection sub-timers (5s → 800ms → 250ms)
+
+**Guard conditions:**
+
+- `[autoSelectEnabled]` — Auto-select strategy controls 30s timeout branch (highest stat vs. random)
+- `[!autoSelectEnabled]` — Treat timeout as interrupt, move to admin review
+- `[FF_ROUND_MODIFY]` — Feature flag gates admin round modification branch (admin/test context only)
+
+**Rematch loop:** `matchOver` → `waitingForMatchStart` (label: "rematch | home") allows match repetition without returning to lobby
+
+**Interrupt recovery:** All three interrupt states have explicit exit paths:
+- `interruptRound` → `cooldown` (resume), `waitingForMatchStart` (to lobby), or `matchOver` (abort)
+- `interruptMatch` → `matchStart` (restart) or `waitingForMatchStart` (to lobby)
+- `roundModification` → `roundDecision` (apply) or `interruptRound` (cancel)
+
 ## Transitions (machine-readable table)
 
 ```json
