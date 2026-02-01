@@ -14,6 +14,55 @@ function createScoreMarkup(player, opponent) {
     `</span>`
   );
 }
+
+function ensureLabelValueSpacing(container, labelSpan, valueSpan) {
+  if (!container || !labelSpan || !valueSpan) return;
+  const doc = container.ownerDocument || (typeof document !== "undefined" ? document : null);
+  if (!doc) return;
+  const labelText = String(labelSpan.textContent || "").trim();
+  const valueText = String(valueSpan.textContent || "").trim();
+  const separator = labelSpan.nextSibling;
+  if (!labelText || !valueText) {
+    if (separator && separator.nodeType === 3) {
+      container.removeChild(separator);
+    }
+    return;
+  }
+  const needsSpace = !separator || separator.nodeType !== 3;
+  if (needsSpace) {
+    container.insertBefore(doc.createTextNode(" "), valueSpan);
+  } else if (!/\s/.test(separator.textContent || "")) {
+    separator.textContent = " ";
+  }
+}
+
+function updateTimerElement(container, valueText, { labelText = "Time Left:" } = {}) {
+  if (!container) return;
+  const labelSpan = container.querySelector('[data-part="label"]');
+  const valueSpan = container.querySelector('[data-part="value"]');
+  if (valueSpan) {
+    if (!labelSpan && labelText) {
+      try {
+        const doc = container.ownerDocument || (typeof document !== "undefined" ? document : null);
+        if (doc?.createElement) {
+          const createdLabel = doc.createElement("span");
+          createdLabel.dataset.part = "label";
+          createdLabel.textContent = labelText;
+          container.insertBefore(createdLabel, container.firstChild);
+          ensureLabelValueSpacing(container, createdLabel, valueSpan);
+          return;
+        }
+      } catch {}
+    }
+    if (labelSpan) {
+      labelSpan.textContent = valueText ? labelText : "";
+    }
+    valueSpan.textContent = valueText;
+    ensureLabelValueSpacing(container, labelSpan || container.querySelector('[data-part="label"]'), valueSpan);
+  } else {
+    container.textContent = valueText ? `${labelText} ${valueText}` : "";
+  }
+}
 export class ScoreboardView {
   constructor(model, { rootEl, messageEl, timerEl, roundCounterEl, scoreEl } = {}) {
     this.model = model;
@@ -91,7 +140,7 @@ export class ScoreboardView {
    *
    * @pseudocode
    * 1. Render `Time Left: {seconds}s` or clear when null.
-   * 2. Rebuild innerHTML to avoid whitespace artifacts.
+   * 2. Maintain label/value spacing without rebuilding markup.
    * 3. Return void.
    * @param {number|string} seconds - Seconds remaining.
    */
@@ -100,15 +149,13 @@ export class ScoreboardView {
 
     if (typeof seconds === "number" && Number.isFinite(seconds)) {
       const clamped = Math.max(0, seconds);
-      // Set data-remaining-time attribute for test API
       this.timerEl.setAttribute("data-remaining-time", String(clamped));
-      // Always rebuild to avoid whitespace artifacts from original HTML
-      this.timerEl.innerHTML = `<span data-part="label">Time Left:</span> <span data-part="value">${clamped}s</span>`;
-    } else {
-      // Clear the display
-      this.timerEl.removeAttribute("data-remaining-time");
-      this.timerEl.innerHTML = "";
+      updateTimerElement(this.timerEl, `${clamped}s`);
+      return;
     }
+
+    this.timerEl.removeAttribute("data-remaining-time");
+    updateTimerElement(this.timerEl, "");
   }
 
   /**

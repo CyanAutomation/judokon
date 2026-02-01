@@ -15,17 +15,6 @@ import { attachCooldownRenderer } from "../CooldownRenderer.js";
 const timerLogger = createComponentLogger("TimerService");
 
 import { realScheduler } from "../scheduler.js";
-/**
- * @summary Re-export shared fallback timer scheduling helper.
- *
- * @pseudocode
- * 1. Forward `setupFallbackTimer` from the dedicated helper module.
- * 2. Preserve existing timerService imports for callers relying on the re-export.
- *
- * @returns {typeof import("./setupFallbackTimer.js").setupFallbackTimer}
- * Reference to the fallback timer helper.
- */
-export { setupFallbackTimer } from "./setupFallbackTimer.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
 import {
@@ -42,21 +31,6 @@ import {
 import { guard } from "./guard.js";
 import { safeGetSnapshot, isNextReady, resetReadiness } from "./timerUtils.js";
 import { forceAutoSelectAndDispatch } from "./autoSelectHandlers.js";
-
-/**
- * Accessor for the active Next-round cooldown controls.
- *
- * This is a re-export of `getNextRoundControls` from `roundManager.js`.
- * It returns the current `timer` control object and a `resolveReady` function
- * used to advance the round when the cooldown completes or when manually
- * advanced by the Next button.
- *
- * @pseudocode
- * 1. Forward call to `roundManager.getNextRoundControls()` and return its value.
- *
- * @returns {{timer: {stop: () => void} | null, resolveReady: (() => void) | null}}
- */
-export { getNextRoundControls } from "./roundManager.js";
 
 // Track timeout for cooldown warning to avoid duplicates.
 let cooldownWarningTimeoutId = null;
@@ -301,55 +275,6 @@ function readEngineNextRound() {
   } catch (error) {
     timerLogger.debug("[round] failed to read getRoundsPlayed", error);
     return null;
-  }
-}
-
-function ensureLabelValueSpacing(container, labelSpan, valueSpan) {
-  if (!container || !labelSpan || !valueSpan) return;
-  const doc = container.ownerDocument || (typeof document !== "undefined" ? document : null);
-  if (!doc) return;
-  const labelText = String(labelSpan.textContent || "").trim();
-  const valueText = String(valueSpan.textContent || "").trim();
-  const separator = labelSpan.nextSibling;
-  if (!labelText || !valueText) {
-    if (separator && separator.nodeType === 3) {
-      container.removeChild(separator);
-    }
-    return;
-  }
-  const needsSpace = !separator || separator.nodeType !== 3;
-  if (needsSpace) {
-    container.insertBefore(doc.createTextNode(" "), valueSpan);
-  } else if (!/\s/.test(separator.textContent || "")) {
-    separator.textContent = " ";
-  }
-}
-
-function updateTimerElement(container, valueText, { labelText = "Time Left:" } = {}) {
-  if (!container) return;
-  const labelSpan = container.querySelector('[data-part="label"]');
-  const valueSpan = container.querySelector('[data-part="value"]');
-  if (valueSpan) {
-    if (!labelSpan && labelText) {
-      try {
-        const doc = container.ownerDocument || (typeof document !== "undefined" ? document : null);
-        if (doc?.createElement) {
-          const createdLabel = doc.createElement("span");
-          createdLabel.dataset.part = "label";
-          createdLabel.textContent = labelText;
-          container.insertBefore(createdLabel, container.firstChild);
-          ensureLabelValueSpacing(container, createdLabel, valueSpan);
-          return updateTimerElement(container, valueText, { labelText });
-        }
-      } catch {}
-    }
-    if (labelSpan) {
-      labelSpan.textContent = valueText ? labelText : "";
-    }
-    valueSpan.textContent = valueText;
-    ensureLabelValueSpacing(container, container.querySelector('[data-part="label"]'), valueSpan);
-  } else {
-    container.textContent = valueText ? `${labelText} ${valueText}` : "";
   }
 }
 
@@ -880,8 +805,8 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
   }
 }
 
-// `getNextRoundControls` is re-exported from `roundManager.js` and returns
-// the active controls for the Next-round cooldown (timer, resolveReady, ready).
+// `getNextRoundControls` comes from `roundManager.js` and returns the active
+// controls for the Next-round cooldown (timer, resolveReady, ready).
 
 /**
  * Resolve the round timer duration and provide a restore callback for temporary UI.
@@ -957,7 +882,6 @@ export async function resolveRoundTimerDuration({ showTemporaryMessage } = score
  * @summary Ensure the UI shows the starting timer value immediately.
  * @pseudocode
  * 1. If the duration is finite, update the scoreboard timer.
- * 2. Update the DOM element `#next-round-timer` when present.
  */
 export function primeTimerDisplay({
   duration,
@@ -970,16 +894,7 @@ export function primeTimerDisplay({
     scoreboardApi?.updateTimer?.(duration);
   } catch {}
 
-  if (!root) return;
-
-  try {
-    const el = root.getElementById
-      ? root.getElementById("next-round-timer")
-      : root.querySelector("#next-round-timer");
-    if (el) {
-      updateTimerElement(el, `${duration}s`);
-    }
-  } catch {}
+  void root;
 }
 
 /**
@@ -1021,21 +936,6 @@ export function configureTimerCallbacks(
     try {
       scoreboardApi?.updateTimer?.(remaining);
     } catch {}
-    if (documentRef) {
-      try {
-        const el = documentRef.getElementById
-          ? documentRef.getElementById("next-round-timer")
-          : documentRef.querySelector("#next-round-timer");
-        if (el) {
-          if (typeof remaining === "number") {
-            const clamped = Math.max(0, Number.isFinite(remaining) ? remaining : 0);
-            updateTimerElement(el, `${clamped}s`);
-          } else {
-            updateTimerElement(el, "");
-          }
-        }
-      } catch {}
-    }
   };
 
   try {
