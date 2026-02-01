@@ -69,8 +69,8 @@ export async function initFeatureFlagState() {
   let settings;
   try {
     settings = await initFeatureFlags();
-  } catch (err) {
-    console.error("Error loading settings:", err);
+  } catch (_err) {
+    console.error("Error loading settings:", _err);
     settings = {
       sound: true,
       motionEffects: hasMatchMedia
@@ -403,6 +403,7 @@ async function displayCard({
     }
 
     let announcedJudoka;
+    let cardEl = null;
     try {
       announcedJudoka = await generateRandomCard(
         cachedJudokaData,
@@ -412,24 +413,16 @@ async function displayCard({
         onSelect,
         { enableInspector: isEnabled("enableCardInspector") }
       );
-      /* istanbul ignore next: debug logging for failing test investigations */
-      try {
-        console.debug?.("displayCard: generateRandomCard completed", {
-          announcedJudoka,
-          current: stateMachine.currentState,
-          disabled: drawButton?.disabled
-        });
-      } catch {}
+
+      // Validate that card element was actually created in the DOM
+      cardEl = cardContainer.querySelector(".card-container");
+      if (!cardEl) {
+        throw new Error("Card element not found after generation");
+      }
+
       stateMachine.transition("SUCCESS");
-      /* istanbul ignore next: debug logging for failing test investigations */
-      try {
-        console.debug?.("displayCard: after SUCCESS transition", {
-          current: stateMachine.currentState,
-          disabled: drawButton?.disabled
-        });
-      } catch {}
-    } catch (err) {
-      console.error("Error generating card:", err);
+    } catch (_err) {
+      console.error("Error generating card:", _err);
       const fallbackJudoka = await getFallbackJudoka();
       announcedJudoka = fallbackJudoka;
       if (typeof onSelect === "function") {
@@ -445,6 +438,7 @@ async function displayCard({
       );
       showSnackbar("Unable to draw a new card. Showing a fallback.");
       stateMachine.transition("ERROR");
+      cardEl = null;
     }
 
     // Announce the card to screen readers
@@ -453,13 +447,11 @@ async function displayCard({
     }
 
     // Handle animation and button re-enabling
-    const cardEl = cardContainer.querySelector(".card-container");
-
     if (prefersReducedMotion || stateMachine.currentState === "ERROR") {
-      // No animation: transition back to IDLE immediately
+      // No animation or error state: transition back to IDLE immediately
       stateMachine.transition("IDLE");
       settle();
-    } else if (!cardEl) {
+    } else if (cardEl) {
       // Card element not found: transition to IDLE with fallback timer
       try {
         console.debug?.("displayCard: card element missing, transitioning to IDLE", {
@@ -572,8 +564,8 @@ export async function setupRandomJudokaPage() {
       // Log for diagnostics but don't throw so page can render a graceful error
       console.error("preloadRandomCardData returned invalid value:", result);
     }
-  } catch (err) {
-    preloadError = err || new Error("Unknown error preloading data");
+  } catch (_err) {
+    preloadError = _err || new Error("Unknown error preloading data");
     judokaData = null;
     gokyoData = null;
   }
