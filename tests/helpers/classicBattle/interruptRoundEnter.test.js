@@ -60,6 +60,7 @@ async function dispatchEvents(sequence) {
 async function advanceToPlayerActionState() {
   await dispatchEvents(["startClicked"]);
   await dispatchEvents(["ready"]);
+  await dispatchEvents(["ready"]);
   await dispatchEvents(["cardsRevealed"]);
 }
 

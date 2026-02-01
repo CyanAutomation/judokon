@@ -1,12 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { useCanonicalTimers } from "../../../setup/fakeTimers.js";
-// Enable fake timers before any scheduler/timer modules load.
-useCanonicalTimers();
-
-// NOW import commonMocks which contains scheduler mock
-// The scheduler mock uses globalThis.setInterval which fake timers will intercept
+// Fake timers are now enabled globally in tests/setup.js
+// This ensures vi.mock() factories in commonMocks.js capture the faked timer functions
 import "./commonMocks.js";
-
 import { setupClassicBattleDom } from "./utils.js";
 import { createTimerNodes } from "./domUtils.js";
 import { applyMockSetup } from "./mockSetup.js";

@@ -1,3 +1,18 @@
+// CRITICAL: Enable fake timers BEFORE any imports that might register mocks
+// This ensures vi.mock() factory functions capture the faked timer functions
+import { vi } from "vitest";
+vi.useFakeTimers({
+  toFake: [
+    "setTimeout",
+    "clearTimeout",
+    "setInterval",
+    "clearInterval",
+    "Date",
+    "performance"
+  ]
+});
+
+// Now continue with normal setup
 if (typeof CustomEvent === "undefined") {
   global.CustomEvent = class CustomEvent extends Event {
     constructor(type, eventInitDict) {
