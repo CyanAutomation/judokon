@@ -10,17 +10,20 @@ This skill treats Mermaid diagrams as structured reasoning artefacts, not decora
 ## Inputs / Outputs / Non-goals
 
 **Inputs:**
+
 - PRD sections (problem statement, goals, non-goals)
 - Feature specs or workflows
 - Data models or state transitions
 - Architectural constraints or assumptions
 
 **Outputs:**
+
 - Mermaid diagrams embedded in PRDs
 - Diagrams aligned with PRD semantics and terminology
 - Optional beautiful-mermaid annotations or layout hints
 
 **Non-goals:**
+
 - Purely aesthetic diagrams
 - Diagrams that duplicate prose without adding structure
 - Overly detailed UML-style modelling unless explicitly requested
