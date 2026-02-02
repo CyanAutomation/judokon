@@ -32,15 +32,15 @@ const SELECTION_IN_FLIGHT_GUARD = Symbol.for("classicBattle.selectionInFlight");
 const ROUND_RESOLUTION_GUARD = Symbol.for("classicBattle.roundResolutionGuard");
 const LAST_ROUND_RESULT = Symbol.for("classicBattle.lastResolvedRoundResult");
 
-export const VALID_BATTLE_STATES = ["waitingForPlayerAction", "roundDecision"];
+export const VALID_BATTLE_STATES = ["roundSelect", "roundResolve"];
 const FALLBACK_BUFFER_MS = 32;
 const INVALID_STATE_WARNING = (state) => `Ignored stat selection while in state=${state}`;
 
 // Battle state constants for easier maintenance
 const BATTLE_STATES = {
-  WAITING_FOR_ACTION: "waitingForPlayerAction",
-  ROUND_DECISION: "roundDecision",
-  ROUND_OVER: "roundOver"
+  ROUND_SELECT: "roundSelect",
+  ROUND_RESOLVE: "roundResolve",
+  ROUND_DISPLAY: "roundDisplay"
 };
 
 /**
@@ -803,7 +803,7 @@ export async function dispatchStatSelected(store, stat, playerVal, opponentVal, 
 /**
  * Handle the fallback timeout when orchestrator doesn't resolve the round.
  *
- * Sets battle state to roundDecision, syncs result display, then transitions to roundOver.
+ * Sets battle state to roundResolve, syncs result display, then transitions to roundDisplay.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} currentState - Current battle state.
@@ -833,13 +833,13 @@ async function handleFallbackResolution(
     previousState = getCurrentBattleState() ?? null;
   }
 
-  // Transition to roundDecision
-  setBattleStateDataset(BATTLE_STATES.ROUND_DECISION, previousState);
+  // Transition to roundResolve
+  setBattleStateDataset(BATTLE_STATES.ROUND_RESOLVE, previousState);
 
   try {
     emitBattleEvent("battleStateChange", {
       from: previousState ?? null,
-      to: BATTLE_STATES.ROUND_DECISION
+      to: BATTLE_STATES.ROUND_RESOLVE
     });
   } catch {}
 
@@ -865,13 +865,13 @@ async function handleFallbackResolution(
     } catch {}
   }
 
-  // Transition to roundOver
-  setBattleStateDataset(BATTLE_STATES.ROUND_OVER, BATTLE_STATES.ROUND_DECISION);
+  // Transition to roundDisplay
+  setBattleStateDataset(BATTLE_STATES.ROUND_DISPLAY, BATTLE_STATES.ROUND_RESOLVE);
 
   try {
     emitBattleEvent("battleStateChange", {
-      from: BATTLE_STATES.ROUND_DECISION,
-      to: BATTLE_STATES.ROUND_OVER
+      from: BATTLE_STATES.ROUND_RESOLVE,
+      to: BATTLE_STATES.ROUND_DISPLAY
     });
   } catch {}
 }
@@ -883,7 +883,7 @@ async function handleFallbackResolution(
  * 1. Detect whether the orchestrator is active via DOM dataset markers.
  * 2. When active but not handling the event, install a deterministic fallback timer.
  * 3. Bail out early if the orchestrator already handled resolution.
- * 4. Skip direct resolution when the battle state machine is not in `roundDecision`.
+ * 4. Skip direct resolution when the battle state machine is not in `roundResolve`.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
@@ -963,7 +963,7 @@ export async function resolveWithFallback(
     }
 
     if (orchestrated) {
-      if (currentState && currentState !== BATTLE_STATES.ROUND_DECISION) {
+      if (currentState && currentState !== BATTLE_STATES.ROUND_RESOLVE) {
         logSelectionDebug(
           "[test] handleStatSelection: machine in non-decision state",
           currentState

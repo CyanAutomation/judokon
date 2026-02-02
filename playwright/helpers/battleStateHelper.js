@@ -11,20 +11,20 @@ const BATTLE_CLI_RESET_BINDING = "__onBattleCliReset";
  * Use these to handle fast transitions and feature flags like skipRoundCooldown.
  */
 export const STATE_SEQUENCES = {
-  /** States after round resolution: cooldown → roundStart → waitingForPlayerAction */
-  POST_ROUND: ["cooldown", "roundStart", "waitingForPlayerAction"],
-  /** States after stat selection: roundDecision → roundOver → cooldown */
-  POST_SELECTION: ["roundDecision", "roundOver", "cooldown"],
-  /** States for round start cycle: roundStart → waitingForPlayerAction */
-  ROUND_CYCLE: ["roundStart", "waitingForPlayerAction"],
+  /** States after round resolution: roundWait → roundPrompt → roundSelect */
+  POST_ROUND: ["roundWait", "roundPrompt", "roundSelect"],
+  /** States after stat selection: roundResolve → roundDisplay → roundWait */
+  POST_SELECTION: ["roundResolve", "roundDisplay", "roundWait"],
+  /** States for round start cycle: roundPrompt → roundSelect */
+  ROUND_CYCLE: ["roundPrompt", "roundSelect"],
   /** All valid battle states in flow order */
   ALL_STATES: [
     "matchStart",
-    "roundStart",
-    "waitingForPlayerAction",
-    "roundDecision",
-    "roundOver",
-    "cooldown",
+    "roundPrompt",
+    "roundSelect",
+    "roundResolve",
+    "roundDisplay",
+    "roundWait",
     "matchComplete"
   ]
 };
@@ -475,7 +475,7 @@ export async function waitForBattleState(page, expectedStates, options = {}) {
  * @example
  * // Wait for any valid post-round state
  * const state = await waitForStateSequence(page, STATE_SEQUENCES.POST_ROUND);
- * // state will be "cooldown", "roundStart", or "waitingForPlayerAction"
+ * // state will be "roundWait", "roundPrompt", or "roundSelect"
  */
 export async function waitForStateSequence(page, stateSequence, options = {}) {
   return await waitForBattleState(page, stateSequence, options);
@@ -852,14 +852,14 @@ export async function getCurrentBattleState(page) {
     return mirroredState ?? null;
 
     function resolveWaitingForPlayerAction(state) {
-      if (state === "waitingForPlayerAction") {
+      if (state === "roundSelect") {
         try {
           const selectionMade =
             window.__TEST_API?.inspect?.getBattleStore?.()?.selectionMade ??
             window.__TEST_API?.inspect?.getDebugInfo?.()?.store?.selectionMade ??
             null;
           if (selectionMade === true) {
-            return "roundOver";
+            return "roundDisplay";
           }
         } catch {
           // Ignore inspection errors because store access may throw before initialization.

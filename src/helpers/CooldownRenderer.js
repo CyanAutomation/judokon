@@ -201,7 +201,7 @@ function computeRemainingPromptDelayMs(nowFn) {
   return 0;
 }
 
-const SUPPRESSED_BATTLE_STATES = new Set(["waitingForPlayerAction", "roundDecision"]);
+const SUPPRESSED_BATTLE_STATES = new Set(["roundSelect", "roundResolve"]);
 
 function isSelectionOrDecisionPhase() {
   try {
@@ -719,8 +719,8 @@ function createTickProcessors(rendererState) {
     const text = t("ui.nextRoundIn", { seconds: clamped });
 
     // Suppress cooldown snackbar during critical UX moments to prevent message conflicts:
-    // 1. During stat selection phase (waitingForPlayerAction) - user is actively choosing
-    // 2. During round decision phase (roundDecision) - round outcome is being displayed
+    // 1. During stat selection phase (roundSelect) - user is actively choosing
+    // 2. During round resolve phase (roundResolve) - round outcome is being displayed
     // 3. During opponent prompt window (first 600ms) - opponent message has priority
     // This ensures users see contextually appropriate messages without UI flicker.
     const shouldSuppressSnackbar =

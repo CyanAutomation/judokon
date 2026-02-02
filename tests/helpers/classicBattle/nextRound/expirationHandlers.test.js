@@ -55,7 +55,7 @@ describe("createExpirationTelemetryEmitter", () => {
 describe("createMachineReader", () => {
   it("prefers override getter and reports telemetry", () => {
     const emit = vi.fn();
-    const machine = { state: "cooldown" };
+    const machine = { state: "roundWait" };
     const reader = createMachineReader(
       { getClassicBattleMachine: () => machine },
       { emitTelemetry: emit }
@@ -66,7 +66,7 @@ describe("createMachineReader", () => {
 
   it("falls back to debug state getter", () => {
     const emit = vi.fn();
-    const getter = vi.fn(() => ({ state: "roundOver" }));
+    const getter = vi.fn(() => ({ state: "roundDisplay" }));
     const reader = createMachineReader(
       {},
       {
@@ -74,28 +74,28 @@ describe("createMachineReader", () => {
         readDebugState: vi.fn(() => getter)
       }
     );
-    expect(reader()).toEqual({ state: "roundOver" });
+    expect(reader()).toEqual({ state: "roundDisplay" });
     expect(getter).toHaveBeenCalled();
-    expect(emit).toHaveBeenCalledWith("handleNextRoundMachineGetterResult", { state: "roundOver" });
+    expect(emit).toHaveBeenCalledWith("handleNextRoundMachineGetterResult", { state: "roundDisplay" });
   });
 });
 
 describe("createMachineStateInspector", () => {
   it("resolves immediately when machine already cooled down", async () => {
     const emit = vi.fn();
-    const machineReader = () => ({ getState: () => "cooldown" });
+    const machineReader = () => ({ getState: () => "roundWait" });
     const inspector = createMachineStateInspector({
       machineReader,
       getSnapshot: () => ({ state: "intro" }),
       getMachineState: (machine) => machine?.getState?.() ?? null,
-      isCooldownState: (state) => state === "cooldown",
+      isCooldownState: (state) => state === "roundWait",
       emitTelemetry: emit
     });
     await inspector.waitForCooldown({
       on: vi.fn(),
       off: vi.fn()
     });
-    expect(emit).toHaveBeenCalledWith("handleNextRoundMachineStateAfterWait", "cooldown");
+    expect(emit).toHaveBeenCalledWith("handleNextRoundMachineStateAfterWait", "roundWait");
   });
 
   it("waits for bus notification when not yet ready", async () => {
@@ -107,7 +107,7 @@ describe("createMachineStateInspector", () => {
       machineReader,
       getSnapshot: () => ({ state }),
       getMachineState: (machine) => machine?.getState?.() ?? null,
-      isCooldownState: (value) => value === "cooldown",
+      isCooldownState: (value) => value === "roundWait",
       emitTelemetry: emit
     });
     const bus = {
@@ -119,11 +119,11 @@ describe("createMachineStateInspector", () => {
       })
     };
     const waitPromise = inspector.waitForCooldown(bus);
-    state = "cooldown";
+    state = "roundWait";
     handlers.forEach((handler) => handler());
     await waitPromise;
     expect(bus.off).toHaveBeenCalled();
-    expect(emit).toHaveBeenCalledWith("handleNextRoundMachineStateAfterWait", "cooldown");
+    expect(emit).toHaveBeenCalledWith("handleNextRoundMachineStateAfterWait", "roundWait");
   });
 
   it("records telemetry when machine read fails", () => {

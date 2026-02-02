@@ -68,7 +68,7 @@ describe("fallback readiness flag discipline", () => {
     const controls = startCooldown({}, scheduler, {
       dispatchBattleEvent: vi.fn(() => false),
       useGlobalReadyFallback: true,
-      getClassicBattleMachine: () => ({ state: { value: "cooldown" } }),
+      getClassicBattleMachine: () => ({ state: { value: "roundWait" } }),
       isOrchestrated: () => true
     });
 

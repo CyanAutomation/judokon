@@ -33,7 +33,7 @@
  *
  * @example
  * // Single expected state
- * const executed = withStateGuard(machine, "cooldown", () => {
+ * const executed = withStateGuard(machine, "roundWait", () => {
  *   updateRoundState();
  * });
  *
@@ -41,12 +41,12 @@
  * // Multiple valid states
  * const executed = withStateGuard(
  *   machine,
- *   ["cooldown", "roundStart"],
+ *   ["roundWait", "roundPrompt"],
  *   () => {
  *     updateRoundState();
  *   },
  *   {
- *     debugContext: "cooldownEnter",
+ *     debugContext: "roundWaitEnter",
  *     onInvalidState: (currentState) => {
  *       console.warn(`Unexpected state: ${currentState}`);
  *     }
@@ -132,7 +132,7 @@ export function withStateGuard(machine, expectedStates, callback, options = {}) 
  * 6. If invalid: call onInvalidState handler if provided, return false
  *
  * @example
- * const executed = await withStateGuardAsync(machine, "roundDecision", async () => {
+ * const executed = await withStateGuardAsync(machine, "roundResolve", async () => {
  *   await resolveRound();
  * });
  */

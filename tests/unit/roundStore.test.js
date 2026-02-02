@@ -34,21 +34,21 @@ describe("RoundStore", () => {
     it("should update round state and emit events", async () => {
       const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
 
-      roundStore.setRoundState("cooldown", "test");
+      roundStore.setRoundState("roundWait", "test");
 
       const round = roundStore.getCurrentRound();
-      expect(round.state).toBe("cooldown");
+      expect(round.state).toBe("roundWait");
 
       expect(emitBattleEvent).toHaveBeenCalledWith("roundStateChanged", {
         from: "waitingForMatchStart",
-        to: "cooldown",
+        to: "roundWait",
         event: "test"
       });
     });
 
-    it("should set startTime when entering roundStart state", () => {
+    it("should set startTime when entering roundPrompt state", () => {
       const beforeTime = Date.now();
-      roundStore.setRoundState("roundStart");
+      roundStore.setRoundState("roundPrompt");
       const afterTime = Date.now();
 
       const round = roundStore.getCurrentRound();
@@ -57,13 +57,13 @@ describe("RoundStore", () => {
     });
 
     it("should not update state if same value", async () => {
-      roundStore.setRoundState("cooldown");
+      roundStore.setRoundState("roundWait");
       const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
 
       // Reset mock to clear previous calls
       emitBattleEvent.mockClear();
 
-      roundStore.setRoundState("cooldown");
+      roundStore.setRoundState("roundWait");
 
       expect(emitBattleEvent).not.toHaveBeenCalled();
     });
@@ -154,9 +154,9 @@ describe("RoundStore", () => {
       const callback = vi.fn();
       roundStore.onRoundStateChange(callback);
 
-      roundStore.setRoundState("roundStart");
+      roundStore.setRoundState("roundPrompt");
 
-      expect(callback).toHaveBeenCalledWith("roundStart", "waitingForMatchStart");
+      expect(callback).toHaveBeenCalledWith("roundPrompt", "waitingForMatchStart");
     });
 
     it("should call round number change callback", () => {
@@ -190,14 +190,14 @@ describe("RoundStore", () => {
   describe("state snapshot", () => {
     it("should provide debug snapshot", () => {
       roundStore.setRoundNumber(3);
-      roundStore.setRoundState("cooldown");
+      roundStore.setRoundState("roundWait");
       roundStore.setSelectedStat("agility");
       roundStore.markReadyDispatched();
 
       const snapshot = roundStore.getStateSnapshot();
 
       expect(snapshot.currentRound.number).toBe(3);
-      expect(snapshot.currentRound.state).toBe("cooldown");
+      expect(snapshot.currentRound.state).toBe("roundWait");
       expect(snapshot.currentRound.selectedStat).toBe("agility");
       expect(snapshot.readyDispatched).toBe(true);
       expect(snapshot.transitionLog).toHaveLength(1); // state change only (round number doesn't log transitions)
@@ -206,13 +206,13 @@ describe("RoundStore", () => {
 
   describe("transition logging", () => {
     it("should log state transitions", () => {
-      roundStore.setRoundState("cooldown", "test-event");
+      roundStore.setRoundState("roundWait", "test-event");
 
       const snapshot = roundStore.getStateSnapshot();
       expect(snapshot.transitionLog).toHaveLength(1);
       expect(snapshot.transitionLog[0]).toEqual({
         from: "waitingForMatchStart",
-        to: "cooldown",
+        to: "roundWait",
         event: "test-event",
         ts: expect.any(Number)
       });

@@ -148,10 +148,10 @@ describe("timeout → interruptRound → minimal auto-advance", () => {
 
       const recentTransitions = transitions.slice(transitionCheckpoint);
       expect(recentTransitions).toEqual([
-        expect.objectContaining({ from: "cooldown", to: "roundStart", event: "ready" }),
+        expect.objectContaining({ from: "roundWait", to: "roundPrompt", event: "ready" }),
         expect.objectContaining({
-          from: "roundStart",
-          to: "waitingForPlayerAction",
+          from: "roundPrompt",
+          to: "roundSelect",
           event: "cardsRevealed"
         })
       ]);

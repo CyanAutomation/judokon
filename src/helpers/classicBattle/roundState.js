@@ -73,7 +73,7 @@ export const roundState = {
 
     roundState.currentRound.state = state;
     roundState.currentRound.startTime =
-      state === "roundStart" ? Date.now() : roundState.currentRound.startTime;
+      state === "roundPrompt" ? Date.now() : roundState.currentRound.startTime;
 
     roundState.transitionLog.push({
       from: oldState,

@@ -31,7 +31,7 @@ const isVerboseEnabled = async (page) =>
 
 async function startMatch(page) {
   await page.keyboard.press("Enter");
-  await waitForBattleState(page, "waitingForPlayerAction", { timeout: 7_000 });
+  await waitForBattleState(page, "roundSelect", { timeout: 7_000 });
 }
 
 test.describe("Battle CLI verbose toggle", () => {
@@ -89,11 +89,11 @@ test.describe("Battle CLI verbose toggle", () => {
       await verboseToggle.check();
       await startMatch(page);
 
-      await expect(verboseLog).toContainText("waitingForPlayerAction", { timeout: 7_000 });
+      await expect(verboseLog).toContainText("roundSelect", { timeout: 7_000 });
 
       const logText = await verboseLog.textContent();
-      expect(logText).toMatch(/\[\d{2}:\d{2}:\d{2}\] .*-> waitingForPlayerAction/);
-      expect(logText).toMatch(/roundStart -> waitingForPlayerAction/);
+      expect(logText).toMatch(/\[\d{2}:\d{2}:\d{2}\] .*-> roundSelect/);
+      expect(logText).toMatch(/roundPrompt -> roundSelect/);
     } finally {
       await app.cleanup();
     }

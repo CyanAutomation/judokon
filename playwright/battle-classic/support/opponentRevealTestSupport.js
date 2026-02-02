@@ -22,9 +22,9 @@ const TIMEOUTS = {
 
 // Battle state constants
 const STATE_CONSTANTS = {
-  ROUND_OVER: "roundOver",
-  WAITING_FOR_PLAYER_ACTION: "waitingForPlayerAction",
-  COOLDOWN: "cooldown",
+  ROUND_OVER: "roundDisplay",
+  WAITING_FOR_PLAYER_ACTION: "roundSelect",
+  COOLDOWN: "roundWait",
   MATCH_DECISION: "matchDecision",
   MATCH_OVER: "matchOver"
 };
@@ -418,7 +418,7 @@ async function manuallySyncBattleState(
       const attempts = [];
 
       const eventCandidates = [];
-      if (targetState === "roundOver") {
+      if (targetState === "roundDisplay") {
         // Use actual state machine outcome events instead of "roundResolved" battle event
         // The roundResolved event is emitted AFTER state transitions, not as a trigger
         eventCandidates.push("outcome=winPlayer", "outcome=winOpponent", "outcome=draw");
@@ -582,7 +582,7 @@ async function manuallySyncBattleState(
  * - call roundResolver.resolveRound to execute full resolution pipeline
  * - this properly evaluates round, updates scores, increments roundsPlayed, emits events
  * - inspect latest battle state and determine if manual sync is required
- * - when needed, force DOM + state API alignment to "roundOver" and verify sync
+ * - when needed, force DOM + state API alignment to "roundDisplay" and verify sync
  *
  * @param {import('@playwright/test').Page} page
  * @param {() => Promise<boolean>} hasResolved
@@ -824,7 +824,7 @@ async function readBattleStateDiagnostics(page) {
  * Confirm that the round has resolved by inspecting current state transitions.
  * @pseudocode
  * POLL the battle state and debug snapshot via the Test API.
- * DETECT resolution when the state is "roundOver", when "cooldown" immediately follows, or when match-end states follow "roundOver".
+ * DETECT resolution when the state is "roundDisplay", when "roundWait" immediately follows, or when match-end states follow "roundDisplay".
  * THROW with diagnostic details if neither condition is observed before the timeout.
  * @param {import('@playwright/test').Page} page - Playwright page object
  * @param {{ timeout?: number, message?: string }} [options] - Polling configuration
@@ -833,7 +833,7 @@ async function readBattleStateDiagnostics(page) {
 export async function confirmRoundResolved(page, options = {}) {
   const {
     timeout = TIMEOUTS.ROUND_RESOLUTION_VERIFY,
-    message = 'Expected battle state to reach "roundOver" (or progress into cooldown/match end) after deterministic resolution'
+    message = 'Expected battle state to reach "roundDisplay" (or progress into cooldown/match end) after deterministic resolution'
   } = options;
 
   await expect
@@ -885,7 +885,7 @@ export async function confirmRoundResolved(page, options = {}) {
 /**
  * Ensures a round is resolved by attempting multiple resolution strategies.
  * @pseudocode
- * - If forceResolve is false, first attempt to wait for roundOver state naturally
+ * - If forceResolve is false, first attempt to wait for roundDisplay state naturally
  * - If natural resolution fails or forceResolve is true, execute deterministic resolution
  * - Call resolveRoundDeterministic to try CLI resolution and fallback strategies
  * - Verify resolution succeeded using confirmRoundResolved with timeout
@@ -906,7 +906,7 @@ export async function ensureRoundResolved(page, options = {}) {
 
   if (!forceResolve) {
     try {
-      await waitForBattleState(page, "roundOver", {
+      await waitForBattleState(page, "roundDisplay", {
         timeout: deadline
       });
       return;
@@ -960,7 +960,7 @@ export async function initializeBattle(page, config = {}) {
         window.__OPPONENT_RESOLVE_DELAY_MS = delay;
       }
       window.__FF_OVERRIDES = { showRoundSelectModal: true, ...flags };
-      // Disable autoContinue for deterministic roundOver state observation
+      // Disable autoContinue for deterministic roundDisplay state observation
       window.__AUTO_CONTINUE = false;
     },
     {

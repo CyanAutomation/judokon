@@ -104,7 +104,7 @@ describe("handleStatSelection resolution", () => {
         store.playerChoice = null;
       }
     });
-    getBattleState.mockReturnValue("roundDecision");
+    getBattleState.mockReturnValue("roundResolve");
     const result = await handleStatSelection(store, "power", {
       playerVal: 1,
       opponentVal: 2

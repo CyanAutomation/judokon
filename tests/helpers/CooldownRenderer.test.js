@@ -461,8 +461,8 @@ describe("attachCooldownRenderer", () => {
       mockGetOpponentPromptMinDuration.mockReturnValue(1000);
     });
 
-    it("suppresses snackbar during waitingForPlayerAction state", () => {
-      document.body.dataset.battleState = "waitingForPlayerAction";
+    it("suppresses snackbar during roundSelect state", () => {
+      document.body.dataset.battleState = "roundSelect";
 
       const detach = attachCooldownRenderer(timer, 5);
 
@@ -475,8 +475,8 @@ describe("attachCooldownRenderer", () => {
       detach();
     });
 
-    it("suppresses snackbar during roundDecision state", () => {
-      document.body.dataset.battleState = "roundDecision";
+    it("suppresses snackbar during roundResolve state", () => {
+      document.body.dataset.battleState = "roundResolve";
 
       const detach = attachCooldownRenderer(timer, 5);
 
@@ -490,7 +490,7 @@ describe("attachCooldownRenderer", () => {
     });
 
     it("shows snackbar during cooldown state", () => {
-      document.body.dataset.battleState = "cooldown";
+      document.body.dataset.battleState = "roundWait";
 
       const detach = attachCooldownRenderer(timer, 5);
 
@@ -508,8 +508,8 @@ describe("attachCooldownRenderer", () => {
       detach();
     });
 
-    it("shows snackbar during roundOver state", () => {
-      document.body.dataset.battleState = "roundOver";
+    it("shows snackbar during roundDisplay state", () => {
+      document.body.dataset.battleState = "roundDisplay";
 
       const detach = attachCooldownRenderer(timer, 5);
 
@@ -528,7 +528,7 @@ describe("attachCooldownRenderer", () => {
     });
 
     it("suppresses snackbar when opponent prompt is active", () => {
-      document.body.dataset.battleState = "cooldown";
+      document.body.dataset.battleState = "roundWait";
 
       // Set up active opponent prompt (within min duration window)
       // Use performance.now() timing to match implementation
@@ -550,7 +550,7 @@ describe("attachCooldownRenderer", () => {
     });
 
     it("shows snackbar after opponent prompt window expires", () => {
-      document.body.dataset.battleState = "cooldown";
+      document.body.dataset.battleState = "roundWait";
 
       // Set up expired opponent prompt (past min duration window)
       const currentTime = performance.now();
@@ -576,7 +576,7 @@ describe("attachCooldownRenderer", () => {
     });
 
     it("continues to update scoreboard timer even when snackbar is suppressed", () => {
-      document.body.dataset.battleState = "roundDecision";
+      document.body.dataset.battleState = "roundResolve";
 
       attachCooldownRenderer(timer);
 
@@ -598,7 +598,7 @@ describe("attachCooldownRenderer", () => {
 
     it("shows snackbar when battle state transitions from suppressed to allowed", () => {
       // Start in suppressed state
-      document.body.dataset.battleState = "roundDecision";
+      document.body.dataset.battleState = "roundResolve";
 
       attachCooldownRenderer(timer);
       mockGetOpponentPromptTimestamp.mockReturnValue(100);
@@ -608,7 +608,7 @@ describe("attachCooldownRenderer", () => {
       expect(scoreboard.updateTimer).toHaveBeenCalledWith(5);
 
       // Transition to allowed state
-      document.body.dataset.battleState = "cooldown";
+      document.body.dataset.battleState = "roundWait";
 
       timer.emit("tick", 4);
 

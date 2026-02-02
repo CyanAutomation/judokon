@@ -12,7 +12,7 @@ describe("dispatchBattleEvent dedupe", () => {
     timers = useCanonicalTimers();
     machine = {
       dispatch: vi.fn(async () => "dispatched"),
-      getState: vi.fn(() => "cooldown")
+      getState: vi.fn(() => "roundWait")
     };
     globalThis.__classicBattleDebugRead = (token) => {
       if (token === "getClassicBattleMachine") {

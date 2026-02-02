@@ -12,7 +12,7 @@ vi.mock("../../../src/helpers/BattleEngine.js", () => ({
 
 async function setup() {
   const mod = await import("../../../src/helpers/classicBattle/roundResolver.js");
-  vi.spyOn(mod, "ensureRoundDecisionState").mockResolvedValue();
+  vi.spyOn(mod, "ensureRoundResolveState").mockResolvedValue();
   vi.spyOn(mod, "finalizeRoundResult").mockResolvedValue({});
   return { mod };
 }

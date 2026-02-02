@@ -26,7 +26,7 @@ describe("Next button cooldown fallback", () => {
     );
     cleanupTasks.push(() => battleEvents.__resetBattleEventTarget());
 
-    battleEvents.emitBattleEvent("battleStateChange", { from: null, to: "cooldown", event: null });
+    battleEvents.emitBattleEvent("battleStateChange", { from: null, to: "roundWait", event: null });
   });
 
   afterEach(() => {
@@ -64,7 +64,7 @@ describe("Next button cooldown fallback", () => {
     );
     const { safeGetSnapshot } = await import("../../../src/helpers/classicBattle/timerUtils.js");
 
-    expect(safeGetSnapshot().state).toBe("cooldown");
+    expect(safeGetSnapshot().state).toBe("roundWait");
 
     const resolveReady = vi.fn();
     const dispatchSpy = vi
@@ -74,8 +74,8 @@ describe("Next button cooldown fallback", () => {
           const button = document.getElementById("next-button");
           markNextReady(button);
           battleEvents.emitBattleEvent("battleStateChange", {
-            from: "cooldown",
-            to: "roundStart",
+            from: "roundWait",
+            to: "roundPrompt",
             event: "ready",
             payload
           });
@@ -92,8 +92,8 @@ describe("Next button cooldown fallback", () => {
     expect(dispatchSpy).toHaveBeenCalledWith("ready");
 
     const lastTransition = store.transitions.at(-1);
-    expect(lastTransition).toMatchObject({ from: "cooldown", to: "roundStart" });
-    expect(document.body.dataset?.battleState).toBe("roundStart");
-    expect(safeGetSnapshot().state).toBe("roundStart");
+    expect(lastTransition).toMatchObject({ from: "roundWait", to: "roundPrompt" });
+    expect(document.body.dataset?.battleState).toBe("roundPrompt");
+    expect(safeGetSnapshot().state).toBe("roundPrompt");
   });
 });

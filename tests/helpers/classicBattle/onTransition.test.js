@@ -42,7 +42,7 @@ vi.mock("../../../src/helpers/classicBattle/stateManager.js", () => ({
     // State transition map: event -> next state
     const transitionMap = {
       startClicked: "matchStart",
-      ready: "cooldown",
+      ready: "roundWait",
       restartMatch: "waitingForMatchStart"
     };
 

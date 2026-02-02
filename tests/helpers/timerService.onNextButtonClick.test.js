@@ -49,7 +49,7 @@ describe("onNextButtonClick", () => {
     await runWithFakeTimers(async () => {
       const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
       btn.dataset.nextReady = "true";
-      __setStateSnapshot({ state: "cooldown" });
+      __setStateSnapshot({ state: "roundWait" });
       resolveReady = vi.fn();
       await onNextButtonClick(
         new MouseEvent("click"),
@@ -76,7 +76,7 @@ describe("onNextButtonClick", () => {
     await runWithFakeTimers(async () => {
       const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
       stop = vi.fn();
-      __setStateSnapshot({ state: "roundDecision" });
+      __setStateSnapshot({ state: "roundResolve" });
       await onNextButtonClick(
         new MouseEvent("click"),
         { timer: { stop }, resolveReady: null },
@@ -98,7 +98,7 @@ describe("onNextButtonClick", () => {
     let resolveReady2;
     await runWithFakeTimers(async () => {
       const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
-      __setStateSnapshot({ state: "cooldown" });
+      __setStateSnapshot({ state: "roundWait" });
       resolveReady2 = vi.fn();
       await onNextButtonClick(
         new MouseEvent("click"),
@@ -128,7 +128,7 @@ describe("onNextButtonClick", () => {
       });
       const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
       btn.dataset.nextReady = "true";
-      __setStateSnapshot({ state: "cooldown" });
+      __setStateSnapshot({ state: "roundWait" });
       resolveReady = vi.fn();
       await onNextButtonClick(
         new MouseEvent("click"),
@@ -164,7 +164,7 @@ describe("onNextButtonClick", () => {
         .mockImplementation(() => Promise.resolve(true));
 
       btn.dataset.nextReady = "true";
-      __setStateSnapshot({ state: "cooldown" });
+      __setStateSnapshot({ state: "roundWait" });
 
       const firstCall = mod.onNextButtonClick(new MouseEvent("click"), {
         timer: null,

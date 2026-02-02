@@ -38,7 +38,7 @@ describe("battleCLI start control", () => {
     initClassicBattleOrchestrator.mockResolvedValue();
     dispatchBattleEvent.mockImplementation(async (evt) => {
       if (evt === "startClicked") {
-        emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
+        emitBattleEvent("battleStateChange", { to: "roundSelect" });
       }
       return true;
     });
@@ -65,7 +65,7 @@ describe("battleCLI start control", () => {
     await stateChange;
     expect(dispatchBattleEvent).toHaveBeenCalledWith("startClicked");
     expect(emitBattleEvent).toHaveBeenCalledWith("battleStateChange", {
-      to: "waitingForPlayerAction"
+      to: "roundSelect"
     });
   });
 });

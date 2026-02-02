@@ -18,7 +18,7 @@ test.describe("Cooldown countdown display", () => {
     await page.getByRole("button", { name: "Medium" }).click();
 
     // Wait for stat buttons to be ready
-    await waitForBattleState(page, "waitingForPlayerAction");
+    await waitForBattleState(page, "roundSelect");
     const statButton = page
       .getByRole("button", { name: /power|speed|technique|kumikata|newaza/i })
       .first();
@@ -32,7 +32,7 @@ test.describe("Cooldown countdown display", () => {
     await expect(snackbar).toContainText(/You Picked|Opponent is choosing/i, { timeout: 2_500 });
 
     // Wait for any valid post-selection state (handles skipRoundCooldown flag)
-    await waitForBattleState(page, ["cooldown", "roundStart", "waitingForPlayerAction"]);
+    await waitForBattleState(page, ["roundWait", "roundPrompt", "roundSelect"]);
 
     // Verify the next-round-timer element shows the countdown
     // The cooldown renderer updates both the snackbar and the timer display
@@ -60,7 +60,7 @@ test.describe("Cooldown countdown display", () => {
     await expect(nextButton).toHaveAttribute("data-next-ready", "true", { timeout: 10_000 });
 
     await nextButton.click();
-    await waitForBattleState(page, "waitingForPlayerAction");
+    await waitForBattleState(page, "roundSelect");
 
     await expect(timer).toContainText(/Time Left:\s*\d+s/, { timeout: 5_000 });
     const selectionValue = await parseTimerValue();
@@ -84,7 +84,7 @@ test.describe("Cooldown countdown display", () => {
     await page.getByRole("button", { name: "Medium" }).click();
 
     // Wait for stat buttons to be ready
-    await waitForBattleState(page, "waitingForPlayerAction");
+    await waitForBattleState(page, "roundSelect");
     const statButton = page
       .getByRole("button", { name: /power|speed|technique|kumikata|newaza/i })
       .first();
@@ -93,8 +93,8 @@ test.describe("Cooldown countdown display", () => {
     // Click stat to trigger opponent selection phase
     await statButton.click();
 
-    // Wait briefly for roundDecision state
-    await waitForBattleState(page, "roundDecision");
+    // Wait briefly for roundResolve state
+    await waitForBattleState(page, "roundResolve");
 
     // Get snackbar element
     const snackbar = page.locator("#snackbar-container .snackbar-bottom");
@@ -114,7 +114,7 @@ test.describe("Cooldown countdown display", () => {
     const timer = page.getByTestId("next-round-timer");
 
     // Wait for any valid post-selection state (handles skipRoundCooldown flag)
-    await waitForBattleState(page, ["cooldown", "roundStart", "waitingForPlayerAction"]);
+    await waitForBattleState(page, ["roundWait", "roundPrompt", "roundSelect"]);
 
     // Now verify timer display is working (independently of snackbar)
     await expect(timer).toBeVisible();

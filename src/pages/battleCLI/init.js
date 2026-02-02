@@ -826,11 +826,11 @@ export async function triggerMatchStart() {
     const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     emitBattleEvent("battleStateChange", { to: "matchStart" });
     await wait(MANUAL_FALLBACK_DELAY_MS);
-    emitBattleEvent("battleStateChange", { to: "cooldown" });
+    emitBattleEvent("battleStateChange", { to: "roundWait" });
     await wait(MANUAL_FALLBACK_DELAY_MS);
-    emitBattleEvent("battleStateChange", { to: "roundStart" });
+    emitBattleEvent("battleStateChange", { to: "roundPrompt" });
     await wait(MANUAL_FALLBACK_DELAY_MS);
-    emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
+    emitBattleEvent("battleStateChange", { to: "roundSelect" });
   } catch (err) {
     console.debug("Failed to dispatch startClicked", err);
   }
@@ -1111,7 +1111,7 @@ function ensureModalContainer() {
 /**
  * Clear a timer pair and capture remaining time.
  *
- * @param {"selection"|"cooldown"} type Timer category to pause.
+ * @param {"selection"|"roundWait"} type Timer category to pause.
  * @returns {number|null} Remaining seconds, or null when no timers were active.
  *
  * @pseudocode
@@ -1164,7 +1164,7 @@ function pauseTimer(type) {
  * newSelection = pauseTimer("selection")
  * if newSelection is not null:
  *   pausedSelectionRemaining = newSelection
- * newCooldown = pauseTimer("cooldown")
+ * newCooldown = pauseTimer("roundWait")
  * if newCooldown is not null:
  *   pausedCooldownRemaining = newCooldown
  */
@@ -1172,7 +1172,7 @@ function pauseTimers() {
   console.log("[TIMER] pauseTimers called");
   const newSelection = pauseTimer("selection");
   if (newSelection !== null) pausedSelectionRemaining = newSelection;
-  const newCooldown = pauseTimer("cooldown");
+  const newCooldown = pauseTimer("roundWait");
   if (newCooldown !== null) pausedCooldownRemaining = newCooldown;
 }
 
@@ -1180,9 +1180,9 @@ function pauseTimers() {
  * Resume timers previously paused by `pauseTimers`.
  *
  * @pseudocode
- * if in waitingForPlayerAction and have selection remaining:
+ * if in roundSelect and have selection remaining:
  *   startSelectionCountdown(remaining)
- * if in cooldown and have cooldown remaining:
+ * if in roundWait and have cooldown remaining:
  *   show bottom line and start interval/timeout
  * reset stored remaining values
  */
@@ -1190,12 +1190,12 @@ function resumeTimers() {
   if (!hasDocument) return;
   console.log("[TIMER] resumeTimers called");
   if (
-    document.body?.dataset?.battleState === "waitingForPlayerAction" &&
+    document.body?.dataset?.battleState === "roundSelect" &&
     pausedSelectionRemaining
   ) {
     startSelectionCountdown(pausedSelectionRemaining);
   }
-  if (document.body?.dataset?.battleState === "cooldown" && pausedCooldownRemaining) {
+  if (document.body?.dataset?.battleState === "roundWait" && pausedCooldownRemaining) {
     let remaining = pausedCooldownRemaining;
     showBottomLine(`Next round in: ${remaining}`);
     try {
@@ -1897,7 +1897,7 @@ function handleStatClick(statDiv, event) {
   if (!idx) return;
   const doc = getSafeDocument();
   const state = doc?.body?.dataset?.battleState ?? "";
-  if (state !== "waitingForPlayerAction") return;
+  if (state !== "roundSelect") return;
   const stat = getStatByIndex(idx);
   if (!stat) return;
   selectStat(stat);
@@ -2625,8 +2625,8 @@ function advanceCooldown() {
 }
 
 const stateAdvanceHandlers = {
-  roundOver: advanceRoundOver,
-  cooldown: advanceCooldown
+  roundDisplay: advanceRoundOver,
+  roundWait: advanceCooldown
 };
 
 function onClickAdvance(event) {
@@ -2673,7 +2673,7 @@ function handleCountdownStart(e) {
     return;
   }
   const ds = typeof document !== "undefined" ? document.body?.dataset : undefined;
-  if (ds) ds.battleState = "cooldown";
+  if (ds) ds.battleState = "roundWait";
   // Ensure score line reflects the resolved round before any user interaction
   try {
     updateScoreLine();
@@ -2806,7 +2806,7 @@ function handleScoreboardClearMessage() {
 function syncControlsHintVisibility(state) {
   try {
     const hint = byId("cli-controls-hint");
-    controlsHintActive = state === "waitingForPlayerAction";
+    controlsHintActive = state === "roundSelect";
     if (hint) {
       hint.hidden = !controlsHintActive;
     }
@@ -2821,7 +2821,7 @@ function syncControlsHintVisibility(state) {
  * 1. Update state badge and remove transient Next button.
  * 2. Clear verbose log when match starts.
  * 3. Start or stop selection countdown depending on state.
- * 4. Reset roundResolving flag when entering waitingForPlayerAction.
+ * 4. Reset roundResolving flag when entering roundSelect.
  * 5. Show bottom line hint when waiting to continue.
  *
  * @param {string} battleState - New battle state.
@@ -2838,7 +2838,7 @@ function updateUiForState(battleState) {
   if (battleState === "matchStart") {
     clearVerboseLog();
   }
-  if (battleState === "waitingForPlayerAction") {
+  if (battleState === "roundSelect") {
     // Reset the CLI-specific state flags when entering player action state.
     // This ensures stat selection is allowed even if a previous round's handlers
     // haven't fully completed (edge case with fast state transitions in tests).
@@ -2849,7 +2849,7 @@ function updateUiForState(battleState) {
   } else {
     stopSelectionCountdown();
   }
-  if (battleState === "roundOver" && !getAutoContinue()) {
+  if (battleState === "roundDisplay" && !getAutoContinue()) {
     showBottomLine("Press Enter to continue");
   }
 }
@@ -2934,7 +2934,7 @@ function handleBattleState(ev) {
     } catch {}
   }
   updateUiForState(to);
-  if (to === "roundOver" && !getAutoContinue()) ensureNextRoundButton();
+  if (to === "roundDisplay" && !getAutoContinue()) ensureNextRoundButton();
   if (verboseEnabled) logStateChange(from, to);
 }
 
@@ -3267,9 +3267,9 @@ export function subscribeEngine() {
 function handleBattleStateChange({ from, to }) {
   const hint = byId("cli-controls-hint");
   if (!hint) return;
-  if (to === "waitingForPlayerAction") {
+  if (to === "roundSelect") {
     hint.hidden = false;
-  } else if (from === "waitingForPlayerAction") {
+  } else if (from === "roundSelect") {
     hint.hidden = true;
   }
 }
@@ -3414,7 +3414,7 @@ export async function init() {
             emitBattleEvent("roundResolved", {});
           }
 
-          const detail = { from: previousState, to: "roundOver", event: "roundResolved" };
+          const detail = { from: previousState, to: "roundDisplay", event: "roundResolved" };
           domStateListener({ detail });
           emitBattleEvent("battleStateChange", detail);
         },

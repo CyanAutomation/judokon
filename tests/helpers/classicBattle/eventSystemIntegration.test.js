@@ -61,14 +61,14 @@ describe("Event System Integration Validation", () => {
 
       onBattleEvent("battleStateChange", battleHandler);
       emitBattleEvent("battleStateChange", {
-        fromState: "roundStart",
-        toState: "roundOver"
+        fromState: "roundPrompt",
+        toState: "roundDisplay"
       });
 
       expect(battleHandler).toHaveBeenCalledTimes(1);
       expect(battleHandler.mock.calls[0][0].detail).toEqual({
-        fromState: "roundStart",
-        toState: "roundOver"
+        fromState: "roundPrompt",
+        toState: "roundDisplay"
       });
     });
 

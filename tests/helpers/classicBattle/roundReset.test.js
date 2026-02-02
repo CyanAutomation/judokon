@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { roundOverEnter } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
+import { roundDisplayEnter } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 import {
   __resetBattleEventTarget,
   emitBattleEvent
@@ -15,7 +15,7 @@ describe("classicBattle round reset", () => {
   it("clears player choice but preserves selection flags until next round", async () => {
     const store = { playerChoice: "power", selectionMade: true };
     const machine = { context: { store } };
-    await roundOverEnter(machine);
+    await roundDisplayEnter(machine);
     expect(store.playerChoice).toBeNull();
     expect(store.selectionMade).toBe(true);
   });
@@ -25,7 +25,7 @@ describe("classicBattle round reset", () => {
     const machine = { context: { store, waitForOutcomeConfirmation: true } };
 
     const completionSpy = vi.fn();
-    const promise = roundOverEnter(machine).then(completionSpy);
+    const promise = roundDisplayEnter(machine).then(completionSpy);
 
     // Immediate reset happens before awaiting confirmation.
     expect(store.playerChoice).toBeNull();

@@ -280,7 +280,7 @@ describe("cli.completeRound", () => {
     timerApi.expireSelectionTimer = expireSpy;
     timerApi.setOpponentResolveDelay = delaySpy;
     stateApi.dispatchBattleEvent = dispatchSpy;
-    stateApi.getBattleState = vi.fn(() => "cooldown");
+    stateApi.getBattleState = vi.fn(() => "roundWait");
     cliApi.resolveRound = resolveSpy;
 
     const result = await cliApi.completeRound(
@@ -295,7 +295,7 @@ describe("cli.completeRound", () => {
       result: { outcomeEvent: "roundWin" }
     });
     expect(result.outcomeEvent).toBe("roundWin");
-    expect(result.finalState).toBe("cooldown");
+    expect(result.finalState).toBe("roundWait");
     expect(result.outcomeDispatched).toBe(true);
   });
 
@@ -317,7 +317,7 @@ describe("cli.completeRound", () => {
     });
 
     stateApi.dispatchBattleEvent = dispatchSpy;
-    stateApi.getBattleState = vi.fn(() => "roundOver");
+    stateApi.getBattleState = vi.fn(() => "roundDisplay");
     cliApi.resolveRound = resolveSpy;
 
     const result = await cliApi.completeRound({ choice: "technique" }, { autoWaitTimeoutMs: 0 });
@@ -326,7 +326,7 @@ describe("cli.completeRound", () => {
       result: { outcomeEvent: "roundWin" }
     });
     expect(result.outcomeDispatched).toBe(false);
-    expect(result.finalState).toBe("roundOver");
+    expect(result.finalState).toBe("roundDisplay");
   });
 
   it("handles missing timer/dispatch APIs without throwing", async () => {
@@ -339,13 +339,13 @@ describe("cli.completeRound", () => {
     timerApi.expireSelectionTimer = undefined;
     timerApi.setOpponentResolveDelay = undefined;
     stateApi.dispatchBattleEvent = undefined;
-    stateApi.getBattleState = vi.fn(() => "cooldown");
+    stateApi.getBattleState = vi.fn(() => "roundWait");
     cliApi.resolveRound = resolveSpy;
 
     const result = await cliApi.completeRound({ choice: "speed" }, { autoWaitTimeoutMs: 0 });
 
     expect(result.outcomeEvent).toBe("roundWin");
     expect(result.outcomeDispatched).toBe(false);
-    expect(result.finalState).toBe("cooldown");
+    expect(result.finalState).toBe("roundWait");
   });
 });

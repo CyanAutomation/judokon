@@ -62,7 +62,7 @@ describe("Next button manual interactions", () => {
     const readyPromise = controls.ready;
 
     markNextReady(nextButton);
-    __setStateSnapshot({ state: "cooldown" });
+    __setStateSnapshot({ state: "roundWait" });
 
     nextButton.click();
     await readyPromise;

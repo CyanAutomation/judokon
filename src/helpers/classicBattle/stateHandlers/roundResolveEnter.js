@@ -4,7 +4,7 @@ import {
   awaitPlayerChoice,
   guardSelectionResolution,
   schedulePostResolveWatchdog
-} from "./roundDecisionHelpers.js";
+} from "./roundResolveHelpers.js";
 import { emitBattleEvent } from "../battleEvents.js";
 import { guard, guardAsync } from "../guard.js";
 import { handleRoundError } from "../handleRoundError.js";
@@ -12,10 +12,10 @@ import { debugLog } from "../debugLog.js";
 import { reportSentryError } from "./sentryReporter.js";
 import { createComponentLogger } from "../debugLogger.js";
 
-const stateLogger = createComponentLogger("RoundDecision");
+const stateLogger = createComponentLogger("RoundResolve");
 
 /**
- * onEnter handler for the `roundDecision` state.
+ * onEnter handler for the `roundResolve` state.
  *
  * Compares the selected stat and determines the round outcome.
  * Handles immediate resolution if selection exists, or waits for player choice.
@@ -25,7 +25,7 @@ const stateLogger = createComponentLogger("RoundDecision");
  * @returns {Promise<void>}
  * @pseudocode
  * 1. Validate machine and store parameters.
- * 2. Emit roundDecision event with player choice data.
+ * 2. Emit roundResolve event with player choice data.
  * 3. Set up selection resolution guard and cancel function.
  * 4. Attempt immediate resolution if selection exists.
  * 5. Fall back to awaiting player choice if needed.
@@ -33,17 +33,17 @@ const stateLogger = createComponentLogger("RoundDecision");
  * 7. On timeout: interrupt with noSelection reason.
  * 8. On other errors: capture to Sentry and use standard error handling.
  */
-export async function roundDecisionEnter(machine) {
+export async function roundResolveEnter(machine) {
   try {
     if (!machine || typeof machine.dispatch !== "function") {
-      debugLog("roundDecisionEnter: invalid machine context");
+      debugLog("roundResolveEnter: invalid machine context");
       stateLogger.warn("Invalid machine context");
       return;
     }
 
     const store = machine?.context?.store;
     if (!store) {
-      debugLog("roundDecisionEnter: missing store context");
+      debugLog("roundResolveEnter: missing store context");
       stateLogger.warn("Missing store context");
       return;
     }
@@ -53,7 +53,7 @@ export async function roundDecisionEnter(machine) {
     });
     recordEntry();
 
-    emitBattleEvent("roundDecision", {
+    emitBattleEvent("roundResolve", {
       playerChoice: store.playerChoice,
       timestamp: Date.now()
     });
@@ -91,7 +91,7 @@ export async function roundDecisionEnter(machine) {
 
       reportSentryError(err, {
         contexts: {
-          location: "roundDecisionEnter",
+          location: "roundResolveEnter",
           round: { playerChoice: store.playerChoice }
         },
         level: err?.code === "ROUND_DECISION_TIMEOUT" ? "info" : "error"
@@ -109,9 +109,9 @@ export async function roundDecisionEnter(machine) {
     }
   } catch (error) {
     reportSentryError(error, {
-      contexts: { location: "roundDecisionEnter" }
+      contexts: { location: "roundResolveEnter" }
     });
   }
 }
 
-export default roundDecisionEnter;
+export default roundResolveEnter;

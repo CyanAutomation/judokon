@@ -55,8 +55,8 @@ describe("battleStateProgress instrumentation", () => {
     document.body.innerHTML = `<ul id="battle-state-progress"></ul>`;
     const { renderStateList } = await import("../../src/helpers/battleStateProgress.js");
     const list = renderStateList([
-      { id: 10, name: "cooldown" },
-      { id: 20, name: "roundStart" }
+      { id: 10, name: "roundWait" },
+      { id: 20, name: "roundPrompt" }
     ]);
     expect(list?.dataset.featureBattleStateReady).toBe("true");
     expect(list?.dataset.featureBattleStateCount).toBe("2");
@@ -68,24 +68,24 @@ describe("battleStateProgress instrumentation", () => {
   it("exposes active state metadata when updates occur", async () => {
     mockIsEnabled.mockReturnValue(true);
     document.body.innerHTML = `<ul id="battle-state-progress">
-      <li data-state="cooldown">10</li>
-      <li data-state="roundStart">20</li>
+      <li data-state="roundWait">10</li>
+      <li data-state="roundPrompt">20</li>
     </ul>`;
     const { updateActiveState } = await import("../../src/helpers/battleStateProgress.js");
     const list = document.getElementById("battle-state-progress");
     if (!list) throw new Error("List missing");
-    updateActiveState(list, "roundStart");
-    expect(list.getAttribute("data-feature-battle-state-active")).toBe("roundStart");
-    expect(list.getAttribute("data-feature-battle-state-active-original")).toBe("roundStart");
+    updateActiveState(list, "roundPrompt");
+    expect(list.getAttribute("data-feature-battle-state-active")).toBe("roundPrompt");
+    expect(list.getAttribute("data-feature-battle-state-active-original")).toBe("roundPrompt");
     const items = Array.from(list.querySelectorAll("li"));
     expect(items[1].getAttribute("data-feature-battle-state-active")).toBe("true");
     expect(items[0].hasAttribute("data-feature-battle-state-active")).toBe(false);
-    expect(mockUpdateBattleStateBadge).toHaveBeenCalledWith("roundStart");
+    expect(mockUpdateBattleStateBadge).toHaveBeenCalledWith("roundPrompt");
   });
 
   it("clears QA markers when the feature flag is disabled", async () => {
     mockIsEnabled.mockReturnValue(false);
-    document.body.innerHTML = `<ul id="battle-state-progress" data-feature-battle-state-active="cooldown">
+    document.body.innerHTML = `<ul id="battle-state-progress" data-feature-battle-state-active="roundWait">
       <li data-feature-battle-state-progress-item="true">10</li>
     </ul>`;
     const mod = await import("../../src/helpers/battleStateProgress.js");
@@ -105,9 +105,9 @@ describe("battleStateProgress instrumentation", () => {
     const stateListener = listeners.find(({ event }) => event === "battleStateChange");
     expect(stateListener).toBeDefined();
     expect(mockMarkBattlePartReady).not.toHaveBeenCalled();
-    stateListener?.handler(new CustomEvent("battleStateChange", { detail: "cooldown" }));
+    stateListener?.handler(new CustomEvent("battleStateChange", { detail: "roundWait" }));
     expect(list?.dataset.featureBattleStateReady).toBe("true");
-    expect(list?.getAttribute("data-feature-battle-state-active")).toBe("cooldown");
+    expect(list?.getAttribute("data-feature-battle-state-active")).toBe("roundWait");
     expect(mockMarkBattlePartReady).toHaveBeenCalledWith("state");
     if (cleanup) cleanup();
   });

@@ -283,12 +283,12 @@ describe("timerService next round handling", () => {
   it("resolves ready when orchestrator is already past cooldown after module reset", async () => {
     const debugHooks = await import("../../../src/helpers/classicBattle/debugHooks.js");
     const machine = {
-      getState: vi.fn(() => "roundOver"),
+      getState: vi.fn(() => "roundDisplay"),
       dispatch: vi.fn()
     };
     debugHooks.exposeDebugState("getClassicBattleMachine", () => machine);
-    document.body.dataset.battleState = "roundOver";
-    const getStateSnapshot = vi.fn(() => ({ state: "roundDecision" }));
+    document.body.dataset.battleState = "roundDisplay";
+    const getStateSnapshot = vi.fn(() => ({ state: "roundResolve" }));
     const setupFallbackTimer = vi.fn((_ms, cb) => {
       cb();
       return null;

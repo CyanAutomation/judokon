@@ -9,7 +9,7 @@ import { emitBattleEvent } from "../battleEvents.js";
  * @pseudocode
  * 1. Clear scoreboard and update debug panel.
  * 2. If payload.modification -> show message.
- * 3. Dispatch `roundStart` when `resumeRound`, else `cooldown`.
+ * 3. Dispatch `roundPrompt` when `resumeRound`, else `roundWait`.
  */
 export async function roundModificationEnter(machine, payload) {
   emitBattleEvent("scoreboardClearMessage");
@@ -18,9 +18,9 @@ export async function roundModificationEnter(machine, payload) {
     emitBattleEvent("scoreboardShowMessage", `Round modified: ${payload.modification}`);
   }
   if (payload?.resumeRound) {
-    await machine.dispatch("roundStart");
+    await machine.dispatch("roundPrompt");
   } else {
-    await machine.dispatch("cooldown");
+    await machine.dispatch("roundWait");
   }
 }
 

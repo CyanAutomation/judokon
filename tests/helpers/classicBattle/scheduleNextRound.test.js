@@ -9,7 +9,7 @@ import { applyMockSetup } from "./mockSetup.js";
 
 import * as debugHooks from "../../../src/helpers/classicBattle/debugHooks.js";
 // import { startCooldown } from "../../../src/helpers/classicBattle/roundManager.js";
-// Note: cooldownEnter is now imported dynamically in tests to avoid module cache issues
+// Note: roundWaitEnter is now imported dynamically in tests to avoid module cache issues
 
 import { eventDispatcherMock } from "./mocks/eventDispatcher.js";
 
@@ -239,7 +239,7 @@ afterEach(() => {
 });
 
 describe("classicBattle startCooldown", () => {
-  function mockBattleData(cooldownEnterHandler) {
+  function mockBattleData(roundWaitEnterHandler) {
     // Provide a minimal machine table directly via the test-only override so
     // the embedded state table uses this deterministic set.
     const minimal = [
@@ -247,24 +247,24 @@ describe("classicBattle startCooldown", () => {
         name: "waitingForMatchStart",
         type: "initial",
         triggers: [
-          { on: "continue", target: "cooldown" },
-          { on: "roundOver", target: "roundOver" }
+          { on: "continue", target: "roundWait" },
+          { on: "roundDisplay", target: "roundDisplay" }
         ]
       },
       {
-        name: "roundOver",
-        triggers: [{ on: "continue", target: "cooldown" }]
+        name: "roundDisplay",
+        triggers: [{ on: "continue", target: "roundWait" }]
       },
       {
-        name: "cooldown",
-        onEnter: cooldownEnterHandler,
-        triggers: [{ on: "ready", target: "roundStart" }]
+        name: "roundWait",
+        onEnter: roundWaitEnterHandler,
+        triggers: [{ on: "ready", target: "roundPrompt" }]
       },
       {
-        name: "roundStart",
-        triggers: [{ on: "cardsRevealed", target: "waitingForPlayerAction" }]
+        name: "roundPrompt",
+        triggers: [{ on: "cardsRevealed", target: "roundSelect" }]
       },
-      { name: "waitingForPlayerAction", triggers: [] }
+      { name: "roundSelect", triggers: [] }
     ];
     globalThis.__CLASSIC_BATTLE_STATES__ = minimal;
 
@@ -332,12 +332,12 @@ describe("classicBattle startCooldown", () => {
     const { nextButton } = createTimerNodes();
     nextButton.disabled = true;
 
-    // Import cooldownEnter after vi.resetModules() to ensure it uses the spied battleEvents module
-    const { cooldownEnter } = await import(
-      "../../../src/helpers/classicBattle/stateHandlers/cooldownEnter.js"
+    // Import roundWaitEnter after vi.resetModules() to ensure it uses the spied battleEvents module
+    const { roundWaitEnter } = await import(
+      "../../../src/helpers/classicBattle/stateHandlers/roundWaitEnter.js"
     );
 
-    mockBattleData(cooldownEnter);
+    mockBattleData(roundWaitEnter);
     const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
     battleEventsMod.__resetBattleEventTarget();
     const emitBattleEventSpy = vi.spyOn(battleEventsMod, "emitBattleEvent");
@@ -360,14 +360,14 @@ describe("classicBattle startCooldown", () => {
     const machine = orchestrator.getBattleStateMachine();
     const machineDispatchSpy = vi.spyOn(machine, "dispatch");
 
-    await machine.dispatch("roundOver");
-    expect(machine.getState()).toBe("roundOver");
+    await machine.dispatch("roundDisplay");
+    expect(machine.getState()).toBe("roundDisplay");
 
     await machine.dispatch("continue");
-    expect(machine.getState()).toBe("cooldown");
+    expect(machine.getState()).toBe("roundWait");
 
-    // AGENT_DEBUG: Log machine info before cooldownEnter
-    console.log("[AGENT_DEBUG] Machine before cooldownEnter:", {
+    // AGENT_DEBUG: Log machine info before roundWaitEnter
+    console.log("[AGENT_DEBUG] Machine before roundWaitEnter:", {
       machine: !!machine,
       dispatch: typeof machine?.dispatch,
       getState: typeof machine?.getState,
@@ -390,11 +390,11 @@ describe("classicBattle startCooldown", () => {
       }
     }
 
-    await cooldownEnter(machine);
+    await roundWaitEnter(machine);
 
     dispatchBattleEventSpy.mockClear();
 
-    expect(window.__cooldownEnterInvoked).toBe(true);
+    expect(window.__roundWaitEnterInvoked).toBe(true);
     expect(window.__startCooldownInvoked).toBe(true);
     const debugRead = globalThis.__classicBattleDebugRead;
     expect(typeof debugRead).toBe("function");
@@ -423,10 +423,10 @@ describe("classicBattle startCooldown", () => {
     expect(getterInfo?.sourceReadDebug).toBe("function");
     const machineStateBefore = debugRead("handleNextRoundMachineState");
     const snapshotStateBefore = debugRead("handleNextRoundSnapshotState");
-    expect(["cooldown", "roundOver", "roundStart", "waitingForPlayerAction", null]).toContain(
+    expect(["roundWait", "roundDisplay", "roundPrompt", "roundSelect", null]).toContain(
       machineStateBefore
     );
-    expect(["cooldown", "roundOver", "roundStart", "waitingForPlayerAction", null]).toContain(
+    expect(["roundWait", "roundDisplay", "roundPrompt", "roundSelect", null]).toContain(
       snapshotStateBefore
     );
     expect(currentNextRound.readyDispatched).toBe(true);
@@ -444,12 +444,12 @@ describe("classicBattle startCooldown", () => {
     await vi.runAllTimersAsync();
     expect(getReadyDispatchCalls()).toHaveLength(1);
 
-    expect(["roundStart", "waitingForPlayerAction"]).toContain(machine.getState());
+    expect(["roundPrompt", "roundSelect"]).toContain(machine.getState());
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);
     delete window.__NEXT_ROUND_COOLDOWN_MS;
   }, 10000);
 
-  it("transitions roundOver → cooldown → roundStart", async () => {
+  it("transitions roundDisplay → cooldown → roundStart", async () => {
     document.getElementById("next-round-timer")?.remove();
     const { nextButton } = createTimerNodes();
     nextButton.disabled = true;
@@ -457,12 +457,12 @@ describe("classicBattle startCooldown", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    // Import cooldownEnter to ensure it uses the same module instance
-    const { cooldownEnter } = await import(
-      "../../../src/helpers/classicBattle/stateHandlers/cooldownEnter.js"
+    // Import roundWaitEnter to ensure it uses the same module instance
+    const { roundWaitEnter } = await import(
+      "../../../src/helpers/classicBattle/stateHandlers/roundWaitEnter.js"
     );
 
-    mockBattleData(cooldownEnter);
+    mockBattleData(roundWaitEnter);
     const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
     const emitBattleEventSpy = vi.spyOn(battleEventsMod, "emitBattleEvent");
     const battleEngineMod = await import("../../../src/helpers/BattleEngine.js");
@@ -483,13 +483,13 @@ describe("classicBattle startCooldown", () => {
     const machine = orchestrator.getBattleStateMachine();
     const machineDispatchSpy = vi.spyOn(machine, "dispatch");
 
-    await machine.dispatch("roundOver");
-    expect(machine.getState()).toBe("roundOver");
+    await machine.dispatch("roundDisplay");
+    expect(machine.getState()).toBe("roundDisplay");
 
     await machine.dispatch("continue");
-    expect(machine.getState()).toBe("cooldown");
+    expect(machine.getState()).toBe("roundWait");
 
-    await cooldownEnter(machine);
+    await roundWaitEnter(machine);
 
     const debugRead = globalThis.__classicBattleDebugRead;
     expect(typeof debugRead).toBe("function");
@@ -512,10 +512,10 @@ describe("classicBattle startCooldown", () => {
     expect(getterInfo?.sourceReadDebug).toBe("function");
     const machineStateBefore = debugRead("handleNextRoundMachineState");
     const snapshotStateBefore = debugRead("handleNextRoundSnapshotState");
-    expect(["cooldown", "roundOver", "roundStart", "waitingForPlayerAction", null]).toContain(
+    expect(["roundWait", "roundDisplay", "roundPrompt", "roundSelect", null]).toContain(
       machineStateBefore
     );
-    expect(["cooldown", "roundOver", "roundStart", "waitingForPlayerAction", null]).toContain(
+    expect(["roundWait", "roundDisplay", "roundPrompt", "roundSelect", null]).toContain(
       snapshotStateBefore
     );
     expect(currentNextRound.readyDispatched).toBe(true);
@@ -532,7 +532,7 @@ describe("classicBattle startCooldown", () => {
     await vi.runAllTimersAsync();
     expect(getReadyDispatchCalls()).toHaveLength(1);
 
-    expect(["roundStart", "waitingForPlayerAction"]).toContain(machine.getState());
+    expect(["roundPrompt", "roundSelect"]).toContain(machine.getState());
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);
     delete window.__NEXT_ROUND_COOLDOWN_MS;
   });
@@ -642,12 +642,12 @@ describe("classicBattle startCooldown", () => {
     const machine = orchestrator.getBattleStateMachine();
     const machineDispatchSpy = vi.spyOn(machine, "dispatch");
 
-    // Ensure machine is in roundOver state for the test
-    await machine.dispatch("roundOver");
-    expect(machine.getState()).toBe("roundOver");
+    // Ensure machine is in roundDisplay state for the test
+    await machine.dispatch("roundDisplay");
+    expect(machine.getState()).toBe("roundDisplay");
 
     await machine.dispatch("continue");
-    expect(machine.getState()).toBe("cooldown");
+    expect(machine.getState()).toBe("roundWait");
 
     const debugRead = globalThis.__classicBattleDebugRead;
     expect(typeof debugRead).toBe("function");
@@ -679,7 +679,7 @@ describe("classicBattle startCooldown", () => {
     await vi.runAllTimersAsync();
     expect(getReadyDispatchCalls()).toHaveLength(1);
 
-    expect(["roundStart", "waitingForPlayerAction"]).toContain(machine.getState());
+    expect(["roundPrompt", "roundSelect"]).toContain(machine.getState());
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);
 
     setTestMode(false);

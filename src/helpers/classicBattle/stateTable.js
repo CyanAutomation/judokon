@@ -151,14 +151,14 @@ export const CLASSIC_BATTLE_STATES = [
       CLASSIC_BATTLE_ACTIONS.SET_FIRST_PLAYER_USER
     ],
     triggers: [
-      { on: "ready", target: "cooldown" },
+      { on: "ready", target: "roundWait" },
       { on: "interrupt", target: "interruptMatch" },
       { on: "error", target: "interruptMatch" }
     ]
   },
   {
-    id: 7,
-    name: "cooldown",
+    id: 3,
+    name: "roundWait",
     description:
       "Short pacing pause before the first round and between rounds; allows animations and readability.",
     onEnter: [
@@ -166,13 +166,13 @@ export const CLASSIC_BATTLE_STATES = [
       CLASSIC_BATTLE_ACTIONS.ANNOUNCE_NEXT_ROUND
     ],
     triggers: [
-      { on: "ready", target: "roundStart" },
+      { on: "ready", target: "roundPrompt" },
       { on: "interrupt", target: "interruptRound" }
     ]
   },
   {
-    id: 3,
-    name: "roundStart",
+    id: 4,
+    name: "roundPrompt",
     description:
       "Begins a new round. Randomly draws judoka for user and opponent, reveals both, user is the active chooser.",
     onEnter: [
@@ -181,13 +181,13 @@ export const CLASSIC_BATTLE_STATES = [
       CLASSIC_BATTLE_ACTIONS.SET_ACTIVE_PLAYER_USER
     ],
     triggers: [
-      { on: "cardsRevealed", target: "waitingForPlayerAction" },
+      { on: "cardsRevealed", target: "roundSelect" },
       { on: "interrupt", target: "interruptRound" }
     ]
   },
   {
-    id: 4,
-    name: "waitingForPlayerAction",
+    id: 5,
+    name: "roundSelect",
     description:
       "Awaiting the user's stat choice. If no action within the round timer, optional auto-select may fire.",
     onEnter: [
@@ -196,10 +196,10 @@ export const CLASSIC_BATTLE_STATES = [
       CLASSIC_BATTLE_ACTIONS.A11Y_EXPOSE_TIMER_STATUS
     ],
     triggers: [
-      { on: "statSelected", target: "waitingForOpponentDecision" },
+      { on: "statSelected", target: "roundResolve" },
       {
         on: "timeout",
-        target: "waitingForOpponentDecision",
+        target: "roundResolve",
         guard: GUARD_CONDITIONS.AUTO_SELECT_ENABLED,
         note: "If FF_AUTO_SELECT is ON, engine auto-picks a stat on timeout."
       },
@@ -213,36 +213,26 @@ export const CLASSIC_BATTLE_STATES = [
     ]
   },
   {
-    id: 4.5,
-    name: "waitingForOpponentDecision",
+    id: 6,
+    name: "roundResolve",
     description:
-      "Player has selected a stat. Display 'Opponent is choosing...' message with minimum duration before proceeding to round decision.",
-    onEnter: ["display:opponentThinkingMessage", "wait:opponentMessageMinDuration"],
-    triggers: [
-      { on: "opponentDecisionReady", target: "roundDecision" },
-      { on: "interrupt", target: "interruptRound" }
-    ]
-  },
-  {
-    id: 5,
-    name: "roundDecision",
-    description: "Compares the selected stat and determines the round outcome.",
+      "Resolves the selected stat after UI pacing completes and determines the round outcome.",
     onEnter: [
       CLASSIC_BATTLE_ACTIONS.COMPARE_SELECTED_STAT,
       CLASSIC_BATTLE_ACTIONS.COMPUTE_ROUND_OUTCOME,
       CLASSIC_BATTLE_ACTIONS.ANNOUNCE_ROUND_OUTCOME
     ],
     triggers: [
-      { on: "outcome=winPlayer", target: "roundOver" },
-      { on: "outcome=winOpponent", target: "roundOver" },
-      { on: "outcome=draw", target: "roundOver" },
-      { on: "evaluate", target: "roundDecision" },
+      { on: "outcome=winPlayer", target: "roundDisplay" },
+      { on: "outcome=winOpponent", target: "roundDisplay" },
+      { on: "outcome=draw", target: "roundDisplay" },
+      { on: "evaluate", target: "roundResolve" },
       { on: "interrupt", target: "interruptRound" }
     ]
   },
   {
-    id: 6,
-    name: "roundOver",
+    id: 7,
+    name: "roundDisplay",
     description: "Updates scores and presents a brief summary. No card transfers occur.",
     onEnter: [CLASSIC_BATTLE_ACTIONS.UPDATE_SCORE, CLASSIC_BATTLE_ACTIONS.UPDATE_UI_ROUND_SUMMARY],
     triggers: [
@@ -252,7 +242,7 @@ export const CLASSIC_BATTLE_STATES = [
         guard: GUARD_CONDITIONS.WIN_CONDITION_MET,
         note: "Checks the user-selected win target (3/5/10)."
       },
-      { on: "continue", target: "cooldown" },
+      { on: "continue", target: "roundWait" },
       { on: "interrupt", target: "interruptRound" }
     ]
   },
@@ -296,7 +286,7 @@ export const CLASSIC_BATTLE_STATES = [
         target: "roundModification",
         guard: GUARD_CONDITIONS.FF_ROUND_MODIFY
       },
-      { on: "restartRound", target: "cooldown" },
+      { on: "restartRound", target: "roundWait" },
       { on: "resumeLobby", target: "waitingForMatchStart" },
       { on: "abortMatch", target: "matchOver" }
     ]
@@ -307,7 +297,7 @@ export const CLASSIC_BATTLE_STATES = [
     description: "Admin/test-only branch to adjust round decision parameters before re-evaluating.",
     onEnter: [CLASSIC_BATTLE_ACTIONS.OPEN_ROUND_MODIFICATION_PANEL],
     triggers: [
-      { on: "modifyRoundDecision", target: "roundDecision" },
+      { on: "modifyRoundDecision", target: "roundResolve" },
       { on: "cancelModification", target: "interruptRound" }
     ]
   },

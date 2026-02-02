@@ -54,7 +54,7 @@ describe("initInterRoundCooldown", () => {
   beforeEach(() => {
     emitBattleEvent.mockReset();
     document.body.innerHTML = '<button id="next-button" disabled></button>';
-    machine = { dispatch: vi.fn(), getState: () => "cooldown" };
+    machine = { dispatch: vi.fn(), getState: () => "roundWait" };
     vi.resetModules();
     scheduler = {
       setTimeout: (cb, ms) => setTimeout(cb, ms),

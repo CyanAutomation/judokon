@@ -437,16 +437,16 @@ function shouldApplyRoundCounterFallback({
 }
 
 /**
- * Transition events required when advancing from states other than `cooldown`.
+ * Transition events required when advancing from states other than `roundWait`.
  *
  * `advanceWhenReady` consults this table to dispatch an interrupt that moves the
- * state machine into `cooldown` before emitting `ready`.
+ * state machine into `roundWait` before emitting `ready`.
  *
  * @type {Record<string, {event: string, payload: {reason: string}}>} state → transition mapping.
  */
 const ADVANCE_TRANSITIONS = {
-  roundDecision: { event: "interrupt", payload: { reason: "advanceNextFromNonCooldown" } },
-  waitingForPlayerAction: { event: "interrupt", payload: { reason: "advanceNextFromNonCooldown" } }
+  roundResolve: { event: "interrupt", payload: { reason: "advanceNextFromNonCooldown" } },
+  roundSelect: { event: "interrupt", payload: { reason: "advanceNextFromNonCooldown" } }
 };
 
 // Skip handler utilities moved to skipHandler.js
@@ -523,7 +523,7 @@ export async function advanceWhenReady(btn, resolveReady) {
   btn.disabled = true;
   delete dataset.nextReady;
   const { state } = safeGetSnapshot();
-  const t = state && state !== "cooldown" ? ADVANCE_TRANSITIONS[state] : null;
+  const t = state && state !== "roundWait" ? ADVANCE_TRANSITIONS[state] : null;
   if (t) {
     try {
       await dispatchBattleEvent(t.event, t.payload);
@@ -543,7 +543,7 @@ export async function advanceWhenReady(btn, resolveReady) {
   }
   // If manual click from cooldown and ready wasn't dispatched due to state tracking,
   // force dispatch ready to unblock the next round
-  if (!dispatched && state === "cooldown") {
+  if (!dispatched && state === "roundWait") {
     try {
       await dispatchBattleEvent("ready");
       dispatched = true;
@@ -592,7 +592,7 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
   // No active timer controls: if we're in cooldown (or state is unknown in
   // this module instance during tests), advance immediately.
   const { state } = safeGetSnapshot();
-  if (state === "cooldown" || !state) {
+  if (state === "roundWait" || !state) {
     setSkipHandler(null);
     await dispatchReadyOnce(resolveReady);
   }
@@ -662,7 +662,7 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
     // Defensive: if a stale readiness flag is present outside of `cooldown`,
     // clear it so we don't advance via an early-ready path.
     const { state } = safeGetSnapshot();
-    if (isNextReady(btn) && state && state !== "cooldown") {
+    if (isNextReady(btn) && state && state !== "roundWait") {
       resetReadiness(btn);
       guard(() => console.warn("[next] cleared early readiness outside cooldown"));
     }
@@ -789,7 +789,7 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
     }
     cooldownWarningTimeoutId = realScheduler.setTimeout(() => {
       const { state } = safeGetSnapshot();
-      if (state === "cooldown") {
+      if (state === "roundWait") {
         guard(() => console.warn("[next] stuck in cooldown"));
       }
       cooldownWarningTimeoutId = null;

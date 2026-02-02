@@ -59,7 +59,7 @@ describe("stateManager getState() initialization and transitions", () => {
     });
   });
 
-  it("should transition from matchStart to cooldown on ready event", async () => {
+  it("should transition from matchStart to roundWait on ready event", async () => {
     const onTransitionSpy = [];
     const onTransition = ({ from, to, event }) => {
       onTransitionSpy.push({ from, to, event });
@@ -71,12 +71,12 @@ describe("stateManager getState() initialization and transitions", () => {
     await machine.dispatch("startClicked");
     expect(machine.getState()).toBe("matchStart");
 
-    // Then transition to cooldown
+    // Then transition to roundWait
     const readyResult = await machine.dispatch("ready");
     expect(readyResult).toBe(true);
 
     const finalState = machine.getState();
-    expect(finalState).toBe("cooldown");
+    expect(finalState).toBe("roundWait");
   });
 
   it("should handle onEnter handlers and still maintain correct state", async () => {

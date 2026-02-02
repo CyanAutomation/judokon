@@ -113,10 +113,10 @@ describe("Test API integration", () => {
     await withMutedConsole(async () => {
       roundButtons[0].click();
       await Promise.resolve();
-      await testApi.state.waitForBattleState("waitingForPlayerAction", 5000);
+      await testApi.state.waitForBattleState("roundSelect", 5000);
     });
 
-    expect(["waitingForPlayerAction", "matchStart"]).toContain(testApi.state.getBattleState());
+    expect(["roundSelect", "matchStart"]).toContain(testApi.state.getBattleState());
     expect(store.selectionMade).toBe(false);
   });
 });

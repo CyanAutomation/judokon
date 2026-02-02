@@ -10,7 +10,7 @@ import { getAutoContinue } from "../autoContinue.js";
 import isStateTransition from "../isStateTransition.js";
 import { createComponentLogger } from "../debugLogger.js";
 
-const resolverLogger = createComponentLogger("RoundDecisionHelpers");
+const resolverLogger = createComponentLogger("RoundResolveHelpers");
 
 // Magic number constants for timing coordination
 const PLAYER_CHOICE_POLL_INTERVAL_MS = 50;
@@ -48,7 +48,7 @@ function getOpponentStatValue(stat, fallbackCard) {
  * @returns {Promise<void>}
  * @pseudocode
  * ```
- * if not in roundDecision or already resolved → return
+ * if not in roundResolve or already resolved → return
  * if no player choice → dispatch interrupt(stalledNoSelection)
  * outcomeEvent ← determineOutcomeEvent(store)
  * record debug guard timing
@@ -59,7 +59,7 @@ function getOpponentStatValue(stat, fallbackCard) {
 export async function computeAndDispatchOutcome(store, machine) {
   try {
     debugLog("DEBUG: computeAndDispatchOutcome start", { playerChoice: store?.playerChoice });
-    if (!isStateTransition(null, "roundDecision")) return;
+    if (!isStateTransition(null, "roundResolve")) return;
     const rd = readDebugState("roundDebug");
     const resolved = rd && typeof rd.resolvedAt === "number";
     if (resolved) return;
@@ -149,7 +149,7 @@ async function dispatchOutcome(outcomeEvent, machine) {
 }
 
 /**
- * Record that the machine entered `roundDecision` for debug tracing.
+ * Record that the machine entered `roundResolve` for debug tracing.
  *
  * @returns {void}
  * @pseudocode
@@ -159,13 +159,13 @@ async function dispatchOutcome(outcomeEvent, machine) {
  */
 export function recordEntry() {
   try {
-    debugLog("DEBUG: Entering roundDecisionEnter");
+    debugLog("DEBUG: Entering roundResolveEnter");
   } catch (err) {
     debugLog("DEBUG: recordEntry debugLog error", { error: err.message });
   }
   try {
     if (typeof window !== "undefined") {
-      exposeDebugState("roundDecisionEnter", Date.now());
+      exposeDebugState("roundResolveEnter", Date.now());
     }
   } catch (err) {
     debugLog("DEBUG: recordEntry exposeDebugState error", { error: err.message });
@@ -204,7 +204,7 @@ export async function resolveSelectionIfPresent(store) {
   }
   const opponentVal = getOpponentStatValue(stat, oCard);
   try {
-    debugLog("DEBUG: roundDecision.resolveImmediate", { stat, playerVal, opponentVal });
+    debugLog("DEBUG: roundResolve.resolveImmediate", { stat, playerVal, opponentVal });
   } catch (err) {
     debugLog("DEBUG: resolveSelectionIfPresent debugLog error", { error: err.message });
   }
@@ -301,7 +301,7 @@ export function guardSelectionResolution(store, machine) {
     cancelFn = scheduleGuard(GUARD_SELECTION_RESOLUTION_DELAY_MS, () =>
       computeAndDispatchOutcome(store, machine)
     );
-    exposeDebugState("roundDecisionGuard", cancelFn);
+    exposeDebugState("roundResolveGuard", cancelFn);
   };
   setupCancel();
 
@@ -310,17 +310,17 @@ export function guardSelectionResolution(store, machine) {
       if (typeof cancelFn === "function") {
         cancelFn();
       }
-      exposeDebugState("roundDecisionGuard", null);
+      exposeDebugState("roundResolveGuard", null);
     });
   };
 }
 
 /**
- * Ensure the state machine leaves `roundDecision` shortly after resolution.
+ * Ensure the state machine leaves `roundResolve` shortly after resolution.
  *
  * @pseudocode
  * 1. After watchdog delay, check the machine's state.
- * 2. If still in `roundDecision`, dispatch `interrupt`.
+ * 2. If still in `roundResolve`, dispatch `interrupt`.
  *
  * @param {import('../stateManager.js').ClassicBattleStateManager} machine - State machine.
  * @returns {void}
@@ -329,7 +329,7 @@ export function schedulePostResolveWatchdog(machine) {
   setTimeout(() => {
     guardAsync(async () => {
       const still = machine.getState ? machine.getState() : null;
-      if (still === "roundDecision") {
+      if (still === "roundResolve") {
         await machine.dispatch("interrupt", { reason: "postResolveWatchdog" });
       }
     });

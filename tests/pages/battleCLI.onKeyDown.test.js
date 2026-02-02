@@ -204,7 +204,7 @@ describe("battleCLI onKeyDown", () => {
 
     __test.updateCliShortcutsVisibility();
     __test.handleBattleState(
-      new CustomEvent("battleStateChange", { detail: { to: "waitingForPlayerAction" } })
+      new CustomEvent("battleStateChange", { detail: { to: "roundSelect" } })
     );
 
     expect(shortcutsSection.hidden).toBe(true);
@@ -218,7 +218,7 @@ describe("battleCLI onKeyDown", () => {
     cliShortcutsEnabled = true;
     __test.updateCliShortcutsVisibility();
     __test.handleBattleState(
-      new CustomEvent("battleStateChange", { detail: { to: "waitingForPlayerAction" } })
+      new CustomEvent("battleStateChange", { detail: { to: "roundSelect" } })
     );
 
     expect(shortcutsSection.hidden).toBe(false);
@@ -236,8 +236,8 @@ describe("battleCLI onKeyDown", () => {
   });
 
   it("does not flash match-over UI when quitting mid-match", async () => {
-    // Simulate waitingForPlayerAction; open quit and confirm
-    document.body.dataset.battleState = "waitingForPlayerAction";
+    // Simulate roundSelect; open quit and confirm
+    document.body.dataset.battleState = "roundSelect";
     const countdown = document.getElementById("cli-countdown");
     const roundMsg = document.getElementById("round-message");
     onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
@@ -257,7 +257,7 @@ describe("battleCLI onKeyDown", () => {
   it.each(cancelActions)(
     "resumes timers and closes modal when quit is canceled via %s",
     async (action) => {
-      document.body.dataset.battleState = "waitingForPlayerAction";
+      document.body.dataset.battleState = "roundSelect";
       const selT = fakeTimeout();
       const selI = fakeInterval();
       __test.setSelectionTimers(selT, selI);
@@ -308,10 +308,10 @@ describe("battleCLI onKeyDown", () => {
     expect(() => emitBattleEvent("matchOver")).not.toThrow();
   });
 
-  it("dispatches statSelected in waitingForPlayerAction state", async () => {
+  it("dispatches statSelected in roundSelect state", async () => {
     const timers = useCanonicalTimers();
     try {
-      document.body.dataset.battleState = "waitingForPlayerAction";
+      document.body.dataset.battleState = "roundSelect";
       onKeyDown(new KeyboardEvent("keydown", { key: "1" }));
       await Promise.resolve();
       await timers.runAllTimersAsync();
@@ -321,14 +321,14 @@ describe("battleCLI onKeyDown", () => {
     }
   });
 
-  it("dispatches continue in roundOver state", () => {
-    document.body.dataset.battleState = "roundOver";
+  it("dispatches continue in roundDisplay state", () => {
+    document.body.dataset.battleState = "roundDisplay";
     onKeyDown(new KeyboardEvent("keydown", { key: "Enter" }));
     expect(emitSpy).toHaveBeenCalledWith("outcomeConfirmed");
   });
 
   it("dispatches ready in cooldown state for Enter and Space", () => {
-    document.body.dataset.battleState = "cooldown";
+    document.body.dataset.battleState = "roundWait";
     for (const key of ["Enter", " "]) {
       dispatchSpy.mockClear();
       const evt = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });

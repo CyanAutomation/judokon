@@ -37,7 +37,7 @@ describe("Classic Battle dispatchBattleEvent getter caching", () => {
       const dispatch = vi.fn(async () => "dispatched");
       const machine = {
         dispatch,
-        getState: vi.fn(() => "cooldown")
+        getState: vi.fn(() => "roundWait")
       };
       machineInstances.push(machine);
       return machine;
@@ -64,11 +64,11 @@ describe("Classic Battle dispatchBattleEvent getter caching", () => {
   it("uses a fresh machine instance when the getter implementation changes", async () => {
     const firstMachine = {
       dispatch: vi.fn(async () => "first"),
-      getState: vi.fn(() => "cooldown")
+      getState: vi.fn(() => "roundWait")
     };
     const secondMachine = {
       dispatch: vi.fn(async () => "second"),
-      getState: vi.fn(() => "cooldown")
+      getState: vi.fn(() => "roundWait")
     };
 
     const machineGetter = vi.fn(() => firstMachine);

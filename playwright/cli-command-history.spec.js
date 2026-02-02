@@ -65,7 +65,7 @@ test.describe("CLI Command History", () => {
       ).toBe(true);
 
       // Accept cooldown OR any subsequent state (handles skipRoundCooldown flag)
-      await waitForBattleState(page, ["cooldown", "roundStart", "waitingForPlayerAction"], {
+      await waitForBattleState(page, ["roundWait", "roundPrompt", "roundSelect"], {
         timeout: BATTLE_READY_TIMEOUT_MS,
         allowFallback: false
       });
@@ -78,7 +78,7 @@ test.describe("CLI Command History", () => {
       afterStartStateResult.reason ?? "Unable to resolve battle state after startClicked"
     ).toBe(true);
 
-    if (afterStartStateResult.state !== "waitingForPlayerAction") {
+    if (afterStartStateResult.state !== "roundSelect") {
       const readyForRound = await dispatchBattleEvent(page, "ready");
       expect(
         readyForRound.ok,
@@ -87,14 +87,14 @@ test.describe("CLI Command History", () => {
       ).toBe(true);
     }
 
-    await waitForBattleState(page, "waitingForPlayerAction", {
+    await waitForBattleState(page, "roundSelect", {
       timeout: BATTLE_READY_TIMEOUT_MS,
       allowFallback: false
     });
 
     await page.keyboard.press("1");
 
-    await waitForBattleState(page, "roundDecision", {
+    await waitForBattleState(page, "roundResolve", {
       timeout: ROUND_TRANSITION_TIMEOUT_MS,
       allowFallback: false
     });
@@ -132,10 +132,10 @@ test.describe("CLI Command History", () => {
       completion.ok,
       completion.reason ?? "cli.completeRound without outcome should resolve"
     ).toBe(true);
-    expect(["cooldown", "roundStart", "waitingForPlayerAction"]).toContain(completion.finalState);
+    expect(["roundWait", "roundPrompt", "roundSelect"]).toContain(completion.finalState);
 
     // Accept cooldown OR any subsequent state (handles skipRoundCooldown flag)
-    await waitForBattleState(page, ["cooldown", "roundStart", "waitingForPlayerAction"], {
+    await waitForBattleState(page, ["roundWait", "roundPrompt", "roundSelect"], {
       timeout: ROUND_TRANSITION_TIMEOUT_MS,
       allowFallback: false
     });
@@ -178,7 +178,7 @@ test.describe("CLI Command History", () => {
       expect(startClicked.ok, startClicked.reason).toBe(true);
 
       // Accept cooldown OR any subsequent state (handles skipRoundCooldown flag)
-      await waitForBattleState(page, ["cooldown", "roundStart", "waitingForPlayerAction"], {
+      await waitForBattleState(page, ["roundWait", "roundPrompt", "roundSelect"], {
         timeout: BATTLE_READY_TIMEOUT_MS,
         allowFallback: false
       });
@@ -187,12 +187,12 @@ test.describe("CLI Command History", () => {
     const afterStart = await getBattleStateWithErrorHandling(page);
     expect(afterStart.ok).toBe(true);
 
-    if (afterStart.state !== "waitingForPlayerAction") {
+    if (afterStart.state !== "roundSelect") {
       const readyForRound = await dispatchBattleEvent(page, "ready");
       expect(readyForRound.ok, readyForRound.reason).toBe(true);
     }
 
-    await waitForBattleState(page, "waitingForPlayerAction", {
+    await waitForBattleState(page, "roundSelect", {
       timeout: BATTLE_READY_TIMEOUT_MS,
       allowFallback: false
     });
@@ -207,7 +207,7 @@ test.describe("CLI Command History", () => {
     const ready1 = await dispatchBattleEvent(page, "ready");
     expect(ready1.ok, ready1.reason).toBe(true);
 
-    await waitForBattleState(page, "waitingForPlayerAction", {
+    await waitForBattleState(page, "roundSelect", {
       timeout: BATTLE_READY_TIMEOUT_MS,
       allowFallback: false
     });
@@ -221,7 +221,7 @@ test.describe("CLI Command History", () => {
     const ready2 = await dispatchBattleEvent(page, "ready");
     expect(ready2.ok, ready2.reason).toBe(true);
 
-    await waitForBattleState(page, "waitingForPlayerAction", {
+    await waitForBattleState(page, "roundSelect", {
       timeout: BATTLE_READY_TIMEOUT_MS,
       allowFallback: false
     });

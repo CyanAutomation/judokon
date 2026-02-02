@@ -298,54 +298,48 @@ function resolveWaitingForMatchStartTransition(eventName) {
 }
 
 function resolveMatchStartTransition(eventName) {
-  if (eventName === "ready") return "cooldown";
+  if (eventName === "ready") return "roundWait";
   if (eventName === "interrupt" || eventName === "error") return "interruptMatch";
   return null;
 }
 
-function resolveCooldownTransition(eventName) {
-  if (eventName === "ready") return "roundStart";
+function resolveRoundWaitTransition(eventName) {
+  if (eventName === "ready") return "roundPrompt";
   if (eventName === "interrupt") return "interruptRound";
   return null;
 }
 
-function resolveRoundStartTransition(eventName) {
-  if (eventName === "cardsRevealed") return "waitingForPlayerAction";
+function resolveRoundPromptTransition(eventName) {
+  if (eventName === "cardsRevealed") return "roundSelect";
   if (eventName === "interrupt") return "interruptRound";
   return null;
 }
 
-function resolveWaitingForPlayerActionTransition(eventName, context, guardOverrides) {
-  if (eventName === "statSelected") return "waitingForOpponentDecision";
+function resolveRoundSelectTransition(eventName, context, guardOverrides) {
+  if (eventName === "statSelected") return "roundResolve";
   if (eventName === "timeout") {
     return isAutoSelectEnabled(context, guardOverrides)
-      ? "waitingForOpponentDecision"
+      ? "roundResolve"
       : "interruptRound";
   }
   if (eventName === "interrupt") return "interruptRound";
   return null;
 }
 
-function resolveWaitingForOpponentDecisionTransition(eventName) {
-  if (eventName === "opponentDecisionReady") return "roundDecision";
+function resolveRoundResolveTransition(eventName) {
+  if (eventName === "outcome=winPlayer") return "roundDisplay";
+  if (eventName === "outcome=winOpponent") return "roundDisplay";
+  if (eventName === "outcome=draw") return "roundDisplay";
+  if (eventName === "evaluate") return "roundResolve";
   if (eventName === "interrupt") return "interruptRound";
   return null;
 }
 
-function resolveRoundDecisionTransition(eventName) {
-  if (eventName === "outcome=winPlayer") return "roundOver";
-  if (eventName === "outcome=winOpponent") return "roundOver";
-  if (eventName === "outcome=draw") return "roundOver";
-  if (eventName === "evaluate") return "roundDecision";
-  if (eventName === "interrupt") return "interruptRound";
-  return null;
-}
-
-function resolveRoundOverTransition(eventName, context) {
+function resolveRoundDisplayTransition(eventName, context) {
   if (eventName === "matchPointReached") {
     return isWinConditionMet(context) ? "matchDecision" : null;
   }
-  if (eventName === "continue") return "cooldown";
+  if (eventName === "continue") return "roundWait";
   if (eventName === "interrupt") return "interruptRound";
   return null;
 }
@@ -367,14 +361,14 @@ function resolveInterruptRoundTransition(eventName, context, guardOverrides, pay
     if (payload?.adminTest) return "roundModification";
     return isRoundModifyEnabled(context, guardOverrides) ? "roundModification" : "interruptRound";
   }
-  if (eventName === "restartRound") return "cooldown";
+  if (eventName === "restartRound") return "roundWait";
   if (eventName === "resumeLobby") return "waitingForMatchStart";
   if (eventName === "abortMatch") return "matchOver";
   return null;
 }
 
 function resolveRoundModificationTransition(eventName) {
-  if (eventName === "modifyRoundDecision") return "roundDecision";
+  if (eventName === "modifyRoundDecision") return "roundResolve";
   if (eventName === "cancelModification") return "interruptRound";
   return null;
 }
@@ -391,18 +385,16 @@ function resolveClassicBattleTransition(currentState, eventName, context, guardO
       return resolveWaitingForMatchStartTransition(eventName);
     case "matchStart":
       return resolveMatchStartTransition(eventName);
-    case "cooldown":
-      return resolveCooldownTransition(eventName);
-    case "roundStart":
-      return resolveRoundStartTransition(eventName);
-    case "waitingForPlayerAction":
-      return resolveWaitingForPlayerActionTransition(eventName, context, guardOverrides);
-    case "waitingForOpponentDecision":
-      return resolveWaitingForOpponentDecisionTransition(eventName);
-    case "roundDecision":
-      return resolveRoundDecisionTransition(eventName);
-    case "roundOver":
-      return resolveRoundOverTransition(eventName, context);
+    case "roundWait":
+      return resolveRoundWaitTransition(eventName);
+    case "roundPrompt":
+      return resolveRoundPromptTransition(eventName);
+    case "roundSelect":
+      return resolveRoundSelectTransition(eventName, context, guardOverrides);
+    case "roundResolve":
+      return resolveRoundResolveTransition(eventName);
+    case "roundDisplay":
+      return resolveRoundDisplayTransition(eventName, context);
     case "matchDecision":
       return resolveMatchDecisionTransition(eventName);
     case "matchOver":

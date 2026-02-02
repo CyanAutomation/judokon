@@ -2,7 +2,7 @@
  * Unit tests for validateSelectionState() guard.
  *
  * These tests verify that stat selection is properly rejected when the battle
- * state machine is not in a valid state (e.g., matchStart, roundOver, etc).
+ * state machine is not in a valid state (e.g., matchStart, roundDisplay, etc).
  * This ensures the guard path is covered and prevents regressions where
  * selections might be processed in invalid states.
  */
@@ -52,8 +52,8 @@ describe("validateSelectionState", () => {
   });
 
   describe("Happy path - valid states", () => {
-    it("allows selection when state is waitingForPlayerAction", () => {
-      eventBus.getBattleState.mockReturnValue("waitingForPlayerAction");
+    it("allows selection when state is roundSelect", () => {
+      eventBus.getBattleState.mockReturnValue("roundSelect");
 
       const result = validateSelectionState(store);
 
@@ -61,8 +61,8 @@ describe("validateSelectionState", () => {
       expect(emitBattleEvent).not.toHaveBeenCalled();
     });
 
-    it("allows selection when state is roundDecision", () => {
-      eventBus.getBattleState.mockReturnValue("roundDecision");
+    it("allows selection when state is roundResolve", () => {
+      eventBus.getBattleState.mockReturnValue("roundResolve");
 
       const result = validateSelectionState(store);
 
@@ -80,13 +80,13 @@ describe("validateSelectionState", () => {
     });
 
     it("falls back to DOM dataset when getter is stale", () => {
-      eventBus.getBattleState.mockReturnValue("roundStart");
-      document.body.dataset.battleState = "waitingForPlayerAction";
+      eventBus.getBattleState.mockReturnValue("roundPrompt");
+      document.body.dataset.battleState = "roundSelect";
 
       const result = validateSelectionState(store);
 
       expect(result).toBe(true);
-      expect(window.__VALIDATE_SELECTION_DEBUG[0].current).toBe("waitingForPlayerAction");
+      expect(window.__VALIDATE_SELECTION_DEBUG[0].current).toBe("roundSelect");
     });
   });
 
@@ -103,15 +103,15 @@ describe("validateSelectionState", () => {
       });
     });
 
-    it("rejects selection when state is roundOver", () => {
-      eventBus.getBattleState.mockReturnValue("roundOver");
+    it("rejects selection when state is roundDisplay", () => {
+      eventBus.getBattleState.mockReturnValue("roundDisplay");
 
       const result = validateSelectionState(store);
 
       expect(result).toBe(false);
       expect(emitBattleEvent).toHaveBeenCalledWith("input.ignored", {
         kind: "invalidState",
-        state: "roundOver"
+        state: "roundDisplay"
       });
     });
 
@@ -155,7 +155,7 @@ describe("validateSelectionState", () => {
   describe("Duplicate selection guard", () => {
     it("rejects selection when store.selectionMade is already true", () => {
       store.selectionMade = true;
-      eventBus.getBattleState.mockReturnValue("waitingForPlayerAction");
+      eventBus.getBattleState.mockReturnValue("roundSelect");
 
       const result = validateSelectionState(store);
 
@@ -197,7 +197,7 @@ describe("validateSelectionState", () => {
     });
 
     it("handles null/undefined store gracefully by treating as falsy selectionMade", () => {
-      eventBus.getBattleState.mockReturnValue("waitingForPlayerAction");
+      eventBus.getBattleState.mockReturnValue("roundSelect");
 
       // validateSelectionState doesn't protect against null stores,
       // but they're treated as falsy in the initial selectionMade check
@@ -214,7 +214,7 @@ describe("validateSelectionState", () => {
 
   describe("Debug tracking via window.__VALIDATE_SELECTION_DEBUG", () => {
     it("tracks valid selection in debug array", () => {
-      eventBus.getBattleState.mockReturnValue("waitingForPlayerAction");
+      eventBus.getBattleState.mockReturnValue("roundSelect");
 
       validateSelectionState(store);
 
@@ -225,7 +225,7 @@ describe("validateSelectionState", () => {
       const debugEntry = window.__VALIDATE_SELECTION_DEBUG[0];
       expect(debugEntry.allowed).toBe(true);
       expect(debugEntry.selectionMade).toBe(false);
-      expect(debugEntry.current).toBe("waitingForPlayerAction");
+      expect(debugEntry.current).toBe("roundSelect");
       expect(debugEntry.timestamp).toBeDefined();
     });
 
@@ -241,40 +241,40 @@ describe("validateSelectionState", () => {
     });
 
     it("updates __VALIDATE_SELECTION_LAST with each call", () => {
-      eventBus.getBattleState.mockReturnValue("waitingForPlayerAction");
+      eventBus.getBattleState.mockReturnValue("roundSelect");
 
       validateSelectionState(store);
       const firstCall = window.__VALIDATE_SELECTION_LAST;
 
-      eventBus.getBattleState.mockReturnValue("roundDecision");
+      eventBus.getBattleState.mockReturnValue("roundResolve");
       validateSelectionState(store);
       const secondCall = window.__VALIDATE_SELECTION_LAST;
 
       expect(firstCall).not.toBe(secondCall);
-      expect(firstCall.current).toBe("waitingForPlayerAction");
-      expect(secondCall.current).toBe("roundDecision");
+      expect(firstCall.current).toBe("roundSelect");
+      expect(secondCall.current).toBe("roundResolve");
     });
 
     it("preserves full debug history across multiple calls", () => {
-      eventBus.getBattleState.mockReturnValue("waitingForPlayerAction");
+      eventBus.getBattleState.mockReturnValue("roundSelect");
       validateSelectionState(store);
 
       eventBus.getBattleState.mockReturnValue("matchStart");
       validateSelectionState(store);
 
-      eventBus.getBattleState.mockReturnValue("roundDecision");
+      eventBus.getBattleState.mockReturnValue("roundResolve");
       validateSelectionState(store);
 
       expect(window.__VALIDATE_SELECTION_DEBUG.length).toBe(3);
-      expect(window.__VALIDATE_SELECTION_DEBUG[0].current).toBe("waitingForPlayerAction");
+      expect(window.__VALIDATE_SELECTION_DEBUG[0].current).toBe("roundSelect");
       expect(window.__VALIDATE_SELECTION_DEBUG[1].current).toBe("matchStart");
-      expect(window.__VALIDATE_SELECTION_DEBUG[2].current).toBe("roundDecision");
+      expect(window.__VALIDATE_SELECTION_DEBUG[2].current).toBe("roundResolve");
     });
   });
 
   describe("API coverage - VALID_BATTLE_STATES constant", () => {
     it("exports VALID_BATTLE_STATES constant with expected values", () => {
-      expect(VALID_BATTLE_STATES).toEqual(["waitingForPlayerAction", "roundDecision"]);
+      expect(VALID_BATTLE_STATES).toEqual(["roundSelect", "roundResolve"]);
     });
 
     it("VALID_BATTLE_STATES matches what validateSelectionState checks", () => {

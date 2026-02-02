@@ -20,7 +20,7 @@ test.describe("Battle CLI - Restart", () => {
       const statsContainer = page.locator("#cli-stats");
       await expect(statsContainer).toHaveAttribute("aria-busy", "false", { timeout: 10000 });
 
-      await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000 });
+      await waitForBattleState(page, "roundSelect", { timeout: 10_000 });
 
       const statButtons = page.locator(".cli-stat");
       await expect(statButtons).toHaveCount(5);
@@ -29,7 +29,7 @@ test.describe("Battle CLI - Restart", () => {
       const maxRounds = 10;
 
       for (let roundIndex = 0; roundIndex < maxRounds; roundIndex += 1) {
-        await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000 });
+        await waitForBattleState(page, "roundSelect", { timeout: 10_000 });
 
         const statButton = statButtons.nth(roundIndex % 5);
         await expect(statButton).toBeVisible();

@@ -170,8 +170,8 @@ describe("Event Migration Validation", () => {
       onBattleEvent("state.transitioned", handler);
 
       const complexPayload = {
-        from: "roundStart",
-        to: "roundOver",
+        from: "roundPrompt",
+        to: "roundDisplay",
         metadata: {
           round: 1,
           stats: { strength: 75, speed: 60 },

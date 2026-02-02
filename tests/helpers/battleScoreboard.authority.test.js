@@ -56,7 +56,7 @@ describe("battleScoreboard authority + persistence", () => {
     expect(header.dataset.outcome).toBe("playerWin");
 
     // Transition to unrelated state should not clear
-    emitBattleEvent("control.state.changed", { to: "roundDecision" });
+    emitBattleEvent("control.state.changed", { to: "roundResolve" });
     expect(header.dataset.outcome).toBe("playerWin");
 
     // Selection clears outcome
@@ -73,7 +73,7 @@ describe("battleScoreboard authority + persistence", () => {
     expect(header.dataset.outcome).toBe("opponentWin");
 
     // Cooldown also clears
-    emitBattleEvent("control.state.changed", { to: "cooldown" });
+    emitBattleEvent("control.state.changed", { to: "roundWait" });
     expect(header.dataset.outcome).toBe("none");
   });
 });

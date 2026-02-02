@@ -43,7 +43,7 @@ describe("battleCLI stat interactions", () => {
       roundNumber: 1
     });
     await mod.startRoundWrapper();
-    document.body.dataset.battleState = "waitingForPlayerAction";
+    document.body.dataset.battleState = "roundSelect";
     const statEl = document.querySelector('[data-stat-index="1"]');
     expect(statEl.textContent).toBe("[1] Speed: 5");
     const hiddenVal = document.querySelector("#player-card li.stat span")?.textContent;

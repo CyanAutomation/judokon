@@ -19,14 +19,14 @@ test.describe("Classic Battle - Button State Timeline", () => {
   test("stat buttons disable after selection", async ({ page }) => {
     // Wait for stat buttons to be enabled
     const statButtons = page.getByTestId("stat-button");
-    await waitForBattleState(page, "waitingForPlayerAction");
+    await waitForBattleState(page, "roundSelect");
     await expect(statButtons.first()).toBeEnabled();
 
     // Click the button
     await statButtons.first().click();
 
     // Accept any valid post-selection state (handles skipRoundCooldown flag)
-    await waitForBattleState(page, ["cooldown", "roundStart", "waitingForPlayerAction"]);
+    await waitForBattleState(page, ["roundWait", "roundPrompt", "roundSelect"]);
     await expect(statButtons.first()).toBeDisabled();
   });
 });

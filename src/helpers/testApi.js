@@ -903,7 +903,7 @@ const stateApi = {
   },
 
   /**
-   * Advance from roundOver to cooldown state by dispatching the continue event.
+   * Advance from roundDisplay to roundWait state by dispatching the continue event.
    *
    * This is useful for tests that disable autoContinue and need to manually
    * progress through rounds. It bypasses UI interactions (clicking Next button)
@@ -912,10 +912,10 @@ const stateApi = {
    * @returns {Promise<{success: boolean, error?: string, previousState?: string, nextState?: string}>}
    * @pseudocode
    * 1. Get the battle state machine
-   * 2. Check if current state is roundOver
-   * 3. If yes, dispatch "continue" event to transition to cooldown
+   * 2. Check if current state is roundDisplay
+   * 3. If yes, dispatch "continue" event to transition to roundWait
    * 4. Return success status with state information
-   * 5. If not at roundOver or machine unavailable, return error
+   * 5. If not at roundDisplay or machine unavailable, return error
    */
   async advanceRound() {
     try {
@@ -926,10 +926,10 @@ const stateApi = {
 
       const previousState = machine.getState?.() ?? null;
 
-      if (previousState !== "roundOver") {
+      if (previousState !== "roundDisplay") {
         return {
           success: false,
-          error: `Cannot advance: not at roundOver (current: ${previousState})`,
+          error: `Cannot advance: not at roundDisplay (current: ${previousState})`,
           previousState
         };
       }
@@ -2244,7 +2244,7 @@ const inspectionApi = {
  * @param {Set<string>} successStates - States that indicate completion when outcome pending
  * @param {Set<string>} transitionalStates - Transitional states to skip when no outcome
  * @param {number} timeoutMs - Timeout in milliseconds
- * @returns {Promise<{finalState: string|null, lastSuccessfulState: string|null, roundOverObserved: boolean, timedOut: boolean}>}
+ * @returns {Promise<{finalState: string|null, lastSuccessfulState: string|null, roundDisplayObserved: boolean, timedOut: boolean}>}
  * @internal
  */
 async function waitForStateTransition(
@@ -2264,15 +2264,15 @@ async function waitForStateTransition(
 
   const captureState = (tracker, state) => {
     if (!state) return;
-    if (state === "roundOver") {
-      tracker.roundOverObserved = true;
+    if (state === "roundDisplay") {
+      tracker.roundDisplayObserved = true;
     }
     if (successStates.has(state)) {
       tracker.lastSuccessfulState = state;
     }
   };
 
-  const tracker = { finalState: null, lastSuccessfulState: null, roundOverObserved: false };
+  const tracker = { finalState: null, lastSuccessfulState: null, roundDisplayObserved: false };
   const deadline = Date.now() + timeoutMs;
   let timedOut = false;
 
@@ -2505,7 +2505,7 @@ const cliApi = {
         // If auto-dispatched, handle follow-up events
         if (!outcomeEvent && outcomeDispatched) {
           const postOutcomeState = stateApi.getBattleState();
-          if (postOutcomeState === "roundOver") {
+          if (postOutcomeState === "roundDisplay") {
             const followupEvent = detail?.result?.matchEnded ? "matchPointReached" : "continue";
             if (followupEvent) {
               try {
@@ -2529,8 +2529,8 @@ const cliApi = {
     }
 
     // Wait for state transitions
-    const successStates = new Set(["roundOver", "cooldown", "matchDecision", "matchOver"]);
-    const transitionalStates = new Set(["roundDecision", "roundOver"]);
+    const successStates = new Set(["roundDisplay", "roundWait", "matchDecision", "matchOver"]);
+    const transitionalStates = new Set(["roundResolve", "roundDisplay"]);
     const timeoutMs = autoWaitTimeoutMs ?? 2_000;
 
     const stateResult = await waitForStateTransition(
@@ -2548,7 +2548,7 @@ const cliApi = {
       outcomeEvent: resolvedOutcomeEvent,
       outcomeDispatched,
       finalState: normalizedState ?? null,
-      roundOverObserved: stateResult.roundOverObserved,
+      roundDisplayObserved: stateResult.roundDisplayObserved,
       dispatched: resolution?.dispatched ?? false,
       emitted: resolution?.emitted ?? false
     };
@@ -2590,7 +2590,7 @@ const testApi = {
      * @returns {void}
      * @pseudocode
      * 1. Call setAutoContinue with the provided value.
-     * 2. When enabled=false, rounds will pause at roundOver state.
+     * 2. When enabled=false, rounds will pause at roundDisplay state.
      * 3. When enabled=true, rounds will automatically transition to cooldown.
      */
     setAutoContinue(enabled) {

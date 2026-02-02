@@ -15,7 +15,7 @@ import {
 import { resetSelectionFinalized } from "../selectionState.js";
 import { withStateGuard } from "../stateGuards.js";
 
-const stateLogger = createComponentLogger("WaitingForPlayerAction");
+const stateLogger = createComponentLogger("RoundSelect");
 const SELECTION_IN_FLIGHT_GUARD = Symbol.for("classicBattle.selectionInFlight");
 
 function queryCardByRole(role) {
@@ -24,7 +24,7 @@ function queryCardByRole(role) {
 }
 
 /**
- * onEnter handler for `waitingForPlayerAction` state.
+ * onEnter handler for `roundSelect` state.
  *
  * Implements the documented state contract:
  * - "prompt:chooseStat" → enables stat buttons
@@ -38,8 +38,8 @@ function queryCardByRole(role) {
  * 2. Start round timer with auto-select callback that handles stat selection.
  * 3. Timer will emit "roundTimeout" on expiry and dispatch "timeout" to state machine.
  */
-export async function waitingForPlayerActionEnter(machine) {
-  stateLogger.debug("waitingForPlayerActionEnter invoked", {
+export async function roundSelectEnter(machine) {
+  stateLogger.debug("roundSelectEnter invoked", {
     currentState: machine?.currentState
   });
 
@@ -57,15 +57,15 @@ export async function waitingForPlayerActionEnter(machine) {
           store.selectionMade = false;
           store.__lastSelectionMade = false;
           store.playerChoice = null;
-          logSelectionMutation("waitingForPlayerActionEnter.reset", store);
+          logSelectionMutation("roundSelectEnter.reset", store);
         } else {
-          logSelectionMutation("waitingForPlayerActionEnter.resetDeferred", store, {
+          logSelectionMutation("roundSelectEnter.resetDeferred", store, {
             roundsPlayed: store.roundsPlayed,
             lastSelectionRound: store.__lastSelectionRound
           });
         }
       } else {
-        logSelectionMutation("waitingForPlayerActionEnter.resetSkipped", store, {
+        logSelectionMutation("roundSelectEnter.resetSkipped", store, {
           selectionInFlight: true
         });
       }
@@ -76,12 +76,12 @@ export async function waitingForPlayerActionEnter(machine) {
     }
   }
 
-  logSelectionMutation("waitingForPlayerActionEnter.enter", store, {
+  logSelectionMutation("roundSelectEnter.enter", store, {
     machineState: machine?.currentState ?? null
   });
 
   // Debug logging for state handler entry
-  logStateHandlerEnter("waitingForPlayerAction", machine?.currentState, {
+  logStateHandlerEnter("roundSelect", machine?.currentState, {
     hasStore: !!machine?.context?.store,
     storeState: machine?.context?.store
       ? {
@@ -143,16 +143,16 @@ export async function waitingForPlayerActionEnter(machine) {
     }, store);
 
     // Verify state hasn't regressed after async timer operation (race condition guard)
-    // Allow progression to roundDecision (normal flow after selection) or interruptRound
+    // Allow progression to roundResolve (normal flow after selection) or interruptRound
     withStateGuard(
       machine,
-      ["waitingForPlayerAction", "roundDecision", "interruptRound"],
+      ["roundSelect", "roundResolve", "interruptRound"],
       () => {
         // Timer is running, state is valid
         // Post-timer logic will proceed naturally
       },
       {
-        debugContext: "waitingForPlayerActionEnter.postTimerStart",
+        debugContext: "roundSelectEnter.postTimerStart",
         onInvalidState: (currentState, validStates) => {
           stateLogger.debug("State changed unexpectedly during timer setup", {
             expected: validStates,
@@ -167,10 +167,10 @@ export async function waitingForPlayerActionEnter(machine) {
   // when it updates the scoreboard timer display
 
   // Debug logging for state handler exit
-  logStateHandlerExit("waitingForPlayerAction", {
+  logStateHandlerExit("roundSelect", {
     timerStarted: !!store,
     buttonsEnabled: true
   });
 }
 
-export default waitingForPlayerActionEnter;
+export default roundSelectEnter;

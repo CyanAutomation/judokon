@@ -76,7 +76,7 @@ describe("createBattleStateIndicator", () => {
   it("should fetch the catalog and render the state list", async () => {
     const catalog = {
       version: "v1",
-      order: ["matchInit", "cooldown", "playerInput"],
+      order: ["matchInit", "roundWait", "playerInput"],
       ids: {
         matchInit: 1,
         cooldown: 2,
@@ -86,7 +86,7 @@ describe("createBattleStateIndicator", () => {
         matchInit: "Match Initializing",
         cooldown: "Cooldown"
       },
-      display: { include: ["matchInit", "cooldown", "playerInput"] }
+      display: { include: ["matchInit", "roundWait", "playerInput"] }
     };
     getCatalog.mockResolvedValue(catalog);
 
@@ -106,7 +106,7 @@ describe("createBattleStateIndicator", () => {
     expect(listItems[0].dataset.stateLabel).toBe("Match Initializing");
     expect(listItems[0].textContent).toBe("Match Initializing");
 
-    expect(listItems[1].dataset.stateRaw).toBe("cooldown");
+    expect(listItems[1].dataset.stateRaw).toBe("roundWait");
     expect(listItems[1].dataset.stateId).toBe("2");
     expect(listItems[1].dataset.stateLabel).toBe("Cooldown");
     expect(listItems[1].textContent).toBe("Cooldown");
@@ -120,9 +120,9 @@ describe("createBattleStateIndicator", () => {
   it("should subscribe to and handle control.state.changed events", async () => {
     const catalog = {
       version: "v1",
-      order: ["matchInit", "cooldown"],
-      ids: { matchInit: 1, cooldown: 2 },
-      display: { include: ["matchInit", "cooldown"] }
+      order: ["matchInit", "roundWait"],
+      ids: { matchInit: 1, roundWait: 2 },
+      display: { include: ["matchInit", "roundWait"] }
     };
     getCatalog.mockResolvedValue(catalog);
 
@@ -134,16 +134,16 @@ describe("createBattleStateIndicator", () => {
     });
 
     const handler = events.on.mock.calls[0][1];
-    handler({ to: "cooldown" });
+    handler({ to: "roundWait" });
 
     const activeItem = mountEl.querySelector("li.active");
-    expect(activeItem.dataset.stateRaw).toBe("cooldown");
+    expect(activeItem.dataset.stateRaw).toBe("roundWait");
     expect(activeItem.getAttribute("aria-current")).toBe("step");
 
     const announcerP = announcerEl.querySelector("p");
-    expect(announcerP.textContent).toBe("State: cooldown");
+    expect(announcerP.textContent).toBe("State: roundWait");
 
-    expect(getActiveState()).toBe("cooldown");
+    expect(getActiveState()).toBe("roundWait");
   });
 
   it("should cleanup event listeners", async () => {
@@ -195,9 +195,9 @@ describe("createBattleStateIndicator", () => {
     };
     const catalogV2 = {
       version: "v2",
-      order: ["matchInit", "cooldown"],
-      ids: { matchInit: 1, cooldown: 2 },
-      display: { include: ["matchInit", "cooldown"] }
+      order: ["matchInit", "roundWait"],
+      ids: { matchInit: 1, roundWait: 2 },
+      display: { include: ["matchInit", "roundWait"] }
     };
     getCatalog.mockResolvedValueOnce(catalogV1).mockResolvedValueOnce(catalogV2);
 
@@ -209,10 +209,10 @@ describe("createBattleStateIndicator", () => {
     });
 
     const handler = events.on.mock.calls[0][1];
-    await handler({ to: "cooldown", catalogVersion: "v2" });
+    await handler({ to: "roundWait", catalogVersion: "v2" });
 
     const listItems = mountEl.querySelectorAll("li");
     expect(listItems.length).toBe(2);
-    expect(listItems[1].dataset.stateRaw).toBe("cooldown");
+    expect(listItems[1].dataset.stateRaw).toBe("roundWait");
   });
 });

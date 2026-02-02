@@ -32,7 +32,7 @@ describe("handleStatSelection machine interaction", () => {
     }));
 
     vi.mock("../../../src/helpers/classicBattle/eventBus.js", () => ({
-      getBattleState: vi.fn(() => "roundDecision")
+      getBattleState: vi.fn(() => "roundResolve")
     }));
 
     // Import after mocks are set up
@@ -58,8 +58,8 @@ describe("handleStatSelection machine interaction", () => {
     });
     resolveSpy = vi.spyOn(selection, "resolveRoundDirect");
     ({ getBattleState } = await import("../../../src/helpers/classicBattle/eventBus.js"));
-    getBattleState.mockReturnValue("roundDecision");
-    document.body.dataset.battleState = "roundDecision";
+    getBattleState.mockReturnValue("roundResolve");
+    document.body.dataset.battleState = "roundResolve";
   });
 
   afterEach(() => {
@@ -83,7 +83,7 @@ describe("handleStatSelection machine interaction", () => {
       dispatchCalls.push(args);
       return false;
     });
-    getBattleState.mockReturnValue("roundDecision");
+    getBattleState.mockReturnValue("roundResolve");
 
     await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
 

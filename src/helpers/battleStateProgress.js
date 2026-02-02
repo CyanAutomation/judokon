@@ -45,9 +45,9 @@ const CONFIG = {
   active: "data-feature-battle-state-active",
   activeOriginal: "data-feature-battle-state-active-original",
   stateRemap: {
-    interruptRound: "cooldown",
+    interruptRound: "roundWait",
     interruptMatch: "matchOver",
-    roundModification: "roundDecision"
+    roundModification: "roundResolve"
   }
 };
 

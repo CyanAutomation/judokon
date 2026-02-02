@@ -27,7 +27,7 @@ test.describe("Classic Battle cooldown skip via UI", () => {
 
       // Accept any valid post-selection state (handles skipRoundCooldown flag if set)
       // Note: This test explicitly sets cooldownMs: 5000, so cooldown should occur
-      await waitForBattleState(page, ["cooldown", "roundStart", "waitingForPlayerAction"], {
+      await waitForBattleState(page, ["roundWait", "roundPrompt", "roundSelect"], {
         allowFallback: false
       });
 
@@ -50,7 +50,7 @@ test.describe("Classic Battle cooldown skip via UI", () => {
       // controlToUse is guaranteed to be either skipControl or nextButton from line 44
       await controlToUse.click();
 
-      await waitForBattleState(page, "waitingForPlayerAction", { allowFallback: false });
+      await waitForBattleState(page, "roundSelect", { allowFallback: false });
       await expect(snackbar).toBeVisible();
       await expect(timerValue).not.toHaveText(initialCountdown);
       await expect(nextButton).not.toHaveAttribute("data-next-ready", "true");

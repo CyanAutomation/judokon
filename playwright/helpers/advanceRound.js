@@ -1,5 +1,5 @@
 /**
- * Advance from roundOver to cooldown state by dispatching the continue event.
+ * Advance from roundDisplay to cooldown state by dispatching the continue event.
  *
  * This helper is useful for tests that disable autoContinue and need to manually
  * progress through rounds. It bypasses UI interactions and uses the Test API.
@@ -9,7 +9,7 @@
  *
  * @example
  * await advanceRound(page);
- * await waitForBattleState(page, "cooldown");
+ * await waitForBattleState(page, "roundWait");
  */
 export async function advanceRound(page) {
   const result = await page.evaluate(() => {

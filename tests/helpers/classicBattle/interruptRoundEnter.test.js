@@ -153,7 +153,7 @@ describe.sequential("classic battle orchestrator interrupt flows", () => {
 
       const restartTransition = transitions.find((t) => t.event === "restartRound");
       expect(restartTransition).toEqual(
-        expect.objectContaining({ from: "interruptRound", to: "cooldown" })
+        expect.objectContaining({ from: "interruptRound", to: "roundWait" })
       );
     } finally {
       cleanup();

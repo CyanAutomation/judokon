@@ -18,11 +18,11 @@ test.describe("Battle CLI - Play", () => {
             }
 
             const battleState = api.state?.getBattleState?.();
-            if (battleState !== "waitingForPlayerAction") {
+            if (battleState !== "roundSelect") {
               return battleState ?? "battle-state-pending";
             }
 
-            if (document.body?.dataset?.battleState !== "waitingForPlayerAction") {
+            if (document.body?.dataset?.battleState !== "roundSelect") {
               return "dom-state-pending";
             }
 
@@ -84,7 +84,7 @@ test.describe("Battle CLI - Play", () => {
         .poll(async () => {
           return await page.evaluate(() => {
             const api = window.__TEST_API;
-            return api?.state?.getBattleState?.() === "waitingForPlayerAction"
+            return api?.state?.getBattleState?.() === "roundSelect"
               ? "ready"
               : "pending";
           });

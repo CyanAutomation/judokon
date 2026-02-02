@@ -1,12 +1,12 @@
 import { waitingForMatchStartEnter } from "./stateHandlers/waitingForMatchStartEnter.js";
 import { matchStartEnter } from "./stateHandlers/matchStartEnter.js";
-import { cooldownEnter } from "./stateHandlers/cooldownEnter.js";
-import { roundStartEnter } from "./stateHandlers/roundStartEnter.js";
-import { waitingForPlayerActionEnter } from "./stateHandlers/waitingForPlayerActionEnter.js";
-import { waitingForPlayerActionExit } from "./stateHandlers/waitingForPlayerActionExit.js";
-import { roundDecisionEnter } from "./stateHandlers/roundDecisionEnter.js";
-import { roundDecisionExit } from "./stateHandlers/roundDecisionExit.js";
-import { roundOverEnter } from "./stateHandlers/roundOverEnter.js";
+import { roundWaitEnter } from "./stateHandlers/roundWaitEnter.js";
+import { roundPromptEnter } from "./stateHandlers/roundPromptEnter.js";
+import { roundSelectEnter } from "./stateHandlers/roundSelectEnter.js";
+import { roundSelectExit } from "./stateHandlers/roundSelectExit.js";
+import { roundResolveEnter } from "./stateHandlers/roundResolveEnter.js";
+import { roundResolveExit } from "./stateHandlers/roundResolveExit.js";
+import { roundDisplayEnter } from "./stateHandlers/roundDisplayEnter.js";
 import { matchDecisionEnter } from "./stateHandlers/matchDecisionEnter.js";
 import { matchOverEnter } from "./stateHandlers/matchOverEnter.js";
 import { interruptRoundEnter } from "./stateHandlers/interruptRoundEnter.js";
@@ -28,14 +28,14 @@ import { roundModificationEnter } from "./stateHandlers/roundModificationEnter.j
 export const stateHandlers = {
   waitingForMatchStart: { onEnter: waitingForMatchStartEnter },
   matchStart: { onEnter: matchStartEnter },
-  cooldown: { onEnter: cooldownEnter },
-  roundStart: { onEnter: roundStartEnter },
-  waitingForPlayerAction: {
-    onEnter: waitingForPlayerActionEnter,
-    onExit: waitingForPlayerActionExit
+  roundWait: { onEnter: roundWaitEnter },
+  roundPrompt: { onEnter: roundPromptEnter },
+  roundSelect: {
+    onEnter: roundSelectEnter,
+    onExit: roundSelectExit
   },
-  roundDecision: { onEnter: roundDecisionEnter, onExit: roundDecisionExit },
-  roundOver: { onEnter: roundOverEnter },
+  roundResolve: { onEnter: roundResolveEnter, onExit: roundResolveExit },
+  roundDisplay: { onEnter: roundDisplayEnter },
   matchDecision: { onEnter: matchDecisionEnter },
   matchOver: { onEnter: matchOverEnter },
   interruptRound: { onEnter: interruptRoundEnter },
