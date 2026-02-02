@@ -13,5 +13,5 @@ export function isRoundModificationOverlayEnabled(context = {}) {
   if (context?.flags && Object.prototype.hasOwnProperty.call(context.flags, "roundModify")) {
     return Boolean(context.flags.roundModify);
   }
-  return isEnabled("roundModify") === true;
+  return Boolean(isEnabled("roundModify"));
 }
