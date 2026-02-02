@@ -11,6 +11,7 @@ import { writeScoreDisplay } from "./scoreDisplay.js";
 import { cancelRoundResolveGuard } from "./stateHandlers/guardCancellation.js";
 import { getAutoContinue } from "./autoContinue.js";
 import { getOpponentDelay } from "./snackbar.js";
+import { getOpponentPromptMinDuration, getOpponentPromptTimestamp } from "./opponentPromptTracker.js";
 
 /**
  * Round resolution helpers and orchestrator for Classic Battle.
@@ -304,6 +305,45 @@ async function waitForRoundUILocks() {
   });
 }
 
+function resolvePromptNow() {
+  try {
+    if (typeof performance !== "undefined" && typeof performance.now === "function") {
+      return performance.now();
+    }
+  } catch {}
+  try {
+    return Date.now();
+  } catch {}
+  return 0;
+}
+
+function getOpponentPromptRemainingMs() {
+  const minDuration = Number(getOpponentPromptMinDuration());
+  if (!Number.isFinite(minDuration) || minDuration <= 0) {
+    return 0;
+  }
+  const promptTimestamp = Number(getOpponentPromptTimestamp());
+  if (!Number.isFinite(promptTimestamp) || promptTimestamp <= 0) {
+    return 0;
+  }
+  const elapsed = resolvePromptNow() - promptTimestamp;
+  if (!Number.isFinite(elapsed)) {
+    return 0;
+  }
+  if (elapsed < 0) {
+    return minDuration;
+  }
+  return Math.max(0, minDuration - elapsed);
+}
+
+async function waitForOpponentPromptMinDuration(sleep) {
+  const remaining = getOpponentPromptRemainingMs();
+  if (!Number.isFinite(remaining) || remaining <= 0) {
+    return;
+  }
+  await sleep(remaining);
+}
+
 /**
  * @summary Ensure the battle state machine is ready to evaluate the round.
  * @pseudocode
@@ -431,8 +471,12 @@ export async function resolveRound(store, stat, playerVal, opponentVal, opts = {
   isResolving = true;
   const configuredDelay = getOpponentDelay();
   const numericDelay = Number(configuredDelay);
+  const hasConfiguredDelay =
+    configuredDelay !== null && configuredDelay !== undefined && configuredDelay !== "";
   const baseDelay =
-    Number.isFinite(numericDelay) && numericDelay >= 0 ? numericDelay : resolveDelay();
+    hasConfiguredDelay && Number.isFinite(numericDelay) && numericDelay >= 0
+      ? numericDelay
+      : resolveDelay();
   const {
     // Deterministic delay using seeded RNG when available
     delayMs = baseDelay,
@@ -442,6 +486,7 @@ export async function resolveRound(store, stat, playerVal, opponentVal, opts = {
     if (!stat) return;
     await ensureRoundResolveState();
     await delayAndRevealOpponent(delayMs, sleep, stat);
+    await waitForOpponentPromptMinDuration(sleep);
     const result = await finalizeRoundResult(store, stat, playerVal, opponentVal);
     return result;
   } finally {
