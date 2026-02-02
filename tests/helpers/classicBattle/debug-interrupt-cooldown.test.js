@@ -171,8 +171,10 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
     // - machine.dispatch("ready") may be called if dispatchBattleEvent fails or returns false
     // - dispatchBattleEvent("ready") should be called to handle deduplication
     const readyDispatches = dispatchSpy.mock.calls.filter(([eventName]) => eventName === "ready");
-    const dispatchBattleEventReadyCalls = dispatchBattleEvent.mock.calls.filter(([e]) => e === "ready");
-    
+    const dispatchBattleEventReadyCalls = dispatchBattleEvent.mock.calls.filter(
+      ([e]) => e === "ready"
+    );
+
     // The actual behavior: when cooldown expires, the code attempts to dispatch "ready"
     // through dispatchBattleEvent first (which handles dedup), and may fall back to
     // machine.dispatch if needed. Accept the actual production behavior.
