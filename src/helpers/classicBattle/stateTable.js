@@ -181,8 +181,7 @@ export const CLASSIC_BATTLE_STATES = [
       CLASSIC_BATTLE_ACTIONS.SET_ACTIVE_PLAYER_USER
     ],
     triggers: [
-      { on: "cardsRevealed", target: "roundSelect" },
-      { on: "interrupt", target: "interruptRound" }
+      { on: "cardsRevealed", target: "roundSelect" }
     ]
   },
   {
@@ -226,8 +225,7 @@ export const CLASSIC_BATTLE_STATES = [
       { on: "outcome=winPlayer", target: "roundDisplay" },
       { on: "outcome=winOpponent", target: "roundDisplay" },
       { on: "outcome=draw", target: "roundDisplay" },
-      { on: "evaluate", target: "roundResolve" },
-      { on: "interrupt", target: "interruptRound" }
+      { on: "evaluate", target: "roundResolve" }
     ]
   },
   {
@@ -242,8 +240,7 @@ export const CLASSIC_BATTLE_STATES = [
         guard: GUARD_CONDITIONS.WIN_CONDITION_MET,
         note: "Checks the user-selected win target (3/5/10)."
       },
-      { on: "continue", target: "roundWait" },
-      { on: "interrupt", target: "interruptRound" }
+      { on: "continue", target: "roundWait" }
     ]
   },
   {
@@ -254,10 +251,7 @@ export const CLASSIC_BATTLE_STATES = [
       CLASSIC_BATTLE_ACTIONS.COMPUTE_MATCH_OUTCOME,
       CLASSIC_BATTLE_ACTIONS.RENDER_MATCH_SUMMARY
     ],
-    triggers: [
-      { on: "finalize", target: "matchOver" },
-      { on: "interrupt", target: "interruptMatch" }
-    ]
+    triggers: [{ on: "finalize", target: "matchOver" }]
   },
   {
     id: 9,
