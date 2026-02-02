@@ -57,7 +57,19 @@ export async function interruptRoundEnter(machine, payload) {
   }
 
   // Route to appropriate next state based on interrupt reason
-  if (payload?.adminTest && isRoundModificationOverlayEnabled(machine?.context)) {
+  const hasOverlayTransition =
+    typeof machine.getAvailableTransitions === "function" &&
+    machine
+      .getAvailableTransitions()
+      .some((transition) => transition.event === "roundModifyFlag");
+  const canUseOverlay =
+    payload?.adminTest &&
+    isRoundModificationOverlayEnabled(machine?.context) &&
+    hasOverlayTransition;
+  if (payload?.adminTest && !hasOverlayTransition) {
+    debugLog("interruptRoundEnter: roundModifyFlag unavailable in current state table");
+  }
+  if (canUseOverlay) {
     // Admin-initiated test scenario enters the optional overlay
     await machine.dispatch("roundModifyFlag", payload);
   } else if (payload?.reason === "quit") {
