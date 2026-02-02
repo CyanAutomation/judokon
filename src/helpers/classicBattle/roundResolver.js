@@ -429,9 +429,10 @@ export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
 export async function resolveRound(store, stat, playerVal, opponentVal, opts = {}) {
   if (isResolving) return;
   isResolving = true;
-  const configuredDelay = Number(getOpponentDelay());
+  const configuredDelay = getOpponentDelay();
+  const numericDelay = Number(configuredDelay);
   const baseDelay =
-    Number.isFinite(configuredDelay) && configuredDelay >= 0 ? configuredDelay : resolveDelay();
+    Number.isFinite(numericDelay) && numericDelay >= 0 ? numericDelay : resolveDelay();
   const {
     // Deterministic delay using seeded RNG when available
     delayMs = baseDelay,
