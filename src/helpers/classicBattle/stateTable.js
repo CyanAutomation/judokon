@@ -314,6 +314,8 @@ export const ROUND_MODIFICATION_OVERLAY_STATES = [
     description: "Admin/test-only branch to adjust round decision parameters before re-evaluating.",
     onEnter: [CLASSIC_BATTLE_ACTIONS.OPEN_ROUND_MODIFICATION_PANEL],
     triggers: [
+      { on: "roundPrompt", target: "roundPrompt" },
+      { on: "roundWait", target: "roundWait" },
       { on: "modifyRoundDecision", target: "roundResolve" },
       { on: "cancelModification", target: "interruptRound" }
     ]
@@ -331,7 +333,7 @@ function mergeStateTables(baseStates, overlayStates) {
     if (!overlayState?.name) continue;
     const existing = byName.get(overlayState.name);
     if (existing) {
-      if (overlayState.triggers && overlayState.triggers.length > 0) {
+      if (Array.isArray(overlayState.triggers)) {
         existing.triggers = [...existing.triggers, ...overlayState.triggers];
       }
       continue;
