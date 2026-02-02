@@ -30,7 +30,7 @@ const stateLogger = createComponentLogger("RoundResolve");
  * 4. Attempt immediate resolution if selection exists.
  * 5. Fall back to awaiting player choice if needed.
  * 6. Schedule post-resolve watchdog for timeout safety.
- * 7. On timeout: interrupt with noSelection reason.
+ * 7. On timeout: resolve as draw with noSelection reason.
  * 8. On other errors: capture to Sentry and use standard error handling.
  */
 export async function roundResolveEnter(machine) {
@@ -77,10 +77,10 @@ export async function roundResolveEnter(machine) {
           });
           cancelGuardOnce();
           guard(() =>
-            emitBattleEvent("scoreboardShowMessage", "No selection detected. Interrupting round.")
+            emitBattleEvent("scoreboardShowMessage", "No selection detected. Resolving as draw.")
           );
           guard(() => emitBattleEvent("debugPanelUpdate"));
-          await guardAsync(() => machine.dispatch("interrupt", { reason: "noSelection" }));
+          await guardAsync(() => machine.dispatch("outcome=draw", { reason: "noSelection" }));
           return;
         }
       }
@@ -99,10 +99,10 @@ export async function roundResolveEnter(machine) {
 
       if (err?.code === "ROUND_RESOLVE_TIMEOUT" || err?.message === "timeout") {
         guard(() =>
-          emitBattleEvent("scoreboardShowMessage", "No selection detected. Interrupting round.")
+          emitBattleEvent("scoreboardShowMessage", "No selection detected. Resolving as draw.")
         );
         guard(() => emitBattleEvent("debugPanelUpdate"));
-        await guardAsync(() => machine.dispatch("interrupt", { reason: "noSelection" }));
+        await guardAsync(() => machine.dispatch("outcome=draw", { reason: "noSelection" }));
       } else {
         await handleRoundError(machine, "roundResolutionError", err);
       }

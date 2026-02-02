@@ -311,7 +311,6 @@ function resolveRoundWaitTransition(eventName) {
 
 function resolveRoundPromptTransition(eventName) {
   if (eventName === "cardsRevealed") return "roundSelect";
-  if (eventName === "interrupt") return "interruptRound";
   return null;
 }
 
@@ -331,7 +330,6 @@ function resolveRoundResolveTransition(eventName) {
   if (eventName === "outcome=winOpponent") return "roundDisplay";
   if (eventName === "outcome=draw") return "roundDisplay";
   if (eventName === "evaluate") return "roundResolve";
-  if (eventName === "interrupt") return "interruptRound";
   return null;
 }
 
@@ -340,13 +338,11 @@ function resolveRoundDisplayTransition(eventName, context) {
     return isWinConditionMet(context) ? "matchDecision" : null;
   }
   if (eventName === "continue") return "roundWait";
-  if (eventName === "interrupt") return "interruptRound";
   return null;
 }
 
 function resolveMatchDecisionTransition(eventName) {
   if (eventName === "finalize") return "matchOver";
-  if (eventName === "interrupt") return "interruptMatch";
   return null;
 }
 

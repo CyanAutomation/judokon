@@ -445,7 +445,6 @@ function shouldApplyRoundCounterFallback({
  * @type {Record<string, {event: string, payload: {reason: string}}>} state → transition mapping.
  */
 const ADVANCE_TRANSITIONS = {
-  roundResolve: { event: "interrupt", payload: { reason: "advanceNextFromNonCooldown" } },
   roundSelect: { event: "interrupt", payload: { reason: "advanceNextFromNonCooldown" } }
 };
 

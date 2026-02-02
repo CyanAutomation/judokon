@@ -49,7 +49,7 @@ function getOpponentStatValue(stat, fallbackCard) {
  * @pseudocode
  * ```
  * if not in roundResolve or already resolved → return
- * if no player choice → dispatch interrupt(stalledNoSelection)
+ * if no player choice → dispatch outcome=draw fallback
  * outcomeEvent ← determineOutcomeEvent(store)
  * record debug guard timing
  * await dispatchOutcome(outcomeEvent, machine)
@@ -64,7 +64,7 @@ export async function computeAndDispatchOutcome(store, machine) {
     const resolved = rd && typeof rd.resolvedAt === "number";
     if (resolved) return;
     if (!store?.playerChoice) {
-      await machine.dispatch("interrupt", { reason: "stalledNoSelection" });
+      await dispatchFallbackOutcome(machine, "stalledNoSelection");
       return;
     }
     const outcomeEvent = determineOutcomeEvent(store);
@@ -144,7 +144,7 @@ async function dispatchOutcome(outcomeEvent, machine) {
       await dispatchOutcomeEvent(outcomeEvent, machine);
     }
   } else {
-    await machine.dispatch("interrupt", { reason: "guardNoOutcome" });
+    await dispatchFallbackOutcome(machine, "guardNoOutcome");
   }
 }
 
@@ -320,7 +320,7 @@ export function guardSelectionResolution(store, machine) {
  *
  * @pseudocode
  * 1. After watchdog delay, check the machine's state.
- * 2. If still in `roundResolve`, dispatch `interrupt`.
+ * 2. If still in `roundResolve`, dispatch outcome fallback.
  *
  * @param {import('../stateManager.js').ClassicBattleStateManager} machine - State machine.
  * @returns {void}
@@ -330,10 +330,18 @@ export function schedulePostResolveWatchdog(machine) {
     guardAsync(async () => {
       const still = machine.getState ? machine.getState() : null;
       if (still === "roundResolve") {
-        await machine.dispatch("interrupt", { reason: "postResolveWatchdog" });
+        await dispatchFallbackOutcome(machine, "postResolveWatchdog");
       }
     });
   }, POST_RESOLVE_WATCHDOG_DELAY_MS);
+}
+
+async function dispatchFallbackOutcome(machine, reason) {
+  try {
+    await machine.dispatch("outcome=draw", { reason });
+  } catch (err) {
+    debugLog("DEBUG: dispatchFallbackOutcome error", { reason, error: err.message });
+  }
 }
 
 export default {
