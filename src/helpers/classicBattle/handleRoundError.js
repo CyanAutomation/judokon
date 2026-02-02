@@ -34,6 +34,7 @@ export async function handleRoundError(machine, reason, err) {
     return;
   }
   if (currentState === "roundResolve") {
+  if (currentState === "roundResolve") {
     await guardAsync(() =>
       machine.dispatch("outcome=draw", { reason: reason ?? "roundError", error: err?.message })
     );
@@ -43,4 +44,7 @@ export async function handleRoundError(machine, reason, err) {
     await guardAsync(() => machine.dispatch("cardsRevealed", { reason: reason ?? "roundError" }));
     return;
   }
+  // Fallback for any other non-interruptible states
+  console.warn(`Unhandled state in handleRoundError: ${currentState}`);
+  await guardAsync(() => machine.dispatch("interrupt", { reason: reason ?? "roundError", error: err?.message }));
 }
