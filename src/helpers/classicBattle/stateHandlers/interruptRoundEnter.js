@@ -1,7 +1,7 @@
 import { emitBattleEvent } from "../battleEvents.js";
 import { exposeDebugState } from "../debugHooks.js";
 import { cleanupInterruptState } from "./interruptStateCleanup.js";
-import { cancelRoundDecisionGuard } from "./guardCancellation.js";
+import { cancelRoundResolveGuard } from "./guardCancellation.js";
 import { debugLog } from "../debugLog.js";
 
 /**
@@ -37,7 +37,7 @@ export async function interruptRoundEnter(machine, payload) {
   cleanupInterruptState(store, { resetSelectionState: true });
 
   // Cancel round decision guard to prevent duplicate selections
-  cancelRoundDecisionGuard();
+  cancelRoundResolveGuard();
 
   // Update UI to reflect interrupted state
   emitBattleEvent("scoreboardClearMessage");

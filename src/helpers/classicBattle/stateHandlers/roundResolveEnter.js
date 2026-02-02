@@ -94,10 +94,10 @@ export async function roundResolveEnter(machine) {
           location: "roundResolveEnter",
           round: { playerChoice: store.playerChoice }
         },
-        level: err?.code === "ROUND_DECISION_TIMEOUT" ? "info" : "error"
+        level: err?.code === "ROUND_RESOLVE_TIMEOUT" ? "info" : "error"
       });
 
-      if (err?.code === "ROUND_DECISION_TIMEOUT" || err?.message === "timeout") {
+      if (err?.code === "ROUND_RESOLVE_TIMEOUT" || err?.message === "timeout") {
         guard(() =>
           emitBattleEvent("scoreboardShowMessage", "No selection detected. Interrupting round.")
         );
