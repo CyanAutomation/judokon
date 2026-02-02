@@ -181,7 +181,8 @@ export const CLASSIC_BATTLE_STATES = [
       CLASSIC_BATTLE_ACTIONS.SET_ACTIVE_PLAYER_USER
     ],
     triggers: [
-      { on: "cardsRevealed", target: "roundSelect" }
+      { on: "cardsRevealed", target: "roundSelect" },
+      { on: "interrupt", target: "interruptRound" }
     ]
   },
   {

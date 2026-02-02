@@ -311,6 +311,7 @@ function resolveRoundWaitTransition(eventName) {
 
 function resolveRoundPromptTransition(eventName) {
   if (eventName === "cardsRevealed") return "roundSelect";
+  if (eventName === "interrupt") return "interruptRound";
   return null;
 }
 
