@@ -17,13 +17,13 @@ vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
 }));
 
 import {
-  cooldownEnter,
-  waitingForPlayerActionEnter
+  roundWaitEnter,
+  roundSelectEnter
 } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 import { emitBattleEvent } from "../../../src/helpers/classicBattle/battleEvents.js";
 import { createStateManager } from "../../../src/helpers/classicBattle/stateManager.js";
 
-describe("cooldownEnter zero duration", () => {
+describe("roundWaitEnter zero duration", () => {
   let timers;
   beforeEach(() => {
     timers = useCanonicalTimers();
@@ -38,20 +38,20 @@ describe("cooldownEnter zero duration", () => {
   it("enables stat buttons after zero-second matchStart cooldown", async () => {
     const states = [
       {
-        name: "cooldown",
+        name: "roundWait",
         type: "initial",
-        triggers: [{ on: "ready", target: "waitingForPlayerAction" }]
+        triggers: [{ on: "ready", target: "roundSelect" }]
       },
-      { name: "waitingForPlayerAction", triggers: [] }
+      { name: "roundSelect", triggers: [] }
     ];
     const machine = await createStateManager(
-      { waitingForPlayerAction: waitingForPlayerActionEnter },
+      { roundSelect: roundSelectEnter },
       { store: { roundReadyForInput: true } },
       undefined,
       states
     );
 
-    await cooldownEnter(machine, { initial: true });
+    await roundWaitEnter(machine, { initial: true });
     expect(emitBattleEvent).toHaveBeenCalledWith("countdownStart", { duration: 1 });
 
     await timers.advanceTimersByTimeAsync(1200);

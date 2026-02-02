@@ -63,7 +63,7 @@ describe("battleCLI accessibility live regions", () => {
     setAutoContinue(false);
 
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
-    emitBattleEvent("battleStateChange", { to: "roundOver" });
+    emitBattleEvent("battleStateChange", { to: "roundDisplay" });
 
     // Verify showSnackbar was called with the correct message (snackbar is mocked in loadBattleCLI)
     const { showSnackbar } = await import("../../src/helpers/showSnackbar.js");

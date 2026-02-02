@@ -44,7 +44,7 @@ async function resolveRoundViaCli(page) {
 
       if (typeof stateApi?.waitForBattleState === "function") {
         try {
-          await stateApi.waitForBattleState("waitingForPlayerAction");
+          await stateApi.waitForBattleState("roundSelect");
         } catch {}
       }
 
@@ -61,7 +61,7 @@ async function resolveRoundViaCli(page) {
 
       if (resolved && typeof stateApi?.waitForBattleState === "function") {
         try {
-          await stateApi.waitForBattleState("roundOver");
+          await stateApi.waitForBattleState("roundDisplay");
         } catch {}
       }
 
@@ -94,7 +94,7 @@ test.describe("Classic Battle Opponent Round Flow", () => {
       await firstStat.click();
 
       const snackbar = page.locator(selectors.snackbarContainer());
-      await waitForBattleState(page, "roundDecision", { timeout: 2_000 });
+      await waitForBattleState(page, "roundResolve", { timeout: 2_000 });
       // Expect "Opponent is choosing" first, which will be replaced by "Next round in" during cooldown
       await expect(snackbar).toContainText(/^(Opponent is choosing|Next round in)/i, {
         timeout: 2_500
@@ -251,7 +251,7 @@ test.describe("Classic Battle Opponent Round Flow", () => {
         await firstStat.click();
 
         // Accept any valid post-selection state (handles skipRoundCooldown flag)
-        await waitForBattleState(page, ["cooldown", "roundStart", "waitingForPlayerAction"], {
+        await waitForBattleState(page, ["roundWait", "roundPrompt", "roundSelect"], {
           allowFallback: false
         });
 
@@ -262,13 +262,13 @@ test.describe("Classic Battle Opponent Round Flow", () => {
 
         await nextButton.click();
 
-        await waitForBattleState(page, "waitingForPlayerAction", { allowFallback: false });
+        await waitForBattleState(page, "roundSelect", { allowFallback: false });
 
         // Verify the state actually transitioned from cooldown
         const currentState = await page.evaluate(
           () => window.__TEST_API?.state?.getBattleState?.() ?? null
         );
-        expect(currentState).toBe("waitingForPlayerAction");
+        expect(currentState).toBe("roundSelect");
 
         await expect(roundCounter).toContainText(new RegExp(`Round\\s*${expectedRound}`, "i"));
         await expect(page.locator(selectors.statButton()).first()).toBeEnabled();

@@ -51,16 +51,16 @@ vi.mock("../../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
   computeNextRoundCooldown: vi.fn(() => 1)
 }));
 
-import { cooldownEnter } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
+import { roundWaitEnter } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 
-describe("cooldownEnter", () => {
+describe("roundWaitEnter", () => {
   let timers;
   let machine;
   beforeEach(() => {
     timers = useCanonicalTimers();
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(console, "warn").mockImplementation(() => {});
-    machine = { dispatch: vi.fn(), getState: vi.fn(() => "cooldown") };
+    machine = { dispatch: vi.fn(), getState: vi.fn(() => "roundWait") };
     const scheduler = {
       machine,
       setTimeout: (cb, ms) => setTimeout(cb, ms),
@@ -73,7 +73,7 @@ describe("cooldownEnter", () => {
     vi.restoreAllMocks();
   });
   it("auto dispatches ready after 1s timer", async () => {
-    await cooldownEnter(machine);
+    await roundWaitEnter(machine);
     expect(machine.dispatch).not.toHaveBeenCalled();
     await timers.advanceTimersByTimeAsync(1200); // 1s duration + 200ms fallback
     expect(machine.dispatch).toHaveBeenCalledWith("ready");

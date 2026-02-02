@@ -79,9 +79,9 @@ describe("battleCLI init helpers", () => {
         .map(([, detail]) => detail?.to ?? null);
       expect(stateChangeCalls).toEqual([
         "matchStart",
-        "cooldown",
-        "roundStart",
-        "waitingForPlayerAction"
+        "roundWait",
+        "roundPrompt",
+        "roundSelect"
       ]);
       const manualTimerCalls = setTimeoutSpy.mock.calls.slice(initialTimerCalls);
       const fallbackTimers = manualTimerCalls

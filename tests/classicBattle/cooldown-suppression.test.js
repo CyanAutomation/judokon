@@ -157,7 +157,7 @@ describe("Cooldown suppression during opponent prompt", () => {
     expect(hasCooldownMessage).toBe(true);
   });
 
-  it("suppresses cooldown during selection phase (waitingForPlayerAction)", async () => {
+  it("suppresses cooldown during selection phase (roundSelect)", async () => {
     // Import modules after harness setup
     const { createRoundTimer } = await import("../../src/helpers/timers/createRoundTimer.js");
     const { attachCooldownRenderer } = await import("../../src/helpers/CooldownRenderer.js");
@@ -167,8 +167,8 @@ describe("Cooldown suppression during opponent prompt", () => {
     const showSnackbarSpy = vi.spyOn(snackbarManager, "show");
     const updateSnackbarSpy = vi.spyOn(snackbarManager, "update");
 
-    // Step 1: Set battle state to waitingForPlayerAction (selection phase)
-    document.body.dataset.battleState = "waitingForPlayerAction";
+    // Step 1: Set battle state to roundSelect (selection phase)
+    document.body.dataset.battleState = "roundSelect";
 
     // Step 2: Create and start cooldown timer
     const timer = createRoundTimer({
@@ -193,7 +193,7 @@ describe("Cooldown suppression during opponent prompt", () => {
     expect(updateMessageCalls).not.toContainEqual(expect.stringMatching(/Next round in/));
 
     // Step 4: Change to cooldown phase
-    document.body.dataset.battleState = "cooldown";
+    document.body.dataset.battleState = "roundWait";
 
     // Step 5: Emit another tick
     await vi.advanceTimersByTimeAsync(100);
@@ -208,7 +208,7 @@ describe("Cooldown suppression during opponent prompt", () => {
     expect(hasCooldownMessage).toBe(true);
   });
 
-  it("suppresses cooldown during decision phase (roundDecision)", async () => {
+  it("suppresses cooldown during decision phase (roundResolve)", async () => {
     // Import modules after harness setup
     const { createRoundTimer } = await import("../../src/helpers/timers/createRoundTimer.js");
     const { attachCooldownRenderer } = await import("../../src/helpers/CooldownRenderer.js");
@@ -218,8 +218,8 @@ describe("Cooldown suppression during opponent prompt", () => {
     const showSnackbarSpy = vi.spyOn(snackbarManager, "show");
     const updateSnackbarSpy = vi.spyOn(snackbarManager, "update");
 
-    // Step 1: Set battle state to roundDecision (decision phase)
-    document.body.dataset.battleState = "roundDecision";
+    // Step 1: Set battle state to roundResolve (decision phase)
+    document.body.dataset.battleState = "roundResolve";
 
     // Step 2: Create and start cooldown timer
     const timer = createRoundTimer({
@@ -244,7 +244,7 @@ describe("Cooldown suppression during opponent prompt", () => {
     expect(updateMessageCalls).not.toContainEqual(expect.stringMatching(/Next round in/));
 
     // Step 4: Change to cooldown phase
-    document.body.dataset.battleState = "cooldown";
+    document.body.dataset.battleState = "roundWait";
 
     // Step 5: Emit another tick
     await vi.advanceTimersByTimeAsync(100);

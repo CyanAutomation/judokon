@@ -532,29 +532,29 @@ export function setupOrchestratedReady(controls, machine, btn, options = {}) {
   }
   const machineOutOfCooldown = () => {
     const state = getMachineState(machine);
-    return typeof state === "string" && state !== "cooldown";
+    return typeof state === "string" && state !== "roundWait";
   };
   addListener("battleStateChange", (event) => {
     const detail = event?.detail;
     if (detail && typeof detail === "object") {
       const from = detail.from ?? detail?.detail?.from ?? null;
       const to = detail.to ?? detail?.detail?.to ?? null;
-      if (from === "cooldown" && to && to !== "cooldown") {
+      if (from === "roundWait" && to && to !== "roundWait") {
         finalize();
         return;
       }
-      if (from === "cooldown" && !to && machineOutOfCooldown()) {
+      if (from === "roundWait" && !to && machineOutOfCooldown()) {
         finalize();
         return;
       }
-      if (!from && typeof to === "string" && to !== "cooldown" && machineOutOfCooldown()) {
+      if (!from && typeof to === "string" && to !== "roundWait" && machineOutOfCooldown()) {
         finalize();
         return;
       }
       return;
     }
     if (typeof detail === "string") {
-      if (detail !== "cooldown" && machineOutOfCooldown()) finalize();
+      if (detail !== "roundWait" && machineOutOfCooldown()) finalize();
       return;
     }
     if (detail === null || typeof detail === "undefined") {
@@ -610,11 +610,11 @@ export function setupOrchestratedReady(controls, machine, btn, options = {}) {
  * @param {string|null|undefined} state - Machine state candidate.
  * @returns {boolean} True when the state signals readiness.
  * @pseudocode
- * 1. Treat "roundStart" and "waitingForPlayerAction" as ready states.
+ * 1. Treat "roundPrompt" and "roundSelect" as ready states.
  * 2. Return false for all other values.
  */
 export function isOrchestratorReadyState(state) {
-  return state === "roundStart" || state === "waitingForPlayerAction";
+  return state === "roundPrompt" || state === "roundSelect";
 }
 
 /**

@@ -80,11 +80,11 @@ describe("battleCLI state flows", () => {
     uiHelpers.updateBattleStateBadge.mockClear();
     orchestratorHandlers.setAutoContinue(false);
 
-    emitBattleEvent("battleStateChange", { from: "waiting", to: "roundOver" });
-    expect(uiHelpers.updateBattleStateBadge).toHaveBeenCalledWith("roundOver");
+    emitBattleEvent("battleStateChange", { from: "waiting", to: "roundDisplay" });
+    expect(uiHelpers.updateBattleStateBadge).toHaveBeenCalledWith("roundDisplay");
     expect(showSnackbar).toHaveBeenCalledWith("Press Enter to continue");
 
-    emitBattleEvent("battleStateChange", { from: "roundOver", to: "waitingForPlayerAction" });
+    emitBattleEvent("battleStateChange", { from: "roundDisplay", to: "roundSelect" });
   });
 
   describe("countdown transitions", () => {

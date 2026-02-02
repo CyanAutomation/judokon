@@ -226,7 +226,7 @@ describe.sequential("ClassicBattleController.startRound", () => {
 
     const currentRound = roundStore.getCurrentRound();
     expect(currentRound.number).toBe(1);
-    expect(currentRound.state).toBe("roundStart");
+    expect(currentRound.state).toBe("roundPrompt");
     expect(waitForOpponentCard).toHaveBeenCalledTimes(1);
 
     const opponentCard = document.getElementById("opponent-card");

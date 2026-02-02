@@ -398,7 +398,7 @@ export async function startRound(store, onRoundStart) {
         /* keep behaviour stable on failure */
       }
       try {
-        roundState.setRoundState("roundStart", "startRound");
+        roundState.setRoundState("roundPrompt", "startRound");
       } catch {
         /* ignore */
       }
@@ -737,7 +737,7 @@ function prepareCooldownContext(options, emitTelemetry) {
   const isCooldownSafeState = (state) => {
     if (!state) return true;
     if (typeof state !== "string") return false;
-    if (state === "cooldown" || state === "roundOver") return true;
+    if (state === "roundWait" || state === "roundDisplay") return true;
     return isOrchestratorReadyState(state);
   };
   const inspector = createMachineStateInspector({
@@ -1007,8 +1007,8 @@ function finalizeReadyControls(controls, dispatched, options = {}) {
   if (dispatched || forceResolve) {
     controls.readyDispatched = true;
 
-    // Only skip setting finalized state if we're already in waitingForPlayerAction
-    // In all other states (including cooldown, roundStart, roundOver), we should set it
+    // Only skip setting finalized state if we're already in roundSelect
+    // In all other states (including roundWait, roundPrompt, roundDisplay), we should set it
     // This handles the case where cooldown expires and we need to finalize the Next button
     let shouldSetFinalized = true; // Default to setting it
     let debugInfo = { hasMachine: false, state: "unknown" };
@@ -1018,8 +1018,8 @@ function finalizeReadyControls(controls, dispatched, options = {}) {
       if (machine && typeof machine.getState === "function") {
         const currentState = machine.getState();
         debugInfo.state = currentState;
-        // Only skip if we're already in waitingForPlayerAction (selection phase)
-        shouldSetFinalized = currentState !== "waitingForPlayerAction";
+        // Only skip if we're already in roundSelect (selection phase)
+        shouldSetFinalized = currentState !== "roundSelect";
       }
       // If we can't get the machine or state, set finalized (default true)
     } catch (err) {

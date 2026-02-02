@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 
 import { createStateManager } from "../../../src/helpers/classicBattle/stateManager.js";
-import { roundStartEnter } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
+import { roundPromptEnter } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 
 // ===== Top-level vi.hoisted() for shared mock state =====
 const { mockDrawCards, mockResetForTest } = vi.hoisted(() => ({
@@ -21,28 +21,28 @@ describe("round start error recovery", () => {
     const { startRound } = await import("../../../src/helpers/classicBattle/roundManager.js");
     const states = [
       {
-        name: "roundStart",
+        name: "roundPrompt",
         type: "initial",
         triggers: [
-          { on: "cardsRevealed", target: "waitingForPlayerAction" },
+          { on: "cardsRevealed", target: "roundSelect" },
           { on: "interrupt", target: "interruptRound" }
         ]
       },
       {
-        name: "waitingForPlayerAction",
+        name: "roundSelect",
         triggers: [{ on: "interrupt", target: "interruptRound" }]
       },
       { name: "interruptRound", triggers: [] }
     ];
     const machine = await createStateManager(
-      { roundStart: roundStartEnter },
+      { roundPrompt: roundPromptEnter },
       { doStartRound: startRound, store: {} },
       undefined,
       states
     );
     const spy = vi.spyOn(machine, "dispatch");
 
-    await roundStartEnter(machine);
+    await roundPromptEnter(machine);
 
     expect(machine.getState()).toBe("interruptRound");
     expect(spy).toHaveBeenCalledWith("interrupt", {
@@ -58,28 +58,28 @@ describe("round start error recovery", () => {
     };
     const states = [
       {
-        name: "roundStart",
+        name: "roundPrompt",
         type: "initial",
         triggers: [
-          { on: "cardsRevealed", target: "waitingForPlayerAction" },
+          { on: "cardsRevealed", target: "roundSelect" },
           { on: "interrupt", target: "interruptRound" }
         ]
       },
       {
-        name: "waitingForPlayerAction",
+        name: "roundSelect",
         triggers: [{ on: "interrupt", target: "interruptRound" }]
       },
       { name: "interruptRound", triggers: [] }
     ];
     const machine = await createStateManager(
-      { roundStart: roundStartEnter },
+      { roundPrompt: roundPromptEnter },
       { startRoundWrapper },
       undefined,
       states
     );
     const spy = vi.spyOn(machine, "dispatch");
 
-    await roundStartEnter(machine);
+    await roundPromptEnter(machine);
 
     expect(machine.getState()).toBe("interruptRound");
     expect(spy).toHaveBeenCalledWith("interrupt", {

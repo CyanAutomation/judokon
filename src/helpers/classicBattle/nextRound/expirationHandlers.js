@@ -560,8 +560,8 @@ export async function dispatchReadyDirectly(params) {
           const machineStateBeforeDispatch = readMachineState();
           if (
             machineStateBeforeDispatch &&
-            machineStateBeforeDispatch !== "cooldown" &&
-            machineStateBeforeDispatch !== "roundOver"
+            machineStateBeforeDispatch !== "roundWait" &&
+            machineStateBeforeDispatch !== "roundDisplay"
           ) {
             return recordSuccess(true);
           }

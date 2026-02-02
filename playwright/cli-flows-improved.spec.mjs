@@ -124,12 +124,12 @@ const startBattle = async (page) => {
   const stateReached = await callTestApi(
     page,
     "state.waitForBattleState",
-    "waitingForPlayerAction",
+    "roundSelect",
     10_000
   );
 
   if (!stateReached) {
-    throw new Error("CLI battle did not reach waitingForPlayerAction via Test API");
+    throw new Error("CLI battle did not reach roundSelect via Test API");
   }
 };
 
@@ -390,7 +390,7 @@ test.describe("CLI Battle Interface", () => {
         .toBe(true);
 
       await page.keyboard.press("Enter");
-      await expect.poll(() => getBattleState(page)).toBe("waitingForPlayerAction");
+      await expect.poll(() => getBattleState(page)).toBe("roundSelect");
       await expect(page.locator("#cli-stats .cli-stat.selected")).toHaveCount(0);
 
       await page.keyboard.press("2");
@@ -402,7 +402,7 @@ test.describe("CLI Battle Interface", () => {
         .toBe(true);
 
       await page.keyboard.press("Space");
-      await expect.poll(() => getBattleState(page)).toBe("waitingForPlayerAction");
+      await expect.poll(() => getBattleState(page)).toBe("roundSelect");
       await expect(page.locator("#cli-stats .cli-stat.selected")).toHaveCount(0);
     });
   });
@@ -522,8 +522,8 @@ test.describe("CLI Battle Interface", () => {
       await page.keyboard.press("1");
 
       await expect(verboseLog).not.toBeEmpty({ timeout: 10_000 });
-      await expect(verboseLog).toContainText("waitingForPlayerAction", { timeout: 10_000 });
-      await expect(verboseLog).toContainText("-> roundOver", { timeout: 10_000 });
+      await expect(verboseLog).toContainText("roundSelect", { timeout: 10_000 });
+      await expect(verboseLog).toContainText("-> roundDisplay", { timeout: 10_000 });
     });
   });
 
@@ -531,7 +531,7 @@ test.describe("CLI Battle Interface", () => {
     testWithConsole("Test API provides battle state access", async ({ page }) => {
       await ensureBattleReady(page);
 
-      await expect.poll(() => getBattleState(page)).toBe("waitingForPlayerAction");
+      await expect.poll(() => getBattleState(page)).toBe("roundSelect");
 
       const storeInfo = await getBattleStore(page);
       if (storeInfo !== null) {

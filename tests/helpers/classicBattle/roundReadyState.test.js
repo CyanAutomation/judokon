@@ -49,7 +49,7 @@ describe("roundReadyState", () => {
     const dispatchSpy = vi.fn(async () => "ready-dispatched");
     const machine = {
       dispatch: dispatchSpy,
-      getState: vi.fn(() => "cooldown")
+      getState: vi.fn(() => "roundWait")
     };
 
     globalThis.__classicBattleDebugRead = vi.fn((token) => {

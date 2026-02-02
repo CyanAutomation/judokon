@@ -218,11 +218,11 @@ describe("classicBattle stat selection failure recovery", () => {
   it("aligns battle state getter with waiting state before stat buttons are ready", async () => {
     const eventBus = await import("../../../src/helpers/classicBattle/eventBus.js");
     eventBus.resetEventBus();
-    eventBus.setBattleStateGetter(() => "roundStart");
+    eventBus.setBattleStateGetter(() => "roundPrompt");
 
     document.body.innerHTML = `<div id="stat-buttons"></div><button id="next-button"></button>`;
 
-    broadcastBattleState("waitingForPlayerAction");
+    broadcastBattleState("roundSelect");
 
     renderStatButtons({});
 
@@ -232,7 +232,7 @@ describe("classicBattle stat selection failure recovery", () => {
     }
 
     expect(container?.dataset.buttonsReady).toBe("true");
-    expect(eventBus.getBattleState()).toBe("waitingForPlayerAction");
+    expect(eventBus.getBattleState()).toBe("roundSelect");
     eventBus.resetEventBus();
   });
 
@@ -276,7 +276,7 @@ describe("classicBattle stat selection failure recovery", () => {
       // not waiting for timers to fire
       const stateChangeEvents = eventLog.filter((entry) => entry.type === "battleStateChange");
 
-      // Should have at least one state change event (e.g., roundDecision)
+      // Should have at least one state change event (e.g., roundResolve)
       expect(stateChangeEvents.length).toBeGreaterThan(0);
 
       // All events should have the { from, to } format
@@ -287,10 +287,10 @@ describe("classicBattle stat selection failure recovery", () => {
         expect(typeof event.detail.from === "string" || event.detail.from === null).toBe(true);
       }
 
-      // Verify roundDecision state change occurred
-      const roundDecisionEvent = stateChangeEvents.find((e) => e.detail?.to === "roundDecision");
-      expect(roundDecisionEvent).toBeDefined();
-      expect(roundDecisionEvent.detail.to).toBe("roundDecision");
+      // Verify roundResolve state change occurred
+      const roundResolveEvent = stateChangeEvents.find((e) => e.detail?.to === "roundResolve");
+      expect(roundResolveEvent).toBeDefined();
+      expect(roundResolveEvent.detail.to).toBe("roundResolve");
     } finally {
       try {
         offBattleEvent("battleStateChange", eventHandler);

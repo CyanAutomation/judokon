@@ -111,7 +111,7 @@ JU-DO-KON! tests need consistent access to game data (judoka, gokyo techniques, 
 
 ### Problem and Solution
 
-**Problem:** In JSDOM environments, fetch() cannot resolve file:// URLs or relative paths to data files like `src/data/judoka.json`. This prevents state machine initialization from completing, blocking the transition to `waitingForPlayerAction`.
+**Problem:** In JSDOM environments, fetch() cannot resolve file:// URLs or relative paths to data files like `src/data/judoka.json`. This prevents state machine initialization from completing, blocking the transition to `roundSelect`.
 
 **Solution:** We provide a three-layer approach:
 
@@ -170,15 +170,15 @@ describe("Battle State Machine", () => {
     harness.cleanup();
   });
 
-  it("transitions to waitingForPlayerAction after card draw", async () => {
+  it("transitions to roundSelect after card draw", async () => {
     // Wait for round start and card drawing
-    await harness.waitForState("waitingForPlayerAction");
+    await harness.waitForState("roundSelect");
 
-    expect(harness.getState()).toBe("waitingForPlayerAction");
+    expect(harness.getState()).toBe("roundSelect");
   });
 
   it("dispatches events correctly", async () => {
-    await harness.waitForState("waitingForPlayerAction");
+    await harness.waitForState("roundSelect");
     harness.dispatchEvent("matchOver", { winner: "player" });
     await harness.waitForState("matchOver");
   });

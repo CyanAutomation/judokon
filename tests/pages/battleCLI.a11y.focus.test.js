@@ -18,13 +18,13 @@ describe("battleCLI accessibility", () => {
       const mod = await loadBattleCLI();
       await mod.init();
       const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
-      emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
+      emitBattleEvent("battleStateChange", { to: "roundSelect" });
       expect(document.activeElement?.id).toBe("cli-stats");
       const { setAutoContinue } = await import(
         "../../src/helpers/classicBattle/orchestratorHandlers.js"
       );
       setAutoContinue(false);
-      emitBattleEvent("battleStateChange", { from: "waitingForPlayerAction", to: "roundOver" });
+      emitBattleEvent("battleStateChange", { from: "roundSelect", to: "roundDisplay" });
 
       // Verify showSnackbar was called with the correct message (snackbar is mocked in loadBattleCLI)
       const { showSnackbar } = await import("../../src/helpers/showSnackbar.js");

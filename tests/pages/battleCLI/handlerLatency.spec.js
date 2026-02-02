@@ -12,7 +12,7 @@ const baseOptions = {
   html: '<div id="player-card"></div>'
 };
 
-describe("battleCLI waitingForPlayerAction handler latency", () => {
+describe("battleCLI roundSelect handler latency", () => {
   let battleCliLoaded = false;
 
   async function setupWaitingForAction() {
@@ -24,7 +24,7 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     const statEl = list.querySelector(".cli-stat");
     if (!statEl) throw new Error("Expected at least one .cli-stat row to be rendered");
     statEl.focus();
-    document.body.dataset.battleState = "waitingForPlayerAction";
+    document.body.dataset.battleState = "roundSelect";
     const { onKeyDown } = await import("../../../src/pages/index.js");
     return { mod, statEl, list, onKeyDown };
   }
@@ -170,12 +170,12 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     const { default: cliState } = await import("../../../src/pages/battleCLI/state.js");
 
     const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
-    battleEventsMod.emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
+    battleEventsMod.emitBattleEvent("battleStateChange", { to: "roundSelect" });
     const emitSpy = battleEventsMod.emitBattleEvent;
     emitSpy.mockClear?.();
     await mod.renderStatList?.();
     mod.startSelectionCountdown(30);
-    document.body.dataset.battleState = "waitingForPlayerAction";
+    document.body.dataset.battleState = "roundSelect";
     const features = await import("../../../src/helpers/featureFlags.js");
     expect(features.isEnabled("statHotkeys")).toBe(true);
     expect(runtimeInit.getStatByIndex("1")).toBe("power");
@@ -213,10 +213,10 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
     const emitSpy = battleEventsMod.emitBattleEvent;
 
-    battleEventsMod.emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
+    battleEventsMod.emitBattleEvent("battleStateChange", { to: "roundSelect" });
     emitSpy.mockClear?.();
     mod.startSelectionCountdown(30);
-    document.body.dataset.battleState = "waitingForPlayerAction";
+    document.body.dataset.battleState = "roundSelect";
     const features = await import("../../../src/helpers/featureFlags.js");
     expect(features.isEnabled("statHotkeys")).toBe(true);
 

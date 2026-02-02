@@ -91,12 +91,12 @@ describe("classic battle interrupt flow", () => {
       {
         name: "roundModification",
         triggers: [
-          { on: "modifyRoundDecision", target: "roundStart" },
-          { on: "cancelModification", target: "cooldown" }
+          { on: "modifyRoundDecision", target: "roundPrompt" },
+          { on: "cancelModification", target: "roundWait" }
         ]
       },
-      { name: "roundStart", triggers: [] },
-      { name: "cooldown", triggers: [] }
+      { name: "roundPrompt", triggers: [] },
+      { name: "roundWait", triggers: [] }
     ];
 
     const machine = await createStateManager(
@@ -104,11 +104,11 @@ describe("classic battle interrupt flow", () => {
         roundModification: (_, payload) => {
           payloads.roundModification = payload;
         },
-        roundStart: (_, payload) => {
-          payloads.roundStart = payload;
+        roundPrompt: (_, payload) => {
+          payloads.roundPrompt = payload;
         },
-        cooldown: () => {
-          payloads.cooldown = true;
+        roundWait: () => {
+          payloads.roundWait = true;
         }
       },
       {},
@@ -121,8 +121,8 @@ describe("classic battle interrupt flow", () => {
     expect(payloads.roundModification).toEqual({ reason: "score adjusted" });
 
     await machine.dispatch("modifyRoundDecision", { resumeRound: true, adminTest: true });
-    expect(machine.getState()).toBe("roundStart");
-    expect(payloads.roundStart).toEqual({ resumeRound: true, adminTest: true });
+    expect(machine.getState()).toBe("roundPrompt");
+    expect(payloads.roundPrompt).toEqual({ resumeRound: true, adminTest: true });
   });
 
   it("cancels modification and goes to cooldown", async () => {
@@ -135,17 +135,17 @@ describe("classic battle interrupt flow", () => {
       {
         name: "roundModification",
         triggers: [
-          { on: "modifyRoundDecision", target: "roundStart" },
-          { on: "cancelModification", target: "cooldown" }
+          { on: "modifyRoundDecision", target: "roundPrompt" },
+          { on: "cancelModification", target: "roundWait" }
         ]
       },
-      { name: "roundStart", triggers: [] },
-      { name: "cooldown", triggers: [] }
+      { name: "roundPrompt", triggers: [] },
+      { name: "roundWait", triggers: [] }
     ];
 
     const machine = await createStateManager({}, {}, undefined, states);
     await machine.dispatch("roundModifyFlag");
     await machine.dispatch("cancelModification");
-    expect(machine.getState()).toBe("cooldown");
+    expect(machine.getState()).toBe("roundWait");
   });
 });

@@ -1,19 +1,19 @@
 import { emitBattleEvent } from "../battleEvents.js";
 
 /**
- * onExit handler for `waitingForPlayerAction` state.
+ * onExit handler for `roundSelect` state.
  *
  * @returns {Promise<void>}
  * @pseudocode
  * 1. Disable stat buttons.
  */
-export async function waitingForPlayerActionExit() {
+export async function roundSelectExit() {
   try {
     if (typeof window !== "undefined" && window.console && window.console.debug) {
-      window.console.debug("[waitingForPlayerActionExit] emitting statButtons:disable");
+      window.console.debug("[roundSelectExit] emitting statButtons:disable");
     }
   } catch {}
   emitBattleEvent("statButtons:disable");
 }
 
-export default waitingForPlayerActionExit;
+export default roundSelectExit;

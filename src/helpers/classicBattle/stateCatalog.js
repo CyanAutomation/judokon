@@ -13,17 +13,17 @@
  * 4. Export `{ version, order, ids, labels, display }` as the catalog.
  */
 
-export const version = "v1";
+export const version = "v2";
 
 // Keep names aligned with src/helpers/classicBattle/stateTable.js
 export const order = [
   "waitingForMatchStart",
   "matchStart",
-  "cooldown",
-  "roundStart",
-  "waitingForPlayerAction",
-  "roundDecision",
-  "roundOver",
+  "roundWait",
+  "roundPrompt",
+  "roundSelect",
+  "roundResolve",
+  "roundDisplay",
   "matchDecision",
   "matchOver",
   "interruptRound",
@@ -53,11 +53,11 @@ export const ids = order.reduce((acc, name, idx) => {
 export const labels = {
   waitingForMatchStart: "Lobby",
   matchStart: "Start",
-  cooldown: "Cooldown",
-  roundStart: "Round Start",
-  waitingForPlayerAction: "Select Stat",
-  roundDecision: "Resolve",
-  roundOver: "Round Over",
+  roundWait: "Round Wait",
+  roundPrompt: "Round Prompt",
+  roundSelect: "Select Stat",
+  roundResolve: "Resolve",
+  roundDisplay: "Round Display",
   matchDecision: "Match Decision",
   matchOver: "Match Over",
   interruptRound: "Interrupt (Round)",
@@ -69,10 +69,10 @@ export const display = {
   // Passive UI typically shows the primary progression states
   include: [
     "waitingForMatchStart",
-    "cooldown",
-    "waitingForPlayerAction",
-    "roundDecision",
-    "roundOver",
+    "roundWait",
+    "roundSelect",
+    "roundResolve",
+    "roundDisplay",
     "matchOver"
   ]
 };

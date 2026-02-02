@@ -61,7 +61,7 @@ describe("state manager integrity", () => {
     );
 
     const expectedTransitionMarkers = {
-      waitingForOpponentDecision: { event: "statSelected" }
+      roundResolve: { event: "statSelected" }
     };
     const transitions = [];
     const onEnterMap = {};
@@ -79,7 +79,7 @@ describe("state manager integrity", () => {
     });
 
     expect(statesWithoutHandlers.length).toBeGreaterThanOrEqual(0);
-    expect(statesWithoutHandlers).toContain("waitingForOpponentDecision");
+    expect(statesWithoutHandlers).toContain("roundResolve");
 
     const machine = await withMutedConsole(() =>
       createStateManager({}, onEnterMap, ({ from, to, event }) => {
@@ -93,10 +93,10 @@ describe("state manager integrity", () => {
     await machine.dispatch("cardsRevealed");
     await machine.dispatch("statSelected");
 
-    expect(machine.getState()).toBe("waitingForOpponentDecision");
+    expect(machine.getState()).toBe("roundResolve");
     expect(transitions).toContainEqual({
-      from: "waitingForPlayerAction",
-      to: "waitingForOpponentDecision",
+      from: "roundSelect",
+      to: "roundResolve",
       event: "statSelected"
     });
   });
@@ -145,7 +145,7 @@ describe("state manager integrity", () => {
     // Verify the state is cooldown
     await vi.waitFor(
       () => {
-        expect(machine.getState()).toBe("cooldown");
+        expect(machine.getState()).toBe("roundWait");
       },
       { timeout: 1000 }
     );

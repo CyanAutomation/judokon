@@ -4,7 +4,7 @@ import { enableNextRoundButton } from "../uiHelpers.js";
 import { withStateGuard } from "../stateGuards.js";
 
 /**
- * onEnter handler for `roundOver` state.
+ * onEnter handler for `roundDisplay` state.
  *
  * @param {object} machine
  * @returns {Promise<void>}
@@ -13,7 +13,7 @@ import { withStateGuard } from "../stateGuards.js";
  * 2. If autoContinue is disabled, enable the Next button for manual round progression.
  * 3. If `waitForOutcomeConfirmation` is true, wait for `outcomeConfirmed` event.
  */
-export async function roundOverEnter(machine) {
+export async function roundDisplayEnter(machine) {
   const store = machine?.context?.store;
   if (store) {
     store.playerChoice = null;
@@ -42,16 +42,16 @@ export async function roundOverEnter(machine) {
     // Allow progression to cooldown or matchDecision (normal flow)
     withStateGuard(
       machine,
-      ["roundOver", "cooldown", "matchDecision"],
+      ["roundDisplay", "roundWait", "matchDecision"],
       () => {
         // State is valid, confirmation complete
         // Handler will naturally exit after this check
       },
       {
-        debugContext: "roundOverEnter.postOutcomeConfirmation"
+        debugContext: "roundDisplayEnter.postOutcomeConfirmation"
       }
     );
   }
 }
 
-export default roundOverEnter;
+export default roundDisplayEnter;

@@ -4,7 +4,7 @@ import { dispatchBattleEvent } from "./helpers/battleApiHelper.js";
 import { applyDeterministicCooldown } from "./helpers/cooldownFixtures.js";
 
 const BATTLE_PAGE_URL = "/src/pages/battleClassic.html";
-const PLAYER_ACTION_STATE = "waitingForPlayerAction";
+const PLAYER_ACTION_STATE = "roundSelect";
 const COUNTDOWN_PATTERN = /\btime left:\s*\d+(\.\d+)?s\b/i;
 
 async function navigateToBattle(page, options = {}) {
@@ -54,14 +54,14 @@ test.describe("Classic battle interrupt recovery", () => {
     });
     expect(interruptResult.ok).toBe(true);
 
-    await expect(page.locator("body")).toHaveAttribute("data-battle-state", "cooldown");
+    await expect(page.locator("body")).toHaveAttribute("data-battle-state", "roundWait");
     const firstStatButton = page.getByTestId("stat-button").first();
     await expect(firstStatButton).toBeDisabled({ timeout: 10000 });
 
     const timerMessage = page.getByRole("status").filter({ hasText: /time left:/i });
     await expect(timerMessage).toContainText(COUNTDOWN_PATTERN);
 
-    await expect(page.locator("body")).toHaveAttribute("data-battle-state", "cooldown");
+    await expect(page.locator("body")).toHaveAttribute("data-battle-state", "roundWait");
 
     // Wait for cooldown to complete and state to transition back
     await expect(page.locator("body")).toHaveAttribute("data-battle-state", PLAYER_ACTION_STATE);
@@ -74,7 +74,7 @@ test.describe("Classic battle interrupt recovery", () => {
 
     await page.getByTestId("stat-button").first().click();
 
-    await expect(page.locator("body")).toHaveAttribute("data-battle-state", "cooldown");
+    await expect(page.locator("body")).toHaveAttribute("data-battle-state", "roundWait");
     const timerMessage = page.getByRole("status").filter({ hasText: /time left:/i });
     await expect(timerMessage).toContainText(COUNTDOWN_PATTERN);
 

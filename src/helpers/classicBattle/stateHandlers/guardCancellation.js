@@ -2,7 +2,7 @@ import { exposeDebugState, readDebugState } from "../debugHooks.js";
 import { debugLog } from "../debugLog.js";
 
 /**
- * Cancel the round decision guard to prevent duplicate selections.
+ * Cancel the round resolve guard to prevent duplicate selections.
  *
  * @pseudocode
  * 1. Read the round decision guard function from debug state.
@@ -12,16 +12,16 @@ import { debugLog } from "../debugLog.js";
  *
  * @returns {void}
  */
-export function cancelRoundDecisionGuard() {
+export function cancelRoundResolveGuard() {
   try {
     // Read and invoke the guard function if present
-    const guardFn = readDebugState("roundDecisionGuard");
+    const guardFn = readDebugState("roundResolveGuard");
     if (typeof guardFn === "function") {
       guardFn();
     }
     // Clear the guard from debug state
-    exposeDebugState("roundDecisionGuard", null);
+    exposeDebugState("roundResolveGuard", null);
   } catch (err) {
-    debugLog("Failed to cancel decision guard:", err);
+    debugLog("Failed to cancel resolve guard:", err);
   }
 }

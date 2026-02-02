@@ -22,20 +22,20 @@ The classic battle system uses multiple boolean flags to track selection state, 
 
 **Initialization**:
 
-- Set to `false` in `startRound()` ([roundManager.js:946](../src/helpers/classicBattle/roundManager.js#L946))
-- Set to `false` in `waitingForPlayerActionEnter()` ([waitingForPlayerActionEnter.js:45](../src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js#L45))
+- Set to `false` in `startRound()` ([roundManager.js](../src/helpers/classicBattle/roundManager.js))
+- Set to `false` on `roundSelect` entry ([roundSelectEnter.js](../src/helpers/classicBattle/stateHandlers/roundSelectEnter.js))
 
 **Set to `true`**:
 
-- When player selects a stat ([selectionHandler.js:1475](../src/helpers/classicBattle/selectionHandler.js#L1475))
+- When player selects a stat ([selectionHandler.js](../src/helpers/classicBattle/selectionHandler.js))
 - During normal stat selection flow
 
 **Set to `false` (Reset)**:
 
-- At round start ([roundManager.js:946](../src/helpers/classicBattle/roundManager.js#L946))
-- When entering `waitingForPlayerAction` state ([waitingForPlayerActionEnter.js:45](../src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js#L45))
-- During round interruption cleanup ([interruptStateCleanup.js:105](../src/helpers/classicBattle/stateHandlers/interruptStateCleanup.js#L105))
-- When interrupt cleanup runs ([interruptRoundEnter.js:41](../src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js#L41))
+- At round start ([roundManager.js](../src/helpers/classicBattle/roundManager.js))
+- When entering `roundSelect` ([roundSelectEnter.js](../src/helpers/classicBattle/stateHandlers/roundSelectEnter.js))
+- During round interruption cleanup ([interruptStateCleanup.js](../src/helpers/classicBattle/stateHandlers/interruptStateCleanup.js))
+- When interrupt cleanup runs ([interruptRoundEnter.js](../src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js))
 
 **Read/Checked**:
 
@@ -45,19 +45,19 @@ The classic battle system uses multiple boolean flags to track selection state, 
 
 #### Ownership Contract
 
-| State                    | Owner             | Expected Value            | Transition Responsibility       |
-| ------------------------ | ----------------- | ------------------------- | ------------------------------- |
-| `waitingForPlayerAction` | State handler     | `false` (reset on entry)  | Handler sets to `false`         |
-| `roundDecision`          | Selection handler | `true` (after selection)  | User interaction sets to `true` |
-| `roundOver`              | Round manager     | Preserved for diagnostics | Not modified                    |
-| `cooldown`               | Round manager     | Preserved for diagnostics | Not modified                    |
-| `interruptRound`         | Cleanup utility   | `false` (cleanup)         | Cleanup sets to `false`         |
+| State           | Owner             | Expected Value            | Transition Responsibility       |
+| --------------- | ----------------- | ------------------------- | ------------------------------- |
+| `roundSelect`   | State handler     | `false` (reset on entry)  | Handler sets to `false`         |
+| `roundResolve`  | Selection handler | `true` (after selection)  | User interaction sets to `true` |
+| `roundDisplay`  | Round manager     | Preserved for diagnostics | Not modified                    |
+| `roundWait`     | Round manager     | Preserved for diagnostics | Not modified                    |
+| `interruptRound`| Cleanup utility   | `false` (cleanup)         | Cleanup sets to `false`         |
 
 #### Common Issues
 
 ⚠️ **Race Condition Risk**: Setting `selectionMade` to `true` after a state transition can cause the flag to persist into the next round if not properly reset.
 
-**Solution**: Always reset in `waitingForPlayerActionEnter` (see [opponent-reveal.spec.js fix](../TEST_INVESTIGATION_SUMMARY.md#6-opponent-revealspecjs---resets-stat-selection-after-advancing-to-the-next-round-)).
+**Solution**: Always reset on `roundSelect` entry (see [opponent-reveal.spec.js fix](../TEST_INVESTIGATION_SUMMARY.md#6-opponent-revealspecjs---resets-stat-selection-after-advancing-to-the-next-round-)).
 
 ---
 
@@ -67,27 +67,27 @@ The classic battle system uses multiple boolean flags to track selection state, 
 **Purpose**: Tracks whether the Next button has been finalized (enabled and ready for interaction)  
 **Scope**: Test observability and button state coordination
 
-⚠️ **Deprecation Note**: This flag is being unified into `store.selectionMade` as the single source of truth. See [Task 6](#task-6-unify-dual-flag-system) for migration details.
+⚠️ **Note**: This flag mirrors `store.selectionMade` for test observability. Treat `store.selectionMade` as the single source of truth and use the unified helpers in [selectionState.js](../src/helpers/classicBattle/selectionState.js).
 
 #### Lifecycle Phases
 
 **Initialization**:
 
-- Set to `false` in timer reset ([timerService.js:703](../src/helpers/classicBattle/timerService.js#L703))
-- Set to `false` in `startRound()` ([roundManager.js:958](../src/helpers/classicBattle/roundManager.js#L958))
-- Set to `false` in `waitingForPlayerActionEnter()` ([waitingForPlayerActionEnter.js:62](../src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js#L62))
+- Set to `false` in timer reset ([timerService.js](../src/helpers/classicBattle/timerService.js))
+- Set to `false` in `startRound()` ([roundManager.js](../src/helpers/classicBattle/roundManager.js))
+- Set to `false` on `roundSelect` entry ([roundSelectEnter.js](../src/helpers/classicBattle/stateHandlers/roundSelectEnter.js))
 
 **Set to `true`**:
 
-- When Next button is finalized (advance context) ([uiHelpers.js:472, 516](../src/helpers/classicBattle/uiHelpers.js))
-- During early button finalization in cooldown ([cooldownEnter.js via applyNextButtonFinalizedState](../src/helpers/classicBattle/stateHandlers/cooldownEnter.js))
+- When Next button is finalized (advance context) ([uiHelpers.js](../src/helpers/classicBattle/uiHelpers.js))
+- During early button finalization in round wait ([roundWaitEnter.js](../src/helpers/classicBattle/stateHandlers/roundWaitEnter.js))
 
 **Set to `false` (Reset)**:
 
-- Timer reset ([timerService.js:703](../src/helpers/classicBattle/timerService.js#L703))
-- Round start ([roundManager.js:958](../src/helpers/classicBattle/roundManager.js#L958))
-- State entry to `waitingForPlayerAction` ([waitingForPlayerActionEnter.js:62](../src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js#L62))
-- Cleanup utility ([interruptStateCleanup.js:57](../src/helpers/classicBattle/stateHandlers/interruptStateCleanup.js#L57))
+- Timer reset ([timerService.js](../src/helpers/classicBattle/timerService.js))
+- Round start ([roundManager.js](../src/helpers/classicBattle/roundManager.js))
+- State entry to `roundSelect` ([roundSelectEnter.js](../src/helpers/classicBattle/stateHandlers/roundSelectEnter.js))
+- Cleanup utility ([interruptStateCleanup.js](../src/helpers/classicBattle/stateHandlers/interruptStateCleanup.js))
 
 **Read/Checked**:
 
@@ -106,8 +106,8 @@ The classic battle system uses multiple boolean flags to track selection state, 
 
 **Type**: Store property  
 **Purpose**: Controls when stat buttons can accept user input  
-**Set to `true`**: Selection enabled ([roundManager.js:85, selectionHandler.js:382](../src/helpers/classicBattle/roundManager.js))  
-**Set to `false`**: Selection disabled ([roundManager.js:518](../src/helpers/classicBattle/roundManager.js))
+**Set to `true`**: Selection enabled ([roundSelectEnter.js](../src/helpers/classicBattle/stateHandlers/roundSelectEnter.js), [roundUI.js](../src/helpers/classicBattle/roundUI.js))  
+**Set to `false`**: Selection disabled ([roundUI.js](../src/helpers/classicBattle/roundUI.js))
 
 ### `store.matchEnded`
 
@@ -120,9 +120,9 @@ The classic battle system uses multiple boolean flags to track selection state, 
 
 **Type**: DOM dataset attribute  
 **Purpose**: Prevents concurrent selection handling (guard flag)  
-**Set to `"true"`**: Selection active ([roundManager.js:779](../src/helpers/classicBattle/roundManager.js))  
-**Set to `"false"`**: Selection complete or reset ([waitingForPlayerActionEnter.js:93](../src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js))  
-**Read**: Guard check ([roundManager.js:65, waitingForPlayerActionEnter.js:93](../src/helpers/classicBattle/roundManager.js))
+**Set to `"true"`**: Selection active ([roundManager.js](../src/helpers/classicBattle/roundManager.js))  
+**Set to `"false"`**: Selection complete or reset ([roundSelectEnter.js](../src/helpers/classicBattle/stateHandlers/roundSelectEnter.js))  
+**Read**: Guard check ([roundManager.js](../src/helpers/classicBattle/roundManager.js))
 
 ---
 
@@ -133,12 +133,12 @@ As of January 2, 2026, state guards have been added to async handlers to prevent
 ### Pattern: Verify State After Async Operations
 
 ```javascript
-// Example from cooldownEnter.js
+// Example from roundWaitEnter.js
 await startCooldown(store, scheduler, controls);
 
 // Verify state hasn't regressed after async operation
 const currentState = machine.getState ? machine.getState() : null;
-const validStates = ["cooldown", "roundStart"]; // Allow normal progression
+const validStates = ["roundWait", "roundPrompt"]; // Allow normal progression
 if (currentState && !validStates.includes(currentState)) {
   debugLog("State changed unexpectedly during async operation", {
     expected: validStates,
@@ -157,11 +157,11 @@ guard(() => {
 
 ✅ **Protected Handlers**:
 
-- `roundStartEnter.js` - Checks state before dispatching `cardsRevealed`
-- `cooldownEnter.js` - Verifies state after `startCooldown` (allows cooldown → roundStart)
-- `waitingForPlayerActionEnter.js` - Verifies state after `startTimer` (allows progression to roundDecision)
-- `roundOverEnter.js` - Verifies state after outcome confirmation (allows progression to cooldown/matchDecision)
-- `roundDecisionEnter.js` - Comprehensive guards via `guardSelectionResolution`
+- `roundPromptEnter.js` - Checks state before dispatching `cardsRevealed`
+- `roundWaitEnter.js` - Verifies state after `startCooldown` (allows roundWait → roundPrompt)
+- `roundSelectEnter.js` - Verifies state after `startTimer` (allows progression to roundResolve)
+- `roundDisplayEnter.js` - Verifies state after outcome confirmation (allows progression to roundWait/matchDecision)
+- `roundResolveEnter.js` - Comprehensive guards via `guardSelectionResolution`
 
 ❌ **Unprotected Handlers** (fire-and-forget or no async operations):
 
@@ -178,7 +178,7 @@ guard(() => {
 When entering a state that expects clean selection state, explicitly reset the flag:
 
 ```javascript
-export async function waitingForPlayerActionEnter(machine) {
+export async function roundSelectEnter(machine) {
   const store = machine?.context?.store;
   if (store) {
     store.selectionMade = false; // ✅ Explicit reset
@@ -224,14 +224,13 @@ Use a single source of truth. If you need both store-based and window-based flag
 
 ### Unifying `selectionMade` and `__classicBattleSelectionFinalized`
 
-**Status**: In progress (Task 6)  
+**Status**: Completed (store is source of truth, window mirror retained for tests)  
 **Goal**: Use `store.selectionMade` as single source of truth  
-**Strategy**:
+**Strategy (current)**:
 
-1. Replace all reads of `window.__classicBattleSelectionFinalized` with `store.selectionMade`
-2. Update test diagnostics to read from store
-3. Remove window global assignments
-4. Maintain test observability via `readRoundDiagnostics` helper
+1. Use `selectionState.js` helpers to read/write selection status
+2. Mirror to `window.__classicBattleSelectionFinalized` for test observability only
+3. Prefer store-derived diagnostics in application code
 
 ---
 

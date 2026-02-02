@@ -275,19 +275,19 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
       );
       expect(interruptTransitions).toEqual([
         expect.objectContaining({
-          from: "waitingForPlayerAction",
+          from: "roundSelect",
           to: "interruptRound",
           event: "interrupt"
         }),
-        expect.objectContaining({ from: "interruptRound", to: "cooldown", event: "restartRound" })
+        expect.objectContaining({ from: "interruptRound", to: "roundWait", event: "restartRound" })
       ]);
 
       const recentTransitions = transitions.slice(transitionCheckpoint);
       expect(recentTransitions).toEqual([
-        expect.objectContaining({ from: "cooldown", to: "roundStart", event: "ready" }),
+        expect.objectContaining({ from: "roundWait", to: "roundPrompt", event: "ready" }),
         expect.objectContaining({
-          from: "roundStart",
-          to: "waitingForPlayerAction",
+          from: "roundPrompt",
+          to: "roundSelect",
           event: "cardsRevealed"
         })
       ]);
@@ -300,7 +300,7 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
       );
       const snapshot = getStateSnapshot();
 
-      expect(snapshot?.state).toBe("waitingForPlayerAction");
+      expect(snapshot?.state).toBe("roundSelect");
     } finally {
       offBattleEvent("battleStateChange", recordTransition);
     }

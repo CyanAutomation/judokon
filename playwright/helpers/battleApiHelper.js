@@ -54,7 +54,7 @@ export async function dispatchBattleEvent(page, eventName, payload) {
  * 2. Check if CLI Test API is available
  * 3. Merge default options with input options
  * 4. Call completeRound with proper promise handling
- * 5. Return normalized result checking for "roundOver" state
+ * 5. Return normalized result checking for "roundDisplay" state
  */
 export async function completeRoundViaApi(page, roundInput = {}) {
   return await page.evaluate((input) => {
@@ -82,18 +82,18 @@ export async function completeRoundViaApi(page, roundInput = {}) {
         const resolution = cliApi.completeRound(input ?? {}, options);
         const normalizeResolution = (result) => {
           const finalState = result?.finalState ?? null;
-          const roundOverSeen = result?.roundOverObserved === true;
+          const roundDisplaySeen = result?.roundDisplayObserved === true;
           const ok =
-            roundOverSeen ||
-            finalState === "roundOver" ||
-            finalState === "cooldown" ||
+            roundDisplaySeen ||
+            finalState === "roundDisplay" ||
+            finalState === "roundWait" ||
             finalState === "matchDecision" ||
             finalState === "matchOver";
           resolve({
             ok,
             reason: null,
             finalState,
-            roundOverObserved: roundOverSeen
+            roundDisplayObserved: roundDisplaySeen
           });
         };
 

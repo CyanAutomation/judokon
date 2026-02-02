@@ -12,10 +12,10 @@ import {
 const byId = (id) => document.getElementById(id);
 const arrowKeys = new Set(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
 const stateHandlers = {
-  waitingForPlayerAction: handleWaitingForPlayerActionKey,
+  roundSelect: handleWaitingForPlayerActionKey,
   waitingForMatchStart: handleWaitingForMatchStartKey,
-  roundOver: handleRoundOverKey,
-  cooldown: handleCooldownKey
+  roundDisplay: handleRoundOverKey,
+  roundWait: handleCooldownKey
 };
 
 /**
@@ -72,7 +72,7 @@ function shouldProcessKey(key) {
   ) {
     const battleState = document.body?.dataset?.battleState || "";
     if (
-      battleState === "waitingForPlayerAction" &&
+      battleState === "roundSelect" &&
       key >= "0" &&
       key <= "9" &&
       isEnabled("statHotkeys")

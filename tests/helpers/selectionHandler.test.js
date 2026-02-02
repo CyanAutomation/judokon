@@ -302,7 +302,7 @@ describe("handleStatSelection helpers", () => {
   it("passes zero delay to resolveRoundDirect during orchestrator fallback", async () => {
     document.body.dataset.battleState = "active";
     store.orchestrator = {};
-    getBattleState.mockReturnValue("roundDecision");
+    getBattleState.mockReturnValue("roundResolve");
     dispatchBattleEvent.mockResolvedValue(false);
 
     // Create a deferred promise that resolves when roundResolved is emitted
@@ -368,12 +368,12 @@ describe("isOrchestratorActive", () => {
   });
 
   it("detects orchestrator when machine state is available", () => {
-    getBattleState.mockReturnValue("roundDecision");
+    getBattleState.mockReturnValue("roundResolve");
     expect(isOrchestratorActive({ orchestrator: {} })).toBe(true);
   });
 
   it("detects orchestrator using DOM dataset markers", () => {
-    document.body.dataset.battleState = "roundDecision";
+    document.body.dataset.battleState = "roundResolve";
     expect(isOrchestratorActive({ orchestrator: {} })).toBe(true);
   });
 });

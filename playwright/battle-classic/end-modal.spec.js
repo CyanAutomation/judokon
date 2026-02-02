@@ -175,10 +175,10 @@ async function ensureRoundStarted(page) {
       if (!stateApi?.waitForBattleState) {
         return null;
       }
-      if (stateApi.getBattleState?.() === "waitingForPlayerAction") {
+      if (stateApi.getBattleState?.() === "roundSelect") {
         return true;
       }
-      return await stateApi.waitForBattleState("waitingForPlayerAction", 10000);
+      return await stateApi.waitForBattleState("roundSelect", 10000);
     })
     .catch(() => null);
 }

@@ -8,7 +8,7 @@ import { debugLog } from "../debug.js";
 import { resolveDelay } from "./timerUtils.js";
 import * as sb from "../setupScoreboard.js";
 import { writeScoreDisplay } from "./scoreDisplay.js";
-import { cancelRoundDecisionGuard } from "./stateHandlers/guardCancellation.js";
+import { cancelRoundResolveGuard } from "./stateHandlers/guardCancellation.js";
 import { getAutoContinue } from "./autoContinue.js";
 
 /**
@@ -16,7 +16,7 @@ import { getAutoContinue } from "./autoContinue.js";
  *
  * @pseudocode
  * 1. `resolveRound` guards against concurrent execution via `isResolving`.
- * 2. `ensureRoundDecisionState` dispatches `evaluate` when needed.
+ * 2. `ensureRoundResolveState` dispatches `evaluate` when needed.
  * 3. `delayAndRevealOpponent` waits before revealing the opponent's stat.
  * 4. `finalizeRoundResult` evaluates the round and clears any pending guards.
  */
@@ -325,17 +325,17 @@ async function waitForRoundUILocks() {
 /**
  * @summary Ensure the battle state machine is ready to evaluate the round.
  * @pseudocode
- * 1. Check if `document.body.dataset.battleState` equals `"roundDecision"`.
+ * 1. Check if `document.body.dataset.battleState` equals `"roundResolve"`.
  * 2. Dispatch an `"evaluate"` event when the state differs.
  * 3. Swallow dispatch errors to avoid interrupting resolution flow.
  *
  * @returns {Promise<void>}
  */
-export async function ensureRoundDecisionState() {
+export async function ensureRoundResolveState() {
   try {
-    const inRoundDecision =
-      typeof document !== "undefined" && document.body?.dataset.battleState === "roundDecision";
-    if (!inRoundDecision) {
+    const inRoundResolve =
+      typeof document !== "undefined" && document.body?.dataset.battleState === "roundResolve";
+    if (!inRoundResolve) {
       await dispatchBattleEvent("evaluate");
     }
   } catch {}
@@ -367,7 +367,7 @@ export async function delayAndRevealOpponent(delayMs, sleep, stat) {
  *
  * @pseudocode
  * 1. Call `computeRoundResult`.
- * 2. Invoke guard cancel function from `readDebugState('roundDecisionGuard')` when present.
+ * 2. Invoke guard cancel function from `readDebugState('roundResolveGuard')` when present.
  * 3. Stamp `readDebugState('roundDebug').resolvedAt`.
  * 4. Return the computation result.
  *
@@ -395,7 +395,7 @@ export async function delayAndRevealOpponent(delayMs, sleep, stat) {
  */
 export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
   const result = await computeRoundResult(store, stat, playerVal, opponentVal);
-  cancelRoundDecisionGuard();
+  cancelRoundResolveGuard();
   try {
     const rd = readDebugState("roundDebug");
     if (rd) rd.resolvedAt = Date.now();
@@ -409,7 +409,7 @@ export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
  *
  * @pseudocode
  * 1. If no stat is provided, return immediately.
- * 2. Call `ensureRoundDecisionState`.
+ * 2. Call `ensureRoundResolveState`.
  * 3. Await `delayAndRevealOpponent`.
  * 4. Call `finalizeRoundResult` and return its value.
  *
@@ -438,7 +438,7 @@ export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
  * 2. Determine if running in headless mode for timing adjustments.
  * 3. Extract timing configuration with defaults.
  * 4. Validate that a stat was provided.
- * 5. Ensure round decision state is properly initialized.
+ * 5. Ensure round resolve state is properly initialized.
  * 6. Apply delay and reveal opponent stat with animation.
  * 7. Finalize the round result with cleanup and debug updates.
  * 8. Reset the isResolving flag in finally block.
@@ -454,7 +454,7 @@ export async function resolveRound(store, stat, playerVal, opponentVal, opts = {
   } = opts;
   try {
     if (!stat) return;
-    await ensureRoundDecisionState();
+    await ensureRoundResolveState();
     await delayAndRevealOpponent(delayMs, sleep, stat);
     const result = await finalizeRoundResult(store, stat, playerVal, opponentVal);
     return result;

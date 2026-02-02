@@ -4,7 +4,7 @@ import { useCanonicalTimers } from "../setup/fakeTimers.js";
 function installMockBattleMachine(dispatchImpl) {
   const machine = {
     dispatch: dispatchImpl,
-    getState: () => "cooldown"
+    getState: () => "roundWait"
   };
   const previousDebugReader = globalThis.__classicBattleDebugRead;
   globalThis.__classicBattleDebugRead = (token) => {
@@ -339,7 +339,7 @@ describe("Classic Battle round timer", () => {
         });
 
       const { __setStateSnapshot } = await import("../../src/helpers/classicBattle/battleDebug.js");
-      __setStateSnapshot({ state: "cooldown" });
+      __setStateSnapshot({ state: "roundWait" });
 
       const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
       const resolveReady = vi.fn();

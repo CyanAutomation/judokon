@@ -12,19 +12,19 @@ let getRandomJudokaMock;
 let renderMock;
 
 vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => {
-  let state = "roundDecision";
+  let state = "roundResolve";
   const stateLog = [];
   return {
     dispatchBattleEvent: vi.fn(async (event) => {
       if (event === "roundResolved") return;
       if (event === "evaluate") state = "processingRound";
-      else if (event.startsWith("outcome=")) state = "roundOver";
-      else if (event === "continue") state = "cooldown";
+      else if (event.startsWith("outcome=")) state = "roundDisplay";
+      else if (event === "continue") state = "roundWait";
       else if (event === "matchPointReached") state = "matchDecision";
       stateLog.push(state);
     }),
     __reset: () => {
-      state = "roundDecision";
+      state = "roundResolve";
       stateLog.length = 0;
     },
     __getStateLog: () => stateLog
@@ -225,10 +225,10 @@ describe("classicBattle stat selection", () => {
     expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(4, "continue");
     const stateLog = eventDispatcher.__getStateLog();
     expect(stateLog.slice(0, 4)).toEqual([
-      "roundDecision",
+      "roundResolve",
       "processingRound",
-      "roundOver",
-      "cooldown"
+      "roundDisplay",
+      "roundWait"
     ]);
   });
 
@@ -268,9 +268,9 @@ describe("classicBattle stat selection", () => {
       expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(3, `outcome=${outcome}`);
       expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(4, "matchPointReached");
       expect(eventDispatcher.__getStateLog()).toEqual([
-        "roundDecision",
+        "roundResolve",
         "processingRound",
-        "roundOver",
+        "roundDisplay",
         "matchDecision"
       ]);
     }

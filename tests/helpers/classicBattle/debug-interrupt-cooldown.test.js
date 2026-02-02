@@ -149,8 +149,8 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
     await vi.waitFor(
       () => {
         const state = machine.getState();
-        const cooldownEntered = window.__cooldownEnterInvoked === true || state === "cooldown";
-        expect(cooldownEntered).toBe(true);
+        const roundWaitEntered = window.__roundWaitEnterInvoked === true || state === "roundWait";
+        expect(roundWaitEntered).toBe(true);
       },
       { timeout: 1000, interval: 50 }
     );
@@ -185,7 +185,7 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
       ([eventName]) => eventName === "ready"
     );
 
-    // If no ready events, the cooldown timer didn't trigger or cooldownEnter wasn't called
+    // If no ready events, the cooldown timer didn't trigger or roundWaitEnter wasn't called
     // This indicates a bug in the state machine onEnter handler execution
     if (dispatchBattleEvent.mock.calls.length > 0) {
       expect(readyEvents.length).toBeGreaterThan(0);

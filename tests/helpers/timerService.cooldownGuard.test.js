@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { mount, clearBody } from "./domUtils.js";
 
-let mockState = "cooldown";
+let mockState = "roundWait";
 vi.mock("../../src/helpers/classicBattle/battleDebug.js", () => ({
   getStateSnapshot: () => ({ state: mockState }),
   __setStateSnapshot: (next) => {
@@ -50,17 +50,17 @@ describe("onNextButtonClick cooldown guard", () => {
   });
 
   it("does not warn when state changes", async () => {
-    __setStateSnapshot({ state: "cooldown" });
+    __setStateSnapshot({ state: "roundWait" });
     const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
     btn.dataset.nextReady = "true";
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
-    __setStateSnapshot({ state: "roundDecision" });
+    __setStateSnapshot({ state: "roundResolve" });
     await vi.runAllTimersAsync();
     expect(consoleMocks.warn).not.toHaveBeenCalled();
   });
 
   it("warns if still in cooldown", async () => {
-    __setStateSnapshot({ state: "cooldown" });
+    __setStateSnapshot({ state: "roundWait" });
     const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
     btn.dataset.nextReady = "true";
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
@@ -69,7 +69,7 @@ describe("onNextButtonClick cooldown guard", () => {
   });
 
   it("clears previous warning timer on rapid clicks", async () => {
-    __setStateSnapshot({ state: "cooldown" });
+    __setStateSnapshot({ state: "roundWait" });
     const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
     btn.dataset.nextReady = "true";
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
@@ -80,7 +80,7 @@ describe("onNextButtonClick cooldown guard", () => {
   });
 
   it("resets warning timer after firing", async () => {
-    __setStateSnapshot({ state: "cooldown" });
+    __setStateSnapshot({ state: "roundWait" });
     const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
     btn.dataset.nextReady = "true";
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });

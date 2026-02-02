@@ -41,7 +41,7 @@ describe("Classic Battle event dispatcher stdout guard", () => {
       dispatch: vi.fn(async () => {
         throw machineError;
       }),
-      getState: vi.fn(() => "cooldown")
+      getState: vi.fn(() => "roundWait")
     };
 
     exposeDebugState("getClassicBattleMachine", () => machine);

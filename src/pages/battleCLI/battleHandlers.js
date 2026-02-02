@@ -31,7 +31,7 @@ export function registerBattleHandlers(h) {
 export const handleGlobalKey = (key) => handlers.handleGlobalKey(key);
 
 /**
- * Wrapper for the 'waitingForPlayerAction' state key handler.
+ * Wrapper for the 'roundSelect' state key handler.
  *
  * @param {string} key - Key string.
  * @returns {boolean}
@@ -52,7 +52,7 @@ export const handleWaitingForPlayerActionKey = (key) =>
 export const handleWaitingForMatchStartKey = (key) => handlers.handleWaitingForMatchStartKey(key);
 
 /**
- * Delegate wrapper for the 'roundOver' state key handler.
+ * Delegate wrapper for the 'roundDisplay' state key handler.
  *
  * @param {string} key - Key string.
  * @returns {boolean} True when handled by the registered implementation.
@@ -63,7 +63,7 @@ export const handleWaitingForMatchStartKey = (key) => handlers.handleWaitingForM
 export const handleRoundOverKey = (key) => handlers.handleRoundOverKey(key);
 
 /**
- * Delegate wrapper for the 'cooldown' state key handler.
+ * Delegate wrapper for the 'roundWait' state key handler.
  *
  * @param {string} key - Key string.
  * @returns {boolean}

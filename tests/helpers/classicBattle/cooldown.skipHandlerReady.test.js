@@ -16,7 +16,7 @@ describe("skip handler clears fallback timer", () => {
     scheduler = createMockScheduler();
     document.body.innerHTML = "";
     createTimerNodes();
-    document.body.dataset.battleState = "cooldown";
+    document.body.dataset.battleState = "roundWait";
     vi.resetModules();
     errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});

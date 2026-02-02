@@ -8,19 +8,19 @@ import { guard } from "../guard.js";
 import { withStateGuard } from "../stateGuards.js";
 
 /**
- * State name constant for cooldown phase.
+ * State name constant for round wait phase.
  * @type {string}
  */
-const STATE_COOLDOWN = "cooldown";
+const STATE_ROUND_WAIT = "roundWait";
 
 /**
- * Handler name constant for cooldown enter handler.
+ * Handler name constant for round wait enter handler.
  * @type {string}
  */
-const HANDLER_COOLDOWN_ENTER = "cooldownEnter";
+const HANDLER_ROUND_WAIT_ENTER = "roundWaitEnter";
 
 /**
- * Mark cooldownEnter handler invocation in debug window (test-only).
+ * Mark roundWaitEnter handler invocation in debug window (test-only).
  *
  * @pseudocode
  * 1. Check if window is available.
@@ -29,16 +29,16 @@ const HANDLER_COOLDOWN_ENTER = "cooldownEnter";
  *
  * @returns {void}
  */
-function markDebugCooldownEntered() {
+function markDebugRoundWaitEntered() {
   try {
     if (typeof window !== "undefined") {
-      window.__cooldownEnterInvoked = true;
+      window.__roundWaitEnterInvoked = true;
     }
   } catch {}
 }
 
 /**
- * Set up debug state for cooldown entry (test instrumentation).
+ * Set up debug state for round wait entry (test instrumentation).
  *
  * @pseudocode
  * 1. Log handler invocation with payload info.
@@ -49,9 +49,9 @@ function markDebugCooldownEntered() {
  * @returns {void}
  */
 function setupDebugState(payload) {
-  debugLog("cooldownEnter: handler invoked", { hasInitialPayload: !!payload?.initial });
-  markDebugCooldownEntered();
-  exposeDebugState("cooldownEnterInvoked", true);
+  debugLog("roundWaitEnter: handler invoked", { hasInitialPayload: !!payload?.initial });
+  markDebugRoundWaitEntered();
+  exposeDebugState("roundWaitEnterInvoked", true);
 }
 
 /**
@@ -73,14 +73,14 @@ function computeNextRoundNumber(currentRound) {
     !Number.isFinite(currentRound.number) ||
     currentRound.number < 1
   ) {
-    debugLog("cooldownEnter: current round invalid, defaulting next round to 1");
+    debugLog("roundWaitEnter: current round invalid, defaulting next round to 1");
     return 1;
   }
   return currentRound.number + 1;
 }
 
 /**
- * Disable stat buttons during cooldown to prevent race conditions.
+ * Disable stat buttons during the round wait phase to prevent race conditions.
  *
  * @pseudocode
  * 1. Query DOM for stat buttons container if document exists.
@@ -96,19 +96,19 @@ function disableStatButtonsDuringCooldown() {
 
     const container = document.getElementById("stat-buttons");
     if (!container) {
-      debugLog("cooldownEnter: stat-buttons container not found");
+      debugLog("roundWaitEnter: stat-buttons container not found");
       return;
     }
 
     const buttons = Array.from(container.querySelectorAll("button[data-stat]"));
     if (buttons.length === 0) {
-      debugLog("cooldownEnter: no stat buttons found to disable");
+      debugLog("roundWaitEnter: no stat buttons found to disable");
       return;
     }
 
     if (typeof disableStatButtons === "function") {
       disableStatButtons(buttons, container);
-      debugLog("cooldownEnter: disabled stat buttons", { count: buttons.length });
+      debugLog("roundWaitEnter: disabled stat buttons", { count: buttons.length });
     }
   });
 }
@@ -127,13 +127,13 @@ function disableStatButtonsDuringCooldown() {
  */
 function updateRoundStateAtomically(round) {
   const nextRoundNumber = computeNextRoundNumber(round);
-  debugLog("cooldownEnter: updating round state", { nextRoundNumber });
-  roundState.setRoundState(STATE_COOLDOWN, HANDLER_COOLDOWN_ENTER);
+  debugLog("roundWaitEnter: updating round state", { nextRoundNumber });
+  roundState.setRoundState(STATE_ROUND_WAIT, HANDLER_ROUND_WAIT_ENTER);
   roundState.setRoundNumber(nextRoundNumber);
 }
 
 /**
- * onEnter handler for `cooldown` state.
+ * onEnter handler for `roundWait` state.
  *
  * @pseudocode
  * 1. Validate machine parameter to prevent null reference errors.
@@ -147,9 +147,9 @@ function updateRoundStateAtomically(round) {
  * @param {boolean} [payload.initial] - If true, start match cooldown; otherwise inter-round.
  * @returns {Promise<void>}
  */
-export async function cooldownEnter(machine, payload) {
+export async function roundWaitEnter(machine, payload) {
   if (!machine) {
-    debugLog("cooldownEnter: invalid machine context");
+    debugLog("roundWaitEnter: invalid machine context");
     return;
   }
 
@@ -168,18 +168,18 @@ export async function cooldownEnter(machine, payload) {
   // Early finalization removed - rely solely on orchestrator for button state management
   // This ensures consistent timing and prevents premature button enabling
 
-  debugLog("cooldownEnter: about to call startCooldown");
+  debugLog("roundWaitEnter: about to call startCooldown");
   await startCooldown(store, scheduler, {
     isOrchestrated: () => !!machine.context,
     getClassicBattleMachine: () => machine
   });
-  debugLog("cooldownEnter: startCooldown completed");
+  debugLog("roundWaitEnter: startCooldown completed");
 
   // Verify state hasn't regressed after async operation (race condition guard)
-  // Allow progression to roundStart (normal fast transition)
+  // Allow progression to roundPrompt (normal fast transition)
   withStateGuard(
     machine,
-    ["cooldown", "roundStart"],
+    ["roundWait", "roundPrompt"],
     () => {
       // Update round state atomically; errors logged but non-blocking
       guard(() => {
@@ -187,9 +187,9 @@ export async function cooldownEnter(machine, payload) {
       });
     },
     {
-      debugContext: "cooldownEnter.postStartCooldown",
+      debugContext: "roundWaitEnter.postStartCooldown",
       onInvalidState: (currentState, validStates) => {
-        debugLog("cooldownEnter: state changed unexpectedly during async operation", {
+        debugLog("roundWaitEnter: state changed unexpectedly during async operation", {
           expected: validStates,
           actual: currentState
         });

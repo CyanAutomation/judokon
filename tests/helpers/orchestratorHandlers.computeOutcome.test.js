@@ -65,8 +65,8 @@ describe("computeAndDispatchOutcome", () => {
 
     const { cleanup, dispatchBattleState } = await createTestBattleDom();
     cleanupBattleDom = cleanup;
-    dispatchBattleState({ from: "roundStart", to: "waitingForPlayerAction" });
-    dispatchBattleState({ from: "waitingForPlayerAction", to: "roundDecision" });
+    dispatchBattleState({ from: "roundPrompt", to: "roundSelect" });
+    dispatchBattleState({ from: "roundSelect", to: "roundResolve" });
     debugHooks.exposeDebugState("roundDebug", {});
 
     const store = { playerChoice: "strength" };
@@ -90,8 +90,8 @@ describe("computeAndDispatchOutcome", () => {
 
     const { cleanup, dispatchBattleState } = await createTestBattleDom();
     cleanupBattleDom = cleanup;
-    dispatchBattleState({ from: "roundStart", to: "waitingForPlayerAction" });
-    dispatchBattleState({ from: "waitingForPlayerAction", to: "roundDecision" });
+    dispatchBattleState({ from: "roundPrompt", to: "roundSelect" });
+    dispatchBattleState({ from: "roundSelect", to: "roundResolve" });
     debugHooks.exposeDebugState("roundDebug", {});
 
     const store = { playerChoice: "strength" };
@@ -113,8 +113,8 @@ describe("computeAndDispatchOutcome", () => {
 
     const { cleanup, dispatchBattleState } = await createTestBattleDom();
     cleanupBattleDom = cleanup;
-    dispatchBattleState({ from: "roundStart", to: "waitingForPlayerAction" });
-    dispatchBattleState({ from: "waitingForPlayerAction", to: "roundDecision" });
+    dispatchBattleState({ from: "roundPrompt", to: "roundSelect" });
+    dispatchBattleState({ from: "roundSelect", to: "roundResolve" });
     debugHooks.exposeDebugState("roundDebug", {});
 
     const store = { playerChoice: "strength" };

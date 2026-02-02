@@ -22,7 +22,7 @@ export { stateHandlers };
  *
  * @summary Re-export of the `getAutoContinue` function from `./autoContinue.js`.
  * When `true`, the battle will automatically advance after certain states
- * (e.g., `roundOver`). When `false`, it will pause, requiring explicit user
+ * (e.g., `roundDisplay`). When `false`, it will pause, requiring explicit user
  * action or event dispatch to proceed.
  *
  * @pseudocode
@@ -52,7 +52,7 @@ export {
   awaitPlayerChoice,
   guardSelectionResolution,
   schedulePostResolveWatchdog
-} from "./stateHandlers/roundDecisionHelpers.js";
+} from "./stateHandlers/roundResolveHelpers.js";
 /**
  * Re-export the `waitingForMatchStartEnter` state handler.
  *
@@ -96,23 +96,23 @@ export { matchStartEnter } from "./stateHandlers/matchStartEnter.js";
  * @returns {Promise<void>}
  */
 // (Removed duplicate re-export)
-export { cooldownEnter } from "./stateHandlers/cooldownEnter.js";
+export { roundWaitEnter } from "./stateHandlers/roundWaitEnter.js";
 /**
- * Handler for entering the `cooldown` state.
+ * Handler for entering the `roundWait` state.
  *
  * @pseudocode
  * 1. Log the entry into the state.
  * 2. Get the battle engine from the context.
- * 3. Start the cooldown period using `engine.startCoolDown()`.
+ * 3. Start the roundWait period using `engine.startCoolDown()`.
  * 4. Log the exit from the state.
  *
  * @param {object} context - The state machine context.
  * @returns {Promise<void>}
  */
 // (Removed duplicate re-export)
-export { roundStartEnter } from "./stateHandlers/roundStartEnter.js";
+export { roundPromptEnter } from "./stateHandlers/roundPromptEnter.js";
 /**
- * Handler for entering the `roundStart` state.
+ * Handler for entering the `roundPrompt` state.
  *
  * @pseudocode
  * 1. Log the entry into the state.
@@ -124,9 +124,9 @@ export { roundStartEnter } from "./stateHandlers/roundStartEnter.js";
  * @returns {Promise<void>}
  */
 // (Removed duplicate re-export)
-export { waitingForPlayerActionEnter } from "./stateHandlers/waitingForPlayerActionEnter.js";
+export { roundSelectEnter } from "./stateHandlers/roundSelectEnter.js";
 /**
- * Handler for entering the `waitingForPlayerAction` state.
+ * Handler for entering the `roundSelect` state.
  *
  * @pseudocode
  * 1. Log the entry into the state.
@@ -139,9 +139,9 @@ export { waitingForPlayerActionEnter } from "./stateHandlers/waitingForPlayerAct
  * @returns {Promise<void>}
  */
 // (Removed duplicate re-export)
-export { waitingForPlayerActionExit } from "./stateHandlers/waitingForPlayerActionExit.js";
+export { roundSelectExit } from "./stateHandlers/roundSelectExit.js";
 /**
- * Handler for exiting the `waitingForPlayerAction` state.
+ * Handler for exiting the `roundSelect` state.
  *
  * @pseudocode
  * 1. Log the exit from the state.
@@ -151,22 +151,22 @@ export { waitingForPlayerActionExit } from "./stateHandlers/waitingForPlayerActi
  * @returns {Promise<void>}
  */
 // (Removed duplicate re-export)
-export { roundDecisionEnter } from "./stateHandlers/roundDecisionEnter.js";
+export { roundResolveEnter } from "./stateHandlers/roundResolveEnter.js";
 /**
- * Handler for entering the `roundDecision` state.
+ * Handler for entering the `roundResolve` state.
  *
  * @pseudocode
  * 1. Log the entry into the state.
- * 2. Emit a `roundDecision` event.
+ * 2. Emit a `roundResolve` event.
  * 3. Log the exit from the state.
  *
  * @param {object} context - The state machine context.
  * @returns {Promise<void>}
  */
 // (Removed duplicate re-export)
-export { roundDecisionExit } from "./stateHandlers/roundDecisionExit.js";
+export { roundResolveExit } from "./stateHandlers/roundResolveExit.js";
 /**
- * Handler for exiting the `roundDecision` state.
+ * Handler for exiting the `roundResolve` state.
  *
  * @pseudocode
  * 1. Log the exit from the state.
@@ -176,13 +176,13 @@ export { roundDecisionExit } from "./stateHandlers/roundDecisionExit.js";
  * @returns {Promise<void>}
  */
 // (Removed duplicate re-export)
-export { roundOverEnter } from "./stateHandlers/roundOverEnter.js";
+export { roundDisplayEnter } from "./stateHandlers/roundDisplayEnter.js";
 /**
- * Handler for entering the `roundOver` state.
+ * Handler for entering the `roundDisplay` state.
  *
  * @pseudocode
  * 1. Log the entry into the state.
- * 2. Emit a `roundOver` event.
+ * 2. Emit a `roundDisplay` event.
  * 3. If `autoContinue` is enabled, dispatch a `nextRound` event after a delay.
  * 4. Log the exit from the state.
  *

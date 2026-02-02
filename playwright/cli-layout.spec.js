@@ -23,7 +23,7 @@ test.describe("CLI layout", () => {
 
         await expect
           .poll(() => page.evaluate(() => window.__TEST_API?.state?.getBattleState?.() ?? null))
-          .toBe("waitingForPlayerAction");
+          .toBe("roundSelect");
 
         const cliRoot = page.locator('[data-test="cli-root"]');
         await expect(cliRoot).toBeVisible();

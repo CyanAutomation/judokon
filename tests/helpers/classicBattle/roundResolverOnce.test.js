@@ -95,7 +95,7 @@ describe.sequential("classicBattle round resolver once", () => {
     );
     __resetBattleEventTarget();
     onBattleEvent("battleStateChange", domStateListener);
-    emitBattleEvent("battleStateChange", { from: null, to: "roundDecision", event: null });
+    emitBattleEvent("battleStateChange", { from: null, to: "roundResolve", event: null });
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
     ({
       handleStatSelection,

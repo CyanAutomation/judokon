@@ -37,7 +37,7 @@ describe("battleCLI countdown", () => {
     await mod.init();
 
     const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
-    battleEvents.emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
+    battleEvents.emitBattleEvent("battleStateChange", { to: "roundSelect" });
 
     const countdown = document.getElementById("cli-countdown");
     expect(countdown).toBeTruthy();
@@ -61,7 +61,7 @@ describe("battleCLI countdown", () => {
 
     const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
     const emitSpy = vi.spyOn(battleEvents, "emitBattleEvent");
-    battleEvents.emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
+    battleEvents.emitBattleEvent("battleStateChange", { to: "roundSelect" });
 
     const countdown = document.getElementById("cli-countdown");
     expect(countdown).toBeTruthy();
@@ -82,7 +82,7 @@ describe("battleCLI countdown", () => {
     await mod.init();
 
     const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
-    battleEvents.emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
+    battleEvents.emitBattleEvent("battleStateChange", { to: "roundSelect" });
 
     const countdown = document.getElementById("cli-countdown");
     expect(countdown).toBeTruthy();

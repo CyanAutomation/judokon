@@ -41,18 +41,17 @@ describe("stateManager guard evaluation", () => {
       context = { engine: mockEngine };
       machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
 
-      // Manually dispatch to roundOver state where the guard is used
+      // Manually dispatch to roundDisplay state where the guard is used
       await machine.dispatch("startClicked");
       await machine.dispatch("ready");
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
-      await machine.dispatch("opponentDecisionReady");
 
-      // Transition through roundDecision to roundOver
+      // Transition through roundResolve to roundDisplay
       await machine.dispatch("outcome=winPlayer");
 
-      expect(machine.getState()).toBe("roundOver");
+      expect(machine.getState()).toBe("roundDisplay");
 
       // Now test the WIN_CONDITION_MET guard for matchPointReached event
       const result = await machine.dispatch("matchPointReached");
@@ -69,16 +68,15 @@ describe("stateManager guard evaluation", () => {
       context = { engine: mockEngine };
       machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
 
-      // Navigate to roundOver state
+      // Navigate to roundDisplay state
       await machine.dispatch("startClicked");
       await machine.dispatch("ready");
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
-      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winOpponent");
 
-      expect(machine.getState()).toBe("roundOver");
+      expect(machine.getState()).toBe("roundDisplay");
 
       // WIN_CONDITION_MET should pass (opponent at 5, pointsToWin = 5)
       const result = await machine.dispatch("matchPointReached");
@@ -95,22 +93,21 @@ describe("stateManager guard evaluation", () => {
       context = { engine: mockEngine };
       machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
 
-      // Navigate to roundOver state
+      // Navigate to roundDisplay state
       await machine.dispatch("startClicked");
       await machine.dispatch("ready");
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
-      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
-      expect(machine.getState()).toBe("roundOver");
+      expect(machine.getState()).toBe("roundDisplay");
 
       // WIN_CONDITION_MET should fail (playerScore 2 < 3, opponentScore 1 < 3)
       // matchPointReached event should be blocked by the guard, so continue should work instead
       const continueResult = await machine.dispatch("continue");
       expect(continueResult).toBe(true);
-      expect(machine.getState()).toBe("cooldown");
+      expect(machine.getState()).toBe("roundWait");
     });
 
     it("should handle WIN_CONDITION_MET guard with equal scores below target", async () => {
@@ -122,21 +119,20 @@ describe("stateManager guard evaluation", () => {
       context = { engine: mockEngine };
       machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
 
-      // Navigate to roundOver state
+      // Navigate to roundDisplay state
       await machine.dispatch("startClicked");
       await machine.dispatch("ready");
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
-      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=draw");
 
-      expect(machine.getState()).toBe("roundOver");
+      expect(machine.getState()).toBe("roundDisplay");
 
       // Both at 2, pointsToWin = 5, so guard should fail
       const continueResult = await machine.dispatch("continue");
       expect(continueResult).toBe(true);
-      expect(machine.getState()).toBe("cooldown");
+      expect(machine.getState()).toBe("roundWait");
     });
 
     it("should handle WIN_CONDITION_MET guard with edge case (score exactly at target)", async () => {
@@ -148,16 +144,15 @@ describe("stateManager guard evaluation", () => {
       context = { engine: mockEngine };
       machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
 
-      // Navigate to roundOver state
+      // Navigate to roundDisplay state
       await machine.dispatch("startClicked");
       await machine.dispatch("ready");
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
-      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
-      expect(machine.getState()).toBe("roundOver");
+      expect(machine.getState()).toBe("roundDisplay");
 
       // playerScore exactly equals pointsToWin, guard should pass
       const result = await machine.dispatch("matchPointReached");
@@ -174,16 +169,15 @@ describe("stateManager guard evaluation", () => {
       context = { engine: mockEngine };
       machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
 
-      // Navigate to roundOver state
+      // Navigate to roundDisplay state
       await machine.dispatch("startClicked");
       await machine.dispatch("ready");
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
-      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
-      expect(machine.getState()).toBe("roundOver");
+      expect(machine.getState()).toBe("roundDisplay");
 
       // playerScore 1000 >= pointsToWin 100, guard should pass
       const result = await machine.dispatch("matchPointReached");
@@ -195,22 +189,21 @@ describe("stateManager guard evaluation", () => {
       context = { engine: null };
       machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
 
-      // Navigate to roundOver state
+      // Navigate to roundDisplay state
       await machine.dispatch("startClicked");
       await machine.dispatch("ready");
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
-      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
-      expect(machine.getState()).toBe("roundOver");
+      expect(machine.getState()).toBe("roundDisplay");
 
       // With missing engine, WIN_CONDITION_MET guard should fail
       // So continue should work instead
       const continueResult = await machine.dispatch("continue");
       expect(continueResult).toBe(true);
-      expect(machine.getState()).toBe("cooldown");
+      expect(machine.getState()).toBe("roundWait");
     });
 
     it("should handle missing getScores method gracefully", async () => {
@@ -222,21 +215,20 @@ describe("stateManager guard evaluation", () => {
       context = { engine: mockEngine };
       machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
 
-      // Navigate to roundOver state
+      // Navigate to roundDisplay state
       await machine.dispatch("startClicked");
       await machine.dispatch("ready");
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
-      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
-      expect(machine.getState()).toBe("roundOver");
+      expect(machine.getState()).toBe("roundDisplay");
 
       // With missing getScores, guard should fail
       const continueResult = await machine.dispatch("continue");
       expect(continueResult).toBe(true);
-      expect(machine.getState()).toBe("cooldown");
+      expect(machine.getState()).toBe("roundWait");
     });
 
     it("should handle missing pointsToWin gracefully", async () => {
@@ -248,21 +240,20 @@ describe("stateManager guard evaluation", () => {
       context = { engine: mockEngine };
       machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
 
-      // Navigate to roundOver state
+      // Navigate to roundDisplay state
       await machine.dispatch("startClicked");
       await machine.dispatch("ready");
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
-      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
-      expect(machine.getState()).toBe("roundOver");
+      expect(machine.getState()).toBe("roundDisplay");
 
       // With missing pointsToWin, guard should fail
       const continueResult = await machine.dispatch("continue");
       expect(continueResult).toBe(true);
-      expect(machine.getState()).toBe("cooldown");
+      expect(machine.getState()).toBe("roundWait");
     });
 
     it("should evaluate WIN_CONDITION_MET with zero pointsToWin (edge case)", async () => {
@@ -274,16 +265,15 @@ describe("stateManager guard evaluation", () => {
       context = { engine: mockEngine };
       machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
 
-      // Navigate to roundOver state
+      // Navigate to roundDisplay state
       await machine.dispatch("startClicked");
       await machine.dispatch("ready");
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
-      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
-      expect(machine.getState()).toBe("roundOver");
+      expect(machine.getState()).toBe("roundDisplay");
 
       // With pointsToWin = 0, any positive score satisfies the condition
       const result = await machine.dispatch("matchPointReached");
@@ -300,12 +290,12 @@ describe("stateManager guard evaluation", () => {
       machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
 
       expect(machine.getState()).toBe("waitingForMatchStart");
-      // The autoSelectEnabled guard is tested via timeout event in waitingForPlayerAction state
+      // The autoSelectEnabled guard is tested via timeout event in roundSelect state
     });
   });
 
   describe("context-driven guard configuration", () => {
-    it("should route timeout to roundDecision when autoSelect flag is enabled in context", async () => {
+    it("should route timeout to roundResolve when autoSelect flag is enabled in context", async () => {
       context = { flags: { autoSelect: true } };
       machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
 
@@ -316,10 +306,9 @@ describe("stateManager guard evaluation", () => {
 
       const result = await machine.dispatch("timeout");
       expect(result).toBe(true);
-      expect(machine.getState()).toBe("waitingForOpponentDecision");
+      expect(machine.getState()).toBe("roundResolve");
 
-      await machine.dispatch("opponentDecisionReady");
-      expect(machine.getState()).toBe("roundDecision");
+      expect(machine.getState()).toBe("roundResolve");
     });
 
     it("should route timeout to interruptRound when autoSelect flag is disabled in context", async () => {
@@ -371,10 +360,9 @@ describe("stateManager guard evaluation", () => {
 
       const result = await machine.dispatch("timeout");
       expect(result).toBe(true);
-      expect(machine.getState()).toBe("waitingForOpponentDecision");
+      expect(machine.getState()).toBe("roundResolve");
 
-      await machine.dispatch("opponentDecisionReady");
-      expect(machine.getState()).toBe("roundDecision");
+      expect(machine.getState()).toBe("roundResolve");
     });
   });
 
@@ -420,26 +408,25 @@ describe("stateManager guard evaluation", () => {
       context = { someOtherProp: "value" };
       machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
 
-      // Navigate to roundOver state
+      // Navigate to roundDisplay state
       await machine.dispatch("startClicked");
       await machine.dispatch("ready");
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
-      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
-      expect(machine.getState()).toBe("roundOver");
+      expect(machine.getState()).toBe("roundDisplay");
 
       // With no engine, guard should fail
       const continueResult = await machine.dispatch("continue");
       expect(continueResult).toBe(true);
-      expect(machine.getState()).toBe("cooldown");
+      expect(machine.getState()).toBe("roundWait");
     });
   });
 
   describe("matchPointReached -> matchDecision transition", () => {
-    it("should transition from roundOver to matchDecision when WIN_CONDITION_MET passes", async () => {
+    it("should transition from roundDisplay to matchDecision when WIN_CONDITION_MET passes", async () => {
       const mockEngine = {
         getScores: () => ({ playerScore: 3, opponentScore: 0 }),
         pointsToWin: 3
@@ -454,16 +441,15 @@ describe("stateManager guard evaluation", () => {
 
       machine = await createStateManager({}, context, onTransition, CLASSIC_BATTLE_STATES);
 
-      // Navigate to roundOver state
+      // Navigate to roundDisplay state
       await machine.dispatch("startClicked");
       await machine.dispatch("ready");
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
-      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
-      expect(machine.getState()).toBe("roundOver");
+      expect(machine.getState()).toBe("roundDisplay");
 
       // Dispatch matchPointReached - should transition to matchDecision
       const result = await machine.dispatch("matchPointReached");
@@ -472,13 +458,13 @@ describe("stateManager guard evaluation", () => {
 
       // Verify transition was recorded
       const transition = onTransitionSpy.find(
-        (t) => t.from === "roundOver" && t.to === "matchDecision"
+        (t) => t.from === "roundDisplay" && t.to === "matchDecision"
       );
       expect(transition).toBeDefined();
       expect(transition.event).toBe("matchPointReached");
     });
 
-    it("should not transition from roundOver to matchDecision when WIN_CONDITION_MET fails", async () => {
+    it("should not transition from roundDisplay to matchDecision when WIN_CONDITION_MET fails", async () => {
       const mockEngine = {
         getScores: () => ({ playerScore: 1, opponentScore: 0 }),
         pointsToWin: 3
@@ -493,25 +479,24 @@ describe("stateManager guard evaluation", () => {
 
       machine = await createStateManager({}, context, onTransition, CLASSIC_BATTLE_STATES);
 
-      // Navigate to roundOver state
+      // Navigate to roundDisplay state
       await machine.dispatch("startClicked");
       await machine.dispatch("ready");
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
-      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
-      expect(machine.getState()).toBe("roundOver");
+      expect(machine.getState()).toBe("roundDisplay");
 
       // Dispatch matchPointReached - should NOT transition because guard fails
       const result = await machine.dispatch("matchPointReached");
       expect(result).toBe(false);
-      expect(machine.getState()).toBe("roundOver");
+      expect(machine.getState()).toBe("roundDisplay");
 
       // Verify no transition to matchDecision was recorded
       const transition = onTransitionSpy.find(
-        (t) => t.from === "roundOver" && t.to === "matchDecision"
+        (t) => t.from === "roundDisplay" && t.to === "matchDecision"
       );
       expect(transition).toBeUndefined();
     });
@@ -525,26 +510,25 @@ describe("stateManager guard evaluation", () => {
       context = { engine: mockEngine };
       machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
 
-      // Navigate to roundOver state
+      // Navigate to roundDisplay state
       await machine.dispatch("startClicked");
       await machine.dispatch("ready");
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
-      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=draw");
 
-      expect(machine.getState()).toBe("roundOver");
+      expect(machine.getState()).toBe("roundDisplay");
 
       // matchPointReached should fail
       const pointResult = await machine.dispatch("matchPointReached");
       expect(pointResult).toBe(false);
-      expect(machine.getState()).toBe("roundOver");
+      expect(machine.getState()).toBe("roundDisplay");
 
       // continue should succeed
       const continueResult = await machine.dispatch("continue");
       expect(continueResult).toBe(true);
-      expect(machine.getState()).toBe("cooldown");
+      expect(machine.getState()).toBe("roundWait");
     });
   });
 });

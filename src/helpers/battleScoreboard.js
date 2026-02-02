@@ -271,7 +271,7 @@ export function initBattleScoreboardAdapter() {
     try {
       const to = e?.detail?.to;
       _currentState = to || _currentState;
-      if (to === "selection" || to === "cooldown") {
+      if (to === "selection" || to === "roundSelect" || to === "roundWait") {
         // Clear outcome on authoritative transition back to selection/cooldown
         displayOutcome("none");
       }

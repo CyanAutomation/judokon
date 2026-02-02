@@ -194,8 +194,8 @@ function getMachineDebugState() {
     if (snap.prev) state.machinePrevState = snap.prev;
     if (snap.event) state.machineLastEvent = snap.event;
     if (Array.isArray(snap.log)) state.machineLog = snap.log.slice();
-    const rde = readDebugState("roundDecisionEnter");
-    if (rde) state.roundDecisionEnter = rde;
+    const rde = readDebugState("roundResolveEnter");
+    if (rde) state.roundResolveEnter = rde;
     const gfa = readDebugState("guardFiredAt");
     if (gfa) state.guardFiredAt = gfa;
     const goe = readDebugState("guardOutcomeEvent");

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-describe("waitingForPlayerActionEnter", () => {
+describe("roundSelectEnter", () => {
   beforeEach(() => {
     vi.resetModules();
     document.body.innerHTML = "";
@@ -15,7 +15,7 @@ describe("waitingForPlayerActionEnter", () => {
     const mod = await import("../../../src/helpers/classicBattle/orchestratorHandlers.js");
     const store = { roundReadyForInput: true };
     const machine = { context: { store } };
-    await mod.waitingForPlayerActionEnter(machine);
+    await mod.roundSelectEnter(machine);
     const btn = document.querySelector('[data-role="next-round"]');
     expect(btn.disabled).toBe(true);
     expect(btn.dataset.nextReady).toBeUndefined();
@@ -23,7 +23,7 @@ describe("waitingForPlayerActionEnter", () => {
 
   it("clears stale selection flags when re-entered after rapid transitions", async () => {
     const mod = await import(
-      "../../../src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js"
+      "../../../src/helpers/classicBattle/stateHandlers/roundSelectEnter.js"
     );
     const store = {
       selectionMade: true,
@@ -31,9 +31,9 @@ describe("waitingForPlayerActionEnter", () => {
       playerChoice: "speed",
       roundReadyForInput: true
     };
-    const machine = { context: { store }, currentState: "cooldown" };
+    const machine = { context: { store }, currentState: "roundWait" };
 
-    await mod.waitingForPlayerActionEnter(machine);
+    await mod.roundSelectEnter(machine);
 
     expect(store.selectionMade).toBe(false);
     expect(store.__lastSelectionMade).toBe(false);

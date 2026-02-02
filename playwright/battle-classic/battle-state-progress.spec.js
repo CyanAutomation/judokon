@@ -118,24 +118,24 @@ test.describe("Battle state progress list", () => {
         .toBe("true");
 
       // Initial state should be tracked on the list and a single item marked active.
-      await waitForBattleState(page, "waitingForPlayerAction", { timeout: 7_500 });
+      await waitForBattleState(page, "roundSelect", { timeout: 7_500 });
 
       await expect(progress).toHaveAttribute(
         "data-feature-battle-state-active",
-        "waitingForPlayerAction"
+        "roundSelect"
       );
       await expect(progress).toHaveAttribute(
         "data-feature-battle-state-active-original",
-        "waitingForPlayerAction"
+        "roundSelect"
       );
       await expect(progress.locator('li[data-feature-battle-state-active="true"]')).toHaveCount(1);
 
       // Select the first stat to drive the round forward.
       await page.getByTestId("stat-button").first().click();
 
-      await waitForBattleState(page, "roundDecision", { timeout: 7_500 });
-      await expect(progress).toHaveAttribute("data-feature-battle-state-active", "roundDecision");
-      await expect(progress.locator('li[data-state="roundDecision"]')).toHaveAttribute(
+      await waitForBattleState(page, "roundResolve", { timeout: 7_500 });
+      await expect(progress).toHaveAttribute("data-feature-battle-state-active", "roundResolve");
+      await expect(progress.locator('li[data-state="roundResolve"]')).toHaveAttribute(
         "data-feature-battle-state-active",
         "true"
       );
@@ -146,7 +146,7 @@ test.describe("Battle state progress list", () => {
       });
       expect(completion.ok).toBe(true);
 
-      // The finalState should be a post-round state (roundOver, cooldown, matchDecision, or matchOver)
+      // The finalState should be a post-round state (roundDisplay, cooldown, matchDecision, or matchOver)
       const finalState = completion.finalState;
       expect(finalState).toBeTruthy();
 
@@ -156,8 +156,8 @@ test.describe("Battle state progress list", () => {
       // Progress list should show the current final state as active
       await expect(progress).toHaveAttribute("data-feature-battle-state-active", finalState);
 
-      // Verify that roundOver list item exists (whether we ended in roundOver or transitioned through it)
-      await expect(progress.locator('li[data-state="roundOver"]')).toBeVisible();
+      // Verify that roundDisplay list item exists (whether we ended in roundDisplay or transitioned through it)
+      await expect(progress.locator('li[data-state="roundDisplay"]')).toBeVisible();
     }, ["log", "info", "warn", "error", "debug"]));
 
   test("remaps interrupt states to core progress markers", async ({ page }) =>
@@ -230,16 +230,16 @@ test.describe("Battle state progress list", () => {
         window.__progressHistoryObserver = observer;
       });
 
-      await waitForBattleState(page, "waitingForPlayerAction", { timeout: 7_500 });
+      await waitForBattleState(page, "roundSelect", { timeout: 7_500 });
 
       const interruptResult = await dispatchBattleEvent(page, "interrupt", { reason: "pause" });
       expect(interruptResult.ok).toBe(true);
 
       // Accept any valid post-round state (handles skipRoundCooldown flag)
-      await waitForBattleState(page, ["cooldown", "roundStart", "waitingForPlayerAction"], {
+      await waitForBattleState(page, ["roundWait", "roundPrompt", "roundSelect"], {
         timeout: 7_500
       });
-      await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000 });
+      await waitForBattleState(page, "roundSelect", { timeout: 10_000 });
 
       const adminInterrupt = await dispatchBattleEvent(page, "interrupt", {
         reason: "admin review",
@@ -273,14 +273,14 @@ test.describe("Battle state progress list", () => {
       const sawInterruptRemap =
         Array.isArray(progressHistory) &&
         progressHistory.some(
-          (entry) => entry?.active === "cooldown" && entry?.original === "interruptRound"
+          (entry) => entry?.active === "roundWait" && entry?.original === "interruptRound"
         );
       expect(sawInterruptRemap).toBe(true);
 
       const sawModificationRemap =
         Array.isArray(progressHistory) &&
         progressHistory.some(
-          (entry) => entry?.active === "roundDecision" && entry?.original === "roundModification"
+          (entry) => entry?.active === "roundResolve" && entry?.original === "roundModification"
         );
       expect(sawModificationRemap).toBe(true);
 
@@ -297,7 +297,7 @@ test.describe("Battle state progress list", () => {
         };
         // Set resolve delay to 0 for faster test execution
         window.__OPPONENT_RESOLVE_DELAY_MS = 0;
-        // Disable autoContinue so roundOver state is observable
+        // Disable autoContinue so roundDisplay state is observable
         window.__AUTO_CONTINUE = false;
       });
 
@@ -312,7 +312,7 @@ test.describe("Battle state progress list", () => {
         .poll(async () => progress.getAttribute("data-feature-battle-state-ready"))
         .toBe("true");
 
-      await waitForBattleState(page, "waitingForPlayerAction", { timeout: 7_500 });
+      await waitForBattleState(page, "roundSelect", { timeout: 7_500 });
 
       const result = await triggerAutoSelect(page, 10_000);
       if (!result.success) {
@@ -320,16 +320,16 @@ test.describe("Battle state progress list", () => {
       }
 
       // After triggerAutoSelect with the fix, the state should transition
-      // from waitingForPlayerAction -> roundDecision (via statSelected from auto-select)
-      // -> roundOver (via outcome event from roundDecision onEnter actions).
-      // With autoContinue disabled, roundOver will be stable and observable.
-      await waitForBattleState(page, "roundOver", { timeout: 10_000 });
+      // from roundSelect -> roundResolve (via statSelected from auto-select)
+      // -> roundDisplay (via outcome event from roundResolve onEnter actions).
+      // With autoContinue disabled, roundDisplay will be stable and observable.
+      await waitForBattleState(page, "roundDisplay", { timeout: 10_000 });
 
-      // Verify the progress list tracked the transition to roundOver
-      await expect(progress).toHaveAttribute("data-feature-battle-state-active", "roundOver");
+      // Verify the progress list tracked the transition to roundDisplay
+      await expect(progress).toHaveAttribute("data-feature-battle-state-active", "roundDisplay");
       await expect(progress).toHaveAttribute(
         "data-feature-battle-state-active-original",
-        "roundOver"
+        "roundDisplay"
       );
       await expect(progress.locator('li[data-feature-battle-state-active="true"]')).toHaveCount(1);
     }, ["log", "info", "warn", "error", "debug"]));

@@ -162,8 +162,8 @@ describe("Battle CLI helpers", () => {
 
       const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
       emitBattleEvent("battleStateChange", {
-        from: "roundStart",
-        to: "waitingForPlayerAction"
+        from: "roundPrompt",
+        to: "roundSelect"
       });
 
       const shortcuts = document.getElementById("cli-shortcuts");
@@ -239,7 +239,7 @@ describe("Battle CLI helpers", () => {
       subscribeEngine();
       engineStub.emit("matchEnded", { outcome: "opponentWin" });
 
-      mod.cli.appendTranscript({ from: "roundStart", to: "Round resolved" });
+      mod.cli.appendTranscript({ from: "roundPrompt", to: "Round resolved" });
 
       const header = document.getElementById("round-counter");
       const score = document.getElementById("score-display");

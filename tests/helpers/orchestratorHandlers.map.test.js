@@ -4,24 +4,24 @@ import { setupClassicBattleDom } from "../helpers/classicBattle/utils.js";
 const ORCHESTRATOR_PATH = "../../src/helpers/classicBattle/orchestrator.js";
 const BATTLE_EVENTS_PATH = "../../src/helpers/classicBattle/battleEvents.js";
 const ROUND_DECISION_HELPERS_PATH =
-  "../../src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js";
+  "../../src/helpers/classicBattle/stateHandlers/roundResolveHelpers.js";
 
 function createStateTable() {
   return [
     {
       name: "waitingForMatchStart",
       type: "initial",
-      triggers: [{ on: "startClicked", target: "waitingForPlayerAction" }]
+      triggers: [{ on: "startClicked", target: "roundSelect" }]
     },
     {
-      name: "waitingForPlayerAction",
+      name: "roundSelect",
       triggers: [
-        { on: "statSelected", target: "roundDecision" },
+        { on: "statSelected", target: "roundResolve" },
         { on: "interrupt", target: "waitingForMatchStart" }
       ]
     },
     {
-      name: "roundDecision",
+      name: "roundResolve",
       triggers: [{ on: "interrupt", target: "waitingForMatchStart" }]
     }
   ];
@@ -92,7 +92,7 @@ describe("stateHandlers map", () => {
     });
   });
 
-  it("enables player interaction when waitingForPlayerAction is entered", async () => {
+  it("enables player interaction when roundSelect is entered", async () => {
     const { spies, cleanup } = await registerEventSpies("statButtons:enable", "battleStateChange");
     const timerModule = await import("../../src/helpers/classicBattle/timerService.js");
     vi.spyOn(timerModule, "startTimer").mockResolvedValue(undefined);
@@ -108,10 +108,10 @@ describe("stateHandlers map", () => {
       const enableSpy = spies.get("statButtons:enable");
       const transitionSpy = spies.get("battleStateChange");
 
-      expect(machine.getState()).toBe("waitingForPlayerAction");
+      expect(machine.getState()).toBe("roundSelect");
       expect(enableSpy).toHaveBeenCalledTimes(1);
       expect(transitionSpy.mock.calls.map(([detail]) => detail)).toContainEqual(
-        expect.objectContaining({ to: "waitingForPlayerAction", from: "waitingForMatchStart" })
+        expect.objectContaining({ to: "roundSelect", from: "waitingForMatchStart" })
       );
     } finally {
       cleanup();
@@ -155,10 +155,10 @@ describe("stateHandlers map", () => {
       expect(spies.get("debugPanelUpdate")).toHaveBeenCalled();
       const transitionDetails = transitionSpy.mock.calls.map(([detail]) => detail);
       expect(transitionDetails).toContainEqual(
-        expect.objectContaining({ to: "roundDecision", from: "waitingForPlayerAction" })
+        expect.objectContaining({ to: "roundResolve", from: "roundSelect" })
       );
       expect(transitionDetails).toContainEqual(
-        expect.objectContaining({ to: "waitingForMatchStart", from: "roundDecision" })
+        expect.objectContaining({ to: "waitingForMatchStart", from: "roundResolve" })
       );
       expect(machine.getState()).toBe("waitingForMatchStart");
     } finally {

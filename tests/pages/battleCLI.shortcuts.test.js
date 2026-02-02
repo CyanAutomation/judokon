@@ -17,7 +17,7 @@ describe("battleCLI shortcuts overlay", () => {
   it("pauses countdown while help panel is open and resumes on close", async () => {
     const mod = await loadBattleCLI({ autoSelect: false });
     await mod.init();
-    document.body.dataset.battleState = "waitingForPlayerAction";
+    document.body.dataset.battleState = "roundSelect";
 
     const countdown = document.getElementById("cli-countdown");
     expect(countdown).toBeTruthy();

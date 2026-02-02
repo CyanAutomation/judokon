@@ -78,7 +78,7 @@ async function setupStalledCliFallback(page) {
 
     api.cli.resolveRound = async (...args) => {
       const state = api.state.getBattleState?.() ?? null;
-      if (state === "waitingForPlayerAction") {
+      if (state === "roundSelect") {
         return stalledResult;
       }
 
@@ -196,11 +196,11 @@ test.describe("Classic Battle Opponent Messages", () => {
       const firstStat = page.locator(selectors.statButton()).first();
       await firstStat.click();
 
-      // Wait for any post-selection state (cooldown, roundOver, or waitingForPlayerAction)
+      // Wait for any post-selection state (cooldown, roundDisplay, or roundSelect)
       await page.waitForFunction(
         () => {
           const state = document.body?.dataset?.battleState;
-          return ["cooldown", "roundOver", "waitingForPlayerAction"].includes(state);
+          return ["roundWait", "roundDisplay", "roundSelect"].includes(state);
         },
         { timeout: 5000 }
       );
@@ -280,7 +280,7 @@ test.describe("Classic Battle Opponent Messages", () => {
           await expect(mysteryPlaceholder).toHaveCount(0);
           await confirmRoundResolved(page, {
             timeout: 3_000,
-            message: 'Expected battle state to be "roundOver" after CLI resolveRound'
+            message: 'Expected battle state to be "roundDisplay" after CLI resolveRound'
           });
           await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
 
@@ -300,7 +300,7 @@ test.describe("Classic Battle Opponent Messages", () => {
   );
 
   runMessageTest(
-    "forces round resolution when CLI resolveRound stalls in waitingForPlayerAction",
+    "forces round resolution when CLI resolveRound stalls in roundSelect",
     async ({ page }) => {
       await setupStalledCliFallback(page);
 
@@ -314,7 +314,7 @@ test.describe("Classic Battle Opponent Messages", () => {
           try {
             await confirmRoundResolved(page, {
               timeout: 3_000,
-              message: 'Expected battle state to resolve to "roundOver" after forced fallback'
+              message: 'Expected battle state to resolve to "roundDisplay" after forced fallback'
             });
           } catch (error) {
             let lastObservedBattleState = null;

@@ -438,7 +438,7 @@ describe("Action Bar Component", () => {
       actionBar = createActionBar({ engine: mockEngine, container });
       actionBar.render();
 
-      const roundStartHandler = engineHandlers.get("roundStart");
+      const roundStartHandler = engineHandlers.get("roundPrompt");
       const roundEndHandler = engineHandlers.get("roundEnd");
       const statSelectedHandler = engineHandlers.get("statSelected");
       expect(roundStartHandler).toBeInstanceOf(Function);
@@ -466,13 +466,13 @@ describe("Action Bar Component", () => {
       actionBar = createActionBar({ engine: mockEngine, container });
       actionBar.render();
 
-      const roundStartHandler = engineHandlers.get("roundStart");
+      const roundStartHandler = engineHandlers.get("roundPrompt");
       const roundEndHandler = engineHandlers.get("roundEnd");
       const statSelectedHandler = engineHandlers.get("statSelected");
 
       actionBar.destroy();
 
-      expect(mockEngine.off).toHaveBeenCalledWith("roundStart", roundStartHandler);
+      expect(mockEngine.off).toHaveBeenCalledWith("roundPrompt", roundStartHandler);
       expect(mockEngine.off).toHaveBeenCalledWith("roundEnd", roundEndHandler);
       expect(mockEngine.off).toHaveBeenCalledWith("statSelected", statSelectedHandler);
       expect(container.querySelector(".action-bar")).toBeNull();

@@ -1,5 +1,4 @@
 import { onBattleEvent } from "./battleEvents.js";
-import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { getOpponentCardData } from "./opponentController.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { t } from "../i18n.js";
@@ -388,7 +387,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
           if (currentOpponentSnackbarController) {
             await currentOpponentSnackbarController.waitForMinDuration();
           }
-          // opponentDecisionReady will be dispatched by battleStateChange handler
           return;
         }
 
@@ -420,7 +418,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
           if (currentOpponentSnackbarController) {
             await currentOpponentSnackbarController.waitForMinDuration();
           }
-          // opponentDecisionReady will be dispatched by battleStateChange handler
           return;
         }
 
@@ -465,7 +462,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         if (currentOpponentSnackbarController) {
           await currentOpponentSnackbarController.waitForMinDuration();
         }
-        // opponentDecisionReady will be dispatched by battleStateChange handler
       } catch (error) {
         console.error("[statSelected Handler] Error:", error);
       }
@@ -527,23 +523,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     } catch {}
   });
 
-  // Handle state transitions to dispatch opponentDecisionReady when appropriate
-  onBattleEvent("battleStateChange", async (e) => {
-    const { to } = e?.detail || {};
-
-    // When entering waitingForOpponentDecision state, the opponent snackbar is already showing
-    // and its minDuration has elapsed. Now we can safely dispatch opponentDecisionReady.
-    if (to === "waitingForOpponentDecision") {
-      // Add small delay to ensure state entry actions complete
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      try {
-        await dispatchBattleEvent("opponentDecisionReady");
-      } catch (err) {
-        console.error("[battleStateChange Handler] Error dispatching opponentDecisionReady:", err);
-      }
-    }
-  });
 }
 
 /**

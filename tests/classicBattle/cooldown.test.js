@@ -203,7 +203,7 @@ describe("Classic Battle inter-round cooldown + Next", () => {
   test("re-enables Next if a callback disables it", async () => {
     const timers = useCanonicalTimers();
     document.body.innerHTML = '<button id="next-button" disabled></button>';
-    document.body.dataset.battleState = "cooldown";
+    document.body.dataset.battleState = "roundWait";
 
     mockDispatchBattleEvent.mockResolvedValueOnce(undefined);
     mockComputeNextRoundCooldown.mockReturnValueOnce(0);

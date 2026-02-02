@@ -291,7 +291,7 @@ describe("Battle Event Aliases", () => {
 
       await withMutedConsole(async () => {
         emitBattleEventWithAliases("statButtons:enable", { stats: ["power", "speed"] });
-        emitBattleEventWithAliases("statButtons:disable", { reason: "roundOver" });
+        emitBattleEventWithAliases("statButtons:disable", { reason: "roundDisplay" });
       });
 
       expect(enableHandler).toHaveBeenCalledTimes(1);

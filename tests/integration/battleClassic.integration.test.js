@@ -71,7 +71,7 @@ function disableAutoContinue(testApi) {
  * 2. Selects a round from the modal
  * 3. Waits for player action state
  * 4. Selects a stat and verifies store is updated immediately
- * 5. Waits for round to fully resolve (roundOver/cooldown state)
+ * 5. Waits for round to fully resolve (roundDisplay/cooldown state)
  * 6. Verifies roundsPlayed was incremented
  *
  * @param {object} testApi - Test API from window.__TEST_API
@@ -101,7 +101,7 @@ async function performStatSelectionFlow(testApi) {
   const debugBefore = inspect.getDebugInfo();
   const roundsBefore = debugBefore?.store?.roundsPlayed ?? 0;
 
-  // Step 2: Click round button and wait for waitingForPlayerAction state
+  // Step 2: Click round button and wait for roundSelect state
   const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
   expect(roundButtons.length).toBeGreaterThan(0);
 
@@ -109,11 +109,11 @@ async function performStatSelectionFlow(testApi) {
     roundButtons[0].click();
     // Let the modal's button click handler execute and dispatch startClicked
     await Promise.resolve();
-    // Wait for state machine to reach waitingForPlayerAction state
+    // Wait for state machine to reach roundSelect state
     try {
-      await state.waitForBattleState("waitingForPlayerAction", 5000);
+      await state.waitForBattleState("roundSelect", 5000);
     } catch (error) {
-      throw new Error(`Failed waiting for waitingForPlayerAction: ${error?.message ?? error}`);
+      throw new Error(`Failed waiting for roundSelect: ${error?.message ?? error}`);
     }
   });
 
@@ -129,7 +129,7 @@ async function performStatSelectionFlow(testApi) {
 
   // Step 4: Click the stat button and verify immediate store update
   await withMutedConsole(async () => {
-    await state.waitForBattleState(["waitingForPlayerAction", "roundDecision"], 5000);
+    await state.waitForBattleState(["roundSelect", "roundResolve"], 5000);
     await state.waitForStatButtonsReady(5000);
   });
   await triggerStatSelection(store, statButtons[0], selectedStat);
@@ -145,7 +145,7 @@ async function performStatSelectionFlow(testApi) {
     const lastEntry = validationDebug[validationDebug.length - 1];
     if (!lastEntry.allowed) {
       throw new Error(
-        `Selection was rejected by validateSelectionState: selectionMade=${lastEntry.selectionMade}, current state=${lastEntry.current}. Last Validation: ${JSON.stringify(lastValidation)}. This likely means the orchestrator is not in "waitingForPlayerAction" state yet. Full debug: ${JSON.stringify(validationDebug)}`
+        `Selection was rejected by validateSelectionState: selectionMade=${lastEntry.selectionMade}, current state=${lastEntry.current}. Last Validation: ${JSON.stringify(lastValidation)}. This likely means the orchestrator is not in "roundSelect" state yet. Full debug: ${JSON.stringify(validationDebug)}`
       );
     }
   }
@@ -160,10 +160,10 @@ async function performStatSelectionFlow(testApi) {
     expect(store.playerChoice).toBe(selectedStat);
   }
 
-  // Step 5: Wait for state machine to reach roundOver to ensure full resolution
-  // roundOver is entered after evaluation completes and engine rounds are incremented
+  // Step 5: Wait for state machine to reach roundDisplay to ensure full resolution
+  // roundDisplay is entered after evaluation completes and engine rounds are incremented
   await withMutedConsole(async () => {
-    await state.waitForBattleState(["roundOver", "cooldown"], 5000);
+    await state.waitForBattleState(["roundDisplay", "roundWait"], 5000);
   });
 
   const nextRoundButton = document.querySelector('[data-role="next-round"]');
@@ -281,7 +281,7 @@ describe("Battle Classic Page Integration", () => {
     await withMutedConsole(async () => {
       roundButtons[0].click();
       await Promise.resolve();
-      await testApi.state.waitForBattleState("waitingForPlayerAction", 5000);
+      await testApi.state.waitForBattleState("roundSelect", 5000);
     });
 
     // Clear validation debug before selection
@@ -294,13 +294,13 @@ describe("Battle Classic Page Integration", () => {
     expect(statButtons.length).toBeGreaterThan(0);
 
     await withMutedConsole(async () => {
-      await testApi.state.waitForBattleState(["waitingForPlayerAction", "roundDecision"], 5000);
+      await testApi.state.waitForBattleState(["roundSelect", "roundResolve"], 5000);
       await testApi.state.waitForStatButtonsReady(5000);
     });
     await triggerStatSelection(store, statButtons[0], statButtons[0].dataset.stat);
 
     await withMutedConsole(async () => {
-      await testApi.state.waitForBattleState(["roundDecision", "roundOver", "cooldown"], 5000);
+      await testApi.state.waitForBattleState(["roundResolve", "roundDisplay", "roundWait"], 5000);
       const roundCompleted = await testApi.state.waitForRoundsPlayed(1);
       expect(roundCompleted).toBe(true);
     });
@@ -432,7 +432,7 @@ describe("Battle Classic Page Integration", () => {
         storeId: storeBeforeSelection?.__testId
       });
 
-      // RE-VERIFY: Ensure we're still in waitingForPlayerAction state before selection
+      // RE-VERIFY: Ensure we're still in roundSelect state before selection
       // (Race condition: state may have transitioned since the initial wait)
       const currentBattleState =
         typeof testApi?.state?.getBattleState === "function"
@@ -442,18 +442,18 @@ describe("Battle Classic Page Integration", () => {
 
       if (
         currentBattleState &&
-        !["waitingForPlayerAction", "roundDecision"].includes(currentBattleState)
+        !["roundSelect", "roundResolve"].includes(currentBattleState)
       ) {
         // Attempt to re-sync to correct state
         try {
-          await testApi.state.waitForBattleState("waitingForPlayerAction", 2000);
-          console.log("[TEST DIAG] Re-synced to waitingForPlayerAction");
+          await testApi.state.waitForBattleState("roundSelect", 2000);
+          console.log("[TEST DIAG] Re-synced to roundSelect");
         } catch {}
       }
 
       try {
         await withMutedConsole(async () => {
-          await testApi.state.waitForBattleState(["waitingForPlayerAction", "roundDecision"], 5000);
+          await testApi.state.waitForBattleState(["roundSelect", "roundResolve"], 5000);
           await testApi.state.waitForStatButtonsReady(5000);
         });
         await triggerStatSelection(store, selectedButton, selectedStat);
@@ -481,7 +481,7 @@ describe("Battle Classic Page Integration", () => {
         });
 
         await withMutedConsole(async () => {
-          await testApi.state.waitForBattleState(["roundDecision", "roundOver", "cooldown"], 5000);
+          await testApi.state.waitForBattleState(["roundResolve", "roundDisplay", "roundWait"], 5000);
           const roundCompleted = await testApi.state.waitForRoundsPlayed(1);
           expect(roundCompleted).toBe(true);
         });
@@ -518,7 +518,7 @@ describe("Battle Classic Page Integration", () => {
     }
 
     const postSelectionStore = getBattleStore();
-    // Note: selectionMade is reset when transitioning to waitingForPlayerAction for the next round
+    // Note: selectionMade is reset when transitioning to roundSelect for the next round
     // Don't assert on selectionMade here - it's transient and may already be reset
     const debugAfter = testApi.inspect?.getDebugInfo?.() ?? null;
     const roundsAfter = Number(
@@ -578,8 +578,8 @@ describe("Battle Classic Page Integration", () => {
       roundButtons[0].click();
       // Let event handlers execute
       await Promise.resolve();
-      // Wait for orchestrator to reach waitingForPlayerAction state
-      await testApi.state.waitForBattleState("waitingForPlayerAction", 5000);
+      // Wait for orchestrator to reach roundSelect state
+      await testApi.state.waitForBattleState("roundSelect", 5000);
     });
 
     const updatedStore = getBattleStore();
@@ -590,7 +590,7 @@ describe("Battle Classic Page Integration", () => {
     expect(statButtons.length).toBeGreaterThan(0);
 
     await withMutedConsole(async () => {
-      await testApi.state.waitForBattleState(["waitingForPlayerAction", "roundDecision"], 5000);
+      await testApi.state.waitForBattleState(["roundSelect", "roundResolve"], 5000);
       await testApi.state.waitForStatButtonsReady(5000);
     });
     await triggerStatSelection(initialStore, statButtons[0], statButtons[0].dataset.stat);
@@ -602,11 +602,11 @@ describe("Battle Classic Page Integration", () => {
     // The selection happened if we reach here without errors
 
     await withMutedConsole(async () => {
-      await testApi.state.waitForBattleState(["roundOver", "cooldown"], 5000);
+      await testApi.state.waitForBattleState(["roundDisplay", "roundWait"], 5000);
     });
 
     const postRoundOverStore = getBattleStore();
-    // After roundOver, playerChoice is cleared (it's only cleared in roundOverEnter, not roundDecision)
+    // After roundDisplay, playerChoice is cleared (it's only cleared in roundDisplayEnter, not roundResolve)
     // Verify the round actually completed by checking rounds played instead
     expect(postRoundOverStore.playerChoice).toBeNull();
 
@@ -655,8 +655,8 @@ describe("Battle Classic Page Integration", () => {
       await withMutedConsole(async () => {
         roundButtons[0].click();
         await Promise.resolve();
-        // Wait for orchestrator to reach waitingForPlayerAction state
-        await testApi.state.waitForBattleState("waitingForPlayerAction", 5000);
+        // Wait for orchestrator to reach roundSelect state
+        await testApi.state.waitForBattleState("roundSelect", 5000);
       });
 
       const store = getBattleStore();
@@ -664,7 +664,7 @@ describe("Battle Classic Page Integration", () => {
       expect(statButtons.length).toBeGreaterThan(0);
 
       await withMutedConsole(async () => {
-        await testApi.state.waitForBattleState(["waitingForPlayerAction", "roundDecision"], 5000);
+        await testApi.state.waitForBattleState(["roundSelect", "roundResolve"], 5000);
         await testApi.state.waitForStatButtonsReady(5000);
       });
       // Capture the placeholder state synchronously when opponentReveal fires
@@ -693,7 +693,7 @@ describe("Battle Classic Page Integration", () => {
 
       // Wait for round resolution to complete
       await withMutedConsole(async () => {
-        await testApi.state.waitForBattleState(["roundDecision", "roundOver", "cooldown"], 5000);
+        await testApi.state.waitForBattleState(["roundResolve", "roundDisplay", "roundWait"], 5000);
         const roundCompleted = await testApi.state.waitForRoundsPlayed(1);
         expect(roundCompleted).toBe(true);
       });

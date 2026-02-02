@@ -32,7 +32,7 @@ describe("collectDebugState", () => {
       store[k] = v;
     });
     vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
-    debugHooks.exposeDebugState("roundDecisionEnter", 123);
+    debugHooks.exposeDebugState("roundResolveEnter", 123);
     debugHooks.exposeDebugState("guardFiredAt", 456);
     debugHooks.exposeDebugState("guardOutcomeEvent", "guard");
     debugHooks.exposeDebugState("roundDebug", 7);
@@ -69,7 +69,7 @@ describe("collectDebugState", () => {
       machinePrevState: "prev",
       machineLastEvent: "event",
       machineLog: ["a", "b"],
-      roundDecisionEnter: 123,
+      roundResolveEnter: 123,
       guardFiredAt: 456,
       guardOutcomeEvent: "guard",
       machineReady: true,

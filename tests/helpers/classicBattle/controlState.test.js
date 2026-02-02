@@ -3,8 +3,8 @@ import "./commonMocks.js";
 import { createRoundMessage, createTimerNodes } from "./domUtils.js";
 import { createStateManager } from "../../../src/helpers/classicBattle/stateManager.js";
 import {
-  waitingForPlayerActionEnter,
-  waitingForPlayerActionExit
+  roundSelectEnter,
+  roundSelectExit
 } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 import { ClassicBattleView } from "../../../src/helpers/classicBattle/view.js";
 
@@ -174,19 +174,19 @@ describe("classicBattle battle control state", () => {
     expect(btn.disabled).toBe(true);
 
     const states = [
-      { name: "cooldown", type: "initial", triggers: [{ on: "ready", target: "roundStart" }] },
-      { name: "roundStart", triggers: [{ on: "cardsRevealed", target: "waitingForPlayerAction" }] },
+      { name: "roundWait", type: "initial", triggers: [{ on: "ready", target: "roundPrompt" }] },
+      { name: "roundPrompt", triggers: [{ on: "cardsRevealed", target: "roundSelect" }] },
       {
-        name: "waitingForPlayerAction",
-        triggers: [{ on: "statSelected", target: "roundDecision" }]
+        name: "roundSelect",
+        triggers: [{ on: "statSelected", target: "roundResolve" }]
       },
-      { name: "roundDecision", triggers: [] }
+      { name: "roundResolve", triggers: [] }
     ];
 
     const machine = await createStateManager(
       {
-        waitingForPlayerAction: waitingForPlayerActionEnter,
-        roundDecision: waitingForPlayerActionExit
+        roundSelect: roundSelectEnter,
+        roundResolve: roundSelectExit
       },
       { store: { roundReadyForInput: true } },
       undefined,

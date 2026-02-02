@@ -10,25 +10,25 @@ describe("cooldownImmediatelyFollowsRoundOver helper", () => {
     ({ cooldownImmediatelyFollowsRoundOver } = module.__TEST_ONLY__);
   });
 
-  it("returns true when cooldown follows roundOver after intermediate entries", () => {
+  it("returns true when cooldown follows roundDisplay after intermediate entries", () => {
     const log = [
-      { to: "roundOver", from: "resolveRound" },
-      { to: "opponentReveal", from: "roundOver" },
-      { to: "cooldown", from: "opponentReveal" }
+      { to: "roundDisplay", from: "resolveRound" },
+      { to: "opponentReveal", from: "roundDisplay" },
+      { to: "roundWait", from: "opponentReveal" }
     ];
 
-    expect(cooldownImmediatelyFollowsRoundOver("cooldown", log, "opponentReveal")).toBe(true);
+    expect(cooldownImmediatelyFollowsRoundOver("roundWait", log, "opponentReveal")).toBe(true);
   });
 
-  it("falls back to previous state when logs omit a roundOver transition", () => {
-    const log = [{ to: "cooldown", from: "opponentReveal" }];
+  it("falls back to previous state when logs omit a roundDisplay transition", () => {
+    const log = [{ to: "roundWait", from: "opponentReveal" }];
 
-    expect(cooldownImmediatelyFollowsRoundOver("cooldown", log, "roundOver")).toBe(true);
+    expect(cooldownImmediatelyFollowsRoundOver("roundWait", log, "roundDisplay")).toBe(true);
   });
 
-  it("returns false when neither logs nor previous state include a roundOver transition", () => {
-    const log = [{ to: "cooldown", from: "opponentReveal" }];
+  it("returns false when neither logs nor previous state include a roundDisplay transition", () => {
+    const log = [{ to: "roundWait", from: "opponentReveal" }];
 
-    expect(cooldownImmediatelyFollowsRoundOver("cooldown", log, "opponentReveal")).toBe(false);
+    expect(cooldownImmediatelyFollowsRoundOver("roundWait", log, "opponentReveal")).toBe(false);
   });
 });

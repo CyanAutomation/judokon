@@ -394,7 +394,7 @@ function triggerCooldownOnce(store, reason) {
   }
 
   if (triggered) {
-    broadcastBattleState("cooldown");
+    broadcastBattleState("roundWait");
   }
 
   return triggered;
@@ -695,7 +695,7 @@ async function applyRoundDecisionResult(store, result) {
 
   try {
     const matchEnded = await applySelectionResult(store, result);
-    broadcastBattleState("roundOver");
+    broadcastBattleState("roundDisplay");
     return { applied: true, matchEnded: Boolean(matchEnded) };
   } catch (err) {
     handleStatSelectionError(store, err);
@@ -920,7 +920,7 @@ async function handleStatButtonClick(store, stat, btn) {
   }
 
   if (result) {
-    broadcastBattleState("roundDecision");
+    broadcastBattleState("roundResolve");
   }
 
   const { applied, matchEnded } = await applyRoundDecisionResult(store, result);
@@ -1169,7 +1169,7 @@ async function beginSelectionTimer(store) {
           }
         } catch {}
         if (result) {
-          broadcastBattleState("roundDecision");
+          broadcastBattleState("roundResolve");
         }
         const { matchEnded } = await applyRoundDecisionResult(store, result);
         if (!matchEnded) {
@@ -1211,7 +1211,7 @@ async function beginSelectionTimer(store) {
         }
       } catch {}
       if (result) {
-        broadcastBattleState("roundDecision");
+        broadcastBattleState("roundResolve");
       }
       const { matchEnded } = await applyRoundDecisionResult(store, result);
       if (!matchEnded) {
@@ -1259,7 +1259,7 @@ async function beginSelectionTimer(store) {
             }
           } catch {}
           if (result) {
-            broadcastBattleState("roundDecision");
+            broadcastBattleState("roundResolve");
           }
           const { matchEnded } = await applyRoundDecisionResult(store, result);
           if (!matchEnded) {
@@ -1313,7 +1313,7 @@ async function startRoundCycle(store, options = {}) {
 
     if (roundStarted) {
       clearRoundSelectFallback(store);
-      broadcastBattleState("roundStart");
+      broadcastBattleState("roundPrompt");
     }
 
     updateRoundCounterDisplay({ expectAdvance: true });
@@ -1332,7 +1332,7 @@ async function startRoundCycle(store, options = {}) {
       await beginSelectionTimer(store);
     } catch {}
 
-    broadcastBattleState("waitingForPlayerAction");
+    broadcastBattleState("roundSelect");
   } catch (err) {
     console.error("battleClassic: startRoundCycle outer catch:", err);
     if (err instanceof JudokaDataLoadError || (store && store.__roundSelectFallbackShown)) {

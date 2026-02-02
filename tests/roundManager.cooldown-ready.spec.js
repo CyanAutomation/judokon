@@ -186,7 +186,7 @@ function createMockCooldownDependencies() {
     markReady: vi.fn(),
     showSnackbar: vi.fn(),
     scoreboard: { showMessage: vi.fn() },
-    getStateSnapshot: vi.fn(() => ({ state: "cooldown" })),
+    getStateSnapshot: vi.fn(() => ({ state: "roundWait" })),
     isOrchestrated: () => false,
     startEngineCooldown: vi.fn(),
     getClassicBattleMachine: () => null
@@ -224,7 +224,7 @@ function createSchedulerHarness() {
     scoreboard: { showMessage: vi.fn() },
     setSkipHandler: vi.fn(),
     requireEngine: vi.fn(() => ({ startCoolDown: vi.fn() })),
-    getStateSnapshot: vi.fn(() => ({ state: "cooldown" })),
+    getStateSnapshot: vi.fn(() => ({ state: "roundWait" })),
     isOrchestrated: () => false,
     getClassicBattleMachine: () => null
   };
@@ -236,7 +236,7 @@ function createOrchestratorOverrides({ orchestrated, machine }) {
   const harness = createSchedulerHarness();
   harness.overrides.isOrchestrated = () => orchestrated;
   harness.overrides.getClassicBattleMachine = () => machine;
-  harness.overrides.getStateSnapshot = vi.fn(() => ({ state: "cooldown" }));
+  harness.overrides.getStateSnapshot = vi.fn(() => ({ state: "roundWait" }));
   delete harness.overrides.markReady;
   return harness.overrides;
 }
@@ -347,7 +347,7 @@ describe("startCooldown orchestrator context integration", () => {
     const nextBtn = createNextButtonStub();
     const restoreLookup = stubNextButtonLookup(nextBtn);
     const machine = {
-      getState: vi.fn(() => "cooldown")
+      getState: vi.fn(() => "roundWait")
     };
     const restoreMachine = exposeMachineForTest(machine);
     const overrides = createOrchestratorOverrides({ orchestrated: true, machine });
@@ -373,7 +373,7 @@ test("roundManager - cooldown expiry: observe ready dispatch count (baseline)", 
 
   const machine = {
     dispatch: vi.fn(() => true),
-    getState: () => "cooldown"
+    getState: () => "roundWait"
   };
 
   const dispatchBattleEventSpy = vi.fn(async () => true);

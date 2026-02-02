@@ -36,7 +36,7 @@ test("integration: startCooldown drives readiness flow with fake timers", async 
       scoreboard: createScoreboardStub(),
       showSnackbar: createSnackbarStub(),
       updateDebugPanel: vi.fn(),
-      getStateSnapshot: () => ({ state: "cooldown", log: [] })
+      getStateSnapshot: () => ({ state: "roundWait", log: [] })
     });
 
     expect(controls).toBeTruthy();

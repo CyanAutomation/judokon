@@ -154,7 +154,7 @@ export function prepareNextButtonForCooldown(machine, scheduler) {
       try {
         state = machine?.getState?.();
       } catch {}
-      if (state && state !== "cooldown") return;
+      if (state && state !== "roundWait") return;
       if (nextBtn.dataset?.nextReady === "true") return;
       guard(() => markNextButtonReady(nextBtn));
     };

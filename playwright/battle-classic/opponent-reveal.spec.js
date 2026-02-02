@@ -16,7 +16,7 @@ import {
 async function setupBattle(page, overrides = {}) {
   await initializeBattle(page, overrides);
   await waitForBattleReady(page, { timeout: 7_000, allowFallback: false });
-  await waitForBattleState(page, "waitingForPlayerAction", {
+  await waitForBattleState(page, "roundSelect", {
     timeout: 7_000,
     allowFallback: false
   });
@@ -44,11 +44,11 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
       await pickFirstStat(page);
       const reachedRoundDecision = await page.evaluate(() =>
-        window.__TEST_API?.state?.waitForBattleState?.("roundDecision", 800)
+        window.__TEST_API?.state?.waitForBattleState?.("roundResolve", 800)
       );
       expect(reachedRoundDecision).toBe(true);
       await ensureRoundResolved(page);
-      await waitForBattleState(page, "roundOver");
+      await waitForBattleState(page, "roundDisplay");
       await waitForRoundsPlayed(page, 1);
 
       const after = await getBattleSnapshot(page);
@@ -68,7 +68,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
       await setOpponentResolveDelay(page, 450);
       await pickFirstStat(page);
 
-      await waitForBattleState(page, "roundDecision", { timeout: 2_000 });
+      await waitForBattleState(page, "roundResolve", { timeout: 2_000 });
       await ensureRoundResolved(page, { deadline: 800 });
       await waitForRoundsPlayed(page, 1);
 
@@ -88,7 +88,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
       await pickFirstStat(page);
       await ensureRoundResolved(page);
-      await waitForBattleState(page, "roundOver");
+      await waitForBattleState(page, "roundDisplay");
 
       const firstRound = await getBattleSnapshot(page);
       expect(firstRound?.selectionMade).toBe(true);
@@ -102,7 +102,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
       // Wait for any valid post-round state (single wait is more resilient)
       // Handles fast transitions and skipRoundCooldown flag
-      await waitForBattleState(page, ["cooldown", "roundStart", "waitingForPlayerAction"]);
+      await waitForBattleState(page, ["roundWait", "roundPrompt", "roundSelect"]);
 
       await expect
         .poll(async () => {
@@ -155,7 +155,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
       await pickFirstStat(page);
       await ensureRoundResolved(page);
-      await waitForBattleState(page, "roundOver");
+      await waitForBattleState(page, "roundDisplay");
 
       const snapshot = await getBattleSnapshot(page);
       expect(snapshot?.roundsPlayed).toBeGreaterThanOrEqual(1);
@@ -170,7 +170,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
       });
 
       await pickFirstStat(page);
-      await waitForBattleState(page, "roundDecision");
+      await waitForBattleState(page, "roundResolve");
 
       await page.goto("/index.html");
       await expect(page.locator(".logo")).toBeVisible();

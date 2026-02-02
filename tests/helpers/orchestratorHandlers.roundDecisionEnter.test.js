@@ -19,7 +19,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("roundDecisionEnter", () => {
+describe("roundResolveEnter", () => {
   it("schedules a decision guard when no selection exists", async () => {
     const timers = useCanonicalTimers();
     vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
@@ -33,14 +33,14 @@ describe("roundDecisionEnter", () => {
     const machine = {
       context: { store },
       dispatch: vi.fn(),
-      getState: vi.fn(() => "roundDecision")
+      getState: vi.fn(() => "roundResolve")
     };
 
-    const p = mod.roundDecisionEnter(machine);
-    expect(typeof debugHooks.readDebugState("roundDecisionGuard")).toBe("function");
+    const p = mod.roundResolveEnter(machine);
+    expect(typeof debugHooks.readDebugState("roundResolveGuard")).toBe("function");
     await vi.runAllTimersAsync();
     await p;
-    expect(debugHooks.readDebugState("roundDecisionGuard")).toBeNull();
+    expect(debugHooks.readDebugState("roundResolveGuard")).toBeNull();
     timers.cleanup();
   });
 
@@ -58,10 +58,10 @@ describe("roundDecisionEnter", () => {
     const machine = {
       context: { store },
       dispatch: vi.fn(),
-      getState: vi.fn(() => "roundDecision")
+      getState: vi.fn(() => "roundResolve")
     };
 
-    const p = mod.roundDecisionEnter(machine);
+    const p = mod.roundResolveEnter(machine);
     await vi.runAllTimersAsync();
     await p;
 
@@ -94,12 +94,12 @@ describe("roundDecisionEnter", () => {
     const machine = {
       context: { store },
       dispatch: vi.fn(),
-      getState: vi.fn(() => "roundDecision")
+      getState: vi.fn(() => "roundResolve")
     };
 
-    await mod.roundDecisionEnter(machine);
+    await mod.roundResolveEnter(machine);
     expect(resolveRound).toHaveBeenCalledOnce();
-    expect(debugHooks.readDebugState("roundDecisionGuard")).toBeNull();
+    expect(debugHooks.readDebugState("roundResolveGuard")).toBeNull();
     await vi.runAllTimersAsync();
     timers.cleanup();
   });
@@ -126,10 +126,10 @@ describe("roundDecisionEnter", () => {
     const machine = {
       context: { store },
       dispatch: vi.fn(),
-      getState: vi.fn(() => "roundDecision")
+      getState: vi.fn(() => "roundResolve")
     };
 
-    await mod.roundDecisionEnter(machine);
+    await mod.roundResolveEnter(machine);
     expect(emitBattleEvent).toHaveBeenCalledWith(
       "scoreboardShowMessage",
       "Round error. Recovering…"
@@ -138,7 +138,7 @@ describe("roundDecisionEnter", () => {
       reason: "roundResolutionError",
       error: "boom"
     });
-    expect(debugHooks.readDebugState("roundDecisionGuard")).toBeNull();
+    expect(debugHooks.readDebugState("roundResolveGuard")).toBeNull();
     await vi.runAllTimersAsync();
     timers.cleanup();
   });

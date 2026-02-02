@@ -23,7 +23,7 @@ test.describe("Classic Battle timer", () => {
       await expect(page.getByRole("dialog")).not.toBeVisible();
 
       await page.evaluate(() =>
-        window.__TEST_API?.state?.waitForBattleState?.("waitingForPlayerAction")
+        window.__TEST_API?.state?.waitForBattleState?.("roundSelect")
       );
 
       // Verify timer appears and shows countdown

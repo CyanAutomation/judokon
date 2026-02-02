@@ -23,7 +23,7 @@ test.describe("Classic Battle stat selection", () => {
       await page.waitForFunction(
         () => {
           const state = document.body?.dataset?.battleState;
-          return state === "waitingForPlayerAction";
+          return state === "roundSelect";
         },
         { timeout: 10000 }
       );
@@ -59,7 +59,7 @@ test.describe("Classic Battle stat selection", () => {
       await page.waitForFunction(
         () => {
           const state = document.body?.dataset?.battleState;
-          return ["roundDecision", "cooldown", "roundOver", "matchDecision", "matchOver"].includes(
+          return ["roundResolve", "roundWait", "roundDisplay", "matchDecision", "matchOver"].includes(
             state
           );
         },

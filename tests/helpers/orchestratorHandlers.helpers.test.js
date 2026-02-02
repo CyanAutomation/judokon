@@ -46,9 +46,9 @@ describe("recordEntry", () => {
     const mod = await harness.importModule(
       "../../src/helpers/classicBattle/orchestratorHandlers.js"
     );
-    store.roundDecisionEnter = undefined;
+    store.roundResolveEnter = undefined;
     mod.recordEntry();
-    expect(typeof debugHooks.readDebugState("roundDecisionEnter")).toBe("number");
+    expect(typeof debugHooks.readDebugState("roundResolveEnter")).toBe("number");
     expect(mockEmitBattleEvent).toHaveBeenCalledWith("debugPanelUpdate");
   });
 });
@@ -61,11 +61,11 @@ describe("guardSelectionResolution", () => {
     );
     const outcomeSpy = vi.spyOn(mod, "computeAndDispatchOutcome").mockResolvedValue(undefined);
     const cancel = mod.guardSelectionResolution({}, {});
-    expect(typeof debugHooks.readDebugState("roundDecisionGuard")).toBe("function");
+    expect(typeof debugHooks.readDebugState("roundResolveGuard")).toBe("function");
     cancel();
     await vi.runAllTimersAsync();
     expect(outcomeSpy).not.toHaveBeenCalled();
-    expect(debugHooks.readDebugState("roundDecisionGuard")).toBeNull();
+    expect(debugHooks.readDebugState("roundResolveGuard")).toBeNull();
     timers.cleanup();
   });
 });
@@ -81,13 +81,13 @@ describe("awaitPlayerChoice", () => {
 });
 
 describe("schedulePostResolveWatchdog", () => {
-  it("interrupts if state remains roundDecision", async () => {
+  it("interrupts if state remains roundResolve", async () => {
     const timers = useCanonicalTimers();
     const mod = await harness.importModule(
       "../../src/helpers/classicBattle/orchestratorHandlers.js"
     );
     const machine = {
-      getState: vi.fn(() => "roundDecision"),
+      getState: vi.fn(() => "roundResolve"),
       dispatch: vi.fn()
     };
     mod.schedulePostResolveWatchdog(machine);

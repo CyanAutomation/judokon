@@ -299,7 +299,7 @@ export function createActionBar(options = {}) {
    * Subscribe to engine state changes.
    *
    * @pseudocode
-   * 1. Listen to engine "roundStart" event → enable stat buttons
+   * 1. Listen to engine "roundPrompt" event → enable stat buttons
    * 2. Listen to engine "statSelected" or "roundEnd" event → disable stat buttons
    * 3. Listen to engine state changes for action button label/state
    *
@@ -316,11 +316,11 @@ export function createActionBar(options = {}) {
     const boundOnRoundEnd = () => updateStatButtonsState(false);
     const boundOnStatSelected = () => updateStatButtonsState(false);
 
-    boundListeners.set("roundStart", boundOnRoundStart);
+    boundListeners.set("roundPrompt", boundOnRoundStart);
     boundListeners.set("roundEnd", boundOnRoundEnd);
     boundListeners.set("statSelected", boundOnStatSelected);
 
-    engine.on?.("roundStart", boundOnRoundStart);
+    engine.on?.("roundPrompt", boundOnRoundStart);
     engine.on?.("roundEnd", boundOnRoundEnd);
     engine.on?.("statSelected", boundOnStatSelected);
   }
