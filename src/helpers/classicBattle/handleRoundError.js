@@ -18,7 +18,7 @@ export async function handleRoundError(machine, reason, err) {
   guard(() => emitBattleEvent("debugPanelUpdate"));
   const currentState = typeof machine?.getState === "function" ? machine.getState() : null;
   const interruptibleStates = new Set(["roundWait", "roundSelect"]);
-  if (!interruptibleStates.has(currentState)) {
+  if (!currentState || !interruptibleStates.has(currentState)) {
     return;
   }
   await guardAsync(() => machine.dispatch("interrupt", { reason, error: err?.message }));
