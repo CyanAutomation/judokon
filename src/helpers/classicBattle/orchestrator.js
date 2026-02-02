@@ -18,7 +18,7 @@ import { setBattleStateGetter, resetEventBus } from "./eventBus.js";
 import { domStateListener, registerStateTransitionListeners } from "./stateTransitionListeners.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import * as debugHooks from "./debugHooks.js";
-import stateCatalog from "./stateCatalog.js";
+import { buildStateCatalog, stateCatalog as baseStateCatalog } from "./stateCatalog.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { logStateTransition } from "./debugLogger.js";
 import { preloadTimerUtils } from "../TimerController.js";
@@ -28,6 +28,8 @@ import { bindCountdownEventHandlersOnce } from "./timerService.js";
 import { debugLog } from "./debugLog.js";
 import { STATS, onEngineCreated } from "../BattleEngine.js";
 import { updateScore } from "../setupScoreboard.js";
+import { buildClassicBattleStateTable } from "./stateTable.js";
+import { isRoundModificationOverlayEnabled } from "./roundModificationOverlay.js";
 
 const bridgedEngines = typeof WeakSet === "function" ? new WeakSet() : new Set();
 let hasRegisteredEngineBridge = false;
@@ -136,6 +138,7 @@ let debugLogListener = null;
 let stateTransitionListenersCleanup = null;
 let visibilityHandler = null;
 let timerEventHandlers = {};
+let activeStateCatalog = baseStateCatalog;
 
 /**
  * Check if an object appears to be a battle store.
@@ -408,7 +411,20 @@ export async function initClassicBattleOrchestrator(
     const hookSet = normalizeHooks(hooks);
 
     const { context } = resolveMachineContext(overrides, deps);
-    const onEnterMap = createOnEnterMap();
+    const overlayRequested = isRoundModificationOverlayEnabled(context);
+    const resolvedStateTable =
+      context.stateTable ??
+      buildClassicBattleStateTable({ includeRoundModification: overlayRequested });
+    const overlayEnabled = overlayRequested && resolvedStateTable.some(
+      (state) => state.name === "roundModification"
+    );
+    context.stateTable = resolvedStateTable;
+    context.capabilities = {
+      ...(context.capabilities || {}),
+      roundModificationOverlay: overlayEnabled
+    };
+    activeStateCatalog = buildStateCatalog({ includeRoundModification: overlayEnabled });
+    const onEnterMap = createOnEnterMap({ includeRoundModification: overlayEnabled });
     const onTransition = createTransitionHook(hookSet);
 
     try {
@@ -416,7 +432,7 @@ export async function initClassicBattleOrchestrator(
         onEnterMap,
         context,
         onTransition,
-        context.stateTable
+        resolvedStateTable
       );
       machine = createdMachine;
       attachListeners(machine);
@@ -558,7 +574,7 @@ function emitStateChange(from, to) {
       from,
       to,
       context,
-      catalogVersion: stateCatalog?.version || "v1"
+      catalogVersion: activeStateCatalog?.version || "v1"
     });
   } catch {
     // ignore: state change events should not block transitions
@@ -634,8 +650,8 @@ async function preloadDependencies() {
  *
  * @returns {Record<string, Function>} state-to-handler map.
  */
-function createOnEnterMap() {
-  return {
+function createOnEnterMap({ includeRoundModification = false } = {}) {
+  const map = {
     waitingForMatchStart: waitingForMatchStartEnter,
     matchStart: matchStartEnter,
     roundWait: roundWaitEnter,
@@ -646,9 +662,12 @@ function createOnEnterMap() {
     matchDecision: matchDecisionEnter,
     matchOver: matchOverEnter,
     interruptRound: interruptRoundEnter,
-    interruptMatch: interruptMatchEnter,
-    roundModification: roundModificationEnter
+    interruptMatch: interruptMatchEnter
   };
+  if (includeRoundModification) {
+    map.roundModification = roundModificationEnter;
+  }
+  return map;
 }
 
 /**
@@ -686,7 +705,7 @@ function setupStateChangeListeners(machineRef) {
     // ignore: snapshot diagnostics are best effort
   }
   try {
-    emitBattleEvent("control.state.catalog", stateCatalog);
+    emitBattleEvent("control.state.catalog", activeStateCatalog);
   } catch {
     // ignore: catalog event is informational
   }

@@ -11,8 +11,8 @@
  *
  * State ID Legend:
  *   1-9    = Match/round flow states (main battle progression)
- *   97     = Admin/test states (roundModification)
  *   98-99  = Interrupt handlers (interruptRound, interruptMatch)
+ *   97     = Optional admin/test overlay states (roundModification)
  *
  * @typedef {Object} BattleState
  * @property {number} id - Unique numeric state identifier
@@ -275,24 +275,9 @@ export const CLASSIC_BATTLE_STATES = [
       CLASSIC_BATTLE_ACTIONS.LOG_ANALYTICS_INTERRUPT_ROUND
     ],
     triggers: [
-      {
-        on: "roundModifyFlag",
-        target: "roundModification",
-        guard: GUARD_CONDITIONS.FF_ROUND_MODIFY
-      },
       { on: "restartRound", target: "roundWait" },
       { on: "resumeLobby", target: "waitingForMatchStart" },
       { on: "abortMatch", target: "matchOver" }
-    ]
-  },
-  {
-    id: 97,
-    name: "roundModification",
-    description: "Admin/test-only branch to adjust round decision parameters before re-evaluating.",
-    onEnter: [CLASSIC_BATTLE_ACTIONS.OPEN_ROUND_MODIFICATION_PANEL],
-    triggers: [
-      { on: "modifyRoundDecision", target: "roundResolve" },
-      { on: "cancelModification", target: "interruptRound" }
     ]
   },
   {
@@ -311,3 +296,68 @@ export const CLASSIC_BATTLE_STATES = [
     ]
   }
 ];
+
+export const ROUND_MODIFICATION_OVERLAY_STATES = [
+  {
+    name: "interruptRound",
+    triggers: [
+      {
+        on: "roundModifyFlag",
+        target: "roundModification",
+        guard: GUARD_CONDITIONS.FF_ROUND_MODIFY
+      }
+    ]
+  },
+  {
+    id: 97,
+    name: "roundModification",
+    description: "Admin/test-only branch to adjust round decision parameters before re-evaluating.",
+    onEnter: [CLASSIC_BATTLE_ACTIONS.OPEN_ROUND_MODIFICATION_PANEL],
+    triggers: [
+      { on: "modifyRoundDecision", target: "roundResolve" },
+      { on: "cancelModification", target: "interruptRound" }
+    ]
+  }
+];
+
+function mergeStateTables(baseStates, overlayStates) {
+  const merged = (Array.isArray(baseStates) ? baseStates : []).map((state) => ({
+    ...state,
+    triggers: state?.triggers ? [...state.triggers] : []
+  }));
+  const byName = new Map(merged.map((state) => [state.name, state]));
+
+  for (const overlayState of Array.isArray(overlayStates) ? overlayStates : []) {
+    if (!overlayState?.name) continue;
+    const existing = byName.get(overlayState.name);
+    if (existing) {
+      if (overlayState.triggers?.length) {
+        existing.triggers = [...existing.triggers, ...overlayState.triggers];
+      }
+      continue;
+    }
+    merged.push({
+      ...overlayState,
+      triggers: overlayState.triggers ? [...overlayState.triggers] : []
+    });
+  }
+
+  return merged;
+}
+
+/**
+ * Build the classic battle state table with optional overlays.
+ *
+ * @param {object} [options]
+ * @param {boolean} [options.includeRoundModification=false] - Include admin/test overlay states.
+ * @returns {BattleState[]} State table for the state manager.
+ * @pseudocode
+ * 1. Return the base table when overlays are disabled.
+ * 2. Merge overlay states into the base table when enabled.
+ */
+export function buildClassicBattleStateTable({ includeRoundModification = false } = {}) {
+  if (!includeRoundModification) {
+    return CLASSIC_BATTLE_STATES;
+  }
+  return mergeStateTables(CLASSIC_BATTLE_STATES, ROUND_MODIFICATION_OVERLAY_STATES);
+}

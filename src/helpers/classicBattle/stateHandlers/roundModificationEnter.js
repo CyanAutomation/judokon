@@ -1,7 +1,7 @@
 import { emitBattleEvent } from "../battleEvents.js";
 
 /**
- * onEnter handler for `roundModification`.
+ * onEnter handler for the optional `roundModification` overlay.
  *
  * @param {object} machine
  * @param {object} [payload]

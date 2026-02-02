@@ -352,20 +352,10 @@ function resolveMatchOverTransition(eventName) {
   return null;
 }
 
-function resolveInterruptRoundTransition(eventName, context, guardOverrides, payload) {
-  if (eventName === "roundModifyFlag") {
-    if (payload?.adminTest) return "roundModification";
-    return isRoundModifyEnabled(context, guardOverrides) ? "roundModification" : "interruptRound";
-  }
+function resolveInterruptRoundTransition(eventName) {
   if (eventName === "restartRound") return "roundWait";
   if (eventName === "resumeLobby") return "waitingForMatchStart";
   if (eventName === "abortMatch") return "matchOver";
-  return null;
-}
-
-function resolveRoundModificationTransition(eventName) {
-  if (eventName === "modifyRoundDecision") return "roundResolve";
-  if (eventName === "cancelModification") return "interruptRound";
   return null;
 }
 
@@ -396,9 +386,7 @@ function resolveClassicBattleTransition(currentState, eventName, context, guardO
     case "matchOver":
       return resolveMatchOverTransition(eventName);
     case "interruptRound":
-      return resolveInterruptRoundTransition(eventName, context, guardOverrides, payload);
-    case "roundModification":
-      return resolveRoundModificationTransition(eventName);
+      return resolveInterruptRoundTransition(eventName);
     case "interruptMatch":
       return resolveInterruptMatchTransition(eventName);
     default:

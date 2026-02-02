@@ -3,6 +3,7 @@ import { exposeDebugState } from "../debugHooks.js";
 import { cleanupInterruptState } from "./interruptStateCleanup.js";
 import { cancelRoundResolveGuard } from "./guardCancellation.js";
 import { debugLog } from "../debugLog.js";
+import { isRoundModificationOverlayEnabled } from "../roundModificationOverlay.js";
 
 /**
  * onEnter handler for `interruptRound` state.
@@ -21,7 +22,7 @@ import { debugLog } from "../debugLog.js";
  * @param {object} machine - State machine context with store and dispatcher.
  * @param {object} [payload] - Optional transition payload.
  * @param {string} [payload.reason] - Human-readable interrupt reason for display.
- * @param {boolean} [payload.adminTest] - If true, dispatch to roundModification (admin/test mode).
+ * @param {boolean} [payload.adminTest] - If true and FF_ROUND_MODIFY is enabled, dispatch to the overlay.
  * @param {boolean} [payload.quit] - If true, abort entire match; else restart round.
  * @returns {Promise<void>}
  */
@@ -56,8 +57,8 @@ export async function interruptRoundEnter(machine, payload) {
   }
 
   // Route to appropriate next state based on interrupt reason
-  if (payload?.adminTest) {
-    // Admin-initiated test scenario bypasses normal flow
+  if (payload?.adminTest && isRoundModificationOverlayEnabled(machine?.context)) {
+    // Admin-initiated test scenario enters the optional overlay
     await machine.dispatch("roundModifyFlag", payload);
   } else if (payload?.reason === "quit") {
     // User quit: abort entire match instead of just this round
