@@ -28,23 +28,42 @@ export async function handleRoundError(machine, reason, err) {
   if (!currentState) {
     return;
   }
+  const safeReason = reason ?? "roundError";
   const interruptibleStates = new Set(["roundWait", "roundSelect"]);
+  const interruptPayload = { reason: safeReason, error: err?.message };
+  const canDispatchEvent = (eventName) => {
+    if (typeof machine?.getAvailableTransitions !== "function") return false;
+    const available = machine.getAvailableTransitions() || [];
+    return available.some((transition) => transition.event === eventName);
+  };
+  const dispatchIfAvailable = async (eventName, payload) => {
+    if (!canDispatchEvent(eventName)) return false;
+    await guardAsync(() => machine.dispatch(eventName, payload));
+    return true;
+  };
   if (interruptibleStates.has(currentState)) {
-    await guardAsync(() => machine.dispatch("interrupt", { reason, error: err?.message }));
+    await guardAsync(() => machine.dispatch("interrupt", interruptPayload));
     return;
   }
   if (currentState === "roundResolve") {
-  if (currentState === "roundResolve") {
     await guardAsync(() =>
-      machine.dispatch("outcome=draw", { reason: reason ?? "roundError", error: err?.message })
+      machine.dispatch("outcome=draw", { reason: safeReason, error: err?.message })
     );
     return;
   }
   if (currentState === "roundPrompt") {
-    await guardAsync(() => machine.dispatch("cardsRevealed", { reason: reason ?? "roundError" }));
+    if (safeReason === "roundStartError") {
+      if (await dispatchIfAvailable("interrupt", interruptPayload)) {
+        return;
+      }
+    }
+    await guardAsync(() => machine.dispatch("cardsRevealed", { reason: safeReason }));
     return;
   }
-  // Fallback for any other non-interruptible states
-  console.warn(`Unhandled state in handleRoundError: ${currentState}`);
-  await guardAsync(() => machine.dispatch("interrupt", { reason: reason ?? "roundError", error: err?.message }));
+  if (await dispatchIfAvailable("interrupt", interruptPayload)) {
+    return;
+  }
+  if (await dispatchIfAvailable("error", interruptPayload)) {
+    return;
+  }
 }
