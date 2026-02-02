@@ -326,7 +326,7 @@ function getOpponentPromptRemainingMs() {
   if (!Number.isFinite(promptTimestamp) || promptTimestamp <= 0) {
     return 0;
   }
-  const elapsed = resolvePromptNow() - promptTimestamp;
+  const elapsed = Date.now() - promptTimestamp;
   if (!Number.isFinite(elapsed)) {
     return 0;
   }
