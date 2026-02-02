@@ -41,5 +41,6 @@ export async function handleRoundError(machine, reason, err) {
   }
   if (currentState === "roundPrompt") {
     await guardAsync(() => machine.dispatch("cardsRevealed", { reason: reason ?? "roundError" }));
+    return;
   }
 }
