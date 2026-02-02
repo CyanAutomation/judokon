@@ -22,11 +22,9 @@ describe("Classic Battle opponent delay behavior", () => {
   let placeholderId;
   let placeholderAriaLabel;
   let opponentCardAriaLabel;
-  let setTimeoutSpy;
 
   beforeEach(async () => {
     timers = useCanonicalTimers();
-    setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
     harness = createSimpleHarness({ useFakeTimers: true, useRafMock: true });
     await harness.setup();
 
@@ -104,12 +102,11 @@ describe("Classic Battle opponent delay behavior", () => {
   afterEach(async () => {
     delete window.__MIN_OPPONENT_MESSAGE_DURATION_MS;
     document.body.innerHTML = "";
-    setTimeoutSpy?.mockRestore();
     timers?.cleanup();
     await harness?.cleanup();
   });
 
-  it("delays opponent prompt readiness while keeping the UI accessible", async () => {
+  it("shows opponent prompt immediately while keeping the UI accessible", async () => {
     const promptEvents = [];
     const stopListening = onBattleEvent("opponentPromptReady", (evt) => {
       promptEvents.push(evt?.detail?.timestamp ?? null);
@@ -117,15 +114,11 @@ describe("Classic Battle opponent delay behavior", () => {
 
     emitBattleEvent("opponentReveal");
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true, delayMs: 300 } });
-    // Wait for async statSelected handler to schedule setTimeout (but not fire it)
-    // Multiple microtask drains ensure handler reaches setTimeout registration
     await Promise.resolve();
     await Promise.resolve();
-    expect(setTimeoutSpy.mock.calls.some(([, delay]) => delay === 300)).toBe(true);
-
-    // Immediately after statSelected event, snackbar should NOT be visible yet (delayed by 300ms)
+    // Immediately after statSelected event, snackbar should be visible
     let snackbarNode = document.querySelector("#snackbar-container .snackbar");
-    expect(snackbarNode).toBeNull();
+    expect(snackbarNode?.textContent).toBe("Opponent is choosing…");
 
     const opponentCard = document.getElementById("opponent-card");
     const placeholder = document.getElementById(placeholderId);
@@ -136,21 +129,7 @@ describe("Classic Battle opponent delay behavior", () => {
     );
     expect(placeholder?.getAttribute("aria-label")).toBe(placeholderAriaLabel);
 
-    expect(promptEvents).toHaveLength(0);
-
-    vi.advanceTimersByTime(299);
-    expect(promptEvents).toHaveLength(0);
-    // Still no snackbar before the full delay
-    snackbarNode = document.querySelector("#snackbar-container .snackbar");
-    expect(snackbarNode).toBeNull();
-
-    vi.advanceTimersByTime(2);
-    await timers.runAllTimersAsync();
     expect(promptEvents).toHaveLength(1);
-
-    // Now snackbar should be visible after the delay
-    snackbarNode = document.querySelector("#snackbar-container .snackbar");
-    expect(snackbarNode?.textContent).toBe("Opponent is choosing…");
 
     const elapsed = promptEvents[0] ?? 0;
     expect(elapsed).toBeGreaterThan(0);

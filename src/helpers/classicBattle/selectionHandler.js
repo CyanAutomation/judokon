@@ -14,7 +14,6 @@ import { writeScoreDisplay } from "./scoreDisplay.js";
 import { roundState } from "./roundState.js";
 import { getScheduler } from "../scheduler.js";
 import { debugLog } from "../debug.js";
-import { awaitStatSelectedHandler } from "./uiEventHandlers.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { enterGuard, setHiddenStoreValue, getHiddenStoreValue } from "../guardUtils.js";
 
@@ -749,8 +748,7 @@ export async function validateAndApplySelection(store, stat, playerVal, opponent
  * @pseudocode
  * 1. Halt timers by calling `cleanupTimers`.
  * 2. Emit the `statSelected` battle event with selection metadata.
- * 3. Wait for statSelected UI handler to complete (snackbar timing).
- * 4. Dispatch `statSelected` to the orchestrator unless tests force direct resolution.
+ * 3. Dispatch `statSelected` to the orchestrator unless tests force direct resolution.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
@@ -775,15 +773,6 @@ export async function dispatchStatSelected(store, stat, playerVal, opponentVal, 
     storeSelectionMade: store.selectionMade,
     storePlayerChoice: store.playerChoice
   });
-
-  // Wait for statSelected handler to complete (snackbar delay + min duration)
-  logSelectionDebug("[dispatchStatSelected] Waiting for statSelected handler...");
-  try {
-    await awaitStatSelectedHandler();
-  } catch (error) {
-    logSelectionDebug("[dispatchStatSelected] Error waiting for handler:", error?.message);
-  }
-  logSelectionDebug("[dispatchStatSelected] statSelected handler complete");
 
   try {
     const forceDirectResolution = opts.forceDirectResolution || store.forceDirectResolution;
