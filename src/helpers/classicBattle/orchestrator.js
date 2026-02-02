@@ -415,14 +415,13 @@ export async function initClassicBattleOrchestrator(
     const resolvedStateTable =
       context.stateTable ??
       buildClassicBattleStateTable({ includeRoundModification: overlayRequested });
+    // Ensure overlay is only considered enabled if both requested and successfully included
     const overlayEnabled = overlayRequested && resolvedStateTable.some(
       (state) => state.name === "roundModification"
     );
-    context.stateTable = resolvedStateTable;
-    context.capabilities = {
-      ...(context.capabilities || {}),
-      roundModificationOverlay: overlayEnabled
-    };
+    if (overlayRequested && !overlayEnabled) {
+      debugLog("Warning: Round modification overlay was requested but not found in state table");
+    }
     activeStateCatalog = buildStateCatalog({ includeRoundModification: overlayEnabled });
     const onEnterMap = createOnEnterMap({ includeRoundModification: overlayEnabled });
     const onTransition = createTransitionHook(hookSet);
