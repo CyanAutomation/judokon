@@ -902,11 +902,24 @@ function createReadyDispatchConfiguration({
   };
   const machineStrategy = async () => {
     if (shouldShortCircuitReadyDispatch()) return true;
+    const shouldForceMachineDispatchAfterShared = (() => {
+      if (!isOrchestratedActive()) return false;
+      try {
+        const machine = machineReader?.();
+        return typeof machine?.dispatch === "function";
+      } catch {
+        return false;
+      }
+    })();
     const start =
       typeof performance !== "undefined" && typeof performance.now === "function"
         ? performance.now()
         : Date.now();
-    const rawResult = await dispatchReadyDirectly({ machineReader, emitTelemetry });
+    const rawResult = await dispatchReadyDirectly({
+      machineReader,
+      emitTelemetry,
+      forceMachineDispatchAfterShared: shouldForceMachineDispatchAfterShared
+    });
     const normalizedResult =
       rawResult && typeof rawResult === "object" && rawResult !== null
         ? {
