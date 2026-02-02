@@ -10,6 +10,7 @@ import * as sb from "../setupScoreboard.js";
 import { writeScoreDisplay } from "./scoreDisplay.js";
 import { cancelRoundResolveGuard } from "./stateHandlers/guardCancellation.js";
 import { getAutoContinue } from "./autoContinue.js";
+import { getOpponentDelay } from "./snackbar.js";
 
 /**
  * Round resolution helpers and orchestrator for Classic Battle.
@@ -243,13 +244,12 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
 /**
  * @summary Execute the full round resolution pipeline from evaluation to UI reset.
  * @pseudocode
- * 1. Wait for statSelected handler to complete (opponent message delay).
- * 2. Evaluate the round outcome using the selected stat values.
- * 3. Dispatch outcome events so dependent systems can react.
- * 4. Update the scoreboard with the new scores.
- * 5. Emit round resolved events for external observers.
- * 6. Wait for UI lock timers to settle to avoid race conditions.
- * 7. Return the final round result object (stat button reset deferred to next round start).
+ * 1. Evaluate the round outcome using the selected stat values.
+ * 2. Dispatch outcome events so dependent systems can react.
+ * 3. Update the scoreboard with the new scores.
+ * 4. Emit round resolved events for external observers.
+ * 5. Wait for UI lock timers to settle to avoid race conditions.
+ * 6. Return the final round result object (stat button reset deferred to next round start).
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
@@ -258,24 +258,6 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
  * @returns {Promise<ReturnType<typeof evaluateRound>>}
  */
 export async function computeRoundResult(store, stat, playerVal, opponentVal) {
-  // CRITICAL: Wait for opponent message to show before resolving round
-  // This prevents race condition where round resolves before opponent delay expires
-  try {
-    console.log("[computeRoundResult] Waiting for statSelected handler...");
-    const { getStatSelectedHandlerPromise } = await import("./uiEventHandlers.js");
-    const handlerPromise = getStatSelectedHandlerPromise();
-    if (handlerPromise) {
-      console.log("[computeRoundResult] Handler promise exists, awaiting...");
-      await handlerPromise;
-      console.log("[computeRoundResult] Handler promise resolved!");
-    } else {
-      console.log("[computeRoundResult] No handler promise found");
-    }
-  } catch (err) {
-    console.error("[computeRoundResult] Error waiting for handler:", err);
-    // Non-critical, continue without waiting
-  }
-
   const evaluated = evaluateOutcome(store, stat, playerVal, opponentVal);
   const dispatched = await dispatchOutcomeEvents(evaluated);
   const scored = await updateScoreboard(dispatched);
@@ -447,9 +429,13 @@ export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
 export async function resolveRound(store, stat, playerVal, opponentVal, opts = {}) {
   if (isResolving) return;
   isResolving = true;
+  const configuredDelay = getOpponentDelay();
+  const numericDelay = Number(configuredDelay);
+  const baseDelay =
+    Number.isFinite(numericDelay) && numericDelay >= 0 ? numericDelay : resolveDelay();
   const {
     // Deterministic delay using seeded RNG when available
-    delayMs = resolveDelay(),
+    delayMs = baseDelay,
     sleep = (ms) => new Promise((r) => setTimeout(r, ms))
   } = opts;
   try {

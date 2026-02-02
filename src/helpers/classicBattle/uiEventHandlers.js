@@ -4,9 +4,7 @@ import * as scoreboard from "../setupScoreboard.js";
 import { t } from "../i18n.js";
 import { renderOpponentCard, showRoundOutcome, showStatComparison } from "./uiHelpers.js";
 import { updateDebugPanel } from "./debugPanel.js";
-import { getOpponentDelay } from "./snackbar.js";
 import { markOpponentPromptNow, getOpponentPromptMinDuration } from "./opponentPromptTracker.js";
-import { isEnabled } from "../featureFlags.js";
 import {
   applyOpponentCardPlaceholder,
   OPPONENT_CARD_CONTAINER_ARIA_LABEL,
@@ -159,8 +157,6 @@ async function waitForMinimumOpponentObscureDuration() {
  * @param {Function} [deps.markOpponentPromptNow] - Function to mark opponent prompt timestamp
  * @param {Function} [deps.recordOpponentPromptTimestamp] - Function to record timestamp
  * @param {Function} [deps.getOpponentPromptMinDuration] - Function to get minimum duration
- * @param {Function} [deps.isEnabled] - Function to check feature flags
- * @param {Function} [deps.getOpponentDelay] - Function to get opponent delay
  * @param {object} [deps.scoreboard] - Scoreboard utilities
  * @param {Function} [deps.updateSnackbar] - Function to update snackbar messages
  * @param {Function} [deps.getOpponentCardData] - Function to get opponent card data
@@ -183,8 +179,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     t: tFn = t,
     markOpponentPromptNow: markOpponentPromptNowFn = markOpponentPromptNow,
     getOpponentPromptMinDuration: getOpponentPromptMinDurationFn = getOpponentPromptMinDuration,
-    isEnabled: isEnabledFn = isEnabled,
-    getOpponentDelay: getOpponentDelayFn = getOpponentDelay,
     scoreboard: scoreboardObj = scoreboard,
     getOpponentCardData: getOpponentCardDataFn = getOpponentCardData,
     renderOpponentCard: renderOpponentCardFn = renderOpponentCard,
@@ -337,8 +331,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         const detail = (e && e.detail) || {};
         const hasOpts = Object.prototype.hasOwnProperty.call(detail, "opts");
         const opts = hasOpts ? detail.opts || {} : {};
-        const flagEnabled = isEnabledFn("opponentDelayMessage");
-        const shouldDelay = flagEnabled && opts.delayOpponentMessage !== false;
 
         if (!isCurrentHandler()) {
           return;
@@ -367,86 +359,13 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         if (!isCurrentHandler()) {
           return;
         }
-        // When no delay or flag disabled, show opponent message immediately (no "You Picked" message)
-        if (!shouldDelay || opts.delayOpponentMessage === false) {
-          currentOpponentSnackbarController = snackbarManager.show({
-            message: opponentPromptMessage,
-            priority: SnackbarPriority.HIGH,
-            minDuration: 750,
-            autoDismiss: 0,
-            onShow: () => {
-              try {
-                markOpponentPromptNowFn({ notify: true });
-              } catch {
-                // Non-critical
-              }
-            }
-          });
-
-          // Wait for minimum display duration before allowing round to proceed
-          if (currentOpponentSnackbarController) {
-            await currentOpponentSnackbarController.waitForMinDuration();
-          }
-          return;
-        }
-
-        if (!isCurrentHandler()) {
-          return;
-        }
-        const delaySource = Object.prototype.hasOwnProperty.call(opts, "delayMs")
-          ? Number(opts.delayMs)
-          : Number(getOpponentDelayFn());
-        const resolvedDelay = Number.isFinite(delaySource) && delaySource > 0 ? delaySource : 0;
-
-        if (resolvedDelay <= 0) {
-          // Same as no delay case
-          currentOpponentSnackbarController = snackbarManager.show({
-            message: opponentPromptMessage,
-            priority: SnackbarPriority.HIGH,
-            minDuration: 750,
-            autoDismiss: 0,
-            onShow: () => {
-              try {
-                markOpponentPromptNowFn({ notify: true });
-              } catch {
-                // Non-critical
-              }
-            }
-          });
-
-          // Wait for minimum display duration before allowing round to proceed
-          if (currentOpponentSnackbarController) {
-            await currentOpponentSnackbarController.waitForMinDuration();
-          }
-          return;
-        }
-
         const minDuration = Number(getOpponentPromptMinDurationFn()) || 750;
 
-        // Wait for the configured delay before showing opponent message
-        const delayController = { canceled: false, resolve: null };
-        opponentDelayController = delayController;
-        await new Promise((resolve) => {
-          delayController.resolve = resolve;
-          opponentSnackbarId = setTimeout(() => {
-            if (opponentDelayController === delayController && !delayController.canceled) {
-              resolve();
-            }
-          }, resolvedDelay);
-        });
-        if (opponentDelayController === delayController) {
-          opponentDelayController = null;
-          opponentSnackbarId = 0;
-        }
-        if (delayController.canceled || !isCurrentHandler()) {
-          return;
-        }
-
-        // Show opponent choosing message with high priority
+        // Show opponent choosing message immediately; reveal timing happens in round resolution.
         currentOpponentSnackbarController = snackbarManager.show({
           message: opponentPromptMessage,
           priority: SnackbarPriority.HIGH,
-          minDuration: minDuration,
+          minDuration,
           autoDismiss: 0, // Don't auto-dismiss, will be controlled by battle flow
           onShow: () => {
             // Mark timestamp when snackbar actually appears

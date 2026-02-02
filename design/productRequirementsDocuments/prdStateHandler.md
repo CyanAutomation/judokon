@@ -78,8 +78,8 @@ stateDiagram-v2
   roundStart --> waitingForPlayerAction: cardsRevealed
   roundStart --> interruptRound: interrupt
 
-  waitingForPlayerAction --> waitingForOpponentDecision: statSelected
-  waitingForPlayerAction --> waitingForOpponentDecision: timeout [autoSelectEnabled]
+  waitingForPlayerAction --> roundDecision: statSelected
+  waitingForPlayerAction --> roundDecision: timeout [autoSelectEnabled]
   waitingForPlayerAction --> interruptRound: timeout [!autoSelectEnabled]
   waitingForPlayerAction --> interruptRound: interrupt
 
@@ -90,9 +90,6 @@ stateDiagram-v2
     • Then 800ms → countdown
     • Then 250ms → auto-select
   end note
-
-  waitingForOpponentDecision --> roundDecision: opponentDecisionReady
-  waitingForOpponentDecision --> interruptRound: interrupt
 
   roundDecision --> roundOver: outcome resolved
   roundDecision --> interruptRound: interrupt
@@ -125,11 +122,12 @@ stateDiagram-v2
 - **Final state:** `matchOver` (type: final)
 - **Match phases:** Setup (`waitingForMatchStart` → `matchStart` → `cooldown`) → Round Loop (repeats `roundStart` → `waitingForPlayerAction` → `roundDecision` → `roundOver`) → Resolution (`matchDecision` → `matchOver`)
 - **Interrupt states:** `interruptRound`, `roundModification` (admin-only), `interruptMatch`
+- **Opponent reveal pacing:** `roundDecision` entry applies the opponent reveal delay before emitting the opponent reveal event in UI.
 
 **Critical timeout transitions:**
 
 - **Cooldown (3s):** `cooldown` → `roundStart` on timer expiry; configurable via settings
-- **Selection (30s):** `waitingForPlayerAction` → `waitingForOpponentDecision` [if `autoSelectEnabled`] OR `interruptRound` [if `!autoSelectEnabled`]; triggers stall detection sub-timers (5s → 800ms → 250ms)
+- **Selection (30s):** `waitingForPlayerAction` → `roundDecision` [if `autoSelectEnabled`] OR `interruptRound` [if `!autoSelectEnabled`]; triggers stall detection sub-timers (5s → 800ms → 250ms)
 
 **Guard conditions:**
 
