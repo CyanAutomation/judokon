@@ -104,13 +104,9 @@ stateDiagram-v2
   matchOver --> waitingForMatchStart: rematch | home
   matchOver --> [*]
 
-  interruptRound --> roundModification: [FF_ROUND_MODIFY]
   interruptRound --> cooldown: restartRound
   interruptRound --> waitingForMatchStart: resumeLobby
   interruptRound --> matchOver: abortMatch
-
-  roundModification --> roundDecision: modifyRoundDecision
-  roundModification --> interruptRound: cancelModification
 
   interruptMatch --> matchStart: restartMatch
   interruptMatch --> waitingForMatchStart: toLobby
@@ -121,7 +117,7 @@ stateDiagram-v2
 - **Initial state:** `waitingForMatchStart` (P0)
 - **Final state:** `matchOver` (type: final)
 - **Match phases:** Setup (`waitingForMatchStart` → `matchStart` → `cooldown`) → Round Loop (repeats `roundStart` → `waitingForPlayerAction` → `roundDecision` → `roundOver`) → Resolution (`matchDecision` → `matchOver`)
-- **Interrupt states:** `interruptRound`, `roundModification` (admin-only), `interruptMatch`
+- **Interrupt states:** `interruptRound`, `interruptMatch`
 - **Opponent reveal pacing:** `roundDecision` entry applies the opponent reveal delay before emitting the opponent reveal event in UI.
 
 **Critical timeout transitions:**
@@ -133,15 +129,28 @@ stateDiagram-v2
 
 - `[autoSelectEnabled]` — Auto-select strategy controls 30s timeout branch (highest stat vs. random)
 - `[!autoSelectEnabled]` — Treat timeout as interrupt, move to admin review
-- `[FF_ROUND_MODIFY]` — Feature flag gates admin round modification branch (admin/test context only)
+- `[FF_ROUND_MODIFY]` — Feature flag gates the optional round modification overlay (admin/test context only)
 
 **Rematch loop:** `matchOver` → `waitingForMatchStart` (label: "rematch | home") allows match repetition without returning to lobby
 
-**Interrupt recovery:** All three interrupt states have explicit exit paths:
+**Interrupt recovery:** Both interrupt states (plus the optional overlay) have explicit exit paths:
 
 - `interruptRound` → `cooldown` (resume), `waitingForMatchStart` (to lobby), or `matchOver` (abort)
 - `interruptMatch` → `matchStart` (restart) or `waitingForMatchStart` (to lobby)
-- `roundModification` → `roundDecision` (apply) or `interruptRound` (cancel)
+- Optional overlay (when enabled): `roundModification` → `roundDecision` (apply) or `interruptRound` (cancel)
+
+### Round Modification Overlay (Feature-Flagged)
+
+The round modification path is an optional overlay that attaches to the interrupt flow only when
+`FF_ROUND_MODIFY` is enabled. It is intentionally excluded from the canonical graph so the main
+round loop remains readable without admin/test context.
+
+```mermaid
+stateDiagram-v2
+  interruptRound --> roundModification: roundModifyFlag [FF_ROUND_MODIFY]
+  roundModification --> roundDecision: modifyRoundDecision
+  roundModification --> interruptRound: cancelModification
+```
 
 ## Transitions (machine-readable table)
 
@@ -289,7 +298,7 @@ This section replaces the legacy compliance report so implementation status stay
 | `matchDecision`          | normal  | compute:matchOutcome<br>render:matchSummary                                          | ❌ Missing (0/2)               | compute:matchOutcome<br>render:matchSummary         | ⚠️ Priority 2 (render:matchSummary)<br>ℹ️ Priority 3 (compute:matchOutcome)         | `matchDecisionEnter.js`          |
 | `matchOver`              | final   | show:matchResultScreen                                                               | ❌ Missing (0/1)               | show:matchResultScreen                              | ⚠️ Priority 2                                                                       | `matchOverEnter.js`              |
 | `interruptRound`         | normal  | timer:clearIfRunning<br>rollback:roundContextIfNeeded<br>log:analyticsInterruptRound | ✅ Fully compliant (3/3)       | —                                                   | —                                                                                   | `interruptRoundEnter.js`         |
-| `roundModification`      | normal  | open:roundModificationPanel                                                          | ✅ Fully compliant (1/1)       | —                                                   | —                                                                                   | `roundModificationEnter.js`      |
+| `roundModification`      | normal  | open:roundModificationPanel                                                          | ✅ Fully compliant (1/1)       | —                                                   | Optional overlay (FF_ROUND_MODIFY)                                                  | `roundModificationEnter.js`      |
 | `interruptMatch`         | normal  | timer:clearIfRunning<br>teardown:matchContext<br>log:analyticsInterruptMatch         | ✅ Fully compliant (3/3)       | —                                                   | —                                                                                   | `interruptMatchEnter.js`         |
 
 ### Missing action follow-ups

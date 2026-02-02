@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createStateManager } from "../../../src/helpers/classicBattle/stateManager.js";
-import { CLASSIC_BATTLE_STATES } from "../../../src/helpers/classicBattle/stateTable.js";
+import {
+  CLASSIC_BATTLE_STATES,
+  buildClassicBattleStateTable
+} from "../../../src/helpers/classicBattle/stateTable.js";
 import "./commonMocks.js";
 
 /**
@@ -327,7 +330,12 @@ describe("stateManager guard evaluation", () => {
 
     it("should allow roundModifyFlag branch when roundModify flag is enabled in context", async () => {
       context = { flags: { roundModify: true } };
-      machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
+      machine = await createStateManager(
+        {},
+        context,
+        undefined,
+        buildClassicBattleStateTable({ includeRoundModification: true })
+      );
 
       await machine.dispatch("startClicked");
       await machine.dispatch("ready");

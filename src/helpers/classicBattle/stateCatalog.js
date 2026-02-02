@@ -27,7 +27,6 @@ export const order = [
   "matchDecision",
   "matchOver",
   "interruptRound",
-  "roundModification",
   "interruptMatch"
 ];
 
@@ -76,6 +75,38 @@ export const display = {
     "matchOver"
   ]
 };
+
+/**
+ * Build the state catalog with optional overlay entries.
+ *
+ * @param {object} [options]
+ * @param {boolean} [options.includeRoundModification=false] - Include overlay states.
+ * @returns {{version:string, order:string[], ids:Record<string, number>, labels:Record<string, string>, display:object}} Catalog.
+ * @pseudocode
+ * 1. Choose the base order or insert the overlay state after interruptRound.
+ * 2. Generate stable IDs from the selected order.
+ * 3. Return the catalog with shared labels and display metadata.
+ */
+export function buildStateCatalog({ includeRoundModification = false } = {}) {
+  const withOverlay = includeRoundModification
+    ? [
+        ...order.slice(0, order.indexOf("interruptMatch")),
+        "roundModification",
+        "interruptMatch"
+      ]
+    : order;
+  const overlayIds = withOverlay.reduce((acc, name, idx) => {
+    acc[name] = (idx + 1) * 10;
+    return acc;
+  }, /** @type {Record<string, number>} */ ({}));
+  return {
+    version,
+    order: withOverlay,
+    ids: overlayIds,
+    labels,
+    display
+  };
+}
 
 export const stateCatalog = { version, order, ids, labels, display };
 

@@ -24,7 +24,7 @@ Once the feature is active, verify:
 
 ## Active State Assertions
 
-The helper remaps transient states (`interruptRound`, `roundModification`, etc.) to their canonical counterparts. To confirm:
+The helper remaps transient states (`interruptRound`, optional `roundModification`, etc.) to their canonical counterparts. To confirm:
 
 - With the flag on, wait for `data-feature-battle-state-active="waitingForPlayerAction"`.
 - Trigger a state change (select a stat, complete a round).

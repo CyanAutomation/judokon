@@ -39,8 +39,28 @@ export const stateHandlers = {
   matchDecision: { onEnter: matchDecisionEnter },
   matchOver: { onEnter: matchOverEnter },
   interruptRound: { onEnter: interruptRoundEnter },
-  interruptMatch: { onEnter: interruptMatchEnter },
+  interruptMatch: { onEnter: interruptMatchEnter }
+};
+
+export const roundModificationOverlayHandlers = {
   roundModification: { onEnter: roundModificationEnter }
 };
+
+/**
+ * Build the state handler map with optional overlays.
+ *
+ * @param {object} [options]
+ * @param {boolean} [options.includeRoundModification=false] - Include overlay handlers.
+ * @returns {Record<string, {onEnter?: Function, onExit?: Function}>} Handler map.
+ * @pseudocode
+ * 1. Return base handlers when overlays are disabled.
+ * 2. Merge overlay handlers into the base map when enabled.
+ */
+export function buildStateHandlers({ includeRoundModification = false } = {}) {
+  if (!includeRoundModification) {
+    return stateHandlers;
+  }
+  return { ...stateHandlers, ...roundModificationOverlayHandlers };
+}
 
 export default stateHandlers;
