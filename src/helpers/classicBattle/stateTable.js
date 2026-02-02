@@ -331,7 +331,7 @@ function mergeStateTables(baseStates, overlayStates) {
     if (!overlayState?.name) continue;
     const existing = byName.get(overlayState.name);
     if (existing) {
-      if (overlayState.triggers?.length) {
+      if (overlayState.triggers && overlayState.triggers.length > 0) {
         existing.triggers = [...existing.triggers, ...overlayState.triggers];
       }
       continue;
