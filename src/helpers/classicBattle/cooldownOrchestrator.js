@@ -1026,6 +1026,13 @@ export function createExpirationDispatcher({
     return originalResult;
   };
   const onExpired = async () => {
+    safeRound(
+      "wireCooldownTimer.onExpired.debugFlag",
+      () => {
+        exposeDebugState("timerEmitExpiredCalled", true);
+      },
+      { suppressInProduction: true }
+    );
     if (runtime.expired) {
       return finalizeExpiration();
     }
