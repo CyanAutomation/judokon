@@ -3,6 +3,7 @@
 ## Issue Summary
 
 Unit tests in `tests/helpers/scoreboard.integration.test.js` were failing with:
+
 ```
 Expected: "Time Left: 3s"
 Received: "Time Left: 0s"
@@ -24,7 +25,6 @@ expect(getTimerText()).toBe("Time Left: 3s"); // FAILS
 1. `startTimer()` is an `async` function that performs several async operations:
    - Line 1116: `await resolveDuration(scoreboardApi)` - resolves timer duration
    - Line 1125: `primeTimerDisplay(...)` - updates scoreboard with initial value
-   
 2. When not awaited, the test advances fake timers before `primeTimerDisplay()` executes
 
 3. The DOM still shows the default "0s" value instead of the primed "3s" value
@@ -52,6 +52,7 @@ expect(getTimerText()).toBe("Time Left: 3s"); // PASSES
 ### Problem
 
 The repository had symlinked test directories that caused:
+
 1. Duplicate test runs (same test run 3x through different paths)
 2. Module resolution conflicts with symlinked paths
 3. Flaky failures due to vitest treating symlinks as separate test files
@@ -68,12 +69,13 @@ Excluded symlinked directories from vitest discovery:
 **File: `vitest.config.js`**
 
 Added to exclude list:
+
 ```javascript
 exclude: [
   // ... existing exclusions ...
   "tests/battles-regressions/**",
   "tests/helpers/scoreboardTests/**"
-]
+];
 ```
 
 ### Why This Works

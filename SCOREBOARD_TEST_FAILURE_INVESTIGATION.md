@@ -31,21 +31,26 @@ AssertionError: expected 'Time Left: 0s' to be 'Time Left: 3s'
 ## Investigation Process
 
 ### 1. Initial Hypothesis (Incorrect)
+
 Initially investigated timer service logic, mock implementations, and DOM update timing, suspecting:
+
 - Mock `startRound` not calling `onTick` properly
 - Timer being cleared/reset somewhere
 - Debounce or animation frame timing issues
 
 ### 2. Path Analysis Discovery
+
 While examining import statements, discovered that test files use relative paths:
+
 - `tests/helpers/scoreboard.integration.test.js` uses `../../../../src/`
 - Should actually use `../../src/` from that location
 
 ### 3. Symlink Discovery
+
 Found that `tests/battles-regressions/shared/scoreboard/scoreboard.integration.test.js` is a **symlink**:
 
 ```bash
-tests/battles-regressions/shared/scoreboard/scoreboard.integration.test.js 
+tests/battles-regressions/shared/scoreboard/scoreboard.integration.test.js
   -> ../../../helpers/scoreboard.integration.test.js
 ```
 
@@ -56,6 +61,7 @@ This resolves to: `tests/helpers/scoreboard.integration.test.js`
 ### 4. Path Verification
 
 From `tests/helpers/` directory:
+
 ```bash
 # WRONG (doesn't exist):
 ../../../../src/helpers/motionUtils.js
@@ -65,6 +71,7 @@ From `tests/helpers/` directory:
 ```
 
 From `tests/battles-regressions/shared/scoreboard/` directory:
+
 ```bash
 # Would be CORRECT if this was a real file:
 ../../../../src/helpers/motionUtils.js
@@ -87,10 +94,13 @@ Result: File in git already has wrong paths.
 ## Root Cause Analysis
 
 ### Primary Issue
+
 `tests/helpers/scoreboard.integration.test.js` contains hardcoded import paths that assume it lives at a different location in the directory tree (4 levels deep instead of 2 levels deep).
 
 ### Affected Imports
+
 All dynamic imports in the file use incorrect paths:
+
 - Line 5: `vi.mock("../../../../src/helpers/motionUtils.js")`
 - Line 31: `vi.mock("../../../../src/helpers/setupScoreboard.js")`
 - Line 44: `vi.mock("../../../../src/helpers/timerUtils.js")`
@@ -101,6 +111,7 @@ All dynamic imports in the file use incorrect paths:
 - Line 186-188: setupScoreboard and startTimer imports
 
 ### Why Tests Fail
+
 1. Vitest attempts to resolve imports from the actual file location (`tests/helpers/`)
 2. Path `../../../../src/` doesn't exist from that location
 3. Module imports fail or resolve incorrectly
@@ -109,7 +120,9 @@ All dynamic imports in the file use incorrect paths:
 6. Timer display never gets updated from default "0s" value
 
 ### Why Two Failures Reported
+
 Vitest test discovery finds BOTH:
+
 1. `tests/helpers/scoreboard.integration.test.js` (real file)
 2. `tests/battles-regressions/shared/scoreboard/scoreboard.integration.test.js` (symlink)
 
@@ -120,6 +133,7 @@ When symlink is followed, it executes the same underlying file, resulting in dup
 ## Probable Origin
 
 This file was likely:
+
 1. Created/copied from `tests/battles-regressions/shared/scoreboard/` location
 2. Moved to `tests/helpers/` directory
 3. Import paths were never updated to reflect new location
@@ -133,9 +147,11 @@ Alternative theory: File was created with wrong paths and never tested until now
 ## Implementation Status
 
 ### Attempted (Reverted)
+
 Attempted to fix paths in the symlinked location, which actually modified the target file. This demonstrated the symlink relationship but created further path resolution issues.
 
 ### Not Yet Implemented
+
 The correct fix has not been applied due to discovery of the symlink complexity.
 
 ---
@@ -145,6 +161,7 @@ The correct fix has not been applied due to discovery of the symlink complexity.
 ### Immediate Fix (Choose One Approach)
 
 #### Option A: Fix Real File Paths (Recommended)
+
 Update all import paths in `tests/helpers/scoreboard.integration.test.js`:
 
 ```diff
@@ -160,7 +177,9 @@ Update all import paths in `tests/helpers/scoreboard.integration.test.js`:
 **Rationale**: Fix the root cause. The real file should have correct paths.
 
 #### Option B: Delete Symlink, Keep One Copy
+
 If the symlink was meant to be temporary:
+
 1. Delete symlink: `tests/battles-regressions/shared/scoreboard/scoreboard.integration.test.js`
 2. Fix paths in `tests/helpers/scoreboard.integration.test.js`
 3. Update any test scripts that reference the symlink location
@@ -168,7 +187,9 @@ If the symlink was meant to be temporary:
 **Rationale**: Reduce complexity, single source of truth.
 
 #### Option C: Create Real Copy for battles-regressions
+
 If both locations need independent files:
+
 1. Delete symlink
 2. Create real copy at `tests/battles-regressions/shared/scoreboard/` with `../../../../src/` paths
 3. Keep `tests/helpers/` version with `../../src/` paths
@@ -195,6 +216,7 @@ npx vitest list tests/**/scoreboard.integration.test.js
 ### Long-term Actions
 
 1. **Audit other symlinks**: Check if other test files have similar issues
+
    ```bash
    find tests -type l -name "*.test.js"
    ```
@@ -222,7 +244,9 @@ npx vitest list tests/**/scoreboard.integration.test.js
 ## Additional Context
 
 ### Test Setup Analysis
+
 The test correctly:
+
 - Sets `window.__OVERRIDE_TIMERS = { roundTimer: 3 }`
 - Creates proper DOM structure
 - Initializes Scoreboard components
@@ -231,6 +255,7 @@ The test correctly:
 The timer logic itself appears sound. The failure is purely due to module resolution issues from incorrect paths.
 
 ### No Timer Issues Found
+
 The timer service, mock implementations, and DOM update logic all appear correct. The 220ms delay mentioned in test comments relates to requestAnimationFrame timing but isn't the cause of the failure.
 
 ---
@@ -240,6 +265,7 @@ The timer service, mock implementations, and DOM update logic all appear correct
 **High confidence** (95%) that incorrect import paths are the root cause.
 
 **Evidence**:
+
 - Manual path verification confirms `../../../../src/` doesn't exist from `tests/helpers/`
 - Git history shows paths have been wrong since file was added
 - Symlink explains duplicate test failures

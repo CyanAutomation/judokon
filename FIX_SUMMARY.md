@@ -16,7 +16,7 @@ The code determined "success" based on whether `generateRandomCard()` resolved (
 
 ```javascript
 // Line 423: Transition to SUCCESS immediately after generateRandomCard resolves
-stateMachine.transition("SUCCESS");  
+stateMachine.transition("SUCCESS");
 
 // Line 456: THEN check if card actually exists
 const cardEl = cardContainer.querySelector(".card-container");
@@ -38,11 +38,13 @@ if (!cardEl) {
 #### 1. Application Code (`src/helpers/randomJudokaPage.js`)
 
 **Before** (lines 405-448):
+
 - Transitioned to SUCCESS after `generateRandomCard` resolved
 - Checked for card element later
 - Had special missing-markup branch with redundant UI updates
 
 **After** (lines 405-440):
+
 - Validates card element immediately after generation
 - Throws error if card element missing
 - Missing markup now handled by existing error path (fallback rendering)
@@ -65,7 +67,7 @@ stateMachine.transition("SUCCESS");  // Only transition if validation passes
 
 - Renamed test to reflect actual behavior: "shows fallback and transitions to IDLE when card markup is missing"
 - Updated test to mock `renderJudokaCard` to create fallback card element
-- Added `withMutedConsole` to suppress expected error logging  
+- Added `withMutedConsole` to suppress expected error logging
 - Added microtask wait (`await Promise.resolve()`) for deterministic timing
 - Set `fallbackDelayMs = 0` to avoid real timer delays in tests
 
@@ -82,7 +84,7 @@ stateMachine.transition("SUCCESS");  // Only transition if validation passes
 IDLE → DRAWING → (validate card exists)
                     ↓
             if exists: SUCCESS → (animation) → IDLE
-            if missing: ERROR → (fallback) → IDLE  
+            if missing: ERROR → (fallback) → IDLE
 ```
 
 ## Testing
@@ -99,7 +101,8 @@ IDLE → DRAWING → (validate card exists)
 ## Related Issues
 
 This fix addresses the issues described in the bug report:
+
 - ✅ Eliminates timing/race conditions in missing-markup path
 - ✅ Proper state machine transitions (no more SUCCESS → IDLE for errors)
-- ✅ Removes manual UI manipulation workarounds  
+- ✅ Removes manual UI manipulation workarounds
 - ✅ Deletes debug logging added during investigation
