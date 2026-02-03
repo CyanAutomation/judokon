@@ -200,12 +200,10 @@ class SnackbarManager {
         // Newest message at bottom
         snackbar.element.classList.add("snackbar-bottom");
         snackbar.element.classList.remove("snackbar-top", "snackbar-stale");
-        snackbar.element.style.removeProperty("--snackbar-stack-offset");
       } else {
         // Older messages at top with reduced opacity
         snackbar.element.classList.add("snackbar-top", "snackbar-stale");
         snackbar.element.classList.remove("snackbar-bottom");
-        snackbar.element.style.setProperty("--snackbar-stack-offset", String(index));
       }
     });
   }
