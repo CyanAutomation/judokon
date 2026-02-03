@@ -44,7 +44,11 @@ function ensureLabelValueSpacing(container, labelSpan, valueSpan) {
   const valueText = String(valueSpan.textContent || "").trim();
   const separator = labelSpan.nextSibling;
   if (!labelText || !valueText) {
-    if (separator && separator.nodeType === 3 && separator.parentNode === container) {
+    if (
+      separator &&
+      separator.nodeType === 3 &&
+      separator.parentNode === container
+    ) {
       container.removeChild(separator);
     }
     return;
