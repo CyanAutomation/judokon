@@ -65,7 +65,7 @@
 /* Top snackbar: older message, pushed up with reduced opacity */
 .snackbar-top {
   opacity: 0.7;
-  transform: translateY(-56px);
+  transform: translateY(calc(-56px * var(--snackbar-stack-offset, 1)));
 }
 
 /* Stale class: additional visual distinction for older message */
