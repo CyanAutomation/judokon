@@ -42,7 +42,7 @@ export async function roundDisplayEnter(machine) {
     // Allow progression to cooldown or matchDecision (normal flow)
     withStateGuard(
       machine,
-      ["roundDisplay", "roundWait", "matchDecision"],
+      ["roundDisplay", "matchEvaluate", "roundWait", "matchDecision"],
       () => {
         // State is valid, confirmation complete
         // Handler will naturally exit after this check

@@ -10,7 +10,7 @@
  * 3. Include dedicated interrupt branches for safe abort, resume, or admin flows.
  *
  * State ID Legend:
- *   1-9    = Match/round flow states (main battle progression)
+ *   1-10   = Match/round flow states (main battle progression)
  *   98-99  = Interrupt handlers (interruptRound, interruptMatch)
  *   97     = Optional admin/test overlay states (roundModification)
  *
@@ -78,6 +78,7 @@ export const GUARD_CONDITIONS = {
  * @property {string} ANNOUNCE_ROUND_OUTCOME - Display round result
  * @property {string} UPDATE_SCORE - Increment winner's score
  * @property {string} UPDATE_UI_ROUND_SUMMARY - Display round summary UI
+ * @property {string} EVALUATE_MATCH_OUTCOME - Evaluate whether match should continue or end
  * @property {string} COMPUTE_MATCH_OUTCOME - Determine overall match winner
  * @property {string} RENDER_MATCH_SUMMARY - Display match summary screen
  * @property {string} SHOW_MATCH_RESULT_SCREEN - Display final result with rematch option
@@ -108,6 +109,7 @@ export const CLASSIC_BATTLE_ACTIONS = {
   ANNOUNCE_ROUND_OUTCOME: "announce:roundOutcome",
   UPDATE_SCORE: "update:score",
   UPDATE_UI_ROUND_SUMMARY: "update:UIRoundSummary",
+  EVALUATE_MATCH_OUTCOME: "evaluate:matchOutcome",
   COMPUTE_MATCH_OUTCOME: "compute:matchOutcome",
   RENDER_MATCH_SUMMARY: "render:matchSummary",
   SHOW_MATCH_RESULT_SCREEN: "show:matchResultScreen",
@@ -235,17 +237,28 @@ export const CLASSIC_BATTLE_STATES = [
     description: "Updates scores and presents a brief summary. No card transfers occur.",
     onEnter: [CLASSIC_BATTLE_ACTIONS.UPDATE_SCORE, CLASSIC_BATTLE_ACTIONS.UPDATE_UI_ROUND_SUMMARY],
     triggers: [
-      {
-        on: "matchPointReached",
-        target: "matchDecision",
-        guard: GUARD_CONDITIONS.WIN_CONDITION_MET,
-        note: "Checks the user-selected win target (3/5/10)."
-      },
-      { on: "continue", target: "roundWait" }
+      { on: "matchPointReached", target: "matchEvaluate" },
+      { on: "continue", target: "matchEvaluate" }
     ]
   },
   {
     id: 8,
+    name: "matchEvaluate",
+    description:
+      "Match-level evaluation boundary that decides whether to continue the round loop or resolve the match.",
+    onEnter: [CLASSIC_BATTLE_ACTIONS.EVALUATE_MATCH_OUTCOME],
+    triggers: [
+      {
+        on: "evaluateMatch",
+        target: "matchDecision",
+        guard: GUARD_CONDITIONS.WIN_CONDITION_MET,
+        note: "Checks the user-selected win target (3/5/10)."
+      },
+      { on: "evaluateMatch", target: "roundWait" }
+    ]
+  },
+  {
+    id: 9,
     name: "matchDecision",
     description: "Determines the overall winner once a player reaches the selected win target.",
     onEnter: [
@@ -255,7 +268,7 @@ export const CLASSIC_BATTLE_STATES = [
     triggers: [{ on: "finalize", target: "matchOver" }]
   },
   {
-    id: 9,
+    id: 10,
     name: "matchOver",
     type: "final",
     description: "Match completed. Offer Rematch or Home. Final score remains visible.",

@@ -7,6 +7,7 @@ import { roundSelectExit } from "./stateHandlers/roundSelectExit.js";
 import { roundResolveEnter } from "./stateHandlers/roundResolveEnter.js";
 import { roundResolveExit } from "./stateHandlers/roundResolveExit.js";
 import { roundDisplayEnter } from "./stateHandlers/roundDisplayEnter.js";
+import { matchEvaluateEnter } from "./stateHandlers/matchEvaluateEnter.js";
 import { matchDecisionEnter } from "./stateHandlers/matchDecisionEnter.js";
 import { matchOverEnter } from "./stateHandlers/matchOverEnter.js";
 import { interruptRoundEnter } from "./stateHandlers/interruptRoundEnter.js";
@@ -36,6 +37,7 @@ export const stateHandlers = {
   },
   roundResolve: { onEnter: roundResolveEnter, onExit: roundResolveExit },
   roundDisplay: { onEnter: roundDisplayEnter },
+  matchEvaluate: { onEnter: matchEvaluateEnter },
   matchDecision: { onEnter: matchDecisionEnter },
   matchOver: { onEnter: matchOverEnter },
   interruptRound: { onEnter: interruptRoundEnter },

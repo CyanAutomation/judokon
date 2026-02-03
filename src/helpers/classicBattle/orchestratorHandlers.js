@@ -190,6 +190,17 @@ export { roundDisplayEnter } from "./stateHandlers/roundDisplayEnter.js";
  * @returns {Promise<void>}
  */
 // (Removed duplicate re-export)
+export { matchEvaluateEnter } from "./stateHandlers/matchEvaluateEnter.js";
+/**
+ * Handler for entering the `matchEvaluate` state.
+ *
+ * @pseudocode
+ * 1. Dispatch `evaluateMatch` to advance to matchDecision or roundWait.
+ *
+ * @param {object} context - The state machine context.
+ * @returns {Promise<void>}
+ */
+// (Removed duplicate re-export)
 export { matchDecisionEnter } from "./stateHandlers/matchDecisionEnter.js";
 /**
  * Handler for entering the `matchDecision` state.

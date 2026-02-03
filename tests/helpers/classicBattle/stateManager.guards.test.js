@@ -59,6 +59,9 @@ describe("stateManager guard evaluation", () => {
       // Now test the WIN_CONDITION_MET guard for matchPointReached event
       const result = await machine.dispatch("matchPointReached");
       expect(result).toBe(true);
+      expect(machine.getState()).toBe("matchEvaluate");
+      const evaluateResult = await machine.dispatch("evaluateMatch");
+      expect(evaluateResult).toBe(true);
       expect(machine.getState()).toBe("matchDecision");
     });
 
@@ -84,6 +87,9 @@ describe("stateManager guard evaluation", () => {
       // WIN_CONDITION_MET should pass (opponent at 5, pointsToWin = 5)
       const result = await machine.dispatch("matchPointReached");
       expect(result).toBe(true);
+      expect(machine.getState()).toBe("matchEvaluate");
+      const evaluateResult = await machine.dispatch("evaluateMatch");
+      expect(evaluateResult).toBe(true);
       expect(machine.getState()).toBe("matchDecision");
     });
 
@@ -107,9 +113,12 @@ describe("stateManager guard evaluation", () => {
       expect(machine.getState()).toBe("roundDisplay");
 
       // WIN_CONDITION_MET should fail (playerScore 2 < 3, opponentScore 1 < 3)
-      // matchPointReached event should be blocked by the guard, so continue should work instead
+      // continue should still route through matchEvaluate and return to roundWait
       const continueResult = await machine.dispatch("continue");
       expect(continueResult).toBe(true);
+      expect(machine.getState()).toBe("matchEvaluate");
+      const evaluateResult = await machine.dispatch("evaluateMatch");
+      expect(evaluateResult).toBe(true);
       expect(machine.getState()).toBe("roundWait");
     });
 
@@ -135,6 +144,9 @@ describe("stateManager guard evaluation", () => {
       // Both at 2, pointsToWin = 5, so guard should fail
       const continueResult = await machine.dispatch("continue");
       expect(continueResult).toBe(true);
+      expect(machine.getState()).toBe("matchEvaluate");
+      const evaluateResult = await machine.dispatch("evaluateMatch");
+      expect(evaluateResult).toBe(true);
       expect(machine.getState()).toBe("roundWait");
     });
 
@@ -160,6 +172,9 @@ describe("stateManager guard evaluation", () => {
       // playerScore exactly equals pointsToWin, guard should pass
       const result = await machine.dispatch("matchPointReached");
       expect(result).toBe(true);
+      expect(machine.getState()).toBe("matchEvaluate");
+      const evaluateResult = await machine.dispatch("evaluateMatch");
+      expect(evaluateResult).toBe(true);
       expect(machine.getState()).toBe("matchDecision");
     });
 
@@ -185,6 +200,9 @@ describe("stateManager guard evaluation", () => {
       // playerScore 1000 >= pointsToWin 100, guard should pass
       const result = await machine.dispatch("matchPointReached");
       expect(result).toBe(true);
+      expect(machine.getState()).toBe("matchEvaluate");
+      const evaluateResult = await machine.dispatch("evaluateMatch");
+      expect(evaluateResult).toBe(true);
       expect(machine.getState()).toBe("matchDecision");
     });
 
@@ -206,6 +224,9 @@ describe("stateManager guard evaluation", () => {
       // So continue should work instead
       const continueResult = await machine.dispatch("continue");
       expect(continueResult).toBe(true);
+      expect(machine.getState()).toBe("matchEvaluate");
+      const evaluateResult = await machine.dispatch("evaluateMatch");
+      expect(evaluateResult).toBe(true);
       expect(machine.getState()).toBe("roundWait");
     });
 
@@ -231,6 +252,9 @@ describe("stateManager guard evaluation", () => {
       // With missing getScores, guard should fail
       const continueResult = await machine.dispatch("continue");
       expect(continueResult).toBe(true);
+      expect(machine.getState()).toBe("matchEvaluate");
+      const evaluateResult = await machine.dispatch("evaluateMatch");
+      expect(evaluateResult).toBe(true);
       expect(machine.getState()).toBe("roundWait");
     });
 
@@ -256,6 +280,9 @@ describe("stateManager guard evaluation", () => {
       // With missing pointsToWin, guard should fail
       const continueResult = await machine.dispatch("continue");
       expect(continueResult).toBe(true);
+      expect(machine.getState()).toBe("matchEvaluate");
+      const evaluateResult = await machine.dispatch("evaluateMatch");
+      expect(evaluateResult).toBe(true);
       expect(machine.getState()).toBe("roundWait");
     });
 
@@ -281,6 +308,9 @@ describe("stateManager guard evaluation", () => {
       // With pointsToWin = 0, any positive score satisfies the condition
       const result = await machine.dispatch("matchPointReached");
       expect(result).toBe(true);
+      expect(machine.getState()).toBe("matchEvaluate");
+      const evaluateResult = await machine.dispatch("evaluateMatch");
+      expect(evaluateResult).toBe(true);
       expect(machine.getState()).toBe("matchDecision");
     });
   });
@@ -429,6 +459,9 @@ describe("stateManager guard evaluation", () => {
       // With no engine, guard should fail
       const continueResult = await machine.dispatch("continue");
       expect(continueResult).toBe(true);
+      expect(machine.getState()).toBe("matchEvaluate");
+      const evaluateResult = await machine.dispatch("evaluateMatch");
+      expect(evaluateResult).toBe(true);
       expect(machine.getState()).toBe("roundWait");
     });
   });
@@ -459,17 +492,26 @@ describe("stateManager guard evaluation", () => {
 
       expect(machine.getState()).toBe("roundDisplay");
 
-      // Dispatch matchPointReached - should transition to matchDecision
+      // Dispatch matchPointReached - should transition through matchEvaluate to matchDecision
       const result = await machine.dispatch("matchPointReached");
       expect(result).toBe(true);
+      expect(machine.getState()).toBe("matchEvaluate");
+      const evaluateResult = await machine.dispatch("evaluateMatch");
+      expect(evaluateResult).toBe(true);
       expect(machine.getState()).toBe("matchDecision");
 
       // Verify transition was recorded
-      const transition = onTransitionSpy.find(
-        (t) => t.from === "roundDisplay" && t.to === "matchDecision"
+      const toMatchEvaluate = onTransitionSpy.find(
+        (t) => t.from === "roundDisplay" && t.to === "matchEvaluate"
       );
-      expect(transition).toBeDefined();
-      expect(transition.event).toBe("matchPointReached");
+      expect(toMatchEvaluate).toBeDefined();
+      expect(toMatchEvaluate.event).toBe("matchPointReached");
+
+      const toMatchDecision = onTransitionSpy.find(
+        (t) => t.from === "matchEvaluate" && t.to === "matchDecision"
+      );
+      expect(toMatchDecision).toBeDefined();
+      expect(toMatchDecision.event).toBe("evaluateMatch");
     });
 
     it("should not transition from roundDisplay to matchDecision when WIN_CONDITION_MET fails", async () => {
@@ -497,19 +539,21 @@ describe("stateManager guard evaluation", () => {
 
       expect(machine.getState()).toBe("roundDisplay");
 
-      // Dispatch matchPointReached - should NOT transition because guard fails
+      // Dispatch matchPointReached - should route through matchEvaluate and return to roundWait
       const result = await machine.dispatch("matchPointReached");
-      expect(result).toBe(false);
-      expect(machine.getState()).toBe("roundDisplay");
+      expect(result).toBe(true);
+      expect(machine.getState()).toBe("matchEvaluate");
+      const evaluateResult = await machine.dispatch("evaluateMatch");
+      expect(evaluateResult).toBe(true);
+      expect(machine.getState()).toBe("roundWait");
 
-      // Verify no transition to matchDecision was recorded
-      const transition = onTransitionSpy.find(
-        (t) => t.from === "roundDisplay" && t.to === "matchDecision"
+      const toMatchDecision = onTransitionSpy.find(
+        (t) => t.from === "matchEvaluate" && t.to === "matchDecision"
       );
-      expect(transition).toBeUndefined();
+      expect(toMatchDecision).toBeUndefined();
     });
 
-    it("should allow continue transition when matchPointReached fails guard", async () => {
+    it("should fall back to roundWait when matchPointReached evaluates false", async () => {
       const mockEngine = {
         getScores: () => ({ playerScore: 2, opponentScore: 2 }),
         pointsToWin: 3
@@ -528,14 +572,12 @@ describe("stateManager guard evaluation", () => {
 
       expect(machine.getState()).toBe("roundDisplay");
 
-      // matchPointReached should fail
+      // matchPointReached should evaluate false and return to roundWait
       const pointResult = await machine.dispatch("matchPointReached");
-      expect(pointResult).toBe(false);
-      expect(machine.getState()).toBe("roundDisplay");
-
-      // continue should succeed
-      const continueResult = await machine.dispatch("continue");
-      expect(continueResult).toBe(true);
+      expect(pointResult).toBe(true);
+      expect(machine.getState()).toBe("matchEvaluate");
+      const evaluateResult = await machine.dispatch("evaluateMatch");
+      expect(evaluateResult).toBe(true);
       expect(machine.getState()).toBe("roundWait");
     });
   });
