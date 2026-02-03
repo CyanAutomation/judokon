@@ -440,10 +440,7 @@ describe("Battle Classic Page Integration", () => {
           : (document?.body?.dataset?.battleState ?? null);
       console.log("[TEST DIAG] Pre-selection battle state:", currentBattleState);
 
-      if (
-        currentBattleState &&
-        !["roundSelect", "roundResolve"].includes(currentBattleState)
-      ) {
+      if (currentBattleState && !["roundSelect", "roundResolve"].includes(currentBattleState)) {
         // Attempt to re-sync to correct state
         try {
           await testApi.state.waitForBattleState("roundSelect", 2000);
@@ -481,7 +478,10 @@ describe("Battle Classic Page Integration", () => {
         });
 
         await withMutedConsole(async () => {
-          await testApi.state.waitForBattleState(["roundResolve", "roundDisplay", "roundWait"], 5000);
+          await testApi.state.waitForBattleState(
+            ["roundResolve", "roundDisplay", "roundWait"],
+            5000
+          );
           const roundCompleted = await testApi.state.waitForRoundsPlayed(1);
           expect(roundCompleted).toBe(true);
         });

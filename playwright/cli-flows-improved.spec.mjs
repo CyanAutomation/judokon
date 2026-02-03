@@ -121,12 +121,7 @@ const startBattle = async (page) => {
   }
 
   await waitForStatsReady(page);
-  const stateReached = await callTestApi(
-    page,
-    "state.waitForBattleState",
-    "roundSelect",
-    10_000
-  );
+  const stateReached = await callTestApi(page, "state.waitForBattleState", "roundSelect", 10_000);
 
   if (!stateReached) {
     throw new Error("CLI battle did not reach roundSelect via Test API");

@@ -22,9 +22,7 @@ test.describe("Classic Battle timer", () => {
       // Verify modal is dismissed
       await expect(page.getByRole("dialog")).not.toBeVisible();
 
-      await page.evaluate(() =>
-        window.__TEST_API?.state?.waitForBattleState?.("roundSelect")
-      );
+      await page.evaluate(() => window.__TEST_API?.state?.waitForBattleState?.("roundSelect"));
 
       // Verify timer appears and shows countdown
       const timerLocator = page.getByTestId("next-round-timer");

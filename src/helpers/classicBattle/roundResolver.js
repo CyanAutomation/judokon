@@ -11,7 +11,10 @@ import { writeScoreDisplay } from "./scoreDisplay.js";
 import { cancelRoundResolveGuard } from "./stateHandlers/guardCancellation.js";
 import { getAutoContinue } from "./autoContinue.js";
 import { getOpponentDelay } from "./snackbar.js";
-import { getOpponentPromptMinDuration, getOpponentPromptTimestamp } from "./opponentPromptTracker.js";
+import {
+  getOpponentPromptMinDuration,
+  getOpponentPromptTimestamp
+} from "./opponentPromptTracker.js";
 
 /**
  * Round resolution helpers and orchestrator for Classic Battle.

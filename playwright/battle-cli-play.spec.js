@@ -84,9 +84,7 @@ test.describe("Battle CLI - Play", () => {
         .poll(async () => {
           return await page.evaluate(() => {
             const api = window.__TEST_API;
-            return api?.state?.getBattleState?.() === "roundSelect"
-              ? "ready"
-              : "pending";
+            return api?.state?.getBattleState?.() === "roundSelect" ? "ready" : "pending";
           });
         })
         .toBe("ready", { timeout: 10_000 });

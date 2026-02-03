@@ -76,7 +76,9 @@ describe("createMachineReader", () => {
     );
     expect(reader()).toEqual({ state: "roundDisplay" });
     expect(getter).toHaveBeenCalled();
-    expect(emit).toHaveBeenCalledWith("handleNextRoundMachineGetterResult", { state: "roundDisplay" });
+    expect(emit).toHaveBeenCalledWith("handleNextRoundMachineGetterResult", {
+      state: "roundDisplay"
+    });
   });
 });
 

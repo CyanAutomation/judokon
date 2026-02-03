@@ -318,9 +318,7 @@ function resolveRoundPromptTransition(eventName) {
 function resolveRoundSelectTransition(eventName, context, guardOverrides) {
   if (eventName === "statSelected") return "roundResolve";
   if (eventName === "timeout") {
-    return isAutoSelectEnabled(context, guardOverrides)
-      ? "roundResolve"
-      : "interruptRound";
+    return isAutoSelectEnabled(context, guardOverrides) ? "roundResolve" : "interruptRound";
   }
   if (eventName === "interrupt") return "interruptRound";
   return null;

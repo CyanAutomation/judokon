@@ -59,9 +59,13 @@ test.describe("Classic Battle stat selection", () => {
       await page.waitForFunction(
         () => {
           const state = document.body?.dataset?.battleState;
-          return ["roundResolve", "roundWait", "roundDisplay", "matchDecision", "matchOver"].includes(
-            state
-          );
+          return [
+            "roundResolve",
+            "roundWait",
+            "roundDisplay",
+            "matchDecision",
+            "matchOver"
+          ].includes(state);
         },
         { timeout: 15000 }
       );

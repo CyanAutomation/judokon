@@ -59,9 +59,7 @@ export async function interruptRoundEnter(machine, payload) {
   // Route to appropriate next state based on interrupt reason
   const hasOverlayTransition =
     typeof machine.getAvailableTransitions === "function" &&
-    machine
-      .getAvailableTransitions()
-      .some((transition) => transition.event === "roundModifyFlag");
+    machine.getAvailableTransitions().some((transition) => transition.event === "roundModifyFlag");
   const canUseOverlay =
     payload?.adminTest &&
     isRoundModificationOverlayEnabled(machine?.context) &&
