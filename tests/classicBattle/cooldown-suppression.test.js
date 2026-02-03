@@ -2,16 +2,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createSimpleHarness } from "../helpers/integrationHarness.js";
 
 /**
- * Integration tests for cooldown snackbar suppression during opponent prompt window.
+ * Integration tests for cooldown snackbar visibility during opponent prompt windows.
  *
- * This test suite validates that the cooldown countdown snackbar is properly suppressed
- * during the opponent prompt minimum duration window (DEFAULT_MIN_PROMPT_DURATION_MS = 600ms).
- *
- * Key behavior:
- * 1. When opponent prompt is shown, timestamp is recorded
- * 2. Cooldown renderer checks isOpponentPromptWindowActive()
- * 3. Snackbar is suppressed while within the minimum duration window
- * 4. After window expires, cooldown snackbar becomes visible
+ * This suite validates that the cooldown countdown snackbar is shown immediately,
+ * even when opponent prompts are active or selection/decision states are set.
  */
 /* eslint-disable no-unused-vars */
 describe("Cooldown suppression during opponent prompt", () => {
@@ -37,7 +31,7 @@ describe("Cooldown suppression during opponent prompt", () => {
     }
   });
 
-  it("suppresses cooldown snackbar during opponent prompt minimum duration window", async () => {
+  it("shows cooldown snackbar during opponent prompt minimum duration window", async () => {
     // Import modules after harness setup
     const { markOpponentPromptNow, DEFAULT_MIN_PROMPT_DURATION_MS } = await import(
       "../../src/helpers/classicBattle/opponentPromptTracker.js"
@@ -75,35 +69,35 @@ describe("Cooldown suppression during opponent prompt", () => {
       timer._testTick(cooldownSeconds);
     }
 
-    // Step 3: Verify cooldown snackbar is NOT shown immediately (suppressed)
+    // Step 3: Verify cooldown snackbar is shown immediately
     const showMessageCalls = showSnackbarSpy.mock.calls.map((call) => call[0]?.message);
     const updateMessageCalls = updateSnackbarSpy.mock.calls.map((call) => call[1]);
-    expect(showMessageCalls).not.toContainEqual(expect.stringMatching(/Next round in/));
+    expect(showMessageCalls).toContainEqual(expect.stringMatching(/Next round in/));
     expect(updateMessageCalls).not.toContainEqual(expect.stringMatching(/Next round in/));
 
     // Step 4: Advance time but still within prompt window (e.g., 300ms < 600ms)
     await vi.advanceTimersByTimeAsync(300);
 
-    // Emit another tick (still suppressed)
+    // Emit another tick (still shown)
     if (timer._testTick) {
       timer._testTick(cooldownSeconds - 1);
     }
 
-    // Verify still suppressed
+    // Verify still shown
     const showMessageCallsAfterDelay = showSnackbarSpy.mock.calls.map((call) => call[0]?.message);
     const updateMessageCallsAfterDelay = updateSnackbarSpy.mock.calls.map((call) => call[1]);
-    expect(showMessageCallsAfterDelay).not.toContainEqual(expect.stringMatching(/Next round in/));
+    expect(showMessageCallsAfterDelay).toContainEqual(expect.stringMatching(/Next round in/));
     expect(updateMessageCallsAfterDelay).not.toContainEqual(expect.stringMatching(/Next round in/));
 
     // Step 5: Advance time past the prompt window (total 700ms > 600ms)
     await vi.advanceTimersByTimeAsync(400);
 
-    // Emit a tick now (should NOT be suppressed)
+    // Emit a tick now (still shown)
     if (timer._testTick) {
       timer._testTick(cooldownSeconds - 1);
     }
 
-    // Step 6: Verify cooldown snackbar is now visible
+    // Step 6: Verify cooldown snackbar is visible
     const hasCooldownMessage =
       showSnackbarSpy.mock.calls.some((call) => call[0]?.message?.includes("Next round in")) ||
       updateSnackbarSpy.mock.calls.some((call) => call[1]?.includes("Next round in"));
@@ -157,7 +151,7 @@ describe("Cooldown suppression during opponent prompt", () => {
     expect(hasCooldownMessage).toBe(true);
   });
 
-  it("suppresses cooldown during selection phase (roundSelect)", async () => {
+  it("shows cooldown during selection phase (roundSelect)", async () => {
     // Import modules after harness setup
     const { createRoundTimer } = await import("../../src/helpers/timers/createRoundTimer.js");
     const { attachCooldownRenderer } = await import("../../src/helpers/CooldownRenderer.js");
@@ -186,10 +180,10 @@ describe("Cooldown suppression during opponent prompt", () => {
       timer._testTick(cooldownSeconds);
     }
 
-    // Step 3: Verify no snackbar shown (suppressed due to battle state)
+    // Step 3: Verify snackbar shown
     const showMessageCalls = showSnackbarSpy.mock.calls.map((call) => call[0]?.message);
     const updateMessageCalls = updateSnackbarSpy.mock.calls.map((call) => call[1]);
-    expect(showMessageCalls).not.toContainEqual(expect.stringMatching(/Next round in/));
+    expect(showMessageCalls).toContainEqual(expect.stringMatching(/Next round in/));
     expect(updateMessageCalls).not.toContainEqual(expect.stringMatching(/Next round in/));
 
     // Step 4: Change to cooldown phase
@@ -208,7 +202,7 @@ describe("Cooldown suppression during opponent prompt", () => {
     expect(hasCooldownMessage).toBe(true);
   });
 
-  it("suppresses cooldown during decision phase (roundResolve)", async () => {
+  it("shows cooldown during decision phase (roundResolve)", async () => {
     // Import modules after harness setup
     const { createRoundTimer } = await import("../../src/helpers/timers/createRoundTimer.js");
     const { attachCooldownRenderer } = await import("../../src/helpers/CooldownRenderer.js");
@@ -237,10 +231,10 @@ describe("Cooldown suppression during opponent prompt", () => {
       timer._testTick(cooldownSeconds);
     }
 
-    // Step 3: Verify no snackbar shown (suppressed due to battle state)
+    // Step 3: Verify snackbar shown
     const showMessageCalls = showSnackbarSpy.mock.calls.map((call) => call[0]?.message);
     const updateMessageCalls = updateSnackbarSpy.mock.calls.map((call) => call[1]);
-    expect(showMessageCalls).not.toContainEqual(expect.stringMatching(/Next round in/));
+    expect(showMessageCalls).toContainEqual(expect.stringMatching(/Next round in/));
     expect(updateMessageCalls).not.toContainEqual(expect.stringMatching(/Next round in/));
 
     // Step 4: Change to cooldown phase
