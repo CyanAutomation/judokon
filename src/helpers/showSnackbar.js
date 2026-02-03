@@ -51,7 +51,8 @@ export function showSnackbar(message) {
       : {
           text: message?.text ?? message?.message ?? "",
           type: message?.type,
-          priority: message?.priority
+          priority: message?.priority,
+          ttl: message?.ttl
         };
   lastSnackbarController = snackbarManager.show({
     ...payload,
