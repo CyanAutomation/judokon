@@ -19,7 +19,7 @@ describe("showSnackbar", () => {
     target.dispatchEvent(event);
   };
 
-  it("stacks up to 2 snackbars concurrently (new behavior)", () => {
+  it("stacks multiple snackbars concurrently", () => {
     const container = document.getElementById("snackbar-container");
 
     showSnackbar("First");
@@ -49,7 +49,7 @@ describe("showSnackbar", () => {
     expect(second.classList.contains("snackbar-stale")).toBe(false);
   });
 
-  it("dismisses oldest message when 3rd message arrives", () => {
+  it("keeps earlier messages when new ones arrive", () => {
     const container = document.getElementById("snackbar-container");
 
     showSnackbar("First");
@@ -59,18 +59,18 @@ describe("showSnackbar", () => {
     const firstEl = container.children[0];
     const secondEl = container.children[1];
 
-    // Add 3rd message - should dismiss oldest (First)
+    // Add 3rd message - should keep earlier messages
     showSnackbar("Third");
-    expect(container.children).toHaveLength(2);
+    expect(container.children).toHaveLength(3);
 
-    // First should be removed
-    expect(container.contains(firstEl)).toBe(false);
+    // First should still be present
+    expect(container.contains(firstEl)).toBe(true);
 
-    // Second should now be top, Third should be bottom
+    // Second should still be visible and stale
     expect(secondEl.classList.contains("snackbar-top")).toBe(true);
     expect(secondEl.classList.contains("snackbar-stale")).toBe(true);
 
-    const thirdEl = container.children[1];
+    const thirdEl = container.children[2];
     expect(thirdEl.textContent).toBe("Third");
     expect(thirdEl.classList.contains("snackbar-bottom")).toBe(true);
   });
@@ -146,16 +146,19 @@ describe("showSnackbar", () => {
     showSnackbar("Message 4");
     showSnackbar("Message 5");
 
-    // Should only have 2 visible (max limit)
-    expect(container.children).toHaveLength(2);
+    // Should keep all messages (no internal suppression)
+    expect(container.children).toHaveLength(5);
 
-    // Last 2 messages should be visible
+    // Last message should be bottom
     const messages = Array.from(container.children).map((el) => el.textContent);
-    expect(messages).toEqual(["Message 4", "Message 5"]);
+    expect(messages).toEqual(["Message 1", "Message 2", "Message 3", "Message 4", "Message 5"]);
 
-    // Top message should have stale class
+    // Older messages should have stale class
     expect(container.children[0].classList.contains("snackbar-stale")).toBe(true);
+    expect(container.children[1].classList.contains("snackbar-stale")).toBe(true);
+    expect(container.children[2].classList.contains("snackbar-stale")).toBe(true);
+    expect(container.children[3].classList.contains("snackbar-stale")).toBe(true);
     // Bottom message should not
-    expect(container.children[1].classList.contains("snackbar-stale")).toBe(false);
+    expect(container.children[4].classList.contains("snackbar-stale")).toBe(false);
   });
 });

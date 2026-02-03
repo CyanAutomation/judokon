@@ -361,10 +361,10 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 
         // Show opponent choosing message immediately; reveal timing happens in round resolution.
         currentOpponentSnackbarController = snackbarManager.show({
-          message: opponentPromptMessage,
+          text: opponentPromptMessage,
           priority: SnackbarPriority.HIGH,
           minDuration,
-          autoDismiss: 0, // Don't auto-dismiss, will be controlled by battle flow
+          ttl: 0, // Don't auto-dismiss, will be controlled by battle flow
           onShow: () => {
             // Mark timestamp when snackbar actually appears
             try {
