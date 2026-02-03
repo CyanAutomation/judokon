@@ -17,12 +17,13 @@ export function bindRoundFlowController() {
   });
 
   onBattleEvent("roundResolved", async (event) => {
-    await handleRoundResolvedEvent(event);
     const { result, stat, playerVal, opponentVal } = event?.detail || {};
-    if (!result) return;
-    try {
-      showRoundOutcome(result.message || "", stat, playerVal, opponentVal);
-    } catch {}
+    if (result) {
+      try {
+        showRoundOutcome(result.message || "", stat, playerVal, opponentVal);
+      } catch {}
+    }
+    await handleRoundResolvedEvent(event);
   });
 }
 
