@@ -71,12 +71,7 @@ function shouldProcessKey(key) {
       activeElement.contentEditable === "true")
   ) {
     const battleState = document.body?.dataset?.battleState || "";
-    if (
-      battleState === "roundSelect" &&
-      key >= "0" &&
-      key <= "9" &&
-      isEnabled("statHotkeys")
-    ) {
+    if (battleState === "roundSelect" && key >= "0" && key <= "9" && isEnabled("statHotkeys")) {
       return true;
     }
     return false;

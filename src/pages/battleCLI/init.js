@@ -1189,10 +1189,7 @@ function pauseTimers() {
 function resumeTimers() {
   if (!hasDocument) return;
   console.log("[TIMER] resumeTimers called");
-  if (
-    document.body?.dataset?.battleState === "roundSelect" &&
-    pausedSelectionRemaining
-  ) {
+  if (document.body?.dataset?.battleState === "roundSelect" && pausedSelectionRemaining) {
     startSelectionCountdown(pausedSelectionRemaining);
   }
   if (document.body?.dataset?.battleState === "roundWait" && pausedCooldownRemaining) {

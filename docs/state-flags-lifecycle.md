@@ -45,13 +45,13 @@ The classic battle system uses multiple boolean flags to track selection state, 
 
 #### Ownership Contract
 
-| State           | Owner             | Expected Value            | Transition Responsibility       |
-| --------------- | ----------------- | ------------------------- | ------------------------------- |
-| `roundSelect`   | State handler     | `false` (reset on entry)  | Handler sets to `false`         |
-| `roundResolve`  | Selection handler | `true` (after selection)  | User interaction sets to `true` |
-| `roundDisplay`  | Round manager     | Preserved for diagnostics | Not modified                    |
-| `roundWait`     | Round manager     | Preserved for diagnostics | Not modified                    |
-| `interruptRound`| Cleanup utility   | `false` (cleanup)         | Cleanup sets to `false`         |
+| State            | Owner             | Expected Value            | Transition Responsibility       |
+| ---------------- | ----------------- | ------------------------- | ------------------------------- |
+| `roundSelect`    | State handler     | `false` (reset on entry)  | Handler sets to `false`         |
+| `roundResolve`   | Selection handler | `true` (after selection)  | User interaction sets to `true` |
+| `roundDisplay`   | Round manager     | Preserved for diagnostics | Not modified                    |
+| `roundWait`      | Round manager     | Preserved for diagnostics | Not modified                    |
+| `interruptRound` | Cleanup utility   | `false` (cleanup)         | Cleanup sets to `false`         |
 
 #### Common Issues
 

@@ -120,10 +120,7 @@ test.describe("Battle state progress list", () => {
       // Initial state should be tracked on the list and a single item marked active.
       await waitForBattleState(page, "roundSelect", { timeout: 7_500 });
 
-      await expect(progress).toHaveAttribute(
-        "data-feature-battle-state-active",
-        "roundSelect"
-      );
+      await expect(progress).toHaveAttribute("data-feature-battle-state-active", "roundSelect");
       await expect(progress).toHaveAttribute(
         "data-feature-battle-state-active-original",
         "roundSelect"

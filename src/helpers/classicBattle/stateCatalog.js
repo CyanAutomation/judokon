@@ -89,11 +89,7 @@ export const display = {
  */
 export function buildStateCatalog({ includeRoundModification = false } = {}) {
   const withOverlay = includeRoundModification
-    ? [
-        ...order.slice(0, order.indexOf("interruptMatch")),
-        "roundModification",
-        "interruptMatch"
-      ]
+    ? [...order.slice(0, order.indexOf("interruptMatch")), "roundModification", "interruptMatch"]
     : order;
   const overlayIds = withOverlay.reduce((acc, name, idx) => {
     acc[name] = (idx + 1) * 10;
