@@ -333,10 +333,15 @@ function resolveRoundResolveTransition(eventName) {
 }
 
 function resolveRoundDisplayTransition(eventName, context) {
-  if (eventName === "matchPointReached") {
-    return isWinConditionMet(context) ? "matchDecision" : null;
+  if (eventName === "matchPointReached") return "matchEvaluate";
+  if (eventName === "continue") return "matchEvaluate";
+  return null;
+}
+
+function resolveMatchEvaluateTransition(eventName, context) {
+  if (eventName === "evaluateMatch") {
+    return isWinConditionMet(context) ? "matchDecision" : "roundWait";
   }
-  if (eventName === "continue") return "roundWait";
   return null;
 }
 
@@ -380,6 +385,8 @@ function resolveClassicBattleTransition(currentState, eventName, context, guardO
       return resolveRoundResolveTransition(eventName);
     case "roundDisplay":
       return resolveRoundDisplayTransition(eventName, context);
+    case "matchEvaluate":
+      return resolveMatchEvaluateTransition(eventName, context);
     case "matchDecision":
       return resolveMatchDecisionTransition(eventName);
     case "matchOver":
