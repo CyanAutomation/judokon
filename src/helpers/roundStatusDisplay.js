@@ -47,8 +47,7 @@ function ensureLabelValueSpacing(container, labelSpan, valueSpan) {
     if (
       separator &&
       separator.nodeType === 3 &&
-      separator.parentNode === container &&
-      container.contains(separator)
+      separator.parentNode === container
     ) {
       container.removeChild(separator);
     }
