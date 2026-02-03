@@ -8,6 +8,7 @@ import { showSnackbar } from "../showSnackbar.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { realScheduler } from "../scheduler.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
+import { attachCountdownCoordinator } from "./countdownCoordinator.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { setupFallbackTimer } from "./setupFallbackTimer.js";
 import { createResourceRegistry, createEnhancedCleanup, eventCleanup } from "./enhancedCleanup.js";
@@ -888,7 +889,12 @@ export function instantiateCooldownTimer(
       promptBudget = null;
     }
   }
-  renderer(timer, cooldownSeconds, rendererOptions);
+  const coordinator = attachCountdownCoordinator({
+    timer,
+    duration: cooldownSeconds,
+    renderer,
+    rendererOptions
+  });
   controls.timer = timer;
   // Add getClassicBattleMachine to controls so finalizeReadyControls can access it
   if (typeof expirationOptions.getClassicBattleMachine === "function") {
@@ -914,7 +920,8 @@ export function instantiateCooldownTimer(
       shouldWait: shouldWaitForPrompt,
       budget: promptBudget,
       pollIntervalMs: promptPollInterval
-    }
+    },
+    detachCountdown: coordinator?.detach || null
   };
   timer.on("tick", (remaining) => {
     safeRound(

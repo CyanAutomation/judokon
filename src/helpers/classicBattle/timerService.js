@@ -11,6 +11,10 @@ import { skipRoundCooldownIfEnabled } from "./uiHelpers.js";
 import { logTimerOperation, createComponentLogger } from "./debugLogger.js";
 import { resetSelectionFinalized } from "./selectionState.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
+import {
+  attachCountdownCoordinator,
+  emitCountdownFinished
+} from "./countdownCoordinator.js";
 
 const timerLogger = createComponentLogger("TimerService");
 
@@ -37,15 +41,17 @@ let cooldownWarningTimeoutId = null;
 // Prevent re-entrant Next clicks from advancing multiple rounds at once.
 let nextClickInFlight = false;
 
-/** @type {{ timer: ReturnType<typeof createRoundTimer>, onExpired: Function }|null} */
+/** @type {{ timer: ReturnType<typeof createRoundTimer>, detach: (() => void) | null }|null} */
 let activeCountdown = null;
 
 function clearActiveCountdown() {
   if (!activeCountdown) return;
-  const { timer, onExpired } = activeCountdown;
-  try {
-    timer.off("expired", onExpired);
-  } catch {}
+  const { timer, detach } = activeCountdown;
+  if (typeof detach === "function") {
+    try {
+      detach();
+    } catch {}
+  }
   try {
     timer.stop();
   } catch {}
@@ -55,7 +61,6 @@ function clearActiveCountdown() {
 function handleCountdownExpired() {
   setSkipHandler(null);
   activeCountdown = null;
-  emitBattleEvent("countdownFinished");
   emitBattleEvent("round.start");
 }
 
@@ -125,17 +130,20 @@ async function startCountdownSequence(duration, onFinished) {
   clearActiveCountdown();
 
   const timer = createRoundTimer();
-  const onExpired = () => {
-    handleCountdownExpired();
-    if (typeof onFinished === "function") {
-      onFinished();
-    }
-  };
-  activeCountdown = { timer, onExpired };
-
   const { shouldWaitForPrompt, promptBudget, rendererOptions } = resolveOpponentPromptWait();
-  attachCooldownRenderer(timer, duration, rendererOptions);
-  timer.on("expired", onExpired);
+  const coordinator = attachCountdownCoordinator({
+    timer,
+    duration,
+    renderer: attachCooldownRenderer,
+    rendererOptions,
+    onFinished: () => {
+      handleCountdownExpired();
+      if (typeof onFinished === "function") {
+        onFinished();
+      }
+    }
+  });
+  activeCountdown = { timer, detach: coordinator.detach };
 
   const countdownSnapshot = activeCountdown;
   if (!activeCountdown) {
@@ -157,6 +165,7 @@ async function handleCountdownStartEvent(e) {
   const skipEnabled =
     skipRoundCooldownIfEnabled?.({
       onSkip: () => {
+        emitCountdownFinished();
         handleCountdownExpired();
         skipHandled = true;
       }

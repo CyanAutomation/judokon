@@ -1,6 +1,5 @@
 import snackbarManager, { SnackbarPriority } from "./SnackbarManager.js";
 import * as scoreboard from "./setupScoreboard.js";
-import { emitBattleEvent } from "./classicBattle/battleEvents.js";
 import {
   getOpponentPromptTimestamp,
   getOpponentPromptMinDuration,
@@ -199,41 +198,6 @@ function computeRemainingPromptDelayMs(nowFn) {
     return Math.max(0, minDuration - elapsed);
   } catch {}
   return 0;
-}
-
-const SUPPRESSED_BATTLE_STATES = new Set(["roundSelect", "roundResolve"]);
-
-function isSelectionOrDecisionPhase() {
-  try {
-    const battleState = document?.body?.dataset?.battleState;
-    if (typeof battleState !== "string") {
-      return false;
-    }
-    return SUPPRESSED_BATTLE_STATES.has(battleState);
-  } catch {}
-  return false;
-}
-
-function isOpponentPromptWindowActive(nowFn = defaultNow) {
-  try {
-    if (typeof isOpponentPromptReady === "function" && isOpponentPromptReady() !== true) {
-      return false;
-    }
-    const promptTimestamp = Number(getOpponentPromptTimestamp());
-    if (!Number.isFinite(promptTimestamp) || promptTimestamp <= 0) {
-      return false;
-    }
-    const minDuration = Number(getOpponentPromptMinDuration());
-    if (!Number.isFinite(minDuration) || minDuration <= 0) {
-      return false;
-    }
-    const elapsed = nowFn() - promptTimestamp;
-    if (!Number.isFinite(elapsed)) {
-      return false;
-    }
-    return elapsed < minDuration;
-  } catch {}
-  return false;
 }
 
 /**
@@ -718,42 +682,29 @@ function createTickProcessors(rendererState) {
     const clamped = normalizeRemaining(remaining);
     const text = t("ui.nextRoundIn", { seconds: clamped });
 
-    // Suppress cooldown snackbar during critical UX moments to prevent message conflicts:
-    // 1. During stat selection phase (roundSelect) - user is actively choosing
-    // 2. During round resolve phase (roundResolve) - round outcome is being displayed
-    // 3. During opponent prompt window (first 600ms) - opponent message has priority
-    // This ensures users see contextually appropriate messages without UI flicker.
-    const shouldSuppressSnackbar =
-      isSelectionOrDecisionPhase() || isOpponentPromptWindowActive(rendererState.now);
-
-    if (!shouldSuppressSnackbar) {
-      // Use SnackbarManager with HIGH priority to replace "Opponent is choosing" immediately
-      // The countdown message should take precedence once the round resolution phase begins
-      if (!rendererState.rendered) {
-        // Dismiss any existing opponent/picked messages before showing countdown
-        (async () => {
-          try {
-            const { dismissOpponentSnackbar } = await import("./classicBattle/uiEventHandlers.js");
-            if (typeof dismissOpponentSnackbar === "function") {
-              await dismissOpponentSnackbar();
-            }
-          } catch {
-            // Non-critical - countdown will still show
+    if (!rendererState.rendered) {
+      // Dismiss any existing opponent/picked messages before showing countdown
+      (async () => {
+        try {
+          const { dismissOpponentSnackbar } = await import("./classicBattle/uiEventHandlers.js");
+          if (typeof dismissOpponentSnackbar === "function") {
+            await dismissOpponentSnackbar();
           }
-        })();
+        } catch {
+          // Non-critical - countdown will still show
+        }
+      })();
 
-        // Show static countdown message (no per-second updates)
-        currentCountdownSnackbarController = snackbarManager.show({
-          text,
-          priority: SnackbarPriority.HIGH, // HIGH priority ensures it replaces opponent message
-          minDuration: 0, // No minimum duration
-          ttl: 0 // Manual control - will be dismissed when round starts
-        });
-        rendererState.countdownController = currentCountdownSnackbarController;
-        rendererState.rendered = true;
-        rendererState.lastRendered = clamped;
-      }
-      // No updates after initial render - keep static message throughout cooldown
+      // Show static countdown message (no per-second updates)
+      currentCountdownSnackbarController = snackbarManager.show({
+        text,
+        priority: SnackbarPriority.HIGH, // HIGH priority ensures it replaces opponent message
+        minDuration: 0, // No minimum duration
+        ttl: 0 // Manual control - will be dismissed when round starts
+      });
+      rendererState.countdownController = currentCountdownSnackbarController;
+      rendererState.rendered = true;
+      rendererState.lastRendered = clamped;
     }
 
     // Always update lastRendered to maintain correct state tracking
@@ -775,18 +726,12 @@ function createTickProcessors(rendererState) {
     ) {
       if (!suppressEvents) {
         rendererState.started = true;
-        emitBattleEvent("nextRoundCountdownStarted");
-        emitBattleEvent("nextRoundCountdownTick", { remaining: normalized });
       }
       return;
     }
     const clamped = render(normalized);
     if (!rendererState.started && !suppressEvents) {
       rendererState.started = true;
-      emitBattleEvent("nextRoundCountdownStarted");
-    }
-    if (!suppressEvents) {
-      emitBattleEvent("nextRoundCountdownTick", { remaining: clamped });
     }
   };
 

@@ -5,6 +5,7 @@ import { handleStatSelectionTimeout } from "./autoSelectHandlers.js";
 
 import * as scoreboard from "../setupScoreboard.js";
 import { attachCooldownRenderer, dismissCountdownSnackbar } from "../CooldownRenderer.js";
+import { attachCountdownCoordinator } from "./countdownCoordinator.js";
 import { handleStatSelection } from "./selectionHandler.js";
 import { getCardStatValue } from "./cardStatUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
@@ -160,25 +161,20 @@ export async function startRoundCooldown(resolved, config = {}) {
   const seconds = config?.seconds;
   const rendererOptions = normalizeRendererOptions(config?.rendererOptions);
 
-  attachRendererSafely(renderer, timer, seconds, rendererOptions);
-
-  // When the countdown expires in non-orchestrated mode, emit canonical
-  // completion signals so the next round starts automatically.
-  try {
-    if (typeof timer.on === "function") {
-      timer.on("expired", () => {
-        try {
-          emitBattleEvent("control.countdown.completed");
-        } catch {}
-        try {
-          emitBattleEvent("countdownFinished");
-        } catch {}
-        try {
-          emitBattleEvent("round.start", { source: "auto", via: "roundUI.startRoundCooldown" });
-        } catch {}
-      });
+  attachCountdownCoordinator({
+    timer,
+    duration: seconds,
+    renderer,
+    rendererOptions,
+    onFinished: () => {
+      try {
+        emitBattleEvent("control.countdown.completed");
+      } catch {}
+      try {
+        emitBattleEvent("round.start", { source: "auto", via: "roundUI.startRoundCooldown" });
+      } catch {}
     }
-  } catch {}
+  });
 
   if (config?.delayOpponentMessage) {
     const waitFn =
@@ -238,15 +234,6 @@ function extractTimer(resolved) {
 function selectRenderer(resolved) {
   const renderer = resolved?.renderer;
   return typeof renderer === "function" ? renderer : null;
-}
-
-function attachRendererSafely(renderer, timer, seconds, options) {
-  if (typeof renderer !== "function") {
-    return;
-  }
-  try {
-    renderer(timer, seconds, options);
-  } catch {}
 }
 
 function shouldWaitForOpponentPrompt(getTimestamp) {
