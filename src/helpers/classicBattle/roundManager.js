@@ -6,8 +6,8 @@ import { logSelectionMutation, shouldClearSelectionForNextRound } from "./select
 
 // Utilities
 import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
-import { resetSkipState, setSkipHandler } from "./skipHandler.js";
-import { emitBattleEvent } from "./battleEvents.js";
+import { resetSkipState, setSkipHandler, skipCurrentPhase } from "./skipHandler.js";
+import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { roundState } from "./roundState.js";
 import { readDebugState, exposeDebugState } from "./debugHooks.js";
 import { writeScoreDisplay, syncScoreboardDisplay } from "./scoreDisplay.js";
@@ -245,7 +245,7 @@ export async function handleReplay(store) {
  * 1. Clear selection state on the store to prepare for a new choice.
  * 2. Await `drawCards()` to populate round card data and persist the active player judoka.
  * 3. Derive the upcoming round number from the battle engine, falling back to one when unavailable.
- * 4. Invoke the optional `onRoundStart` callback and emit the `roundStarted` battle event with metadata.
+ * 4. Invoke the optional `onRoundStart` callback for any additional work.
  * 5. Store any provided scheduler reference for downstream helpers and return the drawn card payload with the round number.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store to mutate with round data.
@@ -383,13 +383,6 @@ export async function startRound(store, onRoundStart) {
         suppressInProduction: true
       });
     }
-    try {
-      if (typeof console !== "undefined" && !process?.env?.VITEST)
-        console.debug(`classicBattle.trace emit:roundStarted t=${Date.now()} round=${roundNumber}`);
-    } catch {
-      /* ignore logging errors to preserve round start flow */
-    }
-    emitBattleEvent("roundStarted", { store, roundNumber });
     // Synchronise centralized store
     try {
       try {
@@ -475,6 +468,16 @@ export function startCooldown(_store, scheduler, overrides = {}) {
 
   // Track these controls as active for cleanup on next cooldown
   activeCooldownControls = controls;
+  const handleSkipCooldown = () => {
+    skipCurrentPhase();
+  };
+  onBattleEvent("skipCooldown", handleSkipCooldown);
+  const detachSkipCooldown = () => offBattleEvent("skipCooldown", handleSkipCooldown);
+  try {
+    controls.ready?.then(detachSkipCooldown).catch(detachSkipCooldown);
+  } catch {
+    detachSkipCooldown();
+  }
   const context = detectOrchestratorContext(() => {
     if (typeof overrides.isOrchestrated === "function") {
       return overrides.isOrchestrated();

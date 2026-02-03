@@ -1,5 +1,5 @@
 import { getDefaultTimer } from "../timerUtils.js";
-import { startRound as engineStartRound, getRoundsPlayed } from "../BattleEngine.js";
+import { startRound as engineStartRound } from "../BattleEngine.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
@@ -28,12 +28,8 @@ import {
 } from "./opponentPromptWaiter.js";
 import { isOpponentPromptReady } from "./opponentPromptTracker.js";
 import { getNextRoundControls } from "./roundManager.js";
-import {
-  hasReadyBeenDispatchedForCurrentCooldown,
-  setReadyDispatchedForCurrentCooldown
-} from "./roundReadyState.js";
 import { guard } from "./guard.js";
-import { safeGetSnapshot, isNextReady, resetReadiness } from "./timerUtils.js";
+import { safeGetSnapshot } from "./timerUtils.js";
 import { forceAutoSelectAndDispatch } from "./autoSelectHandlers.js";
 
 // Track timeout for cooldown warning to avoid duplicates.
@@ -214,424 +210,27 @@ export function bindCountdownEventHandlersOnce() {
 }
 
 /**
- * Get the round counter element from the DOM root.
- *
- * @pseudocode
- * 1. Try to get element by ID using getElementById if available.
- * 2. Fall back to querySelector if getElementById is not available.
- * 3. Return the element or null if not found or on error.
- *
- * @param {Document|Element} root - DOM root to search in
- * @returns {Element|null} Round counter element or null
- */
-function getRoundCounterElement(root) {
-  try {
-    return root.getElementById
-      ? root.getElementById("round-counter")
-      : root.querySelector("#round-counter");
-  } catch {
-    return null;
-  }
-}
-
-function pushRTrace(obj) {
-  try {
-    if (typeof globalThis === "undefined") return;
-    if (!globalThis.__RTRACE_LOGS) globalThis.__RTRACE_LOGS = [];
-    globalThis.__RTRACE_LOGS.push(obj);
-  } catch {}
-}
-
-/**
- * Read the currently displayed round number from the DOM.
- *
- * @pseudocode
- * 1. Get the round counter element from the root.
- * 2. Extract round number from element text using regex.
- * 3. Parse the extracted number and validate it's finite.
- * 4. Return the round number or null if not found/invalid.
- *
- * @param {Document|Element} root - DOM root to search in
- * @returns {number|null} Current round number or null
- */
-function readDisplayedRound(root) {
-  const el = getRoundCounterElement(root);
-  if (!el) return null;
-  const match = /Round\s*(\d+)/i.exec(String(el.textContent || ""));
-  if (!match) return null;
-  const value = Number(match[1]);
-  return Number.isFinite(value) ? value : null;
-}
-
-/**
- * Read the next round number from the battle engine when available.
- *
- * @pseudocode
- * 1. Call `getRoundsPlayed()` and ensure it returns a finite value.
- * 2. Return the next round (`played + 1`) when valid.
- * 3. Fall back to `null` when unavailable or on error.
- *
- * @returns {number|null}
- */
-function readEngineNextRound() {
-  try {
-    const played = Number(getRoundsPlayed());
-    if (!Number.isFinite(played)) {
-      return null;
-    }
-    const nextRound = played + 1;
-    return Number.isFinite(nextRound) && nextRound >= 1 ? nextRound : null;
-  } catch (error) {
-    timerLogger.debug("[round] failed to read getRoundsPlayed", error);
-    return null;
-  }
-}
-
-/**
- * Write the round number to the round counter element.
- *
- * @pseudocode
- * 1. Get the round counter element from the root.
- * 2. Validate that element exists and value is a finite number.
- * 3. Update element text content with formatted round number.
- *
- * @param {Document|Element} root - DOM root to search in
- * @param {number} value - Round number to display
- */
-function writeRoundCounter(root, value) {
-  const el = getRoundCounterElement(root);
-  if (!el || !Number.isFinite(value)) return;
-  try {
-    const highest = Number((globalThis.__highestDisplayedRound ?? el.dataset?.highestRound) || 0);
-    const priorContext = globalThis.__previousRoundCounterContext;
-    if (priorContext === "regular" && Number.isFinite(highest) && highest >= 1 && value < highest) {
-      return;
-    }
-  } catch {}
-  el.textContent = `Round ${value}`;
-}
-
-/**
- * Lightweight accessors for the diagnostic round-tracking globals.
- *
- * @summary Centralizes reads/writes for `__highestDisplayedRound` and context flags
- * to make dependencies explicit and easier to reason about.
- */
-const roundTrackingState = {
-  /**
-   * @param {Document|Element} root
-   * @returns {{counterEl: Element|null, highest: number|null, lastContext: string, previousContext: string}}
-   */
-  read(root) {
-    const counterEl = getRoundCounterElement(root);
-
-    const globalHighest = Number(globalThis.__highestDisplayedRound ?? NaN);
-    const datasetHighest = Number(counterEl?.dataset?.highestRound ?? NaN);
-
-    let highest = null;
-    if (Number.isFinite(globalHighest) && globalHighest >= 1) {
-      highest = globalHighest;
-    } else if (Number.isFinite(datasetHighest) && datasetHighest >= 1) {
-      highest = datasetHighest;
-    }
-
-    const lastContext =
-      typeof globalThis.__lastRoundCounterContext === "string"
-        ? globalThis.__lastRoundCounterContext
-        : "";
-    const previousContext =
-      typeof globalThis.__previousRoundCounterContext === "string"
-        ? globalThis.__previousRoundCounterContext
-        : "";
-
-    return {
-      counterEl,
-      highest,
-      lastContext,
-      previousContext
-    };
-  },
-  /**
-   * @param {{counterEl: Element|null, highest?: number|null, lastContext?: string|null, previousContext?: string|null}} state
-   * @returns {void}
-   */
-  write({ counterEl, highest, lastContext, previousContext }) {
-    if (Number.isFinite(highest) && highest >= 1) {
-      try {
-        if (typeof globalThis !== "undefined" && globalThis.__DEBUG_ROUND_TRACKING) {
-          try {
-            console.debug("[RTRACE] roundTrackingState.write -> highest", {
-              highest,
-              counterDataset: counterEl?.dataset?.highestRound,
-              stack: new Error().stack
-            });
-          } catch {}
-        }
-        globalThis.__highestDisplayedRound = highest;
-      } catch {}
-      if (counterEl && counterEl.dataset) {
-        const prior = Number(counterEl.dataset.highestRound || 0);
-        const stable = Number.isFinite(prior) && prior >= 1 ? Math.max(prior, highest) : highest;
-        counterEl.dataset.highestRound = String(stable);
-      }
-    }
-
-    if (lastContext !== undefined) {
-      globalThis.__lastRoundCounterContext = lastContext;
-    }
-    if (previousContext !== undefined) {
-      globalThis.__previousRoundCounterContext = previousContext;
-    }
-  }
-};
-
-/**
- * Determine whether the engine has already advanced the round.
- *
- * @pseudocode
- * 1. Exit early when no advance context has been recorded or highest is unset.
- * 2. Treat a recorded next round or matching prior advance as authoritative.
- *
- * @param {{
- *   contextReportedAdvance: boolean,
- *   recordedNextRound: boolean,
- *   priorAdvanceMatchesDisplay: boolean,
- *   hasRecordedHighest: boolean
- * }} params - Diagnostic flags derived from round tracking state.
- * @returns {boolean}
- */
-function determineEngineAdvanceState({
-  contextReportedAdvance,
-  recordedNextRound,
-  priorAdvanceMatchesDisplay,
-  hasRecordedHighest
-}) {
-  if (!contextReportedAdvance || !hasRecordedHighest) {
-    return false;
-  }
-
-  return recordedNextRound || priorAdvanceMatchesDisplay;
-}
-
-/**
- * Determine whether the manual round counter fallback should render an update.
- *
- * @pseudocode
- * 1. Flag lagging contexts by checking for non-empty, non-regular context strings.
- * 2. Detect when the recorded highest round exceeds the displayed counter.
- * 3. Return true if either condition suggests the UI is behind the engine state.
- *
- * @param {{
- *   lastContext: string | null | undefined,
- *   hasRecordedHighest: boolean,
- *   recordedHighest: number | null | undefined,
- *   displayedRoundBefore: number
- * }} params - Signals describing the round counter tracking state.
- * @returns {boolean}
- */
-function shouldApplyRoundCounterFallback({
-  lastContext,
-  hasRecordedHighest,
-  recordedHighest,
-  displayedRoundBefore
-}) {
-  const hasLaggingContext =
-    typeof lastContext === "string" && lastContext !== "" && lastContext !== "regular";
-  const displayBehindRecordedHighest =
-    hasRecordedHighest &&
-    typeof recordedHighest === "number" &&
-    recordedHighest > displayedRoundBefore;
-
-  return hasLaggingContext || displayBehindRecordedHighest;
-}
-
-/**
- * Transition events required when advancing from states other than `roundWait`.
- *
- * `advanceWhenReady` consults this table to dispatch an interrupt that moves the
- * state machine into `roundWait` before emitting `ready`.
- *
- * @type {Record<string, {event: string, payload: {reason: string}}>} state → transition mapping.
- */
-const ADVANCE_TRANSITIONS = {
-  roundSelect: { event: "interrupt", payload: { reason: "advanceNextFromNonCooldown" } }
-};
-
-// Skip handler utilities moved to skipHandler.js
-
-/**
- * @summary Dispatch the cooldown "ready" event at most once per cycle.
- *
- * @pseudocode
- * 1. If the current cooldown already dispatched "ready", resolve the promise and exit.
- * 2. Otherwise mark the readiness flag, dispatch the event, and resolve the promise.
- * 3. Return whether the call performed a new dispatch for callers needing flow control.
- *
- * @param {(() => void)|null} resolveReady - Resolver passed from cooldown controls.
- * @returns {Promise<boolean>} True when the helper dispatched "ready".
- */
-async function dispatchReadyOnce(resolveReady) {
-  const shouldResolve = typeof resolveReady === "function";
-  if (hasReadyBeenDispatchedForCurrentCooldown()) {
-    if (shouldResolve) {
-      guard(() => resolveReady());
-    }
-    return false;
-  }
-
-  setReadyDispatchedForCurrentCooldown(true);
-  let dispatchSucceeded = true;
-  /** @type {unknown} */
-  let dispatchError = null;
-
-  try {
-    const result = await dispatchBattleEvent("ready");
-    if (result === false) {
-      dispatchSucceeded = false;
-    }
-  } catch (error) {
-    dispatchSucceeded = false;
-    dispatchError = error;
-  }
-
-  if (!dispatchSucceeded) {
-    setReadyDispatchedForCurrentCooldown(false);
-  }
-  if (shouldResolve) {
-    guard(() => resolveReady());
-  }
-
-  if (dispatchError !== null) {
-    throw dispatchError;
-  }
-
-  return dispatchSucceeded;
-}
-
-/**
- * Advance to the next round when the cooldown is ready.
- *
- * @pseudocode
- * 1. Disable the next button and remove ready state.
- * 2. Get current state snapshot to determine transition needs.
- * 3. If not in cooldown state, dispatch transition event first.
- * 4. Dispatch ready event to advance the round.
- * 5. Call resolveReady callback if provided.
- * 6. Clear the skip handler.
- *
- * @param {HTMLButtonElement} btn - Next button element
- * @param {Function} resolveReady - Callback to resolve ready state
- * @returns {Promise<void>}
- */
-export async function advanceWhenReady(btn, resolveReady) {
-  const dataset = btn.dataset || (btn.dataset = {});
-  const wasDisabled = btn.disabled === true;
-  const hadNextReady = Object.prototype.hasOwnProperty.call(dataset, "nextReady");
-  const previousNextReady = dataset.nextReady;
-  btn.disabled = true;
-  delete dataset.nextReady;
-  const { state } = safeGetSnapshot();
-  const t = state && state !== "roundWait" ? ADVANCE_TRANSITIONS[state] : null;
-  if (t) {
-    try {
-      await dispatchBattleEvent(t.event, t.payload);
-    } catch {}
-  }
-  let dispatched = false;
-  try {
-    dispatched = await dispatchReadyOnce(resolveReady);
-  } catch (error) {
-    btn.disabled = wasDisabled;
-    if (hadNextReady) {
-      dataset.nextReady = previousNextReady;
-    } else {
-      delete dataset.nextReady;
-    }
-    throw error;
-  }
-  // If manual click from cooldown and ready wasn't dispatched due to state tracking,
-  // force dispatch ready to unblock the next round
-  if (!dispatched && state === "roundWait") {
-    try {
-      await dispatchBattleEvent("ready");
-      dispatched = true;
-    } catch {
-      // Silently ignore dispatch errors
-    }
-  }
-  if (!dispatched) {
-    btn.disabled = wasDisabled;
-    if (hadNextReady) {
-      dataset.nextReady = previousNextReady;
-    } else {
-      delete dataset.nextReady;
-    }
-    return;
-  }
-  setSkipHandler(null);
-  // Leave the button disabled; the cooldown flow will re-enable it as needed.
-}
-
-/**
- * Cancel an active cooldown timer or advance immediately when already in cooldown.
- *
- * @pseudocode
- * 1. If a `timer` object is provided:
- *    a. Call `timer.stop()` to cancel the countdown.
- *    b. Dispatch `ready`, call `resolveReady`, and clear the skip handler.
- *    c. Return early.
- * 2. Otherwise, if the state machine is in `cooldown` (or unknown in tests),
- *    dispatch `ready`, call `resolveReady`, and clear the skip handler.
- *
- * @param {HTMLButtonElement} _btn - Next button element (unused but provided by callers).
- * @param {{stop: () => void}|null} timer - Active cooldown timer controls.
- * @param {(() => void)|null} resolveReady - Resolver for the ready promise.
- * @returns {Promise<void>}
- */
-export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
-  if (timer) {
-    timer.stop();
-    // Clear existing handler before advancing so the next round's handler
-    // installed during `ready` remains intact.
-    setSkipHandler(null);
-    await dispatchReadyOnce(resolveReady);
-    return;
-  }
-  // No active timer controls: if we're in cooldown (or state is unknown in
-  // this module instance during tests), advance immediately.
-  const { state } = safeGetSnapshot();
-  if (state === "roundWait" || !state) {
-    setSkipHandler(null);
-    await dispatchReadyOnce(resolveReady);
-  }
-}
-
-/**
  * Click handler for the Next button.
  *
- * Unconditionally skips the inter-round cooldown by emitting the legacy
- * `countdownFinished` event (and the newer `round.start` signal), then
- * delegates to `advanceWhenReady` when the button is marked ready or to
- * `cancelTimerOrAdvance` to stop an active timer / advance when in cooldown.
+ * Emits a single `skipCooldown` intent to let the engine decide when to
+ * advance the round.
  *
  * @pseudocode
- * 1. Ask `skipRoundCooldownIfEnabled` to execute its fast path when available.
- * 2. Emit `countdownFinished` via the battle event bus.
- * 3. Read `controls` (timer and resolveReady) from `getNextRoundControls()` when not supplied.
- * 4. If the Next button element has `data-next-ready="true"`, call `advanceWhenReady`.
- * 5. Otherwise call `cancelTimerOrAdvance` to either stop an active timer or dispatch `ready`.
+ * 1. Ignore clicks when the button is disabled or another click is in-flight.
+ * 2. If cooldown controls are available, emit `skipCooldown` on the battle event bus.
+ * 3. Always reset selection finalization state on exit.
  *
  * @param {MouseEvent} _evt - Click event.
  * @param {{timer: {stop: () => void} | null, resolveReady: (() => void) | null}} [controls=getNextRoundControls()]
  * - Timer controls returned from `startCooldown`.
  * @returns {Promise<void>}
  */
-export async function onNextButtonClick(_evt, controls = getNextRoundControls(), options = {}) {
+export async function onNextButtonClick(_evt, controls = getNextRoundControls()) {
   const btn =
     _evt?.target ||
     document.getElementById("next-button") ||
     document.querySelector('[data-role="next-round"]');
-  if (btn?.disabled) return;
+  if (!btn || btn?.disabled) return;
 
   if (nextClickInFlight) {
     timerLogger.debug("[next] click ignored while advance in flight");
@@ -640,168 +239,21 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
 
   nextClickInFlight = true;
   try {
-    let skipHandled = false;
-    const skipHintEnabled = skipRoundCooldownIfEnabled({
-      onSkip: () => {
-        setSkipHandler(null);
-        emitBattleEvent("countdownFinished");
-        emitBattleEvent("round.start", { source: "next-button", via: "skip-hint" });
-        skipHandled = true;
+    if (controls) {
+      emitBattleEvent("skipCooldown", { source: "next-button" });
+
+      if (cooldownWarningTimeoutId !== null) {
+        realScheduler.clearTimeout(cooldownWarningTimeoutId);
       }
-    });
-    if (skipHintEnabled && skipHandled) {
-      timerLogger.debug("skipRoundCooldown hint consumed during Next click");
-    }
-    if (!skipHandled) {
-      emitBattleEvent("countdownFinished");
-      emitBattleEvent("round.start", { source: "next-button", via: "manual-click" });
-    }
-
-    const { timer = null, resolveReady = null } = controls || {};
-    const root = options.root || document;
-    const displayedRoundBefore = readDisplayedRound(root);
-    const btn = root.getElementById
-      ? root.getElementById("next-button")
-      : root.querySelector("#next-button");
-    if (!btn) {
-      return;
-    }
-
-    // Defensive: if a stale readiness flag is present outside of `cooldown`,
-    // clear it so we don't advance via an early-ready path.
-    const { state } = safeGetSnapshot();
-    if (isNextReady(btn) && state && state !== "roundWait") {
-      resetReadiness(btn);
-      guard(() => console.warn("[next] cleared early readiness outside cooldown"));
-    }
-
-    // Manual clicks must attempt to advance regardless of the `skipRoundCooldown`
-    // feature flag. The flag only affects automatic progression, never user
-    // intent signaled via the Next button.
-    const strategies = {
-      advance: () => advanceWhenReady(btn, resolveReady),
-      cancel: () => cancelTimerOrAdvance(btn, timer, resolveReady)
-    };
-    const action = isNextReady(btn) ? "advance" : "cancel";
-    await strategies[action]();
-
-    const displayedRoundAfter = readDisplayedRound(root);
-    if (
-      displayedRoundBefore !== null &&
-      (displayedRoundAfter === null || displayedRoundAfter === displayedRoundBefore)
-    ) {
-      const tracking = roundTrackingState.read(root);
-      const { counterEl, highest: recordedHighest, lastContext, previousContext } = tracking;
-      const hasRecordedHighest = typeof recordedHighest === "number";
-      const engineNextRound = readEngineNextRound();
-      const hasEngineNextRound = Number.isFinite(engineNextRound);
-      const fallbackBase = Math.max(engineNextRound || 0, displayedRoundBefore + 1);
-
-      let fallbackTarget = fallbackBase;
-      if (hasRecordedHighest) {
-        fallbackTarget = Math.max(fallbackTarget, recordedHighest);
-      }
-
-      const contextReportedAdvance = lastContext === "advance" || previousContext === "advance";
-      const recordedNextRound = hasRecordedHighest && recordedHighest >= fallbackBase;
-      const expectedPreviousRound = hasEngineNextRound ? fallbackBase - 1 : displayedRoundBefore;
-      const priorAdvanceMatchesDisplay =
-        previousContext === "advance" &&
-        hasRecordedHighest &&
-        recordedHighest === expectedPreviousRound;
-      const engineAlreadyAdvanced = determineEngineAdvanceState({
-        contextReportedAdvance,
-        recordedNextRound,
-        priorAdvanceMatchesDisplay,
-        hasRecordedHighest
-      });
-      if (engineAlreadyAdvanced && hasRecordedHighest) {
-        fallbackTarget = recordedHighest;
-      }
-
-      const shouldApplyFallback = shouldApplyRoundCounterFallback({
-        lastContext,
-        hasRecordedHighest,
-        recordedHighest,
-        displayedRoundBefore
-      });
-
-      if (Number.isFinite(fallbackTarget) && fallbackTarget >= 1 && shouldApplyFallback) {
-        timerLogger.debug("[next] syncing round counter", {
-          roundDisplayedBefore: displayedRoundBefore,
-          roundFallbackBase: fallbackBase,
-          roundFallbackTarget: fallbackTarget,
-          engineAdvanced: engineAlreadyAdvanced,
-          engineNextRoundAvailable: hasEngineNextRound
-        });
-        if (typeof globalThis !== "undefined" && globalThis.__DEBUG_ROUND_TRACKING) {
-          const rtraceInfo = {
-            tag: "timerService.fallback.writeRoundCounter",
-            fallbackTarget,
-            recordedHighest,
-            lastContext,
-            previousContext,
-            stack: new Error().stack
-          };
-          try {
-            console.debug("[RTRACE] timerService fallback -> writeRoundCounter", rtraceInfo);
-          } catch {}
-          try {
-            pushRTrace(rtraceInfo);
-          } catch {}
+      cooldownWarningTimeoutId = realScheduler.setTimeout(() => {
+        const { state } = safeGetSnapshot();
+        if (state === "roundWait") {
+          guard(() => console.warn("[next] stuck in cooldown"));
         }
-        // Prevent jumping more than a single round ahead when engine data is unavailable.
-        // This avoids using a stale recordedHighest that would skip expected intermediate rounds.
-        try {
-          if (!hasEngineNextRound && Number.isFinite(displayedRoundBefore)) {
-            const maxAllowed = Number(displayedRoundBefore) + 1;
-            if (fallbackTarget > maxAllowed) {
-              const capped = maxAllowed;
-              try {
-                pushRTrace({
-                  tag: "timerService.fallback.cap",
-                  originalFallbackTarget: fallbackTarget,
-                  cappedTo: capped,
-                  recordedHighest,
-                  displayedRoundBefore,
-                  stack: new Error().stack
-                });
-              } catch {}
-              fallbackTarget = capped;
-            }
-          }
-        } catch {}
-
-        writeRoundCounter(root, fallbackTarget);
-        const nextRecordedHighest = hasRecordedHighest
-          ? Math.max(recordedHighest, fallbackTarget)
-          : fallbackTarget;
-        const shouldMarkFallbackContext =
-          !engineAlreadyAdvanced && (!hasEngineNextRound || fallbackTarget > fallbackBase);
-
-        try {
-          roundTrackingState.write({
-            counterEl,
-            highest: nextRecordedHighest,
-            lastContext: shouldMarkFallbackContext ? "fallback" : undefined,
-            previousContext: shouldMarkFallbackContext ? lastContext || null : undefined
-          });
-        } catch (error) {
-          guard(() => console.warn("[timerService] Failed to update round tracking state:", error));
-        }
-      }
+        cooldownWarningTimeoutId = null;
+      }, 1000);
     }
-
-    if (cooldownWarningTimeoutId !== null) {
-      realScheduler.clearTimeout(cooldownWarningTimeoutId);
-    }
-    cooldownWarningTimeoutId = realScheduler.setTimeout(() => {
-      const { state } = safeGetSnapshot();
-      if (state === "roundWait") {
-        guard(() => console.warn("[next] stuck in cooldown"));
-      }
-      cooldownWarningTimeoutId = null;
-    }, 1000);
+    await Promise.resolve();
   } catch (error) {
     timerLogger.error("[next] error during click handling", error);
   } finally {

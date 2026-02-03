@@ -299,16 +299,14 @@ describe("Classic Battle round timer", () => {
     }
   });
 
-  test("Next button dispatches countdown events and ready when skip flag is active", async () => {
+  test("Next button emits skipCooldown intent when skip flag is active", async () => {
     const timers = useCanonicalTimers();
     const previousOverrides = typeof window !== "undefined" ? window.__FF_OVERRIDES : undefined;
     if (typeof window !== "undefined") {
       window.__FF_OVERRIDES = { ...(previousOverrides || {}), skipRoundCooldown: true };
     }
-    const skipCallbackSpy = vi.fn();
     let readySpy;
     let emitSpy;
-    let skipFlagSpy;
     try {
       const { createBattleHeader } = await import("../utils/testUtils.js");
       const header = createBattleHeader();
@@ -322,50 +320,20 @@ describe("Classic Battle round timer", () => {
       const events = await import("../../src/helpers/classicBattle/battleEvents.js");
       emitSpy = vi.spyOn(events, "emitBattleEvent").mockImplementation(() => {});
 
-      const uiHelpers = await import("../../src/helpers/classicBattle/uiHelpers.js");
-      const actualSkip = uiHelpers.skipRoundCooldownIfEnabled;
-      skipFlagSpy = vi
-        .spyOn(uiHelpers, "skipRoundCooldownIfEnabled")
-        .mockImplementation((options = {}) => {
-          const opts = { ...options };
-          if (typeof opts.onSkip === "function") {
-            const original = opts.onSkip;
-            opts.onSkip = () => {
-              original();
-              skipCallbackSpy();
-            };
-          }
-          return actualSkip(opts);
-        });
-
       const { __setStateSnapshot } = await import("../../src/helpers/classicBattle/battleDebug.js");
       __setStateSnapshot({ state: "roundWait" });
 
       const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
-      const resolveReady = vi.fn();
       nextButton.dataset.nextReady = "true";
 
-      await onNextButtonClick(
-        new MouseEvent("click"),
-        { timer: null, resolveReady },
-        { root: document }
-      );
+      await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
 
-      expect(skipFlagSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ onSkip: expect.any(Function) })
-      );
-      expect(skipCallbackSpy).toHaveBeenCalledTimes(1);
-      expect(emitSpy).toHaveBeenCalledTimes(2);
-      expect(emitSpy).toHaveBeenNthCalledWith(1, "countdownFinished");
-      expect(emitSpy).toHaveBeenNthCalledWith(2, "round.start", {
-        source: "next-button",
-        via: "skip-hint"
+      expect(emitSpy).toHaveBeenCalledTimes(1);
+      expect(emitSpy).toHaveBeenNthCalledWith(1, "skipCooldown", {
+        source: "next-button"
       });
-      expect(readySpy).toHaveBeenCalledWith("ready");
-      expect(resolveReady).toHaveBeenCalledTimes(1);
-      expect(nextButton.disabled).toBe(true);
+      expect(readySpy).not.toHaveBeenCalled();
     } finally {
-      if (skipFlagSpy) skipFlagSpy.mockRestore();
       if (emitSpy) emitSpy.mockRestore();
       if (readySpy) readySpy.mockRestore();
       if (typeof window !== "undefined") {

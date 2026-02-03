@@ -19,7 +19,7 @@ This directory contains unit tests for Classic Battle helpers.
 - `stateTransitions.test.js`: validates `src/helpers/classicBattle/stateTable.js` transitions using the production `createStateManager` state table and hooks.
 - `timerService.drift.test.js`: falls back to messaging when timers drift.
 - `timerService.nextRound.test.js`: manages cooldown and Next button interaction.
-- `nextButton.countdownFinished.test.js`: emits `countdownFinished` on Next clicks, even without the button.
+- `nextButton.countdownFinished.test.js`: emits `skipCooldown` on Next clicks when the button is present.
 - `timerStateExposure.test.js`: exposes timer state to window and DOM.
 - `debugPanel.hud.test.js`: mounts the battle debug HUD, verifies accessible affordances, and exercises clipboard export from the integrated panel.
 - `commonMocks.js`: scheduler and motion utility mocks shared across suites.

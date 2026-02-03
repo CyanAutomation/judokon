@@ -6,7 +6,35 @@ import "./commonMocks.js";
 
 // ===== Top-level vi.mock() call (Vitest static analysis phase) =====
 vi.mock("../../../src/helpers/BattleEngine.js", () => {
-  const mockEngine = { on: vi.fn(), off: vi.fn() };
+  const listeners = new Map();
+  const mockEngine = {
+    on: vi.fn((event, handler) => {
+      if (typeof handler !== "function") return;
+      const existing = listeners.get(event);
+      if (existing) {
+        listeners.set(event, existing.concat(handler));
+      } else {
+        listeners.set(event, [handler]);
+      }
+    }),
+    off: vi.fn((event, handler) => {
+      if (!listeners.has(event)) return;
+      if (!handler) {
+        listeners.delete(event);
+        return;
+      }
+      const filtered = listeners.get(event).filter((fn) => fn !== handler);
+      if (filtered.length === 0) {
+        listeners.delete(event);
+      } else {
+        listeners.set(event, filtered);
+      }
+    }),
+    emit: (event, detail) => {
+      const handlers = listeners.get(event) || [];
+      handlers.forEach((fn) => fn(detail));
+    }
+  };
   const mockGetRoundsPlayed = vi.fn(() => 0);
   return {
     startCoolDown: vi.fn(),
@@ -215,12 +243,10 @@ describe.sequential("ClassicBattleController.startRound", () => {
       battleEvents.onBattleEvent("opponentCardReady", handler);
     });
 
-    const roundStarted = new Promise((resolve) => {
-      controller.addEventListener("roundStarted", resolve, { once: true });
-    });
-
     await controller.startRound();
-    await roundStarted;
+    const { getEngine } = await import("../../../src/helpers/BattleEngine.js");
+    const engine = getEngine();
+    engine?.emit?.("roundStarted", { round: 1 });
     await opponentReady;
     await vi.runAllTimersAsync();
 

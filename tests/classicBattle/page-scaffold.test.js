@@ -259,8 +259,6 @@ vi.mock("../../src/helpers/classicBattle/roundManager.js", () => {
     store.selectionMade = false;
     store.playerChoice = null;
     await startRound(store);
-    const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
-    emitBattleEvent("roundStarted", { store, roundNumber: engineMock.roundsPlayed + 1 });
   });
 
   return {
