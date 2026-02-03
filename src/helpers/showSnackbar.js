@@ -4,7 +4,7 @@
  *
  * LEGACY API COMPATIBILITY:
  * - Maintains original showSnackbar(message) and updateSnackbar(message) signatures
- * - Delegates to SnackbarManager for unified priority-based queue management
+ * - Delegates to SnackbarManager for unified snackbar rendering
  * - All snackbars created via this API use NORMAL priority
  * - Auto-dismiss after 3000ms to match legacy behavior
  *
@@ -15,12 +15,12 @@
  * - Part of centralized z-index management system for consistent layering
  *
  * @pseudocode
- * 1. Import SnackbarManager singleton for unified queue management.
+ * 1. Import SnackbarManager singleton for unified snackbar rendering.
  * 2. Track last shown snackbar controller for updateSnackbar() support.
  * 3. showSnackbar() delegates to manager.show() with NORMAL priority.
  * 4. updateSnackbar() calls controller.update() on last shown snackbar.
  *
- * @param {string} message - Text content to display in the snackbar.
+ * @param {string|{text: string, type?: string, priority?: string, ttl?: number}} message - Message payload.
  * @see {@link ./SnackbarManager.js} Unified snackbar lifecycle manager
  * @see {@link ../../styles/snackbar.css} Snackbar styles and z-index configuration
  * @see {@link ../../styles/base.css} Centralized z-index custom properties (--z-index-*)
@@ -37,19 +37,27 @@ let lastSnackbarController = null;
  *
  * @pseudocode
  * 1. Delegate to snackbarManager.show() with NORMAL priority.
- * 2. Configure 3000ms auto-dismiss to match legacy behavior.
+ * 2. Configure 3000ms TTL to match legacy behavior.
  * 3. Store controller reference for updateSnackbar() support.
  * 4. Return void to maintain API compatibility.
  *
- * @param {string} message - Text content to display in the snackbar.
+ * @param {string|{text: string, type?: string, priority?: string, ttl?: number}} message - Message payload.
  * @returns {void}
  */
 export function showSnackbar(message) {
+  const payload =
+    typeof message === "string"
+      ? { text: message }
+      : {
+          text: message?.text ?? message?.message ?? "",
+          type: message?.type,
+          priority: message?.priority
+        };
   lastSnackbarController = snackbarManager.show({
-    message,
-    priority: SnackbarPriority.NORMAL,
+    ...payload,
+    priority: payload.priority ?? SnackbarPriority.NORMAL,
     minDuration: 0,
-    autoDismiss: 3000
+    ttl: message?.ttl ?? 3000
   });
 }
 
@@ -62,7 +70,7 @@ export function showSnackbar(message) {
  * 2. Otherwise create new snackbar via showSnackbar().
  * 3. Return void to maintain API compatibility.
  *
- * @param {string} message - New text for the snackbar.
+ * @param {string|{text: string, type?: string, priority?: string}} message - New message payload.
  * @returns {void}
  */
 export function updateSnackbar(message) {

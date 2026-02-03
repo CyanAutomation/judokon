@@ -85,10 +85,10 @@ async function startRound(value, onStart, emitEvents) {
   try {
     // Use LOW priority so this doesn't override opponent/countdown messages
     snackbarManager.show({
-      message: ROUND_SELECT_UI.MESSAGES.winTarget(value),
+      text: ROUND_SELECT_UI.MESSAGES.winTarget(value),
       priority: SnackbarPriority.LOW,
       minDuration: 2000,
-      autoDismiss: 3000
+      ttl: 3000
     });
   } catch {}
   try {

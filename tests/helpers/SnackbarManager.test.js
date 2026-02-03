@@ -1,8 +1,8 @@
 /**
  * Unit tests for SnackbarManager
  *
- * Tests the snackbar lifecycle manager with priority system, queuing,
- * and minimum display duration enforcement.
+ * Tests the snackbar lifecycle manager with message contracts,
+ * ordering, and minimum display duration enforcement.
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
@@ -43,7 +43,7 @@ describe("SnackbarManager", () => {
 
       const diagnostics = snackbarManager.getDiagnostics();
       expect(diagnostics.activeCount).toBe(1);
-      expect(diagnostics.active[0].message).toBe("Test message");
+      expect(diagnostics.active[0].text).toBe("Test message");
       expect(diagnostics.active[0].priority).toBe(SnackbarPriority.NORMAL);
     });
 
@@ -59,13 +59,12 @@ describe("SnackbarManager", () => {
 
     it("should display snackbar with HIGH priority", () => {
       snackbarManager.show({
-        message: "Important message",
+        text: "Important message",
         priority: SnackbarPriority.HIGH
       });
 
       const diagnostics = snackbarManager.getDiagnostics();
       expect(diagnostics.active[0].priority).toBe(SnackbarPriority.HIGH);
-      expect(diagnostics.currentPriority).toBe(SnackbarPriority.HIGH);
 
       const element = document.querySelector(".snackbar");
       expect(element.getAttribute("aria-live")).toBe("assertive");
@@ -73,66 +72,32 @@ describe("SnackbarManager", () => {
   });
 
   describe("Priority System", () => {
-    it("should allow high priority message when normal is active", () => {
+    it("does not suppress lower priority messages", () => {
       snackbarManager.show({
-        message: "Normal message",
-        priority: SnackbarPriority.NORMAL
-      });
-
-      snackbarManager.show({
-        message: "High priority",
-        priority: SnackbarPriority.HIGH
-      });
-
-      const diagnostics = snackbarManager.getDiagnostics();
-      expect(diagnostics.activeCount).toBe(2);
-      expect(diagnostics.currentPriority).toBe(SnackbarPriority.HIGH);
-    });
-
-    it("should queue low priority message when high is active", () => {
-      snackbarManager.show({
-        message: "High priority",
+        text: "High priority",
         priority: SnackbarPriority.HIGH
       });
 
       snackbarManager.show({
-        message: "Low priority",
+        text: "Low priority",
         priority: SnackbarPriority.LOW
       });
 
       const diagnostics = snackbarManager.getDiagnostics();
-      expect(diagnostics.activeCount).toBe(1);
-      expect(diagnostics.queueLength).toBe(1);
-      expect(diagnostics.queued[0].message).toBe("Low priority");
-    });
-
-    it("should process queue after removing high priority message", async () => {
-      const highController = snackbarManager.show({
-        message: "High priority",
-        priority: SnackbarPriority.HIGH,
-        minDuration: 0
-      });
-
-      snackbarManager.show({
-        message: "Queued message",
-        priority: SnackbarPriority.NORMAL
-      });
-
-      expect(snackbarManager.getDiagnostics().queueLength).toBe(1);
-
-      await highController.remove();
-
-      expect(snackbarManager.getDiagnostics().queueLength).toBe(0);
-      expect(snackbarManager.getDiagnostics().activeCount).toBe(1);
+      expect(diagnostics.activeCount).toBe(2);
+      expect(diagnostics.active.map((item) => item.text)).toEqual([
+        "High priority",
+        "Low priority"
+      ]);
     });
   });
 
   describe("Minimum Display Duration", () => {
     it("should enforce minimum display duration", async () => {
       const controller = snackbarManager.show({
-        message: "Test",
+        text: "Test",
         minDuration: 750,
-        autoDismiss: 0
+        ttl: 0
       });
 
       // Try to remove immediately
@@ -156,9 +121,9 @@ describe("SnackbarManager", () => {
 
     it("should resolve waitForMinDuration after duration elapses", async () => {
       const controller = snackbarManager.show({
-        message: "Test",
+        text: "Test",
         minDuration: 500,
-        autoDismiss: 0
+        ttl: 0
       });
 
       const waitPromise = controller.waitForMinDuration();
@@ -183,37 +148,27 @@ describe("SnackbarManager", () => {
     });
   });
 
-  describe("Queuing System", () => {
-    it("should enforce max concurrent limit", () => {
+  describe("Concurrent Messages", () => {
+    it("should keep all messages without internal suppression", () => {
       snackbarManager.show("Message 1");
       snackbarManager.show("Message 2");
       snackbarManager.show("Message 3");
 
       const diagnostics = snackbarManager.getDiagnostics();
-      expect(diagnostics.activeCount).toBe(2);
-    });
-
-    it("should remove oldest when exceeding limit", () => {
-      snackbarManager.show("First message");
-      snackbarManager.show("Second message");
-      snackbarManager.show("Third message");
-
-      const diagnostics = snackbarManager.getDiagnostics();
-      expect(diagnostics.activeCount).toBe(2);
-
-      // First message should be removed
-      const messages = diagnostics.active.map((s) => s.message);
-      expect(messages).not.toContain("First message");
-      expect(messages).toContain("Second message");
-      expect(messages).toContain("Third message");
+      expect(diagnostics.activeCount).toBe(3);
+      expect(diagnostics.active.map((s) => s.text)).toEqual([
+        "Message 1",
+        "Message 2",
+        "Message 3"
+      ]);
     });
   });
 
   describe("Auto-dismiss", () => {
     it("should auto-dismiss after timeout", async () => {
       snackbarManager.show({
-        message: "Auto-dismiss test",
-        autoDismiss: 1000
+        text: "Auto-dismiss test",
+        ttl: 1000
       });
 
       expect(snackbarManager.getDiagnostics().activeCount).toBe(1);
@@ -223,10 +178,10 @@ describe("SnackbarManager", () => {
       expect(snackbarManager.getDiagnostics().activeCount).toBe(0);
     });
 
-    it("should not auto-dismiss when autoDismiss is 0", async () => {
+    it("should not auto-dismiss when ttl is 0", async () => {
       snackbarManager.show({
-        message: "No auto-dismiss",
-        autoDismiss: 0
+        text: "No auto-dismiss",
+        ttl: 0
       });
 
       await vi.advanceTimersByTimeAsync(5000);
@@ -242,27 +197,29 @@ describe("SnackbarManager", () => {
       controller.update("Updated message");
 
       const diagnostics = snackbarManager.getDiagnostics();
-      expect(diagnostics.active[0].message).toBe("Updated message");
+      expect(diagnostics.active[0].text).toBe("Updated message");
 
       const element = document.querySelector(".snackbar");
       expect(element.textContent).toBe("Updated message");
     });
 
-    it("should update queued message", () => {
-      snackbarManager.show({
-        message: "High priority",
-        priority: SnackbarPriority.HIGH
-      });
-
+    it("should update priority and type metadata", () => {
       const controller = snackbarManager.show({
-        message: "Queued message",
+        text: "Metadata message",
         priority: SnackbarPriority.LOW
       });
 
-      controller.update("Updated queued");
+      controller.update({
+        text: "Metadata updated",
+        priority: SnackbarPriority.HIGH,
+        type: "warning"
+      });
 
-      const diagnostics = snackbarManager.getDiagnostics();
-      expect(diagnostics.queued[0].message).toBe("Updated queued");
+      const element = document.querySelector(".snackbar");
+      expect(element.textContent).toBe("Metadata updated");
+      expect(element.dataset.snackbarPriority).toBe(SnackbarPriority.HIGH);
+      expect(element.dataset.snackbarType).toBe("warning");
+      expect(element.getAttribute("aria-live")).toBe("assertive");
     });
   });
 
@@ -271,7 +228,7 @@ describe("SnackbarManager", () => {
       const onShow = vi.fn();
 
       snackbarManager.show({
-        message: "Test",
+        text: "Test",
         onShow
       });
 
@@ -282,9 +239,9 @@ describe("SnackbarManager", () => {
       const onDismiss = vi.fn();
 
       const controller = snackbarManager.show({
-        message: "Test",
+        text: "Test",
         minDuration: 0,
-        autoDismiss: 0,
+        ttl: 0,
         onDismiss
       });
 
@@ -331,14 +288,14 @@ describe("SnackbarManager", () => {
       expect(secondSnackbar.classList.contains("snackbar-bottom")).toBe(true);
     });
 
-    it("should prioritize HIGH priority for bottom position", () => {
+    it("should keep newest message at bottom regardless of priority", () => {
       snackbarManager.show({
-        message: "Normal",
+        text: "Normal",
         priority: SnackbarPriority.NORMAL
       });
 
       snackbarManager.show({
-        message: "High",
+        text: "High",
         priority: SnackbarPriority.HIGH
       });
 
@@ -374,39 +331,36 @@ describe("SnackbarManager", () => {
   describe("Diagnostics", () => {
     it("should provide comprehensive diagnostics", () => {
       snackbarManager.show({
-        message: "Active 1",
+        text: "Active 1",
         priority: SnackbarPriority.HIGH
       });
 
       snackbarManager.show({
-        message: "Active 2",
+        text: "Active 2",
         priority: SnackbarPriority.NORMAL
       });
 
       snackbarManager.show({
-        message: "Queued",
+        text: "Active 3",
         priority: SnackbarPriority.LOW
       });
 
       const diagnostics = snackbarManager.getDiagnostics();
 
-      expect(diagnostics.activeCount).toBe(1); // Expect only 'Active 1' to be active
-      expect(diagnostics.queueLength).toBe(2); // Expect 'Active 2' and 'Queued' to be queued
-      expect(diagnostics.currentPriority).toBe(SnackbarPriority.HIGH);
-      expect(diagnostics.active).toHaveLength(1);
-      expect(diagnostics.queued).toHaveLength(2);
+      expect(diagnostics.activeCount).toBe(3);
+      expect(diagnostics.active).toHaveLength(3);
     });
   });
 
   describe("Clear All", () => {
     it("should remove all active snackbars immediately", () => {
       snackbarManager.show({
-        message: "Test 1",
+        text: "Test 1",
         minDuration: 5000
       });
 
       snackbarManager.show({
-        message: "Test 2",
+        text: "Test 2",
         minDuration: 5000
       });
 
@@ -416,24 +370,6 @@ describe("SnackbarManager", () => {
 
       expect(snackbarManager.getDiagnostics().activeCount).toBe(0);
       expect(document.querySelectorAll(".snackbar")).toHaveLength(0);
-    });
-
-    it("should clear queue", () => {
-      snackbarManager.show({
-        message: "High",
-        priority: SnackbarPriority.HIGH
-      });
-
-      snackbarManager.show({
-        message: "Queued",
-        priority: SnackbarPriority.LOW
-      });
-
-      snackbarManager.clearAll();
-
-      const diagnostics = snackbarManager.getDiagnostics();
-      expect(diagnostics.activeCount).toBe(0);
-      expect(diagnostics.queueLength).toBe(0);
     });
   });
 });

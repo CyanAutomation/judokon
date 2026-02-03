@@ -2,17 +2,15 @@
  * Snackbar Lifecycle Manager
  *
  * Manages the complete lifecycle of snackbar messages with:
- * - Priority-based display (high/normal/low)
+ * - Message metadata (priority/type) for rendering
  * - Guaranteed minimum display duration
- * - Queuing system for overlapping messages
- * - Coordination with battle flow timing
+ * - Coordinated lifecycle callbacks
  *
  * @pseudocode
- * 1. Accept messages with priority and duration requirements
- * 2. Queue messages if higher priority message is active
+ * 1. Accept message payloads with display metadata
+ * 2. Render messages without suppressing caller choices
  * 3. Enforce minimum display duration before removal
- * 4. Coordinate with battle state for proper timing
- * 5. Provide programmatic control over message lifecycle
+ * 4. Provide programmatic control over message lifecycle
  */
 
 /**
@@ -28,10 +26,13 @@ export const SnackbarPriority = {
 /**
  * Snackbar message configuration
  * @typedef {Object} SnackbarConfig
- * @property {string} message - Text content to display
+ * @property {string} text - Text content to display
+ * @property {string} [message] - Legacy alias for text
+ * @property {string} [type] - Optional message type for styling (e.g., info, warning, error)
  * @property {SnackbarPriority} [priority='normal'] - Message priority level
+ * @property {number} [ttl=3000] - Auto-dismiss timeout (0 = manual dismiss only)
+ * @property {number} [autoDismiss] - Legacy alias for ttl
  * @property {number} [minDuration=0] - Minimum display duration in milliseconds
- * @property {number} [autoDismiss=3000] - Auto-dismiss timeout (0 = manual dismiss only)
  * @property {Function} [onShow] - Callback when message appears
  * @property {Function} [onDismiss] - Callback when message is dismissed
  */
@@ -40,7 +41,8 @@ export const SnackbarPriority = {
  * Active snackbar entry
  * @typedef {Object} ActiveSnackbar
  * @property {string} id - Unique identifier
- * @property {string} message - Message text
+ * @property {string} text - Message text
+ * @property {string|undefined} type - Optional message type
  * @property {SnackbarPriority} priority - Priority level
  * @property {number} minDuration - Minimum display duration
  * @property {number} shownAt - Timestamp when displayed
@@ -57,20 +59,11 @@ class SnackbarManager {
     /** @type {Map<string, ActiveSnackbar>} */
     this.activeSnackbars = new Map();
 
-    /** @type {Array<{id: string, config: SnackbarConfig}>} */
-    this.queue = [];
-
     /** @type {number} */
     this.nextId = 0;
 
     /** @type {number} - Monotonic counter for deterministic ordering */
     this.sequenceCounter = 0;
-
-    /** @type {SnackbarPriority|null} */
-    this.currentPriority = null;
-
-    /** @type {number} */
-    this.maxConcurrent = 2;
 
     /** @type {boolean} */
     this.disabled = false;
@@ -144,75 +137,6 @@ class SnackbarManager {
   }
 
   /**
-   * Compare priority levels
-   *
-   * @pseudocode
-   * 1. Map priority to numeric value
-   * 2. Compare values
-   * 3. Return comparison result
-   *
-   * @param {SnackbarPriority} priority1 - First priority
-   * @param {SnackbarPriority} priority2 - Second priority
-   * @returns {number} -1 if p1 < p2, 0 if equal, 1 if p1 > p2
-   */
-  comparePriority(priority1, priority2) {
-    const values = {
-      [SnackbarPriority.HIGH]: 3,
-      [SnackbarPriority.NORMAL]: 2,
-      [SnackbarPriority.LOW]: 1
-    };
-
-    const val1 = values[priority1] || values[SnackbarPriority.NORMAL];
-    const val2 = values[priority2] || values[SnackbarPriority.NORMAL];
-
-    if (val1 < val2) return -1;
-    if (val1 > val2) return 1;
-    return 0;
-  }
-
-  /**
-   * Check if message can be displayed based on priority and capacity
-   *
-   * @pseudocode
-   * 1. If no active messages, allow
-   * 2. Find highest priority among active messages
-   * 3. Queue if lower than highest (respects strict priority hierarchy)
-   * 4. If same or higher priority: allow up to capacity, then evict oldest/lowest
-   *
-   * @param {SnackbarPriority} priority - Message priority
-   * @returns {boolean} True if can display
-   */
-  canDisplay(priority) {
-    // No active messages - always allow
-    if (this.activeSnackbars.size === 0) {
-      return true;
-    }
-
-    // Find highest priority among active snackbars
-    const active = Array.from(this.activeSnackbars.values());
-    let highestPriority = null;
-    for (const snackbar of active) {
-      if (!highestPriority || this.comparePriority(snackbar.priority, highestPriority) > 0) {
-        highestPriority = snackbar.priority;
-      }
-    }
-
-    // Queue if lower than highest active priority (even if under capacity)
-    // This ensures lower priority messages don't interfere with higher priority ones
-    if (highestPriority && this.comparePriority(priority, highestPriority) < 0) {
-      return false;
-    }
-
-    // Same or higher priority - allow up to capacity
-    if (this.activeSnackbars.size < this.maxConcurrent) {
-      return true;
-    }
-
-    // At capacity with same/higher priority - allow (will evict oldest/lowest)
-    return true;
-  }
-
-  /**
    * Create snackbar DOM element
    *
    * @pseudocode
@@ -223,19 +147,23 @@ class SnackbarManager {
    * 5. Return element
    *
    * @param {string} id - Snackbar ID
-   * @param {string} message - Message text
+   * @param {string} text - Message text
    * @param {SnackbarPriority} priority - Priority level
+   * @param {string|undefined} type - Message type
    * @returns {HTMLElement} Snackbar element
    */
-  createElement(id, message, priority) {
+  createElement(id, text, priority, type) {
     const doc = this.getDocument();
     if (!doc) return null;
 
     const element = doc.createElement("div");
     element.className = "snackbar";
-    element.textContent = message;
+    element.textContent = text;
     element.dataset.snackbarId = id;
     element.dataset.snackbarPriority = priority;
+    if (type) {
+      element.dataset.snackbarType = type;
+    }
 
     // Accessibility
     element.setAttribute("role", "status");
@@ -250,8 +178,8 @@ class SnackbarManager {
    *
    * @pseudocode
    * 1. Get array of active snackbars
-   * 2. Sort by priority (high first), then by sequence (newest first)
-   * 3. Apply .snackbar-bottom to most important
+   * 2. Sort by sequence (newest first)
+   * 3. Apply .snackbar-bottom to newest
    * 4. Apply .snackbar-top to others
    * 5. Apply .snackbar-stale for reduced opacity
    *
@@ -261,11 +189,7 @@ class SnackbarManager {
     const active = Array.from(this.activeSnackbars.values());
     if (active.length === 0) return;
 
-    // Sort by priority (high first), then by sequence (newest first)
     active.sort((a, b) => {
-      const priorityCompare = this.comparePriority(b.priority, a.priority);
-      if (priorityCompare !== 0) return priorityCompare;
-      // Use sequence number for deterministic ordering
       return b.sequence - a.sequence;
     });
 
@@ -273,11 +197,11 @@ class SnackbarManager {
       if (!snackbar.element) return;
 
       if (index === 0) {
-        // Most important/newest message at bottom
+        // Newest message at bottom
         snackbar.element.classList.add("snackbar-bottom");
         snackbar.element.classList.remove("snackbar-top", "snackbar-stale");
       } else {
-        // Older/lower priority messages at top with reduced opacity
+        // Older messages at top with reduced opacity
         snackbar.element.classList.add("snackbar-top", "snackbar-stale");
         snackbar.element.classList.remove("snackbar-bottom");
       }
@@ -289,16 +213,13 @@ class SnackbarManager {
    *
    * @pseudocode
    * 1. Validate not disabled
-   * 2. Check priority vs current
-   * 3. If lower priority, queue for later
-   * 4. If can display:
-   *    a. Enforce max concurrent limit
-   *    b. Create element and add to DOM
-   *    c. Track in active map
-   *    d. Update positioning
-   *    e. Set auto-dismiss if configured
-   *    f. Call onShow callback
-   * 5. Return controller object
+   * 2. Normalize message contract
+   * 3. Create element and add to DOM
+   * 4. Track in active map
+   * 5. Update positioning
+   * 6. Set auto-dismiss if configured
+   * 7. Call onShow callback
+   * 8. Return controller object
    *
    * @param {string|SnackbarConfig} messageOrConfig - Message text or configuration object
    * @returns {{id: string, remove: Function, update: Function, waitForMinDuration: Function}|null}
@@ -315,31 +236,18 @@ class SnackbarManager {
 
     // Normalize config
     const config =
-      typeof messageOrConfig === "string" ? { message: messageOrConfig } : messageOrConfig;
+      typeof messageOrConfig === "string" ? { text: messageOrConfig } : messageOrConfig || {};
 
     const {
-      message,
+      text: messageText,
+      type,
       priority = SnackbarPriority.NORMAL,
       minDuration = 0,
-      autoDismiss = 3000,
+      ttl,
+      autoDismiss,
       onShow,
       onDismiss
     } = config;
-
-    // Check if we can display based on priority
-    const canDisplayResult = this.canDisplay(priority);
-
-    if (!canDisplayResult) {
-      // Queue for later
-      const id = this.generateId();
-      this.queue.push({ id, config });
-      return {
-        id,
-        remove: () => this.remove(id),
-        update: (newMessage) => this.update(id, newMessage),
-        waitForMinDuration: async () => {}
-      };
-    }
 
     // Ensure container exists
     const container = this.ensureContainer(doc);
@@ -347,39 +255,10 @@ class SnackbarManager {
       return null;
     }
 
-    // Enforce max concurrent limit (remove synchronously to avoid race conditions)
-    if (this.activeSnackbars.size >= this.maxConcurrent) {
-      // Remove oldest, lowest priority snackbar
-      const active = Array.from(this.activeSnackbars.values());
-      active.sort((a, b) => {
-        const priorityCompare = this.comparePriority(a.priority, b.priority);
-        if (priorityCompare !== 0) return priorityCompare;
-        // Use sequence for deterministic ordering (oldest first)
-        return a.sequence - b.sequence;
-      });
-      if (active[0]) {
-        // Synchronous removal (skip minDuration for capacity management)
-        const toRemove = active[0];
-        if (toRemove.autoDismissId) {
-          clearTimeout(toRemove.autoDismissId);
-        }
-        if (toRemove.animationEndHandler && toRemove.element) {
-          toRemove.element.removeEventListener("animationend", toRemove.animationEndHandler);
-        }
-        if (toRemove.element && toRemove.element.parentNode) {
-          // Clean up event listener before removing element
-          if (toRemove.animationEndHandler) {
-            toRemove.element.removeEventListener("animationend", toRemove.animationEndHandler);
-          }
-          toRemove.element.remove();
-        }
-        this.activeSnackbars.delete(toRemove.id);
-      }
-    }
-
     // Create snackbar
     const id = this.generateId();
-    const element = this.createElement(id, message, priority);
+    const normalizedText = messageText ?? config.message ?? "";
+    const element = this.createElement(id, normalizedText, priority, type);
     if (!element) {
       return null;
     }
@@ -408,7 +287,8 @@ class SnackbarManager {
     // Create snackbar entry with monotonic sequence
     const snackbar = {
       id,
-      message,
+      text: normalizedText,
+      type,
       priority,
       minDuration,
       shownAt: Date.now(),
@@ -420,19 +300,15 @@ class SnackbarManager {
     };
 
     // Set auto-dismiss if configured
-    if (autoDismiss > 0) {
+    const dismissAfter = Number.isFinite(ttl) ? ttl : Number.isFinite(autoDismiss) ? autoDismiss : 3000;
+    if (dismissAfter > 0) {
       snackbar.autoDismissId = setTimeout(() => {
         this.remove(id);
-      }, autoDismiss);
+      }, dismissAfter);
     }
 
     // Track in active map
     this.activeSnackbars.set(id, snackbar);
-
-    // Update current priority
-    if (!this.currentPriority || this.comparePriority(priority, this.currentPriority) > 0) {
-      this.currentPriority = priority;
-    }
 
     // Update positioning
     this.updatePositioning();
@@ -488,9 +364,7 @@ class SnackbarManager {
    * 3. Clear auto-dismiss timeout
    * 4. Remove element from DOM
    * 5. Remove from active map
-   * 6. Update current priority
-   * 7. Call onDismiss callback
-   * 8. Process queue for next message
+   * 6. Call onDismiss callback
    *
    * @param {string} id - Snackbar ID
    * @returns {Promise<void>}
@@ -498,11 +372,6 @@ class SnackbarManager {
   async remove(id) {
     const snackbar = this.activeSnackbars.get(id);
     if (!snackbar) {
-      // Check if in queue
-      const queueIndex = this.queue.findIndex((item) => item.id === id);
-      if (queueIndex !== -1) {
-        this.queue.splice(queueIndex, 1);
-      }
       return;
     }
 
@@ -531,17 +400,6 @@ class SnackbarManager {
     // Remove from active map
     this.activeSnackbars.delete(id);
 
-    // Update current priority
-    if (this.activeSnackbars.size === 0) {
-      this.currentPriority = null;
-    } else {
-      // Recalculate highest priority
-      const priorities = Array.from(this.activeSnackbars.values()).map((s) => s.priority);
-      this.currentPriority = priorities.reduce((highest, current) => {
-        return this.comparePriority(current, highest) > 0 ? current : highest;
-      }, SnackbarPriority.LOW);
-    }
-
     // Update positioning
     this.updatePositioning();
 
@@ -554,8 +412,6 @@ class SnackbarManager {
       }
     }
 
-    // Process queue
-    this.processQueue();
   }
 
   /**
@@ -563,31 +419,49 @@ class SnackbarManager {
    *
    * @pseudocode
    * 1. Get snackbar from active map
-   * 2. If not found, check queue
-   * 3. Update message text
-   * 4. Restart animation
-   * 5. Reset shown timestamp
+   * 2. Update message text
+   * 3. Restart animation
+   * 4. Reset shown timestamp
    *
    * @param {string} id - Snackbar ID
-   * @param {string} newMessage - New message text
+   * @param {string|Partial<SnackbarConfig>} newMessage - New message text or config
    * @returns {void}
    */
   update(id, newMessage) {
     const snackbar = this.activeSnackbars.get(id);
     if (!snackbar) {
-      // Check queue
-      const queueItem = this.queue.find((item) => item.id === id);
-      if (queueItem) {
-        queueItem.config.message = newMessage;
-      }
       return;
     }
 
     if (!snackbar.element) return;
 
+    const nextText =
+      typeof newMessage === "string" ? newMessage : newMessage?.text ?? newMessage?.message;
+    const nextType = typeof newMessage === "string" ? snackbar.type : newMessage?.type;
+    const nextPriority =
+      typeof newMessage === "string" ? snackbar.priority : newMessage?.priority ?? snackbar.priority;
+
     // Update message
-    snackbar.message = newMessage;
-    snackbar.element.textContent = newMessage;
+    if (typeof nextText === "string") {
+      snackbar.text = nextText;
+      snackbar.element.textContent = nextText;
+    }
+    if (nextType !== undefined) {
+      snackbar.type = nextType;
+      if (nextType) {
+        snackbar.element.dataset.snackbarType = nextType;
+      } else {
+        delete snackbar.element.dataset.snackbarType;
+      }
+    }
+    if (nextPriority && nextPriority !== snackbar.priority) {
+      snackbar.priority = nextPriority;
+      snackbar.element.dataset.snackbarPriority = nextPriority;
+      snackbar.element.setAttribute(
+        "aria-live",
+        nextPriority === SnackbarPriority.HIGH ? "assertive" : "polite"
+      );
+    }
 
     // Restart animation
     snackbar.element.classList.remove("snackbar--active");
@@ -599,57 +473,17 @@ class SnackbarManager {
   }
 
   /**
-   * Process queued messages
-   *
-   * @pseudocode
-   * 1. Check if queue has messages
-   * 2. Check if can display more
-   * 3. Find highest priority message in queue
-   * 4. Remove from queue and display
-   * 5. Repeat until queue empty or at capacity
-   *
-   * @returns {void}
-   */
-  processQueue() {
-    while (this.queue.length > 0 && this.activeSnackbars.size < this.maxConcurrent) {
-      // Sort queue by priority
-      this.queue.sort((a, b) => {
-        return this.comparePriority(
-          b.config.priority || SnackbarPriority.NORMAL,
-          a.config.priority || SnackbarPriority.NORMAL
-        );
-      });
-
-      // Get highest priority message
-      const item = this.queue.shift();
-      if (!item) break;
-
-      // Check if can display
-      const priority = item.config.priority || SnackbarPriority.NORMAL;
-      if (this.canDisplay(priority)) {
-        this.show(item.config);
-      } else {
-        // Put back in queue
-        this.queue.unshift(item);
-        break;
-      }
-    }
-  }
-
-  /**
    * Remove all active snackbars
    *
    * @pseudocode
    * 1. Iterate through active snackbars
    * 2. Remove each one (respecting min duration)
-   * 3. Clear queue
    *
    * @returns {Promise<void>}
    */
   async removeAll() {
     const ids = Array.from(this.activeSnackbars.keys());
     await Promise.all(ids.map((id) => this.remove(id)));
-    this.queue = [];
   }
 
   /**
@@ -659,8 +493,6 @@ class SnackbarManager {
    * 1. Clear all timeouts
    * 2. Remove all elements from DOM
    * 3. Clear active map
-   * 4. Clear queue
-   * 5. Reset priority
    *
    * @returns {void}
    */
@@ -687,8 +519,6 @@ class SnackbarManager {
 
     // Clear state
     this.activeSnackbars.clear();
-    this.queue = [];
-    this.currentPriority = null;
   }
 
   /**
@@ -696,28 +526,21 @@ class SnackbarManager {
    *
    * @pseudocode
    * 1. Collect active snackbar info
-   * 2. Collect queue info
-   * 3. Return diagnostic object
+   * 2. Return diagnostic object
    *
    * @returns {Object} Diagnostic information
    */
   getDiagnostics() {
     return {
       activeCount: this.activeSnackbars.size,
-      queueLength: this.queue.length,
-      currentPriority: this.currentPriority,
       active: Array.from(this.activeSnackbars.values()).map((s) => ({
         id: s.id,
-        message: s.message,
+        text: s.text,
+        type: s.type,
         priority: s.priority,
         shownAt: s.shownAt,
         elapsedMs: Date.now() - s.shownAt,
         minDuration: s.minDuration
-      })),
-      queued: this.queue.map((item) => ({
-        id: item.id,
-        message: item.config.message,
-        priority: item.config.priority || SnackbarPriority.NORMAL
       }))
     };
   }

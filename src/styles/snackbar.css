@@ -12,14 +12,14 @@
  * - Snackbars are non-blocking notifications that should not obscure dialogs
  *
  * Stacking Architecture:
- * - Container supports up to 2 concurrent snackbar messages
+ * - Container supports multiple concurrent snackbar messages
  * - Uses flexbox column-reverse for natural bottom-up stacking
  * - Newest message appears at bottom (full opacity)
  * - Older message pushed up with reduced opacity (0.7)
  *
  * Cross-References:
  * - Z-index values: src/styles/base.css (--z-index-* custom properties)
- * - Snackbar logic: src/helpers/showSnackbar.js (queue management, timers)
+ * - Snackbar logic: src/helpers/showSnackbar.js (rendering, timers)
  * - Documentation: design/productRequirementsDocuments/prdSnackbar.md
  */
 #snackbar-container {

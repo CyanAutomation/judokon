@@ -744,10 +744,10 @@ function createTickProcessors(rendererState) {
 
         // Show static countdown message (no per-second updates)
         currentCountdownSnackbarController = snackbarManager.show({
-          message: text,
+          text,
           priority: SnackbarPriority.HIGH, // HIGH priority ensures it replaces opponent message
           minDuration: 0, // No minimum duration
-          autoDismiss: 0 // Manual control - will be dismissed when round starts
+          ttl: 0 // Manual control - will be dismissed when round starts
         });
         rendererState.countdownController = currentCountdownSnackbarController;
         rendererState.rendered = true;
