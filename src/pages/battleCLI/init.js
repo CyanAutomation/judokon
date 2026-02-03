@@ -48,6 +48,7 @@ import {
 import { initRoundSelectModal } from "../../helpers/classicBattle/roundSelectModal.js";
 import { domStateListener } from "../../helpers/classicBattle/stateTransitionListeners.js";
 import { bindRoundUIEventHandlersDynamic } from "../../helpers/classicBattle/roundUI.js";
+import { bindRoundFlowControllerOnce } from "../../helpers/classicBattle/roundFlowController.js";
 
 import { exposeTestAPI } from "../../helpers/testApi.js";
 // Phase 2: Shared Scoreboard imports for dual-write
@@ -3291,6 +3292,7 @@ export function wireEvents() {
   // Critical: Register round UI event handlers including round.start listener
   // that dismisses countdown/opponent snackbars when Next is clicked or round advances.
   // Bug: If this call is missing, snackbars (like "You Picked: X") persist across rounds.
+  bindRoundFlowControllerOnce();
   bindRoundUIEventHandlersDynamic();
   onBattleEvent("battleStateChange", handleBattleStateChange);
   if (typeof window !== "undefined") {

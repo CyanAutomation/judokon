@@ -2,7 +2,7 @@ import { onBattleEvent } from "./battleEvents.js";
 import { getOpponentCardData } from "./opponentController.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { t } from "../i18n.js";
-import { renderOpponentCard, showRoundOutcome, showStatComparison } from "./uiHelpers.js";
+import { renderOpponentCard, showStatComparison } from "./uiHelpers.js";
 import { updateDebugPanel } from "./debugPanel.js";
 import { markOpponentPromptNow, getOpponentPromptMinDuration } from "./opponentPromptTracker.js";
 import {
@@ -161,7 +161,6 @@ async function waitForMinimumOpponentObscureDuration() {
  * @param {Function} [deps.updateSnackbar] - Function to update snackbar messages
  * @param {Function} [deps.getOpponentCardData] - Function to get opponent card data
  * @param {Function} [deps.renderOpponentCard] - Function to render opponent card
- * @param {Function} [deps.showRoundOutcome] - Function to show round outcome
  * @param {Function} [deps.showStatComparison] - Function to show stat comparison
  * @param {Function} [deps.updateDebugPanel] - Function to update debug panel
  * @param {Function} [deps.applyOpponentCardPlaceholder] - Function to apply placeholder
@@ -182,7 +181,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     scoreboard: scoreboardObj = scoreboard,
     getOpponentCardData: getOpponentCardDataFn = getOpponentCardData,
     renderOpponentCard: renderOpponentCardFn = renderOpponentCard,
-    showRoundOutcome: showRoundOutcomeFn = showRoundOutcome,
     showStatComparison: showStatComparisonFn = showStatComparison,
     updateDebugPanel: updateDebugPanelFn = updateDebugPanel,
     applyOpponentCardPlaceholder: applyOpponentCardPlaceholderFn = applyOpponentCardPlaceholder
@@ -432,7 +430,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       }
     } catch {}
     try {
-      showRoundOutcomeFn(result.message || "", stat, playerVal, opponentVal);
       updateDebugPanelFn();
     } catch {}
     try {

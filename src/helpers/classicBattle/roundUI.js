@@ -18,6 +18,7 @@ import { disableStatButtons, resetStatButtons } from "./statButtons.js";
 import { runWhenIdle } from "./idleCallback.js";
 import { runAfterFrames } from "../../utils/rafUtils.js";
 import { getOpponentPromptTimestamp } from "./opponentPromptTracker.js";
+import { updateRoundCounter, clearRoundCounter } from "../roundStatusDisplay.js";
 import {
   computeOpponentPromptWaitBudget,
   waitForDelayedOpponentPromptDisplay,
@@ -303,7 +304,7 @@ async function startTimerSafely(timer, seconds) {
  *
  * @pseudocode
  * 1. Reset stat buttons and clear any round result text.
- * 2. Sync the scoreboard and update the round counter.
+ * 2. Sync the score display and update the round counter.
  * 3. Show the stat selection prompt and start the selection timer which calls
  *    `handleStatSelection` when a stat button is pressed.
  * 4. Register stalled-selection timeout via `handleStatSelectionTimeout`.
@@ -329,7 +330,7 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
   try {
     syncScoreDisplay();
   } catch {}
-  scoreboard.updateRoundCounter(roundNumber);
+  updateRoundCounter(roundNumber);
   showSelectionPrompt();
   const playerCard =
     store.playerCardEl || (store.playerCardEl = document.getElementById("player-card"));
@@ -486,7 +487,7 @@ export function handleStatSelectedEvent(event) {
  * @param {typeof updateDebugPanel} [deps.updateDebugPanel]
  * @pseudocode
  * 1. Exit early when the event lacks a round result.
- * 2. Surface the outcome message and update the score using the injected scoreboard API.
+ * 2. Update the score using the injected scoreboard API.
  * 3. When the match ends, clear the round counter, show the summary modal, and emit `matchOver`.
  * 4. Otherwise, compute the next-round cooldown and, if not orchestrated, configure and start the timer with injected helpers.
  * 5. Clear stat button visuals, keep them disabled until the next round, and refresh the debug panel.
@@ -532,9 +533,6 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
   } catch {}
   try {
     document.body?.removeAttribute?.("data-stat-selected");
-  } catch {}
-  try {
-    scoreboardApi?.showMessage?.(result.message || "", { outcome: true });
   } catch {}
   try {
     if (typeof scoreboardApi?.updateScore === "function") {
@@ -611,7 +609,7 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
   try {
     if (result.matchEnded) {
       try {
-        scoreboardApi?.clearRoundCounter?.();
+        clearRoundCounter();
       } catch {}
       try {
         await showMatchSummary?.(result, async () => {
@@ -733,9 +731,6 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
  * @returns {void}
  */
 export function bindRoundStarted() {
-  onBattleEvent("roundStarted", async (event) => {
-    await handleRoundStartedEvent(event);
-  });
 }
 
 /**
@@ -842,10 +837,8 @@ export function bindRoundUIEventHandlersOnce() {
  * are honored. Guards against rebinding to the same EventTarget instance.
  *
  * @pseudocode
- * 1. Track the current EventTarget in a WeakSet; bail if already bound.
- * 2. On `roundStarted` → call `applyRoundUI(store, roundNumber)`.
- * 3. On `statSelected` → add `selected`, show “You Picked…”, and disable buttons.
- * 4. On `roundResolved` → show outcome, update score, surface countdown text, schedule failsafes, clear selection, update debug panel.
+ * 1. On `statSelected` → add `selected` and disable buttons.
+ * 2. On `round.start` → dismiss transient snackbars.
  *
  * @returns {void}
  */
@@ -853,24 +846,6 @@ export function bindRoundUIEventHandlersDynamic() {
   scheduleMatchSummaryPreload();
   // Contract: Always call __resetBattleEventTarget() before binding handlers to ensure clean state
   // Each EventTarget reset creates a fresh instance with no handlers attached
-  const createPreloader = (loader) => {
-    const promise = Promise.resolve()
-      .then(loader)
-      .catch(() => undefined);
-    return () => promise;
-  };
-  const loadScoreboard = createPreloader(() => import("../setupScoreboard.js"));
-
-  const loadComputeNextRoundCooldown = createPreloader(
-    () => import("../timers/computeNextRoundCooldown.js")
-  );
-  const loadRoundManager = createPreloader(
-    () => import("/src/helpers/classicBattle/roundManager.js")
-  );
-  const loadUiHelpers = createPreloader(() => import("/src/helpers/classicBattle/uiHelpers.js"));
-  onBattleEvent("roundStarted", async (event) => {
-    await handleRoundStartedEvent(event);
-  });
   onBattleEvent("round.start", async () => {
     // Dismiss countdown snackbar immediately when Next is clicked
     try {
@@ -896,26 +871,5 @@ export function bindRoundUIEventHandlersDynamic() {
       document.body?.setAttribute?.("data-stat-selected", "true");
     } catch {}
     handleStatSelectedEvent(event);
-  });
-  onBattleEvent("roundResolved", async (event) => {
-    const [scoreboardModule, roundManagerModule, cooldownModule, uiHelpersModule] =
-      await Promise.all([
-        loadScoreboard(),
-        loadRoundManager(),
-        loadComputeNextRoundCooldown(),
-        loadUiHelpers()
-      ]);
-    await handleRoundResolvedEvent(event, {
-      scoreboard: scoreboardModule || scoreboard,
-      showMatchSummary: showMatchSummaryModal,
-      handleReplay: roundManagerModule?.handleReplay,
-      isOrchestrated: roundManagerModule?.isOrchestrated,
-      computeNextRoundCooldown: cooldownModule?.computeNextRoundCooldown,
-      createRoundTimer,
-      attachCooldownRenderer,
-      resetStatButtons,
-      syncScoreDisplay,
-      updateDebugPanel: uiHelpersModule?.updateDebugPanel
-    });
   });
 }

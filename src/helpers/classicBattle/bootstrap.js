@@ -19,6 +19,7 @@ import { setupScoreboard } from "../setupScoreboard.js";
 import { exposeClassicBattleTestAPI } from "../testing/exposeClassicBattleTestApi.js";
 import { setBattleStateBadgeEnabled, bindUIHelperEventHandlers } from "./uiHelpers.js";
 import { bindRoundUIEventHandlersDynamic } from "./roundUI.js";
+import { bindRoundFlowControllerOnce } from "./roundFlowController.js";
 
 /**
  * @returns {boolean} True if window is globally available and accessible
@@ -75,6 +76,7 @@ export async function setupClassicBattlePage() {
       await controller.init();
       await view.init();
       bindUIHelperEventHandlers();
+      bindRoundFlowControllerOnce();
       // Critical: Register round UI event handlers including round.start listener
       // that dismisses countdown/opponent snackbars when Next is clicked.
       // Bug: If this call is missing, snackbars persist across rounds.

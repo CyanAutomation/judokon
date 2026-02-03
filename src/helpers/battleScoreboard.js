@@ -1,13 +1,12 @@
 import { onBattleEvent, offBattleEvent } from "./classicBattle/battleEvents.js";
+import { updateScore, getState as _getState } from "../components/Scoreboard.js";
 import {
   showMessage,
-  updateScore,
   updateTimer,
   updateRoundCounter,
   clearRoundCounter,
-  showTemporaryMessage,
-  getState as _getState
-} from "../components/Scoreboard.js";
+  showTemporaryMessage
+} from "./roundStatusDisplay.js";
 import { getScheduler } from "./scheduler.js";
 
 // Event names

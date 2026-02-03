@@ -1,5 +1,15 @@
 import { ScoreboardModel } from "./ScoreboardModel.js";
 import { ScoreboardView } from "./ScoreboardView.js";
+import {
+  showMessage as showRoundMessage,
+  clearMessage as clearRoundMessage,
+  showTemporaryMessage as showTemporaryRoundMessage,
+  updateTimer as updateRoundTimer,
+  clearTimer as clearRoundTimer,
+  updateRoundCounter as updateRoundCounterDisplay,
+  clearRoundCounter as clearRoundCounterDisplay,
+  showAutoSelect as showAutoSelectMessage
+} from "../helpers/roundStatusDisplay.js";
 
 /**
  * Create a battle scoreboard showing round messages, timer, round counter and score.
@@ -74,7 +84,7 @@ export function createScoreboard(container = document.createElement("div")) {
 let defaultScoreboard = null;
 
 /**
- * Scoreboard composed from separate model and view instances.
+ * Scoreboard composed from separate model and view instances, focused on score display.
  */
 export class Scoreboard {
   /**
@@ -84,52 +94,45 @@ export class Scoreboard {
   constructor(model = new ScoreboardModel(), view = new ScoreboardView(model)) {
     this.model = model;
     this.view = view;
-    /** @private */
-    this._messageLockedUntil = 0;
   }
 
   /**
    * Display a message with optional outcome lock.
    *
    * @pseudocode
-   * 1. Ignore non-outcome messages while locked.
-   * 2. Render text via view.showMessage.
-   * 3. When outcome, lock for one second.
+   * 1. Forward to round status display helper.
    * @param {string} text - Message to show.
-   * @param {{outcome?:boolean}} [opts] - Outcome flag.
+   * @param {{outcome?:boolean,outcomeType?:string}} [opts] - Outcome flags.
    */
   showMessage(text, opts = {}) {
-    const now = Date.now();
-    if (now < this._messageLockedUntil && !opts.outcome) return;
-    this.view.showMessage(text, opts);
-    this._messageLockedUntil = opts.outcome ? now + 1000 : 0;
+    showRoundMessage(text, opts);
   }
 
   clearMessage() {
-    this.view.clearMessage();
+    clearRoundMessage();
   }
 
   /** @param {string} text */
   showTemporaryMessage(text) {
-    return this.view.showTemporaryMessage(text);
+    return showTemporaryRoundMessage(text);
   }
 
   /** @param {number} seconds */
   updateTimer(seconds) {
-    this.view.updateTimer(seconds);
+    updateRoundTimer(seconds);
   }
 
   clearTimer() {
-    this.view.clearTimer();
+    clearRoundTimer();
   }
 
   /** @param {number} round */
   updateRoundCounter(round) {
-    this.view.updateRoundCounter(round);
+    updateRoundCounterDisplay(round);
   }
 
   clearRoundCounter() {
-    this.view.clearRoundCounter();
+    clearRoundCounterDisplay();
   }
 
   /** @param {number} player @param {number} opponent */
@@ -140,7 +143,7 @@ export class Scoreboard {
 
   /** @param {string} stat */
   showAutoSelect(stat) {
-    this.view.showAutoSelect(stat);
+    showAutoSelectMessage(stat);
   }
 
   /**
@@ -148,8 +151,7 @@ export class Scoreboard {
    *
    * @pseudocode
    * 1. Apply score patch when player & opponent numbers.
-   * 2. Forward message (with outcome) and timer/round updates.
-   * 3. Return void.
+   * 2. Return void.
    * @param {object} patch - Partial state updates.
    */
   render(patch = {}) {
@@ -160,16 +162,6 @@ export class Scoreboard {
       if (playerIsNumber && opponentIsNumber) {
         this.updateScore(player, opponent);
       }
-    }
-    if (patch.message) {
-      const msg = typeof patch.message === "string" ? { text: patch.message } : patch.message;
-      this.showMessage(msg.text, { outcome: msg.outcome });
-    }
-    if ("timerSeconds" in patch) {
-      this.updateTimer(patch.timerSeconds);
-    }
-    if ("roundNumber" in patch) {
-      this.updateRoundCounter(patch.roundNumber);
     }
   }
 
@@ -265,7 +257,7 @@ export function initScoreboard(container, _controls) {
  * @param {{outcome?: boolean}} [opts] - Outcome flag locking the message.
  * @returns {void}
  */
-export const showMessage = (text, opts) => defaultScoreboard?.showMessage(text, opts);
+export const showMessage = (text, opts) => showRoundMessage(text, opts);
 
 /**
  * Clear any scoreboard message.
@@ -275,7 +267,7 @@ export const showMessage = (text, opts) => defaultScoreboard?.showMessage(text, 
  *
  * @returns {void}
  */
-export const clearMessage = () => defaultScoreboard?.clearMessage();
+export const clearMessage = () => clearRoundMessage();
 
 /**
  * Show a temporary message that disappears automatically.
@@ -286,7 +278,7 @@ export const clearMessage = () => defaultScoreboard?.clearMessage();
  * @param {string} text - Message to display briefly.
  * @returns {Promise<void>|void} Result of the underlying call.
  */
-export const showTemporaryMessage = (text) => defaultScoreboard?.showTemporaryMessage(text);
+export const showTemporaryMessage = (text) => showTemporaryRoundMessage(text);
 
 /**
  * Update the visible round timer.
@@ -297,7 +289,7 @@ export const showTemporaryMessage = (text) => defaultScoreboard?.showTemporaryMe
  * @param {number} s - Seconds remaining.
  * @returns {void}
  */
-export const updateTimer = (s) => defaultScoreboard?.updateTimer(s);
+export const updateTimer = (s) => updateRoundTimer(s);
 
 /**
  * Clear the round timer display.
@@ -307,7 +299,7 @@ export const updateTimer = (s) => defaultScoreboard?.updateTimer(s);
  *
  * @returns {void}
  */
-export const clearTimer = () => defaultScoreboard?.clearTimer();
+export const clearTimer = () => clearRoundTimer();
 
 /**
  * Update the round counter on the scoreboard.
@@ -318,7 +310,7 @@ export const clearTimer = () => defaultScoreboard?.clearTimer();
  * @param {number} n - Current round number.
  * @returns {void}
  */
-export const updateRoundCounter = (n) => defaultScoreboard?.updateRoundCounter(n);
+export const updateRoundCounter = (n) => updateRoundCounterDisplay(n);
 
 /**
  * Clear the round counter display.
@@ -328,7 +320,7 @@ export const updateRoundCounter = (n) => defaultScoreboard?.updateRoundCounter(n
  *
  * @returns {void}
  */
-export const clearRoundCounter = () => defaultScoreboard?.clearRoundCounter();
+export const clearRoundCounter = () => clearRoundCounterDisplay();
 
 /**
  * Update player and opponent scores.
@@ -351,7 +343,7 @@ export const updateScore = (p, o) => defaultScoreboard?.updateScore(p, o);
  * @param {string} stat - Stat identifier.
  * @returns {void}
  */
-export const showAutoSelect = (stat) => defaultScoreboard?.showAutoSelect(stat);
+export const showAutoSelect = (stat) => showAutoSelectMessage(stat);
 
 /**
  * Render a partial state patch into the default scoreboard.
