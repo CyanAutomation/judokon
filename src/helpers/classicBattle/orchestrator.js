@@ -28,7 +28,6 @@ import { bindScoreboardEventHandlersOnce } from "./uiService.js";
 import { bindCountdownEventHandlersOnce } from "./timerService.js";
 import { debugLog } from "./debugLog.js";
 import { STATS, onEngineCreated } from "../BattleEngine.js";
-import { updateScore } from "../setupScoreboard.js";
 import { buildClassicBattleStateTable } from "./stateTable.js";
 import { isRoundModificationOverlayEnabled } from "./roundModificationOverlay.js";
 
@@ -68,10 +67,11 @@ function attachEngineEventBridge(engine) {
     try {
       const player = Number(detail?.playerScore) || 0;
       const opponent = Number(detail?.opponentScore) || 0;
-      emitBattleEvent("display.score.update", { player, opponent });
-      if (typeof updateScore === "function") {
-        updateScore(player, opponent);
-      }
+      emitBattleEvent("round.evaluated", {
+        outcome: detail?.outcome,
+        message: detail?.message,
+        scores: { player, opponent }
+      });
     } catch {}
   });
 
