@@ -192,6 +192,14 @@ export async function startRoundCooldown(resolved, config = {}) {
   try {
     // console.debug(`classicBattle.trace cooldown:start t=${Date.now()} secs=${seconds}`);
   } catch {}
+  try {
+    const numericDuration = Number(seconds);
+    if (Number.isFinite(numericDuration)) {
+      emitBattleEvent("countdownStart", { duration: numericDuration });
+      emitBattleEvent("control.countdown.started", { durationMs: numericDuration * 1000 });
+      emitBattleEvent("nextRoundCountdownStarted", { durationMs: numericDuration * 1000 });
+    }
+  } catch {}
   await startTimerSafely(timer, seconds);
   try {
     // console.debug(`classicBattle.trace cooldown:end t=${Date.now()} secs=${seconds}`);
