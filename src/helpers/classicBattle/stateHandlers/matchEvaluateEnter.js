@@ -11,7 +11,12 @@
 export async function matchEvaluateEnter(machine) {
   if (!machine || typeof machine.dispatch !== "function") return;
 
-  await machine.dispatch("evaluateMatch");
+  try {
+    await machine.dispatch("evaluateMatch");
+  } catch (error) {
+    console.error("Failed to dispatch evaluateMatch:", error);
+    // Consider fallback behavior or re-throwing based on requirements
+  }
 }
 
 export default matchEvaluateEnter;
