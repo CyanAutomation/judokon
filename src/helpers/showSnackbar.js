@@ -58,7 +58,7 @@ export function showSnackbar(message) {
     ...payload,
     priority: payload.priority ?? SnackbarPriority.NORMAL,
     minDuration: 0,
-    ttl: message?.ttl ?? 3000
+    ttl: payload.ttl ?? 3000
   });
 }
 
