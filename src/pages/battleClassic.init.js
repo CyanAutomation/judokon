@@ -81,11 +81,7 @@ import {
 import { setBattleStateSnapshot } from "../helpers/classicBattle/eventBus.js";
 import { getDocumentRef } from "../helpers/documentHelper.js";
 
-import {
-  showSelectionPrompt,
-  getOpponentDelay,
-  setOpponentDelay
-} from "../helpers/classicBattle/snackbar.js";
+import { showSelectionPrompt, getOpponentDelay } from "../helpers/classicBattle/snackbar.js";
 import {
   initBattleStateBadge,
   setBadgeText,
@@ -105,7 +101,6 @@ import {
 } from "../helpers/classicBattle/selectionHandler.js";
 import setupScheduler from "../helpers/classicBattle/setupScheduler.js";
 import {
-  recordOpponentPromptTimestamp,
   getOpponentPromptTimestamp,
   resetOpponentPromptTimestamp,
   getOpponentPromptMinDuration
@@ -281,9 +276,11 @@ function calculateRemainingOpponentMessageTime() {
 function computeSelectionReadyDelay() {
   let delayForReady = BASE_SELECTION_READY_DELAY_MS;
   try {
-    const opponentDelay = getOpponentDelay?.();
-    if (Number.isFinite(opponentDelay) && opponentDelay >= 0) {
-      delayForReady = Math.max(delayForReady, opponentDelay + CONFIG.OPPONENT_MESSAGE_BUFFER_MS);
+    if (isEnabled("opponentDelayMessage")) {
+      const opponentDelay = getOpponentDelay?.();
+      if (Number.isFinite(opponentDelay) && opponentDelay >= 0) {
+        delayForReady = Math.max(delayForReady, opponentDelay + CONFIG.OPPONENT_MESSAGE_BUFFER_MS);
+      }
     }
   } catch {}
   return Math.max(delayForReady, getOpponentPromptMinDuration());
@@ -516,8 +513,7 @@ async function waitForStatButtonsReady() {
  * @pseudocode
  * 1. Stop any active stat selection timer utilities.
  * 2. Cancel the global `__battleClassicStopSelectionTimer` hook when available.
- * 3. Set up delay configuration for opponent message timing.
- * 4. Return any window-provided delay override value.
+ * 3. Return any window-provided delay override value.
  *
  * @returns {number} Delay override in milliseconds, or `0` when none provided.
  */
@@ -526,10 +522,6 @@ export function prepareUiBeforeSelection() {
     stopActiveSelectionTimer();
   } catch {}
   clearOpponentPromptFallbackTimer();
-  const delayOverride =
-    typeof window !== "undefined" && typeof window.__OPPONENT_RESOLVE_DELAY_MS === "number"
-      ? Number(window.__OPPONENT_RESOLVE_DELAY_MS)
-      : null;
   if (typeof window !== "undefined" && window.__battleClassicStopSelectionTimer) {
     try {
       window.__battleClassicStopSelectionTimer();
@@ -537,38 +529,6 @@ export function prepareUiBeforeSelection() {
       console.debug("battleClassic: cancel selection timer failed", err);
     }
   }
-  const flagEnabled = isEnabled("opponentDelayMessage");
-  const baseDelay = Number.isFinite(delayOverride)
-    ? Number(delayOverride)
-    : Number(getOpponentDelay());
-  const resolvedDelay = Number.isFinite(baseDelay) && baseDelay > 0 ? baseDelay : 0;
-
-  if (flagEnabled) {
-    setOpponentDelay(resolvedDelay);
-    if (resolvedDelay > 0) {
-      // Set up fallback timer as safety net (records timestamp even if event doesn't fire)
-      const timeoutId = scheduleDelayed(() => {
-        try {
-          // Only record timestamp - snackbar is handled by uiEventHandlers.js
-          recordOpponentPromptTimestamp(getCurrentTimestamp());
-        } catch {}
-        clearOpponentPromptFallbackTimer();
-      }, resolvedDelay);
-
-      const normalizedTimeoutId = Number(timeoutId);
-
-      if (Number.isFinite(normalizedTimeoutId) && typeof window !== "undefined") {
-        setOpponentPromptFallbackTimerId(normalizedTimeoutId);
-      }
-      return resolvedDelay;
-    }
-  }
-
-  // No delay case - just record timestamp immediately
-  // Snackbar display is handled by uiEventHandlers.js statSelected handler
-  try {
-    recordOpponentPromptTimestamp(getCurrentTimestamp());
-  } catch {}
   return 0;
 }
 
@@ -897,14 +857,12 @@ async function handleStatButtonClick(store, stat, btn) {
   const targets = buttons.length > 0 ? buttons : [btn];
   disableStatButtons(targets, container ?? undefined);
 
-  const delayOverride = prepareUiBeforeSelection();
   const { playerVal, opponentVal } = resolveStatValues(store, stat);
   let result;
   try {
     result = await handleStatSelection(store, String(stat), {
       playerVal,
-      opponentVal,
-      delayMs: delayOverride
+      opponentVal
     });
   } catch (err) {
     handleStatSelectionError(store, err);

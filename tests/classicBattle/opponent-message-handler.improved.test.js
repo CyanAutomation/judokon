@@ -152,8 +152,7 @@ describe("UI handlers: opponent message events", () => {
     delete globalThis.__classicBattleEventTarget;
   });
 
-  it("shows opponent choosing snackbar immediately when delay is not positive", async () => {
-    // Set delay to 0 to test immediate display
+  it("skips opponent choosing snackbar when delay is not positive", async () => {
     setOpponentDelay(0);
 
     // Create dependencies object with mocked functions
@@ -178,31 +177,19 @@ describe("UI handlers: opponent message events", () => {
     // Bind handlers with mocked dependencies
     bindUIHelperEventHandlersDynamic(deps);
 
-    // Emit event that triggers opponent message display
-    emitBattleEvent("statSelected", { opts: { delayOpponentMessage: false } });
+    emitBattleEvent("roundResolved", { result: { message: "Test" } });
 
     // Give any async callbacks a chance to run
     await timers.runAllTimersAsync();
 
-    // When delay is 0 or less, snackbar should show immediately without setTimeout
-    // Implementation uses snackbarManager.show() with HIGH priority
-    expect(mockShow).toHaveBeenCalledTimes(1);
-    expect(mockShow.mock.calls[0][0]).toEqual(
-      expect.objectContaining({
-        message: "Opponent is choosing…",
-        priority: 3, // SnackbarPriority.HIGH
-        minDuration: 600,
-        autoDismiss: 0
-      })
-    );
-    expect(markOpponentPromptNow).toHaveBeenCalledWith({ notify: true });
+    expect(mockShow).not.toHaveBeenCalled();
+    expect(markOpponentPromptNow).not.toHaveBeenCalled();
     expect(recordOpponentPromptTimestamp).not.toHaveBeenCalled();
-    // No timers should be queued when delay is 0
     expect(vi.getTimerCount()).toBe(0);
     expect(setTimeoutSpy).not.toHaveBeenCalled();
   });
 
-  it("shows opponent choosing snackbar immediately when delay flag is enabled", async () => {
+  it("shows opponent choosing snackbar after round resolution when delay enabled", async () => {
     // Create dependencies object with mocked functions
     const configuredDelay = 500;
     const deps = {
@@ -226,23 +213,22 @@ describe("UI handlers: opponent message events", () => {
     // Use the default delay of 500ms
     bindUIHelperEventHandlersDynamic(deps);
 
-    emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
+    emitBattleEvent("roundResolved", { result: { message: "Test" } });
     await timers.runAllTimersAsync();
 
-    // Snackbar appears immediately with HIGH priority and minDuration
+    // Snackbar appears with HIGH priority and minDuration
     expect(mockShow).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: "Opponent is choosing…",
+        text: "Opponent is choosing…",
         priority: 3, // SnackbarPriority.HIGH
         minDuration: 600, // Uses getOpponentPromptMinDuration()
-        autoDismiss: 0
+        ttl: 0
       })
     );
     expect(mockShow).toHaveBeenCalledTimes(1);
     // markOpponentPromptNow is called with notify: true via onShow
     expect(markOpponentPromptNow).toHaveBeenCalledWith({ notify: true });
     expect(markOpponentPromptNow).toHaveBeenCalledTimes(1);
-    expect(vi.getTimerCount()).toBe(0);
-    expect(setTimeoutSpy).not.toHaveBeenCalled();
+    expect(setTimeoutSpy).toHaveBeenCalled();
   });
 });

@@ -106,14 +106,19 @@ describe("Classic Battle opponent delay behavior", () => {
     await harness?.cleanup();
   });
 
-  it("shows opponent prompt immediately while keeping the UI accessible", async () => {
+  it("shows opponent prompt after round resolution while keeping the UI accessible", async () => {
     const promptEvents = [];
     const stopListening = onBattleEvent("opponentPromptReady", (evt) => {
       promptEvents.push(evt?.detail?.timestamp ?? null);
     });
 
     emitBattleEvent("opponentReveal");
-    emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true, delayMs: 300 } });
+    emitBattleEvent("roundResolved", {
+      result: { message: "Result" },
+      stat: "power",
+      playerVal: 1,
+      opponentVal: 2
+    });
     await Promise.resolve();
     await Promise.resolve();
     // Immediately after statSelected event, snackbar should be visible

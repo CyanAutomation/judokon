@@ -1212,7 +1212,7 @@ const timerApi = {
   },
 
   /**
-   * Override the simulated opponent resolution delay used by the battle engine.
+   * Override the simulated opponent message delay used by the UI layer.
    * @param {number|null|undefined} delayMs - Delay in milliseconds (reset when nullish)
    * @returns {boolean} True when the delay override is applied
    */
@@ -1243,7 +1243,7 @@ const timerApi = {
   },
 
   /**
-   * Read the currently configured opponent resolve delay override when present.
+   * Read the currently configured opponent message delay override when present.
    * @returns {number|null} Delay value in milliseconds or null when unset.
    */
   getOpponentResolveDelay() {

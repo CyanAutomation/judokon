@@ -34,10 +34,6 @@ vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
   })
 }));
 
-vi.mock("../../src/helpers/classicBattle/timerUtils.js", () => ({
-  resolveDelay: vi.fn(() => 0)
-}));
-
 vi.mock("../../src/helpers/classicBattle/promises.js", () => ({
   getRoundResolvedPromise: vi.fn(() => Promise.resolve())
 }));
@@ -55,7 +51,6 @@ describe("handleStatSelection helpers", () => {
   let store;
   let stopTimer;
   let emitBattleEvent;
-  let showSnackbar;
   let dispatchBattleEvent;
   let getBattleState;
   let timers;
@@ -100,10 +95,6 @@ describe("handleStatSelection helpers", () => {
       })
     }));
 
-    vi.mock("../../src/helpers/classicBattle/timerUtils.js", () => ({
-      resolveDelay: vi.fn(() => 0)
-    }));
-
     vi.mock("../../src/helpers/classicBattle/promises.js", () => ({
       getRoundResolvedPromise: vi.fn(() => Promise.resolve())
     }));
@@ -126,9 +117,6 @@ describe("handleStatSelection helpers", () => {
 
     const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
     emitBattleEvent = battleEvents.emitBattleEvent;
-
-    const snackbarModule = await import("../../src/helpers/showSnackbar.js");
-    showSnackbar = snackbarModule.showSnackbar;
 
     const eventDispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     dispatchBattleEvent = eventDispatcher.dispatchBattleEvent;
@@ -216,7 +204,6 @@ describe("handleStatSelection helpers", () => {
 
     expect(document.getElementById("next-round-timer").textContent).toBe("");
     expect(document.getElementById("round-message").textContent).toBe("");
-    expect(showSnackbar).toHaveBeenCalledWith("ui.opponentChoosing");
   });
 
   it("clears autoSelectId even when feature flag disabled", async () => {
@@ -324,21 +311,13 @@ describe("handleStatSelection helpers", () => {
       return originalEmit ? originalEmit(eventName, ...args) : undefined;
     });
 
-    const timerUtils = await import("../../src/helpers/classicBattle/timerUtils.js");
     const resolver = await import("../../src/helpers/classicBattle/roundResolver.js");
 
     const handlePromise = handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
     await vi.runAllTimersAsync();
     await handlePromise;
 
-    expect(resolver.resolveRound).toHaveBeenCalledWith(
-      store,
-      "power",
-      1,
-      2,
-      expect.objectContaining({ delayMs: 0 })
-    );
-    expect(timerUtils.resolveDelay).toHaveBeenCalledTimes(1);
+    expect(resolver.resolveRound).toHaveBeenCalledWith(store, "power", 1, 2, {});
 
     delete document.body.dataset.battleState;
     getBattleState.mockReturnValue(null);

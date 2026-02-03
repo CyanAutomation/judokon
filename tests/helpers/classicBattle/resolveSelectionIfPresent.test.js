@@ -28,13 +28,7 @@ describe("resolveSelectionIfPresent", () => {
     };
     const resolved = await resolveSelectionIfPresent(store);
     expect(resolved).toBe(true);
-    expect(resolveRound).toHaveBeenCalledWith(
-      store,
-      "speed",
-      50,
-      40,
-      expect.objectContaining({ delayMs: 0 })
-    );
+    expect(resolveRound).toHaveBeenCalledWith(store, "speed", 50, 40);
     expect(getStatValue).not.toHaveBeenCalledWith(null, "speed");
   });
 
@@ -55,12 +49,6 @@ describe("resolveSelectionIfPresent", () => {
     await resolveSelectionIfPresent(store);
     expect(getStatValue).toHaveBeenCalledWith(p, "speed");
     expect(getStatValue).toHaveBeenCalledWith(o, "speed");
-    expect(resolveRound).toHaveBeenLastCalledWith(
-      store,
-      "speed",
-      10,
-      20,
-      expect.objectContaining({ delayMs: 0 })
-    );
+    expect(resolveRound).toHaveBeenLastCalledWith(store, "speed", 10, 20);
   });
 });

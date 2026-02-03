@@ -1,6 +1,8 @@
 import { onBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import { handleRoundStartedEvent, handleRoundResolvedEvent } from "./roundUI.js";
 import { showRoundOutcome } from "./uiHelpers.js";
+import { isEnabled } from "../featureFlags.js";
+import { getOpponentDelay } from "./snackbar.js";
 
 /**
  * Bind round flow UI handlers for engine-driven events.
@@ -12,17 +14,62 @@ import { showRoundOutcome } from "./uiHelpers.js";
  * @returns {void}
  */
 export function bindRoundFlowController() {
+  let outcomeSequence = 0;
+  let pendingOutcomeTimeoutId = null;
+  const clearPendingOutcomeDelay = () => {
+    if (pendingOutcomeTimeoutId) {
+      clearTimeout(pendingOutcomeTimeoutId);
+    }
+    pendingOutcomeTimeoutId = null;
+  };
+
+  const resolveOpponentDelayMs = () => {
+    try {
+      const override = Number(globalThis?.__OPPONENT_RESOLVE_DELAY_MS);
+      if (Number.isFinite(override) && override >= 0) {
+        return override;
+      }
+    } catch {}
+    try {
+      const configured = Number(getOpponentDelay());
+      if (Number.isFinite(configured) && configured >= 0) {
+        return configured;
+      }
+    } catch {}
+    return 0;
+  };
+
+  const scheduleRoundOutcomeDisplay = async (event) => {
+    const { result, stat, playerVal, opponentVal } = event?.detail || {};
+    if (!result) return;
+    const sequence = ++outcomeSequence;
+    clearPendingOutcomeDelay();
+    const delayEnabled = isEnabled("opponentDelayMessage");
+    const delayMs = delayEnabled ? resolveOpponentDelayMs() : 0;
+    if (!delayEnabled || !Number.isFinite(delayMs) || delayMs <= 0) {
+      try {
+        showRoundOutcome(result.message || "", stat, playerVal, opponentVal);
+      } catch {}
+      return;
+    }
+
+    await new Promise((resolve) => {
+      pendingOutcomeTimeoutId = setTimeout(resolve, delayMs);
+    });
+    if (sequence !== outcomeSequence) {
+      return;
+    }
+    try {
+      showRoundOutcome(result.message || "", stat, playerVal, opponentVal);
+    } catch {}
+  };
+
   onBattleEvent("roundStarted", (event) => {
     handleRoundStartedEvent(event).catch(() => {});
   });
 
   onBattleEvent("roundResolved", async (event) => {
-    const { result, stat, playerVal, opponentVal } = event?.detail || {};
-    if (result) {
-      try {
-        showRoundOutcome(result.message || "", stat, playerVal, opponentVal);
-      } catch {}
-    }
+    await scheduleRoundOutcomeDisplay(event);
     await handleRoundResolvedEvent(event);
   });
 }

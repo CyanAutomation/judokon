@@ -16,16 +16,15 @@ import {
 } from "./globalState.js";
 import { clearScheduled } from "./timerSchedule.js";
 import snackbarManager, { SnackbarPriority } from "../SnackbarManager.js";
-
+import { isEnabled } from "../featureFlags.js";
+import { getOpponentDelay } from "./snackbar.js";
 let opponentSnackbarId = 0;
 let pendingOpponentCardData = null;
 let pendingOpponentCardDataSequence = 0;
 let pendingOpponentCardDataToken = null;
 let pendingOpponentCardDataTokenSequence = 0;
 let currentOpponentSnackbarController = null;
-let currentPickedSnackbarController = null;
 let statSelectedHandlerPromise = null;
-let opponentDelayController = null;
 let statSelectedSequence = 0;
 let opponentRevealSequence = 0;
 const DEFAULT_MIN_OBSCURE_DURATION_MS = 16;
@@ -36,14 +35,17 @@ function clearOpponentSnackbarTimeout() {
   if (opponentSnackbarId) {
     clearTimeout(opponentSnackbarId);
   }
-  if (opponentDelayController) {
-    opponentDelayController.canceled = true;
-    if (typeof opponentDelayController.resolve === "function") {
-      opponentDelayController.resolve();
-    }
-  }
   opponentSnackbarId = 0;
-  opponentDelayController = null;
+}
+
+async function clearOpponentSnackbar() {
+  clearOpponentSnackbarTimeout();
+  if (currentOpponentSnackbarController) {
+    try {
+      await currentOpponentSnackbarController.remove();
+    } catch {}
+    currentOpponentSnackbarController = null;
+  }
 }
 
 function clearFallbackPromptTimer() {
@@ -155,15 +157,15 @@ async function waitForMinimumOpponentObscureDuration() {
  * @param {object} [deps] - Optional dependencies for testing (defaults to real implementations)
  * @param {Function} [deps.t] - Translation function
  * @param {Function} [deps.markOpponentPromptNow] - Function to mark opponent prompt timestamp
- * @param {Function} [deps.recordOpponentPromptTimestamp] - Function to record timestamp
  * @param {Function} [deps.getOpponentPromptMinDuration] - Function to get minimum duration
  * @param {object} [deps.scoreboard] - Scoreboard utilities
- * @param {Function} [deps.updateSnackbar] - Function to update snackbar messages
  * @param {Function} [deps.getOpponentCardData] - Function to get opponent card data
  * @param {Function} [deps.renderOpponentCard] - Function to render opponent card
  * @param {Function} [deps.showStatComparison] - Function to show stat comparison
  * @param {Function} [deps.updateDebugPanel] - Function to update debug panel
  * @param {Function} [deps.applyOpponentCardPlaceholder] - Function to apply placeholder
+ * @param {Function} [deps.isEnabled] - Feature flag checker
+ * @param {Function} [deps.getOpponentDelay] - Resolve UI delay for opponent prompt
  *
  * @pseudocode
  * 1. Track EventTargets in a WeakSet to avoid duplicate bindings.
@@ -183,7 +185,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     renderOpponentCard: renderOpponentCardFn = renderOpponentCard,
     showStatComparison: showStatComparisonFn = showStatComparison,
     updateDebugPanel: updateDebugPanelFn = updateDebugPanel,
-    applyOpponentCardPlaceholder: applyOpponentCardPlaceholderFn = applyOpponentCardPlaceholder
+    applyOpponentCardPlaceholder: applyOpponentCardPlaceholderFn = applyOpponentCardPlaceholder,
+    isEnabled: isEnabledFn = isEnabled,
+    getOpponentDelay: getOpponentDelayFn = getOpponentDelay
   } = deps;
 
   // Get the event target - each __resetBattleEventTarget() call creates a fresh EventTarget with no handlers
@@ -325,7 +329,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       }
 
       try {
-        const opponentPromptMessage = tFn("ui.opponentChoosing");
         const detail = (e && e.detail) || {};
         const hasOpts = Object.prototype.hasOwnProperty.call(detail, "opts");
         const opts = hasOpts ? detail.opts || {} : {};
@@ -333,52 +336,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         if (!isCurrentHandler()) {
           return;
         }
-        clearOpponentSnackbarTimeout();
+        await clearOpponentSnackbar();
         clearFallbackPromptTimer();
-
-        // Cancel any existing snackbars
-        if (currentOpponentSnackbarController) {
-          try {
-            await currentOpponentSnackbarController.remove();
-          } catch {
-            // Non-critical
-          }
-          currentOpponentSnackbarController = null;
-        }
-        if (currentPickedSnackbarController) {
-          try {
-            await currentPickedSnackbarController.remove();
-          } catch {
-            // Non-critical
-          }
-          currentPickedSnackbarController = null;
-        }
-
-        if (!isCurrentHandler()) {
-          return;
-        }
-        const minDuration = Number(getOpponentPromptMinDurationFn()) || 750;
-
-        // Show opponent choosing message immediately; reveal timing happens in round resolution.
-        currentOpponentSnackbarController = snackbarManager.show({
-          text: opponentPromptMessage,
-          priority: SnackbarPriority.HIGH,
-          minDuration,
-          ttl: 0, // Don't auto-dismiss, will be controlled by battle flow
-          onShow: () => {
-            // Mark timestamp when snackbar actually appears
-            try {
-              markOpponentPromptNowFn({ notify: true });
-            } catch {
-              // Non-critical
-            }
-          }
-        });
-
-        // Wait for minimum display duration before allowing round to proceed
-        if (currentOpponentSnackbarController) {
-          await currentOpponentSnackbarController.waitForMinDuration();
-        }
+        void opts;
       } catch (error) {
         console.error("[statSelected Handler] Error:", error);
       }
@@ -393,24 +353,43 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 
   onBattleEvent("roundResolved", async (e) => {
     const selectionToken = pendingOpponentCardDataToken;
-    clearOpponentSnackbarTimeout();
+    await clearOpponentSnackbar();
 
-    // Remove both opponent choosing and picked snackbars if still active
-    if (currentOpponentSnackbarController) {
-      try {
-        await currentOpponentSnackbarController.remove();
-      } catch {
-        // Non-critical
+    let delayMs = 0;
+    try {
+      if (isEnabledFn("opponentDelayMessage")) {
+        const configured = Number(getOpponentDelayFn());
+        delayMs = Number.isFinite(configured) && configured >= 0 ? configured : 0;
       }
-      currentOpponentSnackbarController = null;
+    } catch {
+      delayMs = 0;
     }
-    if (currentPickedSnackbarController) {
+    if (delayMs > 0) {
+      let minDuration = 0;
       try {
-        await currentPickedSnackbarController.remove();
-      } catch {
-        // Non-critical
+        const candidate = Number(getOpponentPromptMinDurationFn());
+        minDuration = Number.isFinite(candidate) && candidate >= 0 ? candidate : 0;
+      } catch {}
+      try {
+        currentOpponentSnackbarController = snackbarManager.show({
+          text: tFn("ui.opponentChoosing"),
+          priority: SnackbarPriority.HIGH,
+          minDuration,
+          ttl: 0,
+          onShow: () => {
+            try {
+              markOpponentPromptNowFn({ notify: true });
+            } catch {}
+          }
+        });
+      } catch {}
+      const waitMs = Math.max(delayMs, minDuration, 0);
+      if (Number.isFinite(waitMs) && waitMs > 0) {
+        await new Promise((resolve) => {
+          opponentSnackbarId = setTimeout(resolve, waitMs);
+        });
       }
-      currentPickedSnackbarController = null;
+      await clearOpponentSnackbar();
     }
 
     await revealOpponentCardAfterResolution(selectionToken);
@@ -475,33 +454,18 @@ export async function awaitStatSelectedHandler() {
 }
 
 /**
- * Dismisses the currently active opponent-related snackbar controllers (both opponent choosing and picked snackbars).
+ * Dismisses the currently active opponent-related snackbar controller.
  * This function is typically used by the countdown renderer or other components that need
  * to preemptively remove opponent messages, for example, to display a countdown timer.
  * Errors during snackbar removal are caught and ignored as they are non-critical.
  *
  * @pseudocode
- * 1. If `currentOpponentSnackbarController` exists, attempt to remove it and set to null.
- * 2. If `currentPickedSnackbarController` exists, attempt to remove it and set to null.
+ * 1. Clear any pending opponent snackbar timers.
+ * 2. If `currentOpponentSnackbarController` exists, attempt to remove it and set to null.
  * 3. Handle non-critical errors during removal attempts.
  *
  * @returns {Promise<void>} A Promise that resolves once any active snackbars have been dismissed.
  */
 export async function dismissOpponentSnackbar() {
-  if (currentOpponentSnackbarController) {
-    try {
-      await currentOpponentSnackbarController.remove();
-    } catch {
-      // Non-critical
-    }
-    currentOpponentSnackbarController = null;
-  }
-  if (currentPickedSnackbarController) {
-    try {
-      await currentPickedSnackbarController.remove();
-    } catch {
-      // Non-critical
-    }
-    currentPickedSnackbarController = null;
-  }
+  await clearOpponentSnackbar();
 }
