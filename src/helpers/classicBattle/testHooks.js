@@ -3,6 +3,7 @@ import { stopTimer } from "../BattleEngine.js";
 import * as roundUIModule from "./roundUI.js";
 import * as uiServiceModule from "./uiService.js";
 import * as uiEventHandlersModule from "./uiEventHandlers.js";
+import * as roundFlowControllerModule from "./roundFlowController.js";
 import * as promisesModule from "./promises.js";
 import * as cardSelectionModule from "./cardSelection.js";
 import * as cardStatUtilsModule from "./cardStatUtils.js";
@@ -185,6 +186,7 @@ export async function setCardStatValuesForTest(config = {}) {
  *     roundUI?: typeof import('./roundUI.js'),
  *     uiService?: typeof import('./uiService.js'),
  *     uiEventHandlers?: typeof import('./uiEventHandlers.js'),
+ *     roundFlowController?: typeof import('./roundFlowController.js'),
  *     promises?: typeof import('./promises.js')
  *   }
  * }} [opts] - Optional flags and dependency overrides. `force` rebinds dynamic handlers.
@@ -195,14 +197,17 @@ export async function ensureBindings(opts = {}) {
   const roundUI = dependencyOverrides.roundUI ?? roundUIModule;
   const uiService = dependencyOverrides.uiService ?? uiServiceModule;
   const uiEventHandlers = dependencyOverrides.uiEventHandlers ?? uiEventHandlersModule;
+  const roundFlowController =
+    dependencyOverrides.roundFlowController ?? roundFlowControllerModule;
   const promises = dependencyOverrides.promises ?? promisesModule;
 
   // Bind round UI listeners once per worker to avoid duplicate handlers.
   if (!__uiBound) {
-    if (typeof roundUI.bindRoundUIEventHandlersOnce === "function") {
-      roundUI.bindRoundUIEventHandlersOnce();
-    } else if (typeof roundUI.bindRoundUIEventHandlers === "function") {
-      roundUI.bindRoundUIEventHandlers();
+    if (typeof roundFlowController.bindRoundFlowControllerOnce === "function") {
+      roundFlowController.bindRoundFlowControllerOnce();
+    }
+    if (typeof roundUI.bindRoundUIEventHandlersDynamic === "function") {
+      roundUI.bindRoundUIEventHandlersDynamic();
     }
     if (typeof uiService.bindUIServiceEventHandlersOnce === "function") {
       uiService.bindUIServiceEventHandlersOnce();
@@ -215,6 +220,9 @@ export async function ensureBindings(opts = {}) {
       try {
         __resetBattleEventTarget();
       } catch {}
+      if (typeof roundFlowController.bindRoundFlowControllerOnce === "function") {
+        roundFlowController.bindRoundFlowControllerOnce();
+      }
       if (typeof roundUI.bindRoundUIEventHandlersDynamic === "function") {
         roundUI.bindRoundUIEventHandlersDynamic();
       }
@@ -233,6 +241,9 @@ export async function ensureBindings(opts = {}) {
     try {
       __resetBattleEventTarget();
     } catch {}
+    if (typeof roundFlowController.bindRoundFlowControllerOnce === "function") {
+      roundFlowController.bindRoundFlowControllerOnce();
+    }
     if (typeof roundUI.bindRoundUIEventHandlersDynamic === "function") {
       roundUI.bindRoundUIEventHandlersDynamic();
     }

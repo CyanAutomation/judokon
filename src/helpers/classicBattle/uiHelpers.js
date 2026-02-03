@@ -3,7 +3,7 @@ import { STATS } from "../BattleEngine.js";
 
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
-import * as scoreboard from "../setupScoreboard.js";
+import { showMessage, clearMessage, clearTimer } from "../roundStatusDisplay.js";
 import { showResult } from "../battle/index.js";
 import { shouldReduceMotionSync } from "../motionUtils.js";
 import { onFrame as scheduleFrame, cancel as cancelFrame } from "../../utils/scheduler.js";
@@ -228,7 +228,7 @@ export async function renderOpponentCard(judoka, container) {
  * 1. When `stat` and both values are valid numbers, compose a consolidated message:
  *    "You picked: Stat (P) — Opponent picked: Stat (O) — <outcome>" with capitalized stat.
  * 2. Otherwise, use the base `outcomeMessage`.
- * 3. Call `showResult(message)` and `scoreboard.showMessage(message, { outcome: true })`.
+ * 3. Call `showResult(message)` and mirror to the round status display.
  */
 export function showRoundOutcome(outcomeMessage, stat, playerVal, opponentVal) {
   let message = outcomeMessage || "";
@@ -243,7 +243,7 @@ export function showRoundOutcome(outcomeMessage, stat, playerVal, opponentVal) {
     showResult(message);
   } catch {}
   try {
-    scoreboard.showMessage(message, { outcome: true });
+    showMessage(message, { outcome: true });
   } catch {}
 }
 
@@ -506,16 +506,16 @@ export function setNextButtonFinalizedState() {
  */
 
 /**
- * Display a round outcome across scoreboard and result regions.
+ * Display a round outcome across the round status display and result regions.
  *
  * Renders the outcome into the non-transient result area and forwards a
- * copy to the scoreboard. Avoids using snackbars for outcome messages so
+ * copy to the round status display. Avoids using snackbars for outcome messages so
  * transient countdown/hint flows remain unaffected.
  *
  * @pseudocode
  * 1. If stat comparison data is provided, prepend it to the message.
  * 2. Call `showResult(fullMessage)` to render the consolidated outcome.
- * 3. Call `scoreboard.showMessage(fullMessage, { outcome: true })`.
+ * 3. Call `showMessage(fullMessage, { outcome: true })`.
  * 4. Avoid showing a snackbar for outcome messages.
  *
  * @param {string} message - Outcome text to display (e.g. "You Win").
@@ -695,13 +695,13 @@ function showRetryModal(retryFn) {
  * @returns {Function} Cleanup function to remove the event listener.
  * @summary Handle round start errors with user-friendly messaging and retry option.
  * @pseudocode
- * 1. Create an error handler that shows a scoreboard message and retry modal.
+ * 1. Create an error handler that shows a round status message and retry modal.
  * 2. Add the handler to the 'round-start-error' event.
  * 3. Return a cleanup function to remove the event listener.
  */
 export function registerRoundStartErrorHandler(retryFn) {
   const onError = () => {
-    scoreboard.showMessage("Round start error. Please retry.");
+    showMessage("Round start error. Please retry.");
     showRetryModal(retryFn);
   };
   document.addEventListener("round-start-error", onError);
@@ -1010,10 +1010,10 @@ export function resetQuitButton() {
 }
 
 /**
- * Clear scoreboard messages/timers and synchronize the scoreboard display.
+ * Clear round status messages/timers and synchronize the scoreboard display.
  *
  * @pseudocode
- * 1. Call `scoreboard.clearMessage()` and `scoreboard.clearTimer()` to remove transient state.
+ * 1. Call `clearMessage()` and `clearTimer()` to remove transient state.
  * 2. Clear `#round-result` text if present.
  * 3. Call `syncScoreDisplay()` to ensure the scoreboard shows initial text when empty.
  *
@@ -1021,10 +1021,10 @@ export function resetQuitButton() {
  */
 export function clearScoreboardAndMessages() {
   try {
-    scoreboard.clearMessage();
+    clearMessage();
   } catch {}
   try {
-    scoreboard.clearTimer();
+    clearTimer();
   } catch {}
   let roundResultEl;
   try {
@@ -1307,7 +1307,7 @@ export function setBattleStateBadgeEnabled(enable) {
  *
  * @pseudocode
  * 1. Remove modal backdrops and reset Next/Quit buttons.
- * 2. Clear scoreboard/messages and update debug panel.
+ * 2. Clear round status/messages and update debug panel.
  *
  * @param {object} [store]
  * @returns {void}
