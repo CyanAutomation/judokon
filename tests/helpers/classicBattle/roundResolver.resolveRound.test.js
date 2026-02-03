@@ -40,7 +40,7 @@ describe("resolveRound", () => {
     expect(resolved).toBe(true);
   });
 
-  it("respects provided delay option", async () => {
+  it("ignores provided delay option", async () => {
     const { mod } = await setup();
     const delayMs = 250;
     let resolved = false;

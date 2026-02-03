@@ -34,19 +34,16 @@ describe("Opponent choosing intermediate state", () => {
     }
   });
 
-  it("records timestamp immediately when opponent delay flag disabled", async () => {
+  it("no longer records timestamp during selection prep", async () => {
     recordOpponentPromptTimestamp.mockClear();
-    if (typeof window !== "undefined") {
-      window.__FF_OVERRIDES.opponentDelayMessage = false;
-    }
     const { prepareUiBeforeSelection } = await import("../../src/pages/battleClassic.init.js");
     // Trigger
     const delay = prepareUiBeforeSelection();
     expect(delay).toBe(0);
-    expect(recordOpponentPromptTimestamp).toHaveBeenCalledTimes(1);
+    expect(recordOpponentPromptTimestamp).not.toHaveBeenCalled();
   });
 
-  it("defers timestamp when opponent delay flag enabled", async () => {
+  it("still skips timestamp recording when delay override is set", async () => {
     recordOpponentPromptTimestamp.mockClear();
     if (typeof window !== "undefined") {
       window.__FF_OVERRIDES.opponentDelayMessage = true;
@@ -54,8 +51,8 @@ describe("Opponent choosing intermediate state", () => {
     }
     const { prepareUiBeforeSelection } = await import("../../src/pages/battleClassic.init.js");
     const delay = prepareUiBeforeSelection();
-    expect(delay).toBe(1200);
+    expect(delay).toBe(0);
     expect(recordOpponentPromptTimestamp).not.toHaveBeenCalled();
-    expect(getOpponentPromptFallbackTimerId()).toBeGreaterThan(0);
+    expect(getOpponentPromptFallbackTimerId()).toBe(0);
   });
 });

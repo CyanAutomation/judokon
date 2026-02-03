@@ -5,16 +5,10 @@ import * as engineFacade from "../BattleEngine.js";
 import { isEnabled } from "../featureFlags.js";
 import { exposeDebugState, readDebugState } from "./debugHooks.js";
 import { debugLog } from "../debug.js";
-import { resolveDelay } from "./timerUtils.js";
 import * as sb from "../setupScoreboard.js";
 import { writeScoreDisplay } from "./scoreDisplay.js";
 import { cancelRoundResolveGuard } from "./stateHandlers/guardCancellation.js";
 import { getAutoContinue } from "./autoContinue.js";
-import { getOpponentDelay } from "./snackbar.js";
-import {
-  getOpponentPromptMinDuration,
-  getOpponentPromptTimestamp
-} from "./opponentPromptTracker.js";
 
 /**
  * Round resolution helpers and orchestrator for Classic Battle.
@@ -229,14 +223,6 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
     emitBattleEvent("display.score.update", { player, opponent });
   } catch {}
 
-  // Update DOM directly to ensure round messages display properly
-  try {
-    const messageEl = document.querySelector("header #round-message");
-    if (messageEl && result?.message) {
-      messageEl.textContent = result.message;
-    }
-  } catch {}
-
   if (store && typeof store === "object") {
     store.playerChoice = null;
     store.lastRoundResult = result;
@@ -308,45 +294,6 @@ async function waitForRoundUILocks() {
   });
 }
 
-function resolvePromptNow() {
-  try {
-    if (typeof performance !== "undefined" && typeof performance.now === "function") {
-      return performance.now();
-    }
-  } catch {}
-  try {
-    return Date.now();
-  } catch {}
-  return 0;
-}
-
-function getOpponentPromptRemainingMs() {
-  const minDuration = Number(getOpponentPromptMinDuration());
-  if (!Number.isFinite(minDuration) || minDuration <= 0) {
-    return 0;
-  }
-  const promptTimestamp = Number(getOpponentPromptTimestamp());
-  if (!Number.isFinite(promptTimestamp) || promptTimestamp <= 0) {
-    return 0;
-  }
-  const elapsed = Date.now() - promptTimestamp;
-  if (!Number.isFinite(elapsed)) {
-    return 0;
-  }
-  if (elapsed < 0) {
-    return minDuration;
-  }
-  return Math.max(0, minDuration - elapsed);
-}
-
-async function waitForOpponentPromptMinDuration(sleep) {
-  const remaining = getOpponentPromptRemainingMs();
-  if (!Number.isFinite(remaining) || remaining <= 0) {
-    return;
-  }
-  await sleep(remaining);
-}
-
 /**
  * @summary Ensure the battle state machine is ready to evaluate the round.
  * @pseudocode
@@ -371,18 +318,16 @@ export async function ensureRoundResolveState() {
  *
  * @pseudocode
  * 1. Mark `roundDebug.resolving` via `exposeDebugState`.
- * 2. Sleep for `delayMs` using the provided `sleep` function.
- * 3. Emit `"opponentReveal"`.
+ * 2. Emit `"opponentReveal"` immediately.
  *
- * @param {number} delayMs - Delay before revealing.
- * @param {(ms: number) => Promise<void>} sleep - Sleep implementation.
+ * @param {number} delayMs - Delay before revealing (ignored; engine delays removed).
+ * @param {(ms: number) => Promise<void>} sleep - Sleep implementation (unused).
  * @param {string} stat - Chosen stat key (for debug logging).
  * @returns {Promise<void>}
  */
 export async function delayAndRevealOpponent(delayMs, sleep, stat) {
-  debugLog("DEBUG: resolveRound sleep", { delayMs, stat });
+  debugLog("DEBUG: resolveRound reveal", { delayMs, stat });
   exposeDebugState("roundDebug", { resolving: true });
-  await sleep(delayMs);
   debugLog("DEBUG: resolveRound before opponentReveal", { stat });
   emitBattleEvent("opponentReveal");
 }
@@ -435,7 +380,7 @@ export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
  * @pseudocode
  * 1. If no stat is provided, return immediately.
  * 2. Call `ensureRoundResolveState`.
- * 3. Await `delayAndRevealOpponent`.
+ * 3. Emit the opponent reveal event immediately.
  * 4. Call `finalizeRoundResult` and return its value.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
@@ -443,7 +388,7 @@ export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
  * @param {number} playerVal - Player's stat value.
  * @param {number} opponentVal - Opponent's stat value.
  * @param {{delayMs?: number, sleep?: (ms: number) => Promise<void>}} [opts]
- * - Optional overrides for testing.
+ * - Optional overrides (delayMs is ignored; engine resolution is synchronous).
  * @returns {Promise<ReturnType<typeof evaluateRound>>}
  */
 /**
@@ -460,36 +405,20 @@ export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
  * @summary Main round resolution entry point with validation, timing, and cleanup.
  * @pseudocode
  * 1. Prevent concurrent resolution attempts using isResolving flag.
- * 2. Determine if running in headless mode for timing adjustments.
- * 3. Extract timing configuration with defaults.
- * 4. Validate that a stat was provided.
- * 5. Ensure round resolve state is properly initialized.
- * 6. Apply delay and reveal opponent stat with animation.
- * 7. Finalize the round result with cleanup and debug updates.
- * 8. Reset the isResolving flag in finally block.
- * 9. Return the complete resolution result.
+ * 2. Validate that a stat was provided.
+ * 3. Ensure round resolve state is properly initialized.
+ * 4. Reveal opponent stat immediately.
+ * 5. Finalize the round result with cleanup and debug updates.
+ * 6. Reset the isResolving flag in finally block.
+ * 7. Return the complete resolution result.
  */
 export async function resolveRound(store, stat, playerVal, opponentVal, opts = {}) {
   if (isResolving) return;
   isResolving = true;
-  const configuredDelay = getOpponentDelay();
-  const numericDelay = Number(configuredDelay);
-  const hasConfiguredDelay =
-    configuredDelay !== null && configuredDelay !== undefined && configuredDelay !== "";
-  const baseDelay =
-    hasConfiguredDelay && Number.isFinite(numericDelay) && numericDelay >= 0
-      ? numericDelay
-      : resolveDelay();
-  const {
-    // Deterministic delay using seeded RNG when available
-    delayMs = baseDelay,
-    sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-  } = opts;
   try {
     if (!stat) return;
     await ensureRoundResolveState();
-    await delayAndRevealOpponent(delayMs, sleep, stat);
-    await waitForOpponentPromptMinDuration(sleep);
+    await delayAndRevealOpponent(0, () => Promise.resolve(), stat);
     const result = await finalizeRoundResult(store, stat, playerVal, opponentVal);
     return result;
   } finally {

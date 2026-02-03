@@ -6,10 +6,7 @@ import { resolveRound } from "./roundResolver.js";
 import { getCardStatValue } from "./cardStatUtils.js";
 import { getBattleState } from "./eventBus.js";
 import { getRoundResolvedPromise } from "./promises.js";
-import { resolveDelay } from "./timerUtils.js";
 import * as scoreboard from "../setupScoreboard.js";
-import { showSnackbar } from "../showSnackbar.js";
-import { t } from "../i18n.js";
 import { writeScoreDisplay } from "./scoreDisplay.js";
 import { roundState } from "./roundState.js";
 import { getScheduler } from "../scheduler.js";
@@ -901,13 +898,8 @@ export async function resolveWithFallback(
     }
 
     if (orchestrated && handledByOrchestrator !== true) {
-      const delay = resolveDelay();
-      const configuredDelay = Number(opts?.delayMs);
-      const hasConfiguredDelay = Number.isFinite(configuredDelay) && configuredDelay >= 0;
-      const opponentDelay = hasConfiguredDelay ? configuredDelay : delay;
-      const normalizedDelay =
-        Number.isFinite(opponentDelay) && opponentDelay >= 0 ? opponentDelay : 0;
-      const fallbackDelay = normalizedDelay + FALLBACK_BUFFER_MS;
+      const normalizedDelay = 0;
+      const fallbackDelay = FALLBACK_BUFFER_MS;
       const schedulers = collectSelectionSchedulers(store);
       clearTimerHandle(store?.selectionFallbackTimeoutId, schedulers);
       if (store) {
@@ -988,13 +980,6 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
   }
 
   try {
-    try {
-      const shouldForceSnackbar = opts?.forceOpponentPrompt === true;
-      if (shouldForceSnackbar && !opts?.delayOpponentMessage) {
-        showSnackbar(t("ui.opponentChoosing"));
-      }
-    } catch {}
-
     if (store && typeof store === "object" && opts?.delayOpponentMessage === true) {
       store.__delayOpponentMessage = true;
     }
