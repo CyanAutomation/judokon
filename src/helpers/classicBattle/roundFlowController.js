@@ -69,7 +69,7 @@ export function bindRoundFlowController() {
   });
 
   onBattleEvent("roundResolved", async (event) => {
-    void scheduleRoundOutcomeDisplay(event);
+    await scheduleRoundOutcomeDisplay(event);
     await handleRoundResolvedEvent(event);
   });
 }
