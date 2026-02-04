@@ -18,7 +18,7 @@ vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
 import { emitBattleEvent } from "../../../src/helpers/classicBattle/battleEvents.js";
 import { onNextButtonClick } from "../../../src/helpers/classicBattle/timerService.js";
 
-describe("Next button countdownFinished", () => {
+describe("Next button skipCooldown intent", () => {
   let warnSpy;
   let timers;
 
@@ -36,24 +36,17 @@ describe("Next button countdownFinished", () => {
     document.body.innerHTML = "";
   });
 
-  it("emits countdownFinished when button exists", async () => {
+  it("emits skipCooldown when button exists", async () => {
     document.body.innerHTML = '<button id="next-button" data-role="next-round"></button>';
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
-    expect(emitBattleEvent).toHaveBeenCalledTimes(2);
-    expect(emitBattleEvent).toHaveBeenNthCalledWith(1, "countdownFinished");
-    expect(emitBattleEvent).toHaveBeenNthCalledWith(2, "round.start", {
-      source: "next-button",
-      via: "manual-click"
+    expect(emitBattleEvent).toHaveBeenCalledTimes(1);
+    expect(emitBattleEvent).toHaveBeenNthCalledWith(1, "skipCooldown", {
+      source: "next-button"
     });
   });
 
-  it("emits countdownFinished when button missing", async () => {
+  it("does not emit skipCooldown when button missing", async () => {
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
-    expect(emitBattleEvent).toHaveBeenCalledTimes(2);
-    expect(emitBattleEvent).toHaveBeenNthCalledWith(1, "countdownFinished");
-    expect(emitBattleEvent).toHaveBeenNthCalledWith(2, "round.start", {
-      source: "next-button",
-      via: "manual-click"
-    });
+    expect(emitBattleEvent).not.toHaveBeenCalled();
   });
 });

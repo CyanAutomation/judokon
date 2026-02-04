@@ -1,6 +1,7 @@
 import { createBattleStore, startRound } from "./roundManager.js";
 import { shouldClearSelectionForNextRound } from "./selectionHandler.js";
 import { initClassicBattleOrchestrator } from "./orchestrator.js";
+import { applyRoundUI, handleRoundStartedEvent } from "./roundUI.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "../featureFlags.js";
 import { setTestMode } from "../testModeUtils.js";
 import {
@@ -55,6 +56,7 @@ export class ClassicBattleController extends EventTarget {
     // Create the battle engine and assign it to the store
     createBattleEngine();
     this.store.engine = getEngine();
+    this.#bindEngineRoundStarted(this.store.engine);
 
     // Initialize orchestrator and assign it to the store
     this.store.orchestrator = await initClassicBattleOrchestrator(this.store, () =>
@@ -80,13 +82,34 @@ export class ClassicBattleController extends EventTarget {
     setTestMode({ enabled: isEnabled("enableTestMode") });
   }
 
+  #bindEngineRoundStarted(engine) {
+    if (!engine || typeof engine.on !== "function") {
+      return;
+    }
+    engine.on("roundStarted", (detail) => {
+      const roundNumber = Number(detail?.round);
+      if (!Number.isFinite(roundNumber)) {
+        return;
+      }
+      handleRoundStartedEvent(
+        {
+          detail: {
+            store: this.store,
+            roundNumber
+          }
+        },
+        {
+          applyRoundUI: (store, round) => applyRoundUI(store, round, undefined, { skipTimer: true })
+        }
+      ).catch(() => {});
+    });
+  }
+
   /**
-   * Perform round initialization and emit `roundStarted`.
+   * Perform round initialization.
    *
    * @pseudocode
    * 1. Delegate to `startRound(store)`.
-   * 2. Dispatch a `roundStarted` event.
-   *
    * @param {ReturnType<typeof createBattleStore>} store
    * @returns {Promise<void>}
    */
@@ -112,7 +135,6 @@ export class ClassicBattleController extends EventTarget {
     } else {
       return;
     }
-    this.dispatchEvent(new Event("roundStarted"));
   }
 
   /**

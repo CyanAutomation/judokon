@@ -310,7 +310,8 @@ async function startTimerSafely(timer, seconds) {
  * @param {number} [stallTimeoutMs=5000] - Delay before auto-select kicks in.
  * @returns {void}
  */
-export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
+export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000, options = {}) {
+  const { skipTimer = false } = options || {};
   try {
     // console.log("INFO: applyRoundUI called for round", roundNumber);
   } catch {}
@@ -340,16 +341,18 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
       return acc;
     }, {});
   }
-  startTimer((stat, opts) => {
-    const playerVal = getCardStatValue(playerCard, stat);
-    let opponentVal = getCardStatValue(opponentCard, stat);
-    try {
-      const opp = getOpponentJudoka();
-      const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
-      opponentVal = Number.isFinite(raw) ? raw : opponentVal;
-    } catch {}
-    return handleStatSelection(store, stat, { playerVal, opponentVal, ...opts });
-  }, store);
+  if (!skipTimer) {
+    startTimer((stat, opts) => {
+      const playerVal = getCardStatValue(playerCard, stat);
+      let opponentVal = getCardStatValue(opponentCard, stat);
+      try {
+        const opp = getOpponentJudoka();
+        const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
+        opponentVal = Number.isFinite(raw) ? raw : opponentVal;
+      } catch {}
+      return handleStatSelection(store, stat, { playerVal, opponentVal, ...opts });
+    }, store);
+  }
   store.stallTimeoutMs = stallTimeoutMs;
   // Schedule stall prompt and optional auto-select using the unified helper
   // without double-wrapping the timeout. The helper manages its own timer

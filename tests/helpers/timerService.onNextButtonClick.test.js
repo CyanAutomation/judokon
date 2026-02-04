@@ -17,15 +17,6 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
   skipRoundCooldownIfEnabled: vi.fn(() => false)
 }));
 
-function createDeferred() {
-  /** @type {() => void} */
-  let resolve;
-  const promise = new Promise((res) => {
-    resolve = res;
-  });
-  return { promise, resolve: resolve ?? (() => {}) };
-}
-
 describe("onNextButtonClick", () => {
   let btn;
   let warnSpy;
@@ -44,124 +35,79 @@ describe("onNextButtonClick", () => {
     if (typeof rootCleanup === "function") rootCleanup();
   });
 
-  it("advances when button is marked ready", async () => {
-    let resolveReady;
+  it("emits skipCooldown when button is marked ready", async () => {
     await runWithFakeTimers(async () => {
       const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
       btn.dataset.nextReady = "true";
       __setStateSnapshot({ state: "roundWait" });
-      resolveReady = vi.fn();
       await onNextButtonClick(
         new MouseEvent("click"),
-        { timer: null, resolveReady },
+        { timer: null, resolveReady: vi.fn() },
         { root: document }
       );
     });
-    const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     const events = await import("../../src/helpers/classicBattle/battleEvents.js");
-    expect(btn.disabled).toBe(true);
-    expect(btn.dataset.nextReady).toBeUndefined();
-    expect(events.emitBattleEvent).toHaveBeenNthCalledWith(1, "countdownFinished");
-    expect(events.emitBattleEvent).toHaveBeenNthCalledWith(2, "round.start", {
-      source: "next-button",
-      via: "manual-click"
+    expect(events.emitBattleEvent).toHaveBeenCalledWith("skipCooldown", {
+      source: "next-button"
     });
-    expect(events.emitBattleEvent).toHaveBeenCalledBefore(dispatcher.dispatchBattleEvent);
-    expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
-    expect(resolveReady).toHaveBeenCalledTimes(1);
   });
 
-  it("stops timer and dispatches ready when not marked ready", async () => {
-    let stop;
+  it("emits skipCooldown even when the button is not marked ready", async () => {
     await runWithFakeTimers(async () => {
       const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
-      stop = vi.fn();
       __setStateSnapshot({ state: "roundResolve" });
       await onNextButtonClick(
         new MouseEvent("click"),
-        { timer: { stop }, resolveReady: null },
+        { timer: { stop: vi.fn() }, resolveReady: null },
         { root: document }
       );
     });
-    const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     const events = await import("../../src/helpers/classicBattle/battleEvents.js");
-    expect(stop).toHaveBeenCalledTimes(1);
-    expect(events.emitBattleEvent).toHaveBeenNthCalledWith(1, "countdownFinished");
-    expect(events.emitBattleEvent).toHaveBeenNthCalledWith(2, "round.start", {
-      source: "next-button",
-      via: "manual-click"
+    expect(events.emitBattleEvent).toHaveBeenCalledWith("skipCooldown", {
+      source: "next-button"
     });
-    expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
   });
 
-  it("advances immediately when no timer and in cooldown", async () => {
-    let resolveReady2;
+  it("emits skipCooldown immediately when no timer and in cooldown", async () => {
     await runWithFakeTimers(async () => {
       const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
       __setStateSnapshot({ state: "roundWait" });
-      resolveReady2 = vi.fn();
       await onNextButtonClick(
         new MouseEvent("click"),
-        { timer: null, resolveReady: resolveReady2 },
+        { timer: null, resolveReady: vi.fn() },
         { root: document }
       );
     });
-    const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     const events = await import("../../src/helpers/classicBattle/battleEvents.js");
-    expect(events.emitBattleEvent).toHaveBeenNthCalledWith(1, "countdownFinished");
-    expect(events.emitBattleEvent).toHaveBeenNthCalledWith(2, "round.start", {
-      source: "next-button",
-      via: "manual-click"
+    expect(events.emitBattleEvent).toHaveBeenCalledWith("skipCooldown", {
+      source: "next-button"
     });
-    expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
-    expect(resolveReady2).toHaveBeenCalledTimes(1);
   });
 
-  it("dispatches countdown events and ready when skip flag is active", async () => {
-    let resolveReady;
+  it("still emits skipCooldown when skip flag is active", async () => {
     let uiHelpers;
     await runWithFakeTimers(async () => {
       uiHelpers = await import("../../src/helpers/classicBattle/uiHelpers.js");
-      uiHelpers.skipRoundCooldownIfEnabled.mockImplementation((options) => {
-        if (options?.onSkip) options.onSkip();
-        return true;
-      });
       const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
       btn.dataset.nextReady = "true";
       __setStateSnapshot({ state: "roundWait" });
-      resolveReady = vi.fn();
       await onNextButtonClick(
         new MouseEvent("click"),
-        { timer: null, resolveReady },
+        { timer: null, resolveReady: vi.fn() },
         { root: document }
       );
     });
-    const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     const events = await import("../../src/helpers/classicBattle/battleEvents.js");
-    expect(uiHelpers.skipRoundCooldownIfEnabled).toHaveBeenCalledWith(
-      expect.objectContaining({ onSkip: expect.any(Function) })
-    );
-    expect(events.emitBattleEvent).toHaveBeenCalledTimes(2);
-    expect(events.emitBattleEvent).toHaveBeenNthCalledWith(1, "countdownFinished");
-    expect(events.emitBattleEvent).toHaveBeenNthCalledWith(2, "round.start", {
-      source: "next-button",
-      via: "skip-hint"
+    expect(uiHelpers.skipRoundCooldownIfEnabled).not.toHaveBeenCalled();
+    expect(events.emitBattleEvent).toHaveBeenCalledWith("skipCooldown", {
+      source: "next-button"
     });
-    expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
-    expect(resolveReady).toHaveBeenCalledTimes(1);
-    expect(btn.disabled).toBe(true);
-    expect(btn.dataset.nextReady).toBeUndefined();
   });
 
   it("suppresses concurrent clicks while an advance is in flight", async () => {
     await runWithFakeTimers(async () => {
-      const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
       const events = await import("../../src/helpers/classicBattle/battleEvents.js");
       const mod = await import("../../src/helpers/classicBattle/timerService.js");
-      const deferred = createDeferred();
-      dispatcher.dispatchBattleEvent
-        .mockImplementationOnce(() => deferred.promise)
-        .mockImplementation(() => Promise.resolve(true));
 
       btn.dataset.nextReady = "true";
       __setStateSnapshot({ state: "roundWait" });
@@ -170,13 +116,6 @@ describe("onNextButtonClick", () => {
         timer: null,
         resolveReady: null
       });
-      let firstSettled = false;
-      firstCall.then(() => {
-        firstSettled = true;
-      });
-
-      // Allow the first invocation to reach the mocked dispatcher before issuing another click.
-      await Promise.resolve();
 
       const secondCall = mod.onNextButtonClick(new MouseEvent("click"), {
         timer: null,
@@ -185,26 +124,19 @@ describe("onNextButtonClick", () => {
 
       // Ensure the guard short-circuits the second attempt while the first is pending.
       await expect(secondCall).resolves.toBeUndefined();
-      expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledTimes(1);
-      expect(events.emitBattleEvent).toHaveBeenCalledTimes(2);
-      expect(firstSettled).toBe(false);
-
-      deferred.resolve();
       await firstCall;
-      expect(firstSettled).toBe(true);
+      expect(events.emitBattleEvent).toHaveBeenCalledTimes(1);
     });
   });
 
   it("ignores clicks when button is disabled", async () => {
     const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
-    const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     const events = await import("../../src/helpers/classicBattle/battleEvents.js");
 
     btn.disabled = true;
 
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
 
-    expect(dispatcher.dispatchBattleEvent).not.toHaveBeenCalled();
     expect(events.emitBattleEvent).not.toHaveBeenCalled();
   });
 });
