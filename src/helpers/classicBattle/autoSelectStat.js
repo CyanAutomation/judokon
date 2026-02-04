@@ -79,7 +79,7 @@ export async function autoSelectStat(
   }
   // Let the provided onSelect drive resolution via handleStatSelection.
   // This sets store.playerChoice before the round is resolved and
-  // `roundResolved` is dispatched, preventing a race where
+  // `round.evaluated` is dispatched, preventing a race where
   // roundResolveEnter sees no selection and interrupts.
   await onSelect(selectedStat, { delayOpponentMessage: true });
 }

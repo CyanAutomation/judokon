@@ -15,7 +15,7 @@ describe("classicBattle round lifecycle sequencing", () => {
     vi.restoreAllMocks();
   });
 
-  test("roundResolved → roundWait → roundStarted ordering", async () => {
+test("round.evaluated → roundWait → roundStarted ordering", async () => {
     const received = [];
     const onStarted = () => received.push("started");
     const onCooldown = () => received.push("roundWait");
@@ -26,7 +26,7 @@ describe("classicBattle round lifecycle sequencing", () => {
     win.addEventListener?.("cooldownStarted", onCooldown);
 
     // Dispatch a resolved event and let timers run
-    window.dispatchEvent(new CustomEvent("roundResolved", { detail: {} }));
+    window.dispatchEvent(new CustomEvent("round.evaluated", { detail: {} }));
     await vi.runAllTimersAsync();
 
     // We only assert that cooldown occurs before next start

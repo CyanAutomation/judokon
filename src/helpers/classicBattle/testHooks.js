@@ -506,5 +506,5 @@ export function initializeTestBindingsLight() {
     "statSelectionStalledPromise",
     "statSelectionStalled"
   )();
-  window.roundResolvedPromise = setupPromise("roundResolvedPromise", "roundResolved")();
+  window.roundEvaluatedPromise = setupPromise("roundEvaluatedPromise", "round.evaluated")();
 }

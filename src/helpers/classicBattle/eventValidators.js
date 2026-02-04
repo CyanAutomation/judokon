@@ -55,7 +55,7 @@ export function validateStatSelectedEvent(event) {
 }
 
 /**
- * Validate and extract roundResolved event details.
+ * Validate and extract round.evaluated event details.
  *
  * @pseudocode
  * 1. Check event has detail object.
@@ -69,10 +69,10 @@ export function validateStatSelectedEvent(event) {
  *   result: any
  * } | null}
  */
-export function validateRoundResolvedEvent(event) {
-  const { store, result } = event?.detail || {};
-  if (result) {
-    return { store, result };
+export function validateRoundEvaluatedEvent(event) {
+  const { outcome, scores } = event?.detail || {};
+  if (outcome || scores) {
+    return { outcome, scores };
   }
   return null;
 }

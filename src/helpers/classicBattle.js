@@ -93,10 +93,10 @@ export {
   countdownStartedPromise,
   roundTimeoutPromise,
   statSelectionStalledPromise,
-  roundResolvedPromise,
+  roundEvaluatedPromise,
   getRoundPromptPromise,
   getCountdownStartedPromise,
-  getRoundResolvedPromise,
+  getRoundEvaluatedPromise,
   getRoundTimeoutPromise,
   getStatSelectionStalledPromise
 } from "./classicBattle/promises.js";

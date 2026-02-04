@@ -31,20 +31,17 @@ describe("battleCLI accessibility live regions", () => {
     expect(scoreLine?.getAttribute("aria-live")).toBe("polite");
 
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
-    emitBattleEvent("roundResolved", {
-      result: {
-        message: "You win!",
-        playerScore: 1,
-        opponentScore: 0
-      },
-      stat: "speed",
+    emitBattleEvent("round.evaluated", {
+      message: "You win!",
+      scores: { player: 1, opponent: 0 },
+      statKey: "speed",
       playerVal: 42,
       opponentVal: 17
     });
 
     expect(roundMessage?.textContent).toBe("You win! (Speed – You: 42 Opponent: 17)");
     // battleCLI.html defines #score-display data attributes + value spans; dom.js updateScoreLine
-    // must keep those in sync with resolved scores from roundResolved.
+    // must keep those in sync with resolved scores from round.evaluated.
     expect(scoreLine?.dataset.scorePlayer).toBe("1");
     expect(scoreLine?.dataset.scoreOpponent).toBe("0");
     const playerValue = scoreLine?.querySelector('[data-side="player"] [data-part="value"]');

@@ -506,17 +506,17 @@ export function ensureCliDomForTest({ reset = false } = {}) {
  * @returns {Promise<{ detail: object, dispatched: boolean, emitted: boolean }>}
  * @pseudocode
  * return resolveRoundForTestHelper(eventLike, {
- *   dispatch: detail => safeDispatch("roundResolved", detail),
+ *   dispatch: detail => safeDispatch("round.evaluated", detail),
  *   emitOpponentReveal: detail => emitBattleEvent("opponentReveal", detail),
- *   emit: detail => emitBattleEvent("roundResolved", detail),
+ *   emit: detail => emitBattleEvent("round.evaluated", detail),
  *   getStore: () => store
  * })
  */
 async function resolveRoundForTest(eventLike = {}) {
   return resolveRoundForTestHelper(eventLike, {
-    dispatch: (detail) => safeDispatch("roundResolved", detail),
+    dispatch: (detail) => safeDispatch("round.evaluated", detail),
     emitOpponentReveal: (detail) => emitBattleEvent("opponentReveal", detail),
-    emit: (detail) => emitBattleEvent("roundResolved", detail),
+    emit: (detail) => emitBattleEvent("round.evaluated", detail),
     getStore: () => store
   });
 }
@@ -647,7 +647,7 @@ export const __test = {
   handleStatSelectionStalled,
   handleCountdownStart,
   handleCountdownFinished,
-  handleRoundResolved,
+  handleRoundEvaluated,
   handleMatchOver,
   handleBattleState,
   handleWaitingForPlayerActionKey,
@@ -2704,15 +2704,15 @@ function handleCountdownFinished() {
   clearBottomLine();
 }
 
-function handleRoundResolved(e) {
+function handleRoundEvaluated(e) {
   state.roundResolving = false;
-  const { result, stat, playerVal, opponentVal } = e.detail || {};
-  recordCommandHistory(stat || store?.playerChoice);
-  if (result) {
-    const display = statDisplayNames[stat] || String(stat || "").toUpperCase();
-    setRoundMessage(`${result.message} (${display} – You: ${playerVal} Opponent: ${opponentVal})`);
-    let playerScore = result.playerScore;
-    let opponentScore = result.opponentScore;
+  const { message, statKey, playerVal, opponentVal, scores } = e.detail || {};
+  recordCommandHistory(statKey || store?.playerChoice);
+  if (message || scores) {
+    const display = statDisplayNames[statKey] || String(statKey || "").toUpperCase();
+    setRoundMessage(`${message || ""} (${display} – You: ${playerVal} Opponent: ${opponentVal})`);
+    let playerScore = scores?.player;
+    let opponentScore = scores?.opponent;
     try {
       if (playerScore === undefined || opponentScore === undefined) {
         const gs = engineFacade.getScores?.();
@@ -2730,7 +2730,7 @@ function handleRoundResolved(e) {
       const verboseLog = byId("cli-verbose-log");
       if (verboseLog) {
         const round = Number(byId("cli-root")?.dataset.round || 0);
-        const entry = `Round ${round}: ${result.message} (${display} – You: ${playerVal}, Opponent: ${opponentVal}). Scores: You ${result.playerScore}, Opponent ${result.opponentScore}\n`;
+        const entry = `Round ${round}: ${message || ""} (${display} – You: ${playerVal}, Opponent: ${opponentVal}). Scores: You ${playerScore}, Opponent ${opponentScore}\n`;
         verboseLog.textContent += entry;
         ensureVerboseScrollHandling();
         refreshVerboseScrollIndicators();
@@ -2942,7 +2942,7 @@ const battleEventHandlers = {
   statSelectionStalled: handleStatSelectionStalled,
   countdownStart: handleCountdownStart,
   countdownFinished: handleCountdownFinished,
-  roundResolved: handleRoundResolved,
+  "round.evaluated": handleRoundEvaluated,
   matchOver: handleMatchOver
 };
 
@@ -3410,10 +3410,10 @@ export async function init() {
           }
 
           if (!resolvedViaOrchestrator) {
-            emitBattleEvent("roundResolved", {});
+            emitBattleEvent("round.evaluated", {});
           }
 
-          const detail = { from: previousState, to: "roundDisplay", event: "roundResolved" };
+          const detail = { from: previousState, to: "roundDisplay", event: "round.evaluated" };
           domStateListener({ detail });
           emitBattleEvent("battleStateChange", detail);
         },

@@ -351,7 +351,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     return handlerPromise;
   });
 
-  onBattleEvent("roundResolved", async (e) => {
+  onBattleEvent("round.evaluated", async (e) => {
     const selectionToken = pendingOpponentCardDataToken;
     await clearOpponentSnackbar();
 
@@ -393,19 +393,20 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     }
 
     await revealOpponentCardAfterResolution(selectionToken);
-    const { store, stat, playerVal, opponentVal, result } = e.detail || {};
-    if (!result) return;
+    const { store, statKey, stat, playerVal, opponentVal } = e.detail || {};
+    const resolvedStat = statKey ?? stat;
+    if (!resolvedStat) return;
     try {
       const numericPlayer = Number(playerVal);
       const numericOpponent = Number(opponentVal);
       if (
         store &&
         typeof store === "object" &&
-        typeof stat === "string" &&
+        typeof resolvedStat === "string" &&
         Number.isFinite(numericPlayer) &&
         Number.isFinite(numericOpponent)
       ) {
-        showStatComparisonFn(store, stat, numericPlayer, numericOpponent);
+        showStatComparisonFn(store, resolvedStat, numericPlayer, numericOpponent);
       }
     } catch {}
     try {

@@ -158,14 +158,14 @@ export async function readCountdown(page) {
 /**
  * Dispatches a deterministic sequence of state events to finish the round.
  * @param {import("@playwright/test").Page} page
- * @param {string[]} [events=["roundResolved", "continue"]] - Sequence of battle events to dispatch
+ * @param {string[]} [events=["round.evaluated", "continue"]] - Sequence of battle events to dispatch
  * @returns {Promise<{ok: boolean, reason: string | null}>}
  * @pseudocode
- * 1. Dispatch `roundResolved` to settle the active round.
+ * 1. Dispatch `round.evaluated` to settle the active round.
  * 2. Dispatch `continue` to advance to the cooldown/next round.
  * 3. Return success when both dispatches report ok.
  */
-export async function forceRoundAdvance(page, events = ["roundResolved", "continue"]) {
+export async function forceRoundAdvance(page, events = ["round.evaluated", "continue"]) {
   let lastError = null;
 
   for (const eventName of events) {

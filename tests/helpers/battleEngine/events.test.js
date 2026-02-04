@@ -17,14 +17,20 @@ describe("BattleEngine events", () => {
     expect(tick).toHaveBeenCalledWith({ remaining: 3, phase: "round" });
   });
 
-  it("emits roundEnded and matchEnded", () => {
+  it("emits round.evaluated and matchEnded", () => {
     const engine = new BattleEngine({ pointsToWin: 1 });
-    const roundEnd = vi.fn();
+    const roundEvaluated = vi.fn();
     const matchEnd = vi.fn();
-    engine.on("roundEnded", roundEnd);
+    engine.on("round.evaluated", roundEvaluated);
     engine.on("matchEnded", matchEnd);
     const result = engine.handleStatSelection(10, 5);
-    expect(roundEnd).toHaveBeenCalledWith(result);
+    expect(roundEvaluated).toHaveBeenCalledWith(
+      expect.objectContaining({
+        outcome: result.outcome,
+        playerScore: result.playerScore,
+        opponentScore: result.opponentScore
+      })
+    );
     expect(matchEnd).toHaveBeenCalledWith(result);
   });
 
@@ -44,11 +50,11 @@ describe("BattleEngine events", () => {
     const events = [];
     engine.on("roundStarted", () => events.push("roundStarted"));
     engine.on("timerTick", ({ phase }) => events.push(`timerTick-${phase}`));
-    engine.on("roundEnded", () => events.push("roundEnded"));
+    engine.on("round.evaluated", () => events.push("round.evaluated"));
     engine.on("matchEnded", () => events.push("matchEnded"));
     await engine.startRound();
     engine.handleStatSelection(10, 5);
-    expect(events).toEqual(["roundStarted", "timerTick-round", "roundEnded", "matchEnded"]);
+    expect(events).toEqual(["roundStarted", "timerTick-round", "round.evaluated", "matchEnded"]);
   });
 
   it("emits matchEnded without roundEnded on interrupt", async () => {
@@ -59,7 +65,7 @@ describe("BattleEngine events", () => {
     const events = [];
     engine.on("roundStarted", () => events.push("roundStarted"));
     engine.on("timerTick", ({ phase }) => events.push(`timerTick-${phase}`));
-    engine.on("roundEnded", () => events.push("roundEnded"));
+    engine.on("round.evaluated", () => events.push("round.evaluated"));
     engine.on("matchEnded", () => events.push("matchEnded"));
     await engine.startRound();
     engine.interruptMatch("injury");

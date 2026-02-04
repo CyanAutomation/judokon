@@ -470,7 +470,7 @@ export function handleStatSelectedEvent(event) {
 }
 
 /**
- * Handle a `roundResolved` battle event.
+ * Handle a `round.evaluated` battle event.
  *
  * @param {CustomEvent} event
  * @param {object} [deps]
@@ -521,13 +521,22 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
             return undefined;
           }
         })();
-  const { store, result } = event?.detail || {};
+  const detail = event?.detail || {};
+  const store = detail.store;
+  const result =
+    detail.result || {
+      outcome: detail.outcome,
+      matchEnded: detail.matchEnded,
+      playerScore: detail?.scores?.player ?? detail.playerScore,
+      opponentScore: detail?.scores?.opponent ?? detail.opponentScore,
+      message: detail.message
+    };
   if (!result) return;
   if (store && typeof store === "object") {
     store.roundReadyForInput = false;
   }
   try {
-    // console.debug(`classicBattle.trace event:roundResolved t=${Date.now()}`);
+    // console.debug(`classicBattle.trace event:round.evaluated t=${Date.now()}`);
   } catch {}
   try {
     document.body?.removeAttribute?.("data-stat-selected");
@@ -746,17 +755,17 @@ export function bindStatSelected() {
 }
 
 /**
- * Bind handler for `roundResolved` events.
+ * Bind handler for `round.evaluated` events.
  *
  * @pseudocode
- * 1. Listen for `roundResolved`.
+ * 1. Listen for `round.evaluated`.
  * 2. Surface outcome, update score, maybe show summary.
  * 3. Clear selection highlight and refresh debug panel.
  *
  * @returns {void}
  */
 export function bindRoundResolved() {
-  onBattleEvent("roundResolved", (event) => {
+  onBattleEvent("round.evaluated", (event) => {
     handleRoundResolvedEvent(event).catch(() => {});
   });
 }
@@ -766,7 +775,7 @@ export function bindRoundResolved() {
  *
  * @pseudocode
  * 1. Bind `roundStarted` handler.
- * 2. Bind `roundResolved` handler.
+ * 2. Bind `round.evaluated` handler.
  * Note: statSelected handler moved to dynamic bindings to prevent duplication.
  *
  * @returns {void}

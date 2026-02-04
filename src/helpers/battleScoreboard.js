@@ -246,9 +246,19 @@ export function initBattleScoreboardAdapter() {
     _cancelWaiting();
     try {
       const d = getEventDetail(e);
-      const { player, opponent } = extractScores(d);
+      const message = d?.message ?? d?.result?.message;
+      const outcome = d?.outcome ?? d?.result?.outcome;
+      const scores =
+        d?.scores ||
+        (d?.result
+          ? {
+              player: d.result.playerScore,
+              opponent: d.result.opponentScore
+            }
+          : undefined);
+      const { player, opponent } = extractScores({ scores });
       updateScore(player, opponent);
-      displayOutcome(d?.outcome, d.message);
+      displayOutcome(outcome, message);
     } catch {}
   });
 

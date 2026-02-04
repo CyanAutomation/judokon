@@ -87,10 +87,11 @@ async function finishMatchAtTarget(page, targetPoints) {
         }
 
         const detail = {
-          result: { matchEnded: true, playerScore: targetPoints, opponentScore: 0 },
+          matchEnded: true,
+          outcome: "matchWinPlayer",
           scores: { player: targetPoints, opponent: 0 }
         };
-        const events = ["roundResolved", "matchPointReached", "match.concluded"];
+        const events = ["round.evaluated", "matchPointReached", "match.concluded"];
 
         let lastOk = true;
         let failedEvent = null;

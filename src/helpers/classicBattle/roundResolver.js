@@ -192,25 +192,31 @@ export async function updateScoreboard(result) {
  * @param {object} result - Round evaluation result.
  * @summary Emit round resolution events for UI updates and debugging.
  * @pseudocode
- * 1. Emit roundResolved event with complete round data.
- * 2. Emit round.evaluated event with normalized data structure.
+ * 1. Emit round.evaluated event with normalized data structure.
+ * 2. Emit legacy roundResolved event with complete round data.
  * 3. Update DOM directly for test environments.
  *
  * @returns {void}
  */
 export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
-  emitBattleEvent("roundResolved", { store, stat, playerVal, opponentVal, result });
   try {
-    emitBattleEvent("round.evaluated", {
+    const normalizedDetail = {
+      store,
       statKey: stat,
       playerVal,
       opponentVal,
       outcome: result?.outcome,
+      message: result?.message,
+      matchEnded: result?.matchEnded,
       scores: {
         player: Number(result?.playerScore) || 0,
         opponent: Number(result?.opponentScore) || 0
       }
+    };
+    emitBattleEvent("round.evaluated", {
+      ...normalizedDetail
     });
+    emitBattleEvent("roundResolved", { store, stat, playerVal, opponentVal, result });
   } catch {}
   if (store && typeof store === "object") {
     store.playerChoice = null;

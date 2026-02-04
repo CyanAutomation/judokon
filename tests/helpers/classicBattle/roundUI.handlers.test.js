@@ -240,7 +240,7 @@ describe("round UI handlers", () => {
     expect(btn.classList.contains("selected")).toBe(true);
   });
 
-  it("shows outcome on roundResolved", async () => {
+  it("shows outcome on round.evaluated", async () => {
     vi.resetModules();
     globalThis.__classicBattleRoundUIBound = true;
     const events = await import("../../../src/helpers/classicBattle/battleEvents.js");
@@ -249,9 +249,11 @@ describe("round UI handlers", () => {
     ui.bindRoundResolved();
     const { emitBattleEvent } = events;
     const store = {};
-    emitBattleEvent("roundResolved", {
+    emitBattleEvent("round.evaluated", {
       store,
-      result: { matchEnded: false, message: "Win", playerScore: 1, opponentScore: 0 }
+      matchEnded: false,
+      message: "Win",
+      scores: { player: 1, opponent: 0 }
     });
     const scoreboard = await import("../../../src/helpers/setupScoreboard.js");
     expect(scoreboard.showMessage).toHaveBeenCalledWith("Win", { outcome: true });
