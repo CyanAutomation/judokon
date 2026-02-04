@@ -300,7 +300,11 @@ class SnackbarManager {
     };
 
     // Set auto-dismiss if configured
-    const dismissAfter = Number.isFinite(ttl) ? ttl : Number.isFinite(autoDismiss) ? autoDismiss : 3000;
+    const dismissAfter = Number.isFinite(ttl)
+      ? ttl
+      : Number.isFinite(autoDismiss)
+        ? autoDismiss
+        : 3000;
     if (dismissAfter > 0) {
       snackbar.autoDismissId = setTimeout(() => {
         this.remove(id);
@@ -411,7 +415,6 @@ class SnackbarManager {
         console.error("[SnackbarManager] onDismiss callback error:", error);
       }
     }
-
   }
 
   /**
@@ -436,10 +439,12 @@ class SnackbarManager {
     if (!snackbar.element) return;
 
     const nextText =
-      typeof newMessage === "string" ? newMessage : newMessage?.text ?? newMessage?.message;
+      typeof newMessage === "string" ? newMessage : (newMessage?.text ?? newMessage?.message);
     const nextType = typeof newMessage === "string" ? snackbar.type : newMessage?.type;
     const nextPriority =
-      typeof newMessage === "string" ? snackbar.priority : newMessage?.priority ?? snackbar.priority;
+      typeof newMessage === "string"
+        ? snackbar.priority
+        : (newMessage?.priority ?? snackbar.priority);
 
     // Update message
     if (typeof nextText === "string") {

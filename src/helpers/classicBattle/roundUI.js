@@ -728,8 +728,7 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
  *
  * @returns {void}
  */
-export function bindRoundStarted() {
-}
+export function bindRoundStarted() {}
 
 /**
  * Bind handler for `statSelected` events.

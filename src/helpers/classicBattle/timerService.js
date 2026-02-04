@@ -11,10 +11,7 @@ import { skipRoundCooldownIfEnabled } from "./uiHelpers.js";
 import { logTimerOperation, createComponentLogger } from "./debugLogger.js";
 import { resetSelectionFinalized } from "./selectionState.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
-import {
-  attachCountdownCoordinator,
-  emitCountdownFinished
-} from "./countdownCoordinator.js";
+import { attachCountdownCoordinator, emitCountdownFinished } from "./countdownCoordinator.js";
 
 const timerLogger = createComponentLogger("TimerService");
 
