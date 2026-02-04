@@ -670,9 +670,11 @@ export function cleanupTimers(store) {
 async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
   // Delay opponent message when not using direct resolution to let orchestrator handle countdown
   const forceDirectResolution = opts.forceDirectResolution || store.forceDirectResolution;
+  const selectionSource = opts?.selectionSource ?? "player";
   const eventOpts = {
     ...opts,
-    delayOpponentMessage: opts?.delayOpponentMessage ?? !forceDirectResolution
+    delayOpponentMessage: opts?.delayOpponentMessage ?? !forceDirectResolution,
+    selectionSource
   };
   try {
     document.body?.setAttribute?.("data-stat-selected", "true");
@@ -680,7 +682,7 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
   emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal, opts: eventOpts });
   // PRD taxonomy: mirror selection lock event
   try {
-    emitBattleEvent("round.selection.locked", { statKey: stat, source: "player" });
+    emitBattleEvent("round.selection.locked", { statKey: stat, source: selectionSource });
   } catch {}
 
   // Emit a roundReset signal immediately after selection to allow UI to clear

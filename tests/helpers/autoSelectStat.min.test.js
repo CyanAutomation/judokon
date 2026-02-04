@@ -48,5 +48,6 @@ describe("autoSelectStat basic path", () => {
     const [stat, opts] = onSelect.mock.calls[0];
     expect(typeof stat).toBe("string");
     expect(opts?.delayOpponentMessage).toBe(true);
+    expect(opts?.selectionSource).toBe("auto");
   });
 });
