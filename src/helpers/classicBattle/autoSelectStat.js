@@ -20,7 +20,7 @@ const DEFAULT_FEEDBACK_DELAY_MS =
  * dispatch "statSelected" battle event
  * invoke onSelect with selected stat and delayOpponentMessage true
  *
- * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => Promise<void>|void} onSelect
+ * @param {(stat: string, opts?: { delayOpponentMessage?: boolean, selectionSource?: string }) => Promise<void>|void} onSelect
  * - Callback to handle the chosen stat.
  * @param {number} [feedbackDelayMs=DEFAULT_FEEDBACK_DELAY_MS] - Visual delay before dispatch.
  * @param {object} [userStats] - User's judoka stats object to select the highest stat.
@@ -81,5 +81,5 @@ export async function autoSelectStat(
   // This sets store.playerChoice before the round is resolved and
   // `round.evaluated` is dispatched, preventing a race where
   // roundResolveEnter sees no selection and interrupts.
-  await onSelect(selectedStat, { delayOpponentMessage: true });
+  await onSelect(selectedStat, { delayOpponentMessage: true, selectionSource: "auto" });
 }

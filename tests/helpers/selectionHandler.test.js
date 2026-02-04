@@ -152,7 +152,7 @@ describe("handleStatSelection helpers", () => {
     expect(emitBattleEvent).toHaveBeenNthCalledWith(
       2,
       "round.selection.locked",
-      expect.any(Object)
+      expect.objectContaining({ source: "player" })
     );
     expect(emitBattleEvent).toHaveBeenNthCalledWith(3, "roundReset", {
       reason: "playerSelection"
@@ -317,7 +317,13 @@ describe("handleStatSelection helpers", () => {
     await vi.runAllTimersAsync();
     await handlePromise;
 
-    expect(resolver.resolveRound).toHaveBeenCalledWith(store, "power", 1, 2, {});
+    expect(resolver.resolveRound).toHaveBeenCalledWith(
+      store,
+      "power",
+      1,
+      2,
+      expect.objectContaining({ delayMs: 0, forceOpponentPrompt: true })
+    );
 
     delete document.body.dataset.battleState;
     getBattleState.mockReturnValue(null);
