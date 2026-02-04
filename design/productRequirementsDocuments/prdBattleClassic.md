@@ -104,6 +104,7 @@ The sequence below visualizes the event flow, actor interactions, and snackbar m
 sequenceDiagram
   actor Player
   participant UI as UI (Stat Buttons)
+  participant Orch as Orchestrator
   participant Engine
   participant Scoreboard
   participant Snackbar
@@ -117,7 +118,8 @@ sequenceDiagram
 
   Note over Player,Timer: Player Action (Manual Selection)
   Player->>UI: click stat button
-  UI->>Engine: fire statSelected event
+  UI->>Orch: fire statSelected event
+  Orch->>Engine: relay to engine
   Engine->>UI: disable all buttons
   Snackbar->>Snackbar: show "You picked: [Stat]"
 
@@ -147,7 +149,8 @@ sequenceDiagram
   alt Player skips cooldown
     Player->>UI: click Next button
     Snackbar->>Snackbar: clear countdown
-    UI->>Engine: trigger next roundStarted
+    UI->>Orch: trigger next round
+    Orch->>Engine: advance state
   else Cooldown expires naturally
     Snackbar->>Snackbar: clear countdown
     Engine->>Engine: auto-advance to next roundStarted
@@ -158,6 +161,8 @@ sequenceDiagram
   Scoreboard->>UI: reset buttons (enabled)
   Scoreboard->>Snackbar: show "Choose a stat"
 ```
+
+> **Note**: The Orchestrator acts as the authority broker between the UI and Engine. All stat selection events and control commands flow through the Orchestrator to maintain separation of concerns. See [Event Authority Sequence Diagram](prdBattleEngine.md#event-authority-sequence-diagram) for more details on the 3-hop event propagation pattern.
 
 **Key branches:**
 

@@ -225,7 +225,9 @@ Acceptance Criteria (tests):
 
 This appendix is the canonical emitter inventory. Each row lists the logical event emitted through `emitBattleEvent` and the modules responsible for emission. The appendix has been cross-checked against the primary event inventory above to ensure no loss of canonical event names.
 
-#### Emitter-Consumer Flow Diagram (Top 15 Events by Category)
+#### Emitter-Consumer Flow Diagram (Complete Event Categories)
+
+> **Note**: This diagram has been updated to reflect the **complete event inventory** of 40+ events currently emitted in the codebase. See **Full Emitter Inventory** table below for the canonical reference of all events.
 
 ```mermaid
 flowchart LR
@@ -235,14 +237,19 @@ flowchart LR
         TS["timerService.js"]
         RR["roundResolver.js"]
         SH["selectionHandler.js"]
+        SS["stateHandlers/*.js"]
+        CD["cooldowns.js"]
+        EB["engineBridge.js"]
     end
 
-    subgraph Categories["Event Categories"]
-        TimerCat["⏱️ Timer (4)"]
-        StateCat["🔗 State (5)"]
-        UICat["🎨 UI (2)"]
-        PlayerCat["👤 Player (2)"]
-        ScoreCat["📊 Score (2)"]
+    subgraph Categories["Event Categories (40+ Total)"]
+        TimerCat["⏱️ Timer Events (6)<br/>timer.*, roundTimeout, etc."]
+        ControlCat["🎮 Control Events (6)<br/>control.state.*, control.countdown.*"]
+        StateCat["🔗 State Events (8)<br/>debug.*, battleStateChange"]
+        UICat["🎨 UI Events (4)<br/>statButtons:*, display.*"]
+        PlayerCat["👤 Player Events (5)<br/>statSelected, opponentReveal, etc."]
+        ScoreCat["📊 Score Events (3)<br/>scoreboardShowMessage, etc."]
+        RoundCat["🎲 Round Events (8)<br/>round.*, roundStarted, etc."]
     end
 
     subgraph Consumers["Consumer Modules"]
@@ -250,37 +257,59 @@ flowchart LR
         UI["UI/CLI"]
         Engine["Battle Engine"]
         Score["Scoreboard"]
+        Orch2["Orchestrator"]
     end
 
+    ORC --> ControlCat
     ORC --> StateCat
     RM --> TimerCat
+    RM --> RoundCat
     TS --> TimerCat
+    TS --> RoundCat
     RR --> PlayerCat
+    RR --> ScoreCat
     SH --> UICat
+    SH --> PlayerCat
+    SS --> StateCat
+    SS --> ScoreCat
+    CD --> TimerCat
+    CD --> ControlCat
+    EB --> RoundCat
+    EB --> ScoreCat
 
     TimerCat --> Tests
     TimerCat --> Engine
+    ControlCat --> Tests
+    ControlCat --> Engine
+    ControlCat --> Orch2
     StateCat --> Tests
-    StateCat --> Engine
+    StateCat --> Orch2
     UICat --> UI
     UICat --> Engine
     PlayerCat --> Engine
     PlayerCat --> Tests
     ScoreCat --> Score
     ScoreCat --> UI
+    RoundCat --> Tests
+    RoundCat --> Engine
+    RoundCat --> Score
 
     style ORC fill:#e3f2fd
     style RM fill:#e3f2fd
     style TS fill:#e3f2fd
     style RR fill:#e3f2fd
     style SH fill:#e3f2fd
+    style SS fill:#e3f2fd
+    style CD fill:#e3f2fd
+    style EB fill:#e3f2fd
     style Tests fill:#c8e6c9
     style UI fill:#c8e6c9
     style Engine fill:#c8e6c9
     style Score fill:#c8e6c9
+    style Orch2 fill:#fff9c4
 ```
 
-**Rationale**: Simplified emitter-consumer topology showing the top 15 events by category. This view helps test authors and implementers quickly identify which modules produce/consume events in each category. For the full inventory of all 40+ events, see the **Full Emitter Inventory** table below.
+**Rationale**: This comprehensive event flow diagram shows all 40+ events organized by 7 categories (Timer, Control, State, UI, Player, Score, Round). Emitter modules on the left produce events; consumer modules on the right consume them. For a detailed inventory of every event including specific modules that emit them, see the **Full Emitter Inventory** table directly below.
 
 #### Full Emitter Inventory Event | Emitter modules |
 
@@ -433,11 +462,25 @@ This appendix records how tests observe or synthesize events. These utilities an
 
 ### Recommended Naming Convention
 
+> ⚠️ **STATUS: ASPIRATIONAL - FUTURE IMPLEMENTATION**
+>
+> This section documents the proposed hierarchical event naming convention. These namespaces and event names are **NOT YET IMPLEMENTED** in the codebase. This is a roadmap for future refactoring to improve event organization and discoverability.
+>
+> **Current State**: Events are emitted with mixed naming conventions (see [Current Event Names Analysis](#current-event-names-analysis)). Legacy names like `roundTimeout`, `statSelected`, and `scoreboardShowMessage` remain in use.
+>
+> **Migration Timeline**: To be scheduled in a future release. See [Migration Mapping](#migration-mapping) for the full transition plan.
+>
+> **Next Steps**: Once this convention is approved, create a feature branch to:
+> 1. Implement alias mappings in `battleEngineState.js` for dual emission during transition period
+> 2. Update all tests and CLI integrations to use new names
+> 3. Deprecate old names after 1-2 release cycles
+> 4. Remove legacy aliases
+
 **Proposed structure:**
 
 ```mermaid
 graph TD
-    A["JU-DO-KON Events"]
+    A["JU-DO-KON Events<br/>(Proposed)"]
     A --> B["timer.*"]
     A --> C["ui.*"]
     A --> D["state.*"]
@@ -469,7 +512,7 @@ graph TD
     G --> G1["debug.panelUpdated"]
     G --> G2["debug.stateExposed"]
 
-    style A fill:#e1f5ff
+    style A fill:#ffe0b2
     style B fill:#fff9c4
     style C fill:#fff9c4
     style D fill:#fff9c4
@@ -478,7 +521,7 @@ graph TD
     style G fill:#fff9c4
 ```
 
-**Rationale**: Hierarchical visualization of the 6 proposed namespaces and their canonical event names. See **Migration Mapping** section below for old → new transitions.
+**Rationale**: Hierarchical visualization of the 6 proposed namespaces and their canonical event names. This structure will improve discoverability and consistency once implemented. See **Migration Mapping** section below for old → new transitions and implementation roadmap.
 
 ### Migration Mapping
 

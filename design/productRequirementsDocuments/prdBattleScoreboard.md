@@ -70,6 +70,93 @@ The scoreboard listens **only** to the canonical events from the Battle Engine/O
 - Outcomes persist until the next `control.state.changed` to `selection` or `cooldown`.
 - Duplicate or out-of-order events are ignored (idempotency guard).
 
+### 6a. Event Authority & Propagation Flow
+
+The following diagram illustrates the multi-actor event propagation chain and highlights the authority boundary between authoritative state transitions (solid arrows) and value-only updates (dashed arrows). This clarifies how the Orchestrator acts as a bridge between the Engine Core and the Scoreboard UI, ensuring deterministic state management and strict separation of concerns.
+
+```mermaid
+%%{init: {'theme': 'default', 'flowchart': {'htmlLabels': true, 'curve': 'basis'}}}%%
+sequenceDiagram
+    participant Engine as Engine Core<br/>(Deterministic Logic)
+    participant Orch as Orchestrator<br/>(FSM Authority)
+    participant UI as Scoreboard<br/>(UI Reflector)
+    participant Player as Player/CLI
+
+    Note over Engine,UI: ⭐ Authority Boundary: Only control.state.changed drives state transitions
+
+    Player->>UI: Mounts scoreboard
+    Note right of UI: Fallback: "Waiting…" (500ms timeout)
+    UI->>Orch: Subscribe to canonical events
+
+    loop Round Lifecycle
+        Engine->>Orch: roundStarted({roundIndex})
+        Orch->>Orch: Map to FSM state context
+        Orch->>UI: control.state.changed(to: "selection")<br/>⭐ AUTHORITATIVE<br/>—drives state transition
+        UI->>UI: Reset outcome area,<br/>show round index
+
+        rect rgb(200, 230, 201)
+            Note over Engine,UI: Value-only updates (idempotent, non-driving)
+            Engine->>UI: round.timer.tick({remainingMs})<br/>—dashed arrow (non-driving)
+            UI->>UI: Update timer display<br/>(no state transition)
+            Engine->>UI: round.timer.tick({remainingMs})<br/>—ignored if duplicate
+            UI->>UI: (idempotency: same roundIndex)
+        end
+
+        Player->>Orch: Select stat
+        Orch->>Engine: (command)
+        Engine->>Orch: roundEnded({outcome, scores})
+        Orch->>UI: control.state.changed(to: "cooldown")<br/>⭐ AUTHORITATIVE
+        UI->>UI: Hold previous outcome display
+
+        Engine->>UI: round.evaluated({outcome, scores})<br/>—dashed arrow
+        UI->>UI: Update scores + outcome,<br/>animate display
+
+        Note right of UI: Outcome persists until next<br/>control.state.changed
+    end
+
+    alt Match Concluded
+        Engine->>UI: match.concluded({scores})<br/>—dashed arrow
+        UI->>UI: Lock scoreboard,<br/>display final scores
+    end
+
+    Player->>UI: Unmounts
+    UI->>UI: Destroy, unsubscribe
+```
+
+**Diagram Rationale:** This sequenceDiagram clarifies the three-hop event propagation (Engine → Orchestrator → Scoreboard) and visually encodes the authority boundary through arrow styles: solid arrows for state-driving events (`control.state.changed`), dashed arrows for value-only events (domain/timer). The diagram shows idempotency enforcement (ignoring duplicate `roundIndex`), fallback timeout behavior, and outcome persistence rules. This eliminates ambiguity around which events trigger state transitions versus which merely update display values.
+
+### 6b. Idempotency Guard Algorithm
+
+The following flowchart details the decision logic that Scoreboard uses to guard against duplicate and out-of-order events. This is critical for deterministic test execution and AI-driven match simulations.
+
+```mermaid
+flowchart TD
+    Start([Event Received]) --> CheckState{"Is event<br/>control.state.changed?"}
+    
+    CheckState -->|Yes| ApplyTransition["✅ Apply state transition<br/>(ui state ← to)<br/>Clear outcome area<br/>Reset timer if needed"]
+    CheckState -->|No| CheckDuplicate{"Is event<br/>roundIndex < current?"}
+    
+    CheckDuplicate -->|Yes| IgnoreOldEvent["🔴 Ignore<br/>(out-of-order event)"]
+    CheckDuplicate -->|No| CheckExact{"Same roundIndex<br/>+ statKey<br/>as last event?"}
+    
+    CheckExact -->|Yes| IgnoreDuplicate["🔴 Ignore<br/>(duplicate)"]
+    CheckExact -->|No| UpdateValue["✅ Update value only<br/>(timer, outcome, scores)<br/>Preserve state<br/>No transition"]
+    
+    ApplyTransition --> End([Render])
+    UpdateValue --> End
+    IgnoreOldEvent --> End
+    IgnoreDuplicate --> End
+    
+    style ApplyTransition fill:#c8e6c9
+    style UpdateValue fill:#c8e6c9
+    style IgnoreOldEvent fill:#ffcdd2
+    style IgnoreDuplicate fill:#ffcdd2
+    style Start fill:#e3f2fd
+    style End fill:#e0e0e0
+```
+
+**Diagram Rationale:** This flowchart makes explicit the three-tier idempotency guard: (1) Is it a state-driving event? (2) Is the roundIndex newer or equal? (3) Is the (roundIndex, statKey) tuple unique? By visualizing these decision points with color coding (green for updates, red for ignores), the diagram ensures that downstream AI agents, developers, and test frameworks can reliably reason about event processing order and duplicate handling. This directly addresses the "Lifecycle & Idempotency" complexity flagged in the PRD feedback.
+
 ---
 
 ## 7. State Model
