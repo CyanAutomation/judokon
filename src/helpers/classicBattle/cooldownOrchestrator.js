@@ -926,10 +926,12 @@ export function instantiateCooldownTimer(
   timer.on("tick", (remaining) => {
     safeRound(
       "wireCooldownTimer.tick.emit",
-      () =>
-        bus.emit("cooldown.timer.tick", {
-          remainingMs: Math.max(0, Number(remaining) || 0) * 1000
-        }),
+      () => {
+        const remainingSeconds = Math.max(0, Number(remaining) || 0);
+        // Cooldown ticks are display-only; avoid state transitions here.
+        bus.emit("display.timer.tick", { secondsRemaining: remainingSeconds });
+        bus.emit("cooldown.timer.tick", { remainingMs: remainingSeconds * 1000 });
+      },
       { suppressInProduction: true }
     );
   });
