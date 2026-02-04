@@ -223,6 +223,7 @@ export function initBattleScoreboardAdapter() {
         if (!isCliMode()) updateRoundCounter(roundNum);
         _lastRoundIndex = roundNum;
       }
+      _pendingEvaluation = null;
       // Ensure root outcome resets to none at round start
       displayOutcome("none");
     } catch {}

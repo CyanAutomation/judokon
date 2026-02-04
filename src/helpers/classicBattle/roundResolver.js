@@ -230,9 +230,9 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
  * @summary Execute the full round resolution pipeline from evaluation to UI reset.
  * @pseudocode
  * 1. Evaluate the round outcome using the selected stat values.
- * 2. Dispatch outcome events so dependent systems can react.
- * 3. Update the scoreboard with the new scores.
- * 4. Emit round resolved events for external observers.
+ * 2. Emit round resolved events for external observers.
+ * 3. Dispatch outcome events so dependent systems can react.
+ * 4. Update the scoreboard with the new scores.
  * 5. Wait for UI lock timers to settle to avoid race conditions.
  * 6. Return the final round result object (stat button reset deferred to next round start).
  *
@@ -244,13 +244,13 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
  */
 export async function computeRoundResult(store, stat, playerVal, opponentVal) {
   const evaluated = evaluateOutcome(store, stat, playerVal, opponentVal);
-  const dispatched = await dispatchOutcomeEvents(evaluated);
+  const emitted = emitRoundResolved(store, stat, playerVal, opponentVal, evaluated);
+  const dispatched = await dispatchOutcomeEvents(emitted);
   const scored = await updateScoreboard(dispatched);
-  const emitted = emitRoundResolved(store, stat, playerVal, opponentVal, scored);
   await waitForRoundUILocks();
   // Stat buttons will be reset by applyRoundUI when the next round starts
   // Do NOT reset them here during cooldown as it bypasses guard logic
-  return emitted;
+  return scored;
 }
 
 function usingFakeTimers() {
