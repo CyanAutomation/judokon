@@ -534,14 +534,13 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
         })();
   const detail = event?.detail || {};
   const store = detail.store;
-  const result =
-    detail.result || {
-      outcome: detail.outcome,
-      matchEnded: detail.matchEnded,
-      playerScore: detail?.scores?.player ?? detail.playerScore,
-      opponentScore: detail?.scores?.opponent ?? detail.opponentScore,
-      message: detail.message
-    };
+  const result = detail.result || {
+    outcome: detail.outcome,
+    matchEnded: detail.matchEnded,
+    playerScore: detail?.scores?.player ?? detail.playerScore,
+    opponentScore: detail?.scores?.opponent ?? detail.opponentScore,
+    message: detail.message
+  };
   if (!result) return;
   if (store && typeof store === "object") {
     store.roundReadyForInput = false;

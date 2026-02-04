@@ -122,10 +122,66 @@ Process:
 2. Add schema change and consumer contract tests in the same PR.
 3. For breaking changes, emit both old and new event shapes for at least one release cycle and include telemetry to monitor consumer errors.
 
+### Breaking Change Decision Tree
+
+```mermaid
+flowchart TD
+    A["Proposed Event Change"] --> B{"Is field<br/>required?"}
+    B -->|Yes| C{"Removing or<br/>renaming field?"}
+    B -->|No| D{"Type or<br/>semantics<br/>changed?"}
+    C -->|Yes| E["🔴 BREAKING CHANGE"]
+    C -->|No| F{"Making format<br/>stricter?"}
+    D -->|Yes| E
+    D -->|No| G["🟢 NON-BREAKING"]
+    F -->|Yes| E
+    F -->|No| G
+    E --> H["Action: Major Release<br/>+ 1-cycle Compatibility<br/>+ Telemetry"]
+    G --> I["Action: Minor Release<br/>+ Announce Change<br/>No Consumer Urgency"]
+```
+
+**Rationale**: This flowchart encodes the versioning policy from the narrative section above, enabling test authors and implementers to classify changes algorithmically.
+
 ### Legacy Event Notes
 
 - `roundEnded` is now an engine-internal legacy event. Consumers must prefer the domain event `round.evaluated`.
 - `roundResolved` remains a legacy compatibility event on the battle event bus. New handlers and tests should use `round.evaluated` for evaluation results.
+
+### Event Lifecycle Diagram
+
+```mermaid
+stateDiagram-v2
+    [*] --> Current: Event introduced
+    Current --> ProposedDual: Rename proposed<br/>(breaking change)
+    ProposedDual --> Deprecated: End of 1-cycle<br/>compatibility period
+    Deprecated --> Removed: Major version<br/>boundary
+    Current --> DeprecatedNoMigration: Old event<br/>(no migration)
+    DeprecatedNoMigration --> Removed: Hard removal
+    Removed --> [*]
+
+    note right of Current
+        Stable, emitted once.
+        Consumers rely on this name.
+    end note
+
+    note right of ProposedDual
+        Both old + new names emitted
+        for 1 release cycle.
+        Telemetry tracks consumer errors.
+    end note
+
+    note right of Deprecated
+        Old name only.
+        Consumers should migrate.
+        Warnings logged.
+    end note
+
+    note right of Removed
+        Old name no longer emitted.
+        Breaking change complete.
+    end note
+```
+
+**Rationale**: This state diagram visualizes the event evolution process, showing the 1-cycle compatibility window and deprecation phases.
 
 ## Consumer Test Guidance
 
@@ -169,48 +225,106 @@ Acceptance Criteria (tests):
 
 This appendix is the canonical emitter inventory. Each row lists the logical event emitted through `emitBattleEvent` and the modules responsible for emission. The appendix has been cross-checked against the primary event inventory above to ensure no loss of canonical event names.
 
-| Event                         | Emitter modules                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+#### Emitter-Consumer Flow Diagram (Top 15 Events by Category)
+
+```mermaid
+flowchart LR
+    subgraph Emitters["Emitter Modules"]
+        ORC["orchestrator.js"]
+        RM["roundManager.js"]
+        TS["timerService.js"]
+        RR["roundResolver.js"]
+        SH["selectionHandler.js"]
+    end
+
+    subgraph Categories["Event Categories"]
+        TimerCat["⏱️ Timer (4)"]
+        StateCat["🔗 State (5)"]
+        UICat["🎨 UI (2)"]
+        PlayerCat["👤 Player (2)"]
+        ScoreCat["📊 Score (2)"]
+    end
+
+    subgraph Consumers["Consumer Modules"]
+        Tests["Tests"]
+        UI["UI/CLI"]
+        Engine["Battle Engine"]
+        Score["Scoreboard"]
+    end
+
+    ORC --> StateCat
+    RM --> TimerCat
+    TS --> TimerCat
+    RR --> PlayerCat
+    SH --> UICat
+
+    TimerCat --> Tests
+    TimerCat --> Engine
+    StateCat --> Tests
+    StateCat --> Engine
+    UICat --> UI
+    UICat --> Engine
+    PlayerCat --> Engine
+    PlayerCat --> Tests
+    ScoreCat --> Score
+    ScoreCat --> UI
+
+    style ORC fill:#e3f2fd
+    style RM fill:#e3f2fd
+    style TS fill:#e3f2fd
+    style RR fill:#e3f2fd
+    style SH fill:#e3f2fd
+    style Tests fill:#c8e6c9
+    style UI fill:#c8e6c9
+    style Engine fill:#c8e6c9
+    style Score fill:#c8e6c9
+```
+
+**Rationale**: Simplified emitter-consumer topology showing the top 15 events by category. This view helps test authors and implementers quickly identify which modules produce/consume events in each category. For the full inventory of all 40+ events, see the **Full Emitter Inventory** table below.
+
+#### Full Emitter Inventory Event | Emitter modules |
+
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `battleStateChange`           | `src/helpers/classicBattle/orchestrator.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `control.countdown.completed` | `src/helpers/classicBattle/cooldowns.js`<br>`src/helpers/classicBattle/roundManager.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `control.countdown.started`   | `src/helpers/classicBattle/cooldowns.js`<br>`src/helpers/classicBattle/roundManager.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `control.readiness.confirmed` | `src/helpers/classicBattle/orchestrator.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `control.readiness.required`  | `src/helpers/classicBattle/orchestrator.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `control.state.catalog`       | `src/helpers/classicBattle/orchestrator.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `control.state.changed`       | `src/helpers/classicBattle/orchestrator.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `cooldown.timer.expired`      | `src/helpers/classicBattle/roundManager.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `cooldown.timer.tick`         | `src/helpers/classicBattle/cooldowns.js`<br>`src/helpers/classicBattle/engineBridge.js`<br>`src/helpers/classicBattle/roundManager.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `countdownFinished`           | `src/helpers/classicBattle/timerService.js`<br>`src/helpers/classicBattle/uiService.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `countdownStart`              | `src/helpers/classicBattle/cooldowns.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `debug.state.snapshot`        | `src/helpers/classicBattle/orchestrator.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `debug.transition`            | `src/helpers/classicBattle/orchestrator.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `debugPanelUpdate`            | `src/helpers/classicBattle/eventDispatcher.js`<br>`src/helpers/classicBattle/handleRoundError.js`<br>`src/helpers/classicBattle/orchestrator.js`<br>`src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js`<br>`src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js`<br>`src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js`<br>`src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js`<br>`src/helpers/classicBattle/stateHandlers/roundModificationEnter.js`<br>`src/helpers/classicBattle/stateHandlers/waitingForMatchStartEnter.js`<br>`src/helpers/classicBattle/stateTransitionListeners.js` |
-| `display.score.update`        | `src/helpers/classicBattle/engineBridge.js`<br>`src/helpers/classicBattle/roundResolver.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `input.ignored`               | `src/helpers/classicBattle/selectionHandler.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `interrupt.requested`         | `src/helpers/classicBattle/eventDispatcher.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `interrupt.resolved`          | `src/helpers/classicBattle/orchestrator.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `match.concluded`             | `src/helpers/classicBattle/engineBridge.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `matchOver`                   | `src/helpers/classicBattle/engineBridge.js`<br>`src/helpers/classicBattle/roundManager.js`<br>`src/helpers/classicBattle/roundUI.js`<br>`src/helpers/classicBattle/stateHandlers/matchOverEnter.js`                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| `nextRoundTimerReady`         | `src/helpers/classicBattle/cooldowns.js`<br>`src/helpers/classicBattle/roundManager.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `opponentCardReady`           | `src/helpers/classicBattle/controller.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `opponentReveal`              | `src/helpers/classicBattle/roundResolver.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `round.evaluated`             | `src/helpers/classicBattle/roundResolver.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `round.selection.locked`      | `src/helpers/classicBattle/selectionHandler.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `round.started`               | `src/helpers/classicBattle/engineBridge.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `round.timer.expired`         | `src/helpers/classicBattle/timerService.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `round.timer.tick`            | `src/helpers/classicBattle/engineBridge.js`<br>`src/helpers/classicBattle/timerService.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `roundOptionsReady`           | `src/helpers/classicBattle/roundSelectModal.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `roundPrompt`                 | `src/helpers/classicBattle/snackbar.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `roundResolved`               | `src/helpers/classicBattle/engineBridge.js`<br>`src/helpers/classicBattle/roundManager.js`<br>`src/helpers/classicBattle/roundResolver.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `roundStarted`                | `src/helpers/classicBattle/roundManager.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `roundTimeout`                | `src/helpers/classicBattle/testHooks.js`<br>`src/helpers/classicBattle/timerService.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `scoreboardClearMessage`      | `src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js`<br>`src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js`<br>`src/helpers/classicBattle/stateHandlers/roundModificationEnter.js`<br>`src/helpers/classicBattle/stateHandlers/waitingForMatchStartEnter.js`                                                                                                                                                                                                                                                                                                                                                        |
-| `scoreboardShowMessage`       | `src/helpers/classicBattle/handleRoundError.js`<br>`src/helpers/classicBattle/orchestrator.js`<br>`src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js`<br>`src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js`<br>`src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js`<br>`src/helpers/classicBattle/stateHandlers/roundModificationEnter.js`                                                                                                                                                                                                                                                             |
-| `startClicked`                | `src/helpers/classicBattle/roundSelectModal.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `statButtons:disable`         | `src/helpers/classicBattle/roundUI.js`<br>`src/helpers/classicBattle/stateHandlers/waitingForPlayerActionExit.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `statButtons:enable`          | `src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `statSelected`                | `src/helpers/classicBattle/selectionHandler.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `statSelectionStalled`        | `src/helpers/classicBattle/autoSelectHandlers.js`<br>`src/helpers/classicBattle/testHooks.js`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `battleStateChange` | `src/helpers/classicBattle/orchestrator.js` |
+| `control.countdown.completed` | `src/helpers/classicBattle/cooldowns.js`<br>`src/helpers/classicBattle/roundManager.js` |
+| `control.countdown.started` | `src/helpers/classicBattle/cooldowns.js`<br>`src/helpers/classicBattle/roundManager.js` |
+| `control.readiness.confirmed` | `src/helpers/classicBattle/orchestrator.js` |
+| `control.readiness.required` | `src/helpers/classicBattle/orchestrator.js` |
+| `control.state.catalog` | `src/helpers/classicBattle/orchestrator.js` |
+| `control.state.changed` | `src/helpers/classicBattle/orchestrator.js` |
+| `cooldown.timer.expired` | `src/helpers/classicBattle/roundManager.js` |
+| `cooldown.timer.tick` | `src/helpers/classicBattle/cooldowns.js`<br>`src/helpers/classicBattle/engineBridge.js`<br>`src/helpers/classicBattle/roundManager.js` |
+| `countdownFinished` | `src/helpers/classicBattle/timerService.js`<br>`src/helpers/classicBattle/uiService.js` |
+| `countdownStart` | `src/helpers/classicBattle/cooldowns.js` |
+| `debug.state.snapshot` | `src/helpers/classicBattle/orchestrator.js` |
+| `debug.transition` | `src/helpers/classicBattle/orchestrator.js` |
+| `debugPanelUpdate` | `src/helpers/classicBattle/eventDispatcher.js`<br>`src/helpers/classicBattle/handleRoundError.js`<br>`src/helpers/classicBattle/orchestrator.js`<br>`src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js`<br>`src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js`<br>`src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js`<br>`src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js`<br>`src/helpers/classicBattle/stateHandlers/roundModificationEnter.js`<br>`src/helpers/classicBattle/stateHandlers/waitingForMatchStartEnter.js`<br>`src/helpers/classicBattle/stateTransitionListeners.js` |
+| `display.score.update` | `src/helpers/classicBattle/engineBridge.js`<br>`src/helpers/classicBattle/roundResolver.js` |
+| `input.ignored` | `src/helpers/classicBattle/selectionHandler.js` |
+| `interrupt.requested` | `src/helpers/classicBattle/eventDispatcher.js` |
+| `interrupt.resolved` | `src/helpers/classicBattle/orchestrator.js` |
+| `match.concluded` | `src/helpers/classicBattle/engineBridge.js` |
+| `matchOver` | `src/helpers/classicBattle/engineBridge.js`<br>`src/helpers/classicBattle/roundManager.js`<br>`src/helpers/classicBattle/roundUI.js`<br>`src/helpers/classicBattle/stateHandlers/matchOverEnter.js` |
+| `nextRoundTimerReady` | `src/helpers/classicBattle/cooldowns.js`<br>`src/helpers/classicBattle/roundManager.js` |
+| `opponentCardReady` | `src/helpers/classicBattle/controller.js` |
+| `opponentReveal` | `src/helpers/classicBattle/roundResolver.js` |
+| `round.evaluated` | `src/helpers/classicBattle/roundResolver.js` |
+| `round.selection.locked` | `src/helpers/classicBattle/selectionHandler.js` |
+| `round.started` | `src/helpers/classicBattle/engineBridge.js` |
+| `round.timer.expired` | `src/helpers/classicBattle/timerService.js` |
+| `round.timer.tick` | `src/helpers/classicBattle/engineBridge.js`<br>`src/helpers/classicBattle/timerService.js` |
+| `roundOptionsReady` | `src/helpers/classicBattle/roundSelectModal.js` |
+| `roundPrompt` | `src/helpers/classicBattle/snackbar.js` |
+| `roundResolved` | `src/helpers/classicBattle/engineBridge.js`<br>`src/helpers/classicBattle/roundManager.js`<br>`src/helpers/classicBattle/roundResolver.js` |
+| `roundStarted` | `src/helpers/classicBattle/roundManager.js` |
+| `roundTimeout` | `src/helpers/classicBattle/testHooks.js`<br>`src/helpers/classicBattle/timerService.js` |
+| `scoreboardClearMessage` | `src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js`<br>`src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js`<br>`src/helpers/classicBattle/stateHandlers/roundModificationEnter.js`<br>`src/helpers/classicBattle/stateHandlers/waitingForMatchStartEnter.js` |
+| `scoreboardShowMessage` | `src/helpers/classicBattle/handleRoundError.js`<br>`src/helpers/classicBattle/orchestrator.js`<br>`src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js`<br>`src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js`<br>`src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js`<br>`src/helpers/classicBattle/stateHandlers/roundModificationEnter.js` |
+| `startClicked` | `src/helpers/classicBattle/roundSelectModal.js` |
+| `statButtons:disable` | `src/helpers/classicBattle/roundUI.js`<br>`src/helpers/classicBattle/stateHandlers/waitingForPlayerActionExit.js` |
+| `statButtons:enable` | `src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js` |
+| `statSelected` | `src/helpers/classicBattle/selectionHandler.js` |
+| `statSelectionStalled` | `src/helpers/classicBattle/autoSelectHandlers.js`<br>`src/helpers/classicBattle/testHooks.js` |
 
 ### Appendix B: Listener Inventory (DOM & Event Bus)
 
@@ -321,12 +435,50 @@ This appendix records how tests observe or synthesize events. These utilities an
 
 **Proposed structure:**
 
-- `timer.*`: `timer.roundExpired`, `timer.countdownStarted`, `timer.statSelectionExpired`, `timer.cooldownFinished`
-- `ui.*`: `ui.statButtonsEnabled`, `ui.statButtonsDisabled`, `ui.cardsRevealed`, `ui.countdownStarted`
-- `state.*`: `state.transitioned`, `state.matchStarted`, `state.roundStarted`, `state.matchOver`
-- `player.*`: `player.statSelected`, `player.interrupted`, `player.actionTimeout`
-- `scoreboard.*`: `scoreboard.messageShown`, `scoreboard.messageCleared`, `scoreboard.scoreUpdated`
-- `debug.*`: `debug.panelUpdated`, `debug.stateExposed`
+```mermaid
+graph TD
+    A["JU-DO-KON Events"]
+    A --> B["timer.*"]
+    A --> C["ui.*"]
+    A --> D["state.*"]
+    A --> E["player.*"]
+    A --> F["scoreboard.*"]
+    A --> G["debug.*"]
+
+    B --> B1["timer.roundExpired"]
+    B --> B2["timer.countdownStarted"]
+    B --> B3["timer.statSelectionExpired"]
+    B --> B4["timer.cooldownFinished"]
+
+    C --> C1["ui.statButtonsEnabled"]
+    C --> C2["ui.statButtonsDisabled"]
+    C --> C3["ui.cardsRevealed"]
+
+    D --> D1["state.matchStarted"]
+    D --> D2["state.roundStarted"]
+    D --> D3["state.matchOver"]
+
+    E --> E1["player.statSelected"]
+    E --> E2["player.interrupted"]
+    E --> E3["player.actionTimeout"]
+
+    F --> F1["scoreboard.messageShown"]
+    F --> F2["scoreboard.messageCleared"]
+    F --> F3["scoreboard.scoreUpdated"]
+
+    G --> G1["debug.panelUpdated"]
+    G --> G2["debug.stateExposed"]
+
+    style A fill:#e1f5ff
+    style B fill:#fff9c4
+    style C fill:#fff9c4
+    style D fill:#fff9c4
+    style E fill:#fff9c4
+    style F fill:#fff9c4
+    style G fill:#fff9c4
+```
+
+**Rationale**: Hierarchical visualization of the 6 proposed namespaces and their canonical event names. See **Migration Mapping** section below for old → new transitions.
 
 ### Migration Mapping
 

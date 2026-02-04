@@ -124,7 +124,12 @@ describe("classicBattle stat selection flag reset", () => {
       matchEnded: false
     };
     const event = new CustomEvent("round.evaluated", {
-      detail: { store, matchEnded: false, message: result.message, scores: { player: 0, opponent: 0 } }
+      detail: {
+        store,
+        matchEnded: false,
+        message: result.message,
+        scores: { player: 0, opponent: 0 }
+      }
     });
 
     await withMutedConsole(() =>

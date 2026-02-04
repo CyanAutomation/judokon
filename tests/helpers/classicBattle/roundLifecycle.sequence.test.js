@@ -15,7 +15,7 @@ describe("classicBattle round lifecycle sequencing", () => {
     vi.restoreAllMocks();
   });
 
-test("round.evaluated → roundWait → roundStarted ordering", async () => {
+  test("round.evaluated → roundWait → roundStarted ordering", async () => {
     const received = [];
     const onStarted = () => received.push("started");
     const onCooldown = () => received.push("roundWait");
