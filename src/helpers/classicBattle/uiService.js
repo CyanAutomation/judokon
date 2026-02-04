@@ -137,15 +137,17 @@ function handleScoreUpdate(event) {
 
 function extractScorePair(detail) {
   const scores = detail?.scores;
-  if (scores) {
+  if (scores && typeof scores.player === "number" && typeof scores.opponent === "number") {
     return {
       player: scores.player,
       opponent: scores.opponent
     };
   }
+  const player = detail?.playerScore ?? detail?.player;
+  const opponent = detail?.opponentScore ?? detail?.opponent;
   return {
-    player: detail?.playerScore ?? detail?.player,
-    opponent: detail?.opponentScore ?? detail?.opponent
+    player: typeof player === "number" ? player : 0,
+    opponent: typeof opponent === "number" ? opponent : 0
   };
 }
 
