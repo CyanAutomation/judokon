@@ -817,6 +817,19 @@ export function bindRoundUIEventHandlers() {
   } catch {}
 }
 
+function shouldBindRoundUIHandlers(key) {
+  let shouldBind = true;
+  try {
+    const target = getBattleEventTarget();
+    if (target) {
+      const set = (globalThis[key] ||= new WeakSet());
+      if (set.has(target)) shouldBind = false;
+      else set.add(target);
+    }
+  } catch {}
+  return shouldBind;
+}
+
 /**
  * Bind round UI handlers once per battle event target.
  *
@@ -835,17 +848,7 @@ export function bindRoundUIEventHandlers() {
  */
 export function bindRoundUIEventHandlersOnce() {
   scheduleMatchSummaryPreload();
-  let shouldBind = true;
-  try {
-    const KEY = "__cbRoundUIStaticBoundTargets";
-    const target = getBattleEventTarget();
-    if (target) {
-      const set = (globalThis[KEY] ||= new WeakSet());
-      if (set.has(target)) shouldBind = false;
-      else set.add(target);
-    }
-  } catch {}
-  if (shouldBind) {
+  if (shouldBindRoundUIHandlers("__cbRoundUIStaticBoundTargets")) {
     bindRoundUIEventHandlers();
   }
 }
@@ -866,6 +869,9 @@ export function bindRoundUIEventHandlersOnce() {
  */
 export function bindRoundUIEventHandlersDynamic() {
   scheduleMatchSummaryPreload();
+  if (!shouldBindRoundUIHandlers("__cbRoundUIDynamicBoundTargets")) {
+    return;
+  }
   // Contract: Always call __resetBattleEventTarget() before binding handlers to ensure clean state
   // Each EventTarget reset creates a fresh instance with no handlers attached
   onBattleEvent("round.start", async () => {
@@ -893,5 +899,10 @@ export function bindRoundUIEventHandlersDynamic() {
       document.body?.setAttribute?.("data-stat-selected", "true");
     } catch {}
     handleStatSelectedEvent(event);
+  });
+  onBattleEvent("control.state.changed", (event) => {
+    const { source, to } = event?.detail || {};
+    if (source !== "roundUI.applyRoundUI" || to !== "roundSelect") return;
+    emitBattleEvent("statButtons:enable");
   });
 }
