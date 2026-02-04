@@ -197,8 +197,7 @@ export async function ensureBindings(opts = {}) {
   const roundUI = dependencyOverrides.roundUI ?? roundUIModule;
   const uiService = dependencyOverrides.uiService ?? uiServiceModule;
   const uiEventHandlers = dependencyOverrides.uiEventHandlers ?? uiEventHandlersModule;
-  const roundFlowController =
-    dependencyOverrides.roundFlowController ?? roundFlowControllerModule;
+  const roundFlowController = dependencyOverrides.roundFlowController ?? roundFlowControllerModule;
   const promises = dependencyOverrides.promises ?? promisesModule;
 
   // Bind round UI listeners once per worker to avoid duplicate handlers.
