@@ -1,4 +1,4 @@
-# Material Design v1 – Reference Guide for JU-DO-KON!
+# Material Design v1 – Reference Guide for JU-DO-KON
 
 **Purpose:**
 This document encapsulates the _relevant_ principles and patterns of **Google’s Material Design v1 (2014–2017)** — adapted for use within the JU-DO-KON! project.
@@ -162,7 +162,7 @@ Ensure all interactive elements meet size and contrast thresholds. Check respons
 
 ---
 
-## 10. Application within JU-DO-KON!
+## 10. Application within JU-DO-KON
 
 Material v1 should be treated as a _visual and interaction vocabulary_ — not a constraint.
 JU-DO-KON!’s judo-inspired aesthetic can coexist with Material principles by focusing on:

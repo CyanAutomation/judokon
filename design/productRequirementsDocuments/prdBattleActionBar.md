@@ -42,13 +42,13 @@ Previously, battle modes relied on the global bottom navigation bar, which provi
 
 ## 3. Goals
 
-1.  **Mandatory Control Surface:** A required component for all battle modes, replacing the old bottom navigation.
-2.  **Unified Structure:** A consistent layout: Options button, five stat buttons, and an action button.
-3.  **Mode-Specific Flexibility:** A consistent base component that is themeable via a `.action-bar--{mode}` CSS class.
-4.  **Accessible Design:** Full keyboard navigation, ARIA labels, and screen-reader support to meet WCAG 2.1 AA compliance.
-5.  **Testability:** Expose `data-*` attributes for state inspection and automated testing.
-6.  **Resilience:** Buttons are locked/disabled when interaction is invalid (e.g., during cooldowns or non-select states).
-7.  **Responsive and Tactile:** All button interactions must include 150–200 ms feedback animations (e.g., press pulse, modal fade).
+1. **Mandatory Control Surface:** A required component for all battle modes, replacing the old bottom navigation.
+2. **Unified Structure:** A consistent layout: Options button, five stat buttons, and an action button.
+3. **Mode-Specific Flexibility:** A consistent base component that is themeable via a `.action-bar--{mode}` CSS class.
+4. **Accessible Design:** Full keyboard navigation, ARIA labels, and screen-reader support to meet WCAG 2.1 AA compliance.
+5. **Testability:** Expose `data-*` attributes for state inspection and automated testing.
+6. **Resilience:** Buttons are locked/disabled when interaction is invalid (e.g., during cooldowns or non-select states).
+7. **Responsive and Tactile:** All button interactions must include 150–200 ms feedback animations (e.g., press pulse, modal fade).
 
 ---
 
@@ -129,10 +129,10 @@ Previously, battle modes relied on the global bottom navigation bar, which provi
 
 ## 7. Edge Cases & Failure States
 
-1.  **Missing Engine State:** If engine data is undefined, render the bar with all buttons disabled and tooltips indicating an unavailable state.
-2.  **Options Modal Render Failure:** Fallback to a toast message: “Settings unavailable — please retry.”
-3.  **Shortcut Conflict:** If shortcut keys are already bound globally (e.g., by browser extensions), log the conflict and allow mouse fallback.
-4.  **Desync:** If the UI and engine are out of sync for >300 ms, trigger an automatic re-sync event and log the telemetry event `battle.actionbar.desync`.
+1. **Missing Engine State:** If engine data is undefined, render the bar with all buttons disabled and tooltips indicating an unavailable state.
+2. **Options Modal Render Failure:** Fallback to a toast message: “Settings unavailable — please retry.”
+3. **Shortcut Conflict:** If shortcut keys are already bound globally (e.g., by browser extensions), log the conflict and allow mouse fallback.
+4. **Desync:** If the UI and engine are out of sync for >300 ms, trigger an automatic re-sync event and log the telemetry event `battle.actionbar.desync`.
 
 ---
 
@@ -165,10 +165,10 @@ Previously, battle modes relied on the global bottom navigation bar, which provi
 
 When the player selects **Quit**:
 
-1.  A confirmation dialog appears with **Cancel** pre-selected.
-2.  On confirmation, the player is returned to the **Landing Page**.
-3.  The current battle state is **reset**, discarding any in-progress match data.
-4.  A `battle.quit` event is logged to telemetry.
+1. A confirmation dialog appears with **Cancel** pre-selected.
+2. On confirmation, the player is returned to the **Landing Page**.
+3. The current battle state is **reset**, discarding any in-progress match data.
+4. A `battle.quit` event is logged to telemetry.
 
 ---
 

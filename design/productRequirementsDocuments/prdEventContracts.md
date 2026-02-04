@@ -484,6 +484,7 @@ This appendix records how tests observe or synthesize events. These utilities an
 > **Migration Timeline**: To be scheduled in a future release. See [Migration Mapping](#migration-mapping) for the full transition plan.
 >
 > **Next Steps**: Once this convention is approved, create a feature branch to:
+>
 > 1. Implement alias mappings in `battleEngineState.js` for dual emission during transition period
 > 2. Update all tests and CLI integrations to use new names
 > 3. Deprecate old names after 1-2 release cycles
