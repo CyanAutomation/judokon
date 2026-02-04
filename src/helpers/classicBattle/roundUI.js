@@ -382,13 +382,24 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000, options 
       container.dataset.selectionInProgress = "false";
     }
   } catch {}
-  // Ensure buttons end up enabled at the tail of round UI setup
-  // But don't re-enable if a selection is in progress
+  // Emit a state change for fallback flows so a state listener can enable buttons.
+  // But don't re-emit if a selection is in progress.
   try {
     const selectionInProgress = container?.dataset?.selectionInProgress;
     if (store?.roundReadyForInput === true && selectionInProgress !== "true") {
-      // Only emit the event - the handler in setupUIBindings will call enable()
-      emitBattleEvent("statButtons:enable");
+      const roundsPlayed = Number(store?.roundsPlayed);
+      const roundIndex = Number.isFinite(roundsPlayed)
+        ? roundsPlayed
+        : Number.isFinite(roundNumber)
+          ? Math.max(0, roundNumber - 1)
+          : 0;
+      emitBattleEvent("control.state.changed", {
+        from: null,
+        to: "roundSelect",
+        context: { roundIndex },
+        catalogVersion: "fallback",
+        source: "roundUI.applyRoundUI"
+      });
     }
   } catch {}
 }
@@ -783,6 +794,11 @@ export function bindRoundResolved() {
 export function bindRoundUIEventHandlers() {
   bindRoundStarted();
   bindRoundResolved();
+  onBattleEvent("control.state.changed", (event) => {
+    const { source, to } = event?.detail || {};
+    if (source !== "roundUI.applyRoundUI" || to !== "roundSelect") return;
+    emitBattleEvent("statButtons:enable");
+  });
   // Instrument statButtons enable/disable events to observe unexpected toggles
   try {
     const target = getBattleEventTarget();
