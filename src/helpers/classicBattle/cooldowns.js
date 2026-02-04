@@ -384,11 +384,12 @@ export async function initInterRoundCooldown(machine, options = {}) {
     duration,
     onExpired: completion.finish,
     onTick: (remaining) =>
-      guard(() =>
-        emitBattleEvent("cooldown.timer.tick", {
-          remainingMs: Math.max(0, Number(remaining) || 0) * 1000
-        })
-      )
+      guard(() => {
+        const remainingSeconds = Math.max(0, Number(remaining) || 0);
+        // Cooldown ticks are display-only; do not drive state transitions here.
+        emitBattleEvent("display.timer.tick", { secondsRemaining: remainingSeconds });
+        emitBattleEvent("cooldown.timer.tick", { remainingMs: remainingSeconds * 1000 });
+      })
   });
 
   const fallbackId = scheduleCooldownFallback({

@@ -348,10 +348,11 @@ export function primeTimerDisplay({
   if (!Number.isFinite(duration)) return;
 
   try {
-    scoreboardApi?.updateTimer?.(duration);
+    emitBattleEvent("display.timer.tick", { secondsRemaining: duration });
   } catch {}
 
   void root;
+  void scoreboardApi;
 }
 
 /**
@@ -390,8 +391,9 @@ export function configureTimerCallbacks(
   } = {}
 ) {
   const tickHandler = (remaining) => {
+    // Timer ticks are display-only; they must not trigger state transitions.
     try {
-      scoreboardApi?.updateTimer?.(remaining);
+      emitEvent?.("display.timer.tick", { secondsRemaining: Number(remaining) || 0 });
     } catch {}
   };
 
@@ -401,9 +403,8 @@ export function configureTimerCallbacks(
 
   timer?.on?.("tick", (remaining) => {
     try {
-      emitEvent?.("round.timer.tick", {
-        remainingMs: Math.max(0, Number(remaining) || 0) * 1000
-      });
+      const remainingSeconds = Math.max(0, Number(remaining) || 0);
+      emitEvent?.("round.timer.tick", { remainingMs: remainingSeconds * 1000 });
     } catch {}
   });
 

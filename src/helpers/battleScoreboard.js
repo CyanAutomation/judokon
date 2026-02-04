@@ -1,4 +1,4 @@
-import { onBattleEvent, offBattleEvent } from "./classicBattle/battleEvents.js";
+import { onBattleEvent, offBattleEvent, emitBattleEvent } from "./classicBattle/battleEvents.js";
 import { updateScore, getState as _getState } from "../components/Scoreboard.js";
 import {
   showMessage,
@@ -14,6 +14,7 @@ const EVENTS = {
   ROUND_STARTED: "round.started",
   ROUND_TIMER_TICK: "round.timer.tick",
   COOLDOWN_TIMER_TICK: "cooldown.timer.tick",
+  DISPLAY_TIMER_TICK: "display.timer.tick",
   ROUND_EVALUATED: "round.evaluated",
   MATCH_CONCLUDED: "match.concluded",
   CONTROL_STATE_CHANGED: "control.state.changed"
@@ -104,6 +105,17 @@ const extractScores = (detail) => {
     player: safeNumber(detail?.scores?.player),
     opponent: safeNumber(detail?.scores?.opponent)
   };
+};
+
+/**
+ * Extract seconds remaining from a display timer tick payload.
+ *
+ * @param {object} detail - The event detail object.
+ * @returns {number|null} - Seconds remaining or null if invalid.
+ */
+const extractSecondsRemaining = (detail) => {
+  const seconds = detail?.secondsRemaining;
+  return Number.isFinite(seconds) ? seconds : null;
 };
 
 /**
@@ -229,19 +241,30 @@ export function initBattleScoreboardAdapter() {
     } catch {}
   });
 
-  // round.timer.tick and cooldown.timer.tick → header timer (seconds)
+  // round.timer.tick and cooldown.timer.tick → display.timer.tick → header timer (seconds)
   // Skip timer updates in CLI mode (battleCLI handles its own timer display)
   if (!isCliMode()) {
-    const handleTimerTick = (e) => {
+    const emitDisplayTimerTick = (e) => {
       _cancelWaiting();
       try {
-        const ms = safeNumber(e?.detail?.remainingMs);
-        updateTimer(Math.max(0, Math.round(ms / 1000)));
+        const ms = safeNumber(e?.detail?.remainingMs, null);
+        if (!Number.isFinite(ms)) return;
+        emitBattleEvent(EVENTS.DISPLAY_TIMER_TICK, {
+          secondsRemaining: Math.max(0, Math.round(ms / 1000))
+        });
       } catch {}
     };
 
-    on(EVENTS.ROUND_TIMER_TICK, handleTimerTick);
-    on(EVENTS.COOLDOWN_TIMER_TICK, handleTimerTick);
+    on(EVENTS.ROUND_TIMER_TICK, emitDisplayTimerTick);
+    on(EVENTS.COOLDOWN_TIMER_TICK, emitDisplayTimerTick);
+    on(EVENTS.DISPLAY_TIMER_TICK, (e) => {
+      _cancelWaiting();
+      try {
+        const seconds = extractSecondsRemaining(getEventDetail(e));
+        if (seconds === null) return;
+        updateTimer(seconds);
+      } catch {}
+    });
   }
 
   // round.evaluated → scores (+ optional message)

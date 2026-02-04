@@ -65,9 +65,13 @@ function attachEngineEventBridge(engine) {
   on.call(engine, "timerTick", (detail) => {
     const remaining = Number(detail?.remaining) || 0;
     if (detail?.phase === "round") {
-      emitBattleEvent("round.timer.tick", { remainingMs: Math.max(0, remaining) * 1000 });
+      const remainingSeconds = Math.max(0, remaining);
+      emitBattleEvent("display.timer.tick", { secondsRemaining: remainingSeconds });
+      emitBattleEvent("round.timer.tick", { remainingMs: remainingSeconds * 1000 });
     } else if (detail?.phase === "cooldown") {
-      emitBattleEvent("cooldown.timer.tick", { remainingMs: Math.max(0, remaining) * 1000 });
+      const remainingSeconds = Math.max(0, remaining);
+      emitBattleEvent("display.timer.tick", { secondsRemaining: remainingSeconds });
+      emitBattleEvent("cooldown.timer.tick", { remainingMs: remainingSeconds * 1000 });
     }
   });
 
