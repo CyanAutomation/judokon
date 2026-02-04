@@ -729,7 +729,7 @@ function createTickProcessors(rendererState) {
       }
       return;
     }
-    const clamped = render(normalized);
+    render(normalized);
     if (!rendererState.started && !suppressEvents) {
       rendererState.started = true;
     }

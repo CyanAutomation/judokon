@@ -4,7 +4,7 @@ import { startTimer } from "./timerService.js";
 import { handleStatSelectionTimeout } from "./autoSelectHandlers.js";
 
 import * as scoreboard from "../setupScoreboard.js";
-import { attachCooldownRenderer, dismissCountdownSnackbar } from "../CooldownRenderer.js";
+import { dismissCountdownSnackbar } from "../CooldownRenderer.js";
 import { attachCountdownCoordinator } from "./countdownCoordinator.js";
 import { handleStatSelection } from "./selectionHandler.js";
 import { getCardStatValue } from "./cardStatUtils.js";
@@ -13,7 +13,7 @@ import * as roundManagerModule from "./roundManager.js";
 import { onBattleEvent, emitBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import { updateSnackbar as _updateSnackbar } from "../showSnackbar.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
-import { createRoundTimer } from "../timers/createRoundTimer.js";
+// import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { syncScoreDisplay } from "./uiHelpers.js";
 import { disableStatButtons, resetStatButtons } from "./statButtons.js";
 import { runWhenIdle } from "./idleCallback.js";

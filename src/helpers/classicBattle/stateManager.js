@@ -369,7 +369,8 @@ function resolveInterruptMatchTransition(eventName) {
   return null;
 }
 
-function resolveClassicBattleTransition(currentState, eventName, context, guardOverrides, payload) {
+function resolveClassicBattleTransition(currentState, eventName, context, guardOverrides) {
+  void context;
   switch (currentState) {
     case "waitingForMatchStart":
       return resolveWaitingForMatchStartTransition(eventName);

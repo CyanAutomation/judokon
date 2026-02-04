@@ -382,8 +382,7 @@ export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
  * @param {string} stat - Chosen stat key.
  * @param {number} playerVal - Player's stat value.
  * @param {number} opponentVal - Opponent's stat value.
- * @param {{delayMs?: number, sleep?: (ms: number) => Promise<void>}} [opts]
- * - Optional overrides (delayMs is ignored; engine resolution is synchronous).
+
  * @returns {Promise<ReturnType<typeof evaluateRound>>}
  */
 /**
@@ -393,9 +392,7 @@ export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
  * @param {string} stat - Chosen stat key.
  * @param {number} playerVal - Player's stat value.
  * @param {number} opponentVal - Opponent's stat value.
- * @param {object} [opts={}] - Optional configuration overrides.
- * @param {number} [opts.delayMs] - Custom delay before revealing opponent stat.
- * @param {Function} [opts.sleep] - Custom sleep function for testing.
+
  * @returns {Promise<object>} Round resolution result.
  * @summary Main round resolution entry point with validation, timing, and cleanup.
  * @pseudocode
@@ -407,7 +404,7 @@ export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
  * 6. Reset the isResolving flag in finally block.
  * 7. Return the complete resolution result.
  */
-export async function resolveRound(store, stat, playerVal, opponentVal, opts = {}) {
+export async function resolveRound(store, stat, playerVal, opponentVal) {
   if (isResolving) return;
   isResolving = true;
   try {

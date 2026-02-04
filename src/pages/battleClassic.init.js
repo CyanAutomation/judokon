@@ -71,7 +71,6 @@ import {
 } from "../helpers/classicBattle/UIElements.js";
 import {
   getCurrentTimestamp,
-  scheduleDelayed,
   clearScheduled
 } from "../helpers/classicBattle/timerSchedule.js";
 import {
