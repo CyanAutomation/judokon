@@ -369,8 +369,7 @@ function resolveInterruptMatchTransition(eventName) {
   return null;
 }
 
-function resolveClassicBattleTransition(currentState, eventName, context, guardOverrides) {
-  void context;
+function resolveClassicBattleTransition(currentState, eventName, _context, guardOverrides) {
   switch (currentState) {
     case "waitingForMatchStart":
       return resolveWaitingForMatchStartTransition(eventName);
@@ -381,13 +380,13 @@ function resolveClassicBattleTransition(currentState, eventName, context, guardO
     case "roundPrompt":
       return resolveRoundPromptTransition(eventName);
     case "roundSelect":
-      return resolveRoundSelectTransition(eventName, context, guardOverrides);
+      return resolveRoundSelectTransition(eventName, _context, guardOverrides);
     case "roundResolve":
       return resolveRoundResolveTransition(eventName);
     case "roundDisplay":
-      return resolveRoundDisplayTransition(eventName, context);
+      return resolveRoundDisplayTransition(eventName, _context);
     case "matchEvaluate":
-      return resolveMatchEvaluateTransition(eventName, context);
+      return resolveMatchEvaluateTransition(eventName, _context);
     case "matchDecision":
       return resolveMatchDecisionTransition(eventName);
     case "matchOver":

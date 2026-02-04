@@ -69,10 +69,7 @@ import {
   getReplayButton,
   getQuitButton
 } from "../helpers/classicBattle/UIElements.js";
-import {
-  getCurrentTimestamp,
-  clearScheduled
-} from "../helpers/classicBattle/timerSchedule.js";
+import { getCurrentTimestamp, clearScheduled } from "../helpers/classicBattle/timerSchedule.js";
 import {
   initClassicBattleOrchestrator,
   registerBridgeOnEngineCreated
