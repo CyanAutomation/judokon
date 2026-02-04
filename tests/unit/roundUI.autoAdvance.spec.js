@@ -26,8 +26,14 @@ describe("roundUI auto-advance chain", () => {
     const attachCooldownRenderer = vi.fn();
     const computeNextRoundCooldown = vi.fn(() => 5);
 
-    const result = { message: "ok", playerScore: 1, opponentScore: 0, matchEnded: false };
-    const event = new CustomEvent("roundResolved", { detail: { result, store: {} } });
+    const event = new CustomEvent("round.evaluated", {
+      detail: {
+        message: "ok",
+        matchEnded: false,
+        scores: { player: 1, opponent: 0 },
+        store: {}
+      }
+    });
 
     await handleRoundResolvedEvent(event, {
       scoreboard,

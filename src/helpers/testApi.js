@@ -2339,9 +2339,9 @@ const cliApi = {
       const store = isWindowAvailable() ? window.battleStore : null;
       if (!store || !store.playerChoice) {
         // Fall back to event-only resolution if no selection made
-        const dispatch = (detail) => stateApi.dispatchBattleEvent("roundResolved", detail);
+        const dispatch = (detail) => stateApi.dispatchBattleEvent("round.evaluated", detail);
         const emitOpponentReveal = (detail) => emitBattleEvent("opponentReveal", detail);
-        const emit = (detail) => emitBattleEvent("roundResolved", detail);
+        const emit = (detail) => emitBattleEvent("round.evaluated", detail);
         const getStore = () => store;
 
         return resolveRoundForCliTest(eventLike, {

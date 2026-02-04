@@ -29,10 +29,11 @@ describe("battleCLI state flows", () => {
     const setRoundMessageSpy = await withMutedConsole(() => vi.spyOn(domMod, "setRoundMessage"));
 
     expect(document.getElementById("round-message")).toBeTruthy();
-    expect(eventsMod.onBattleEvent).toHaveBeenCalledWith("roundResolved", expect.any(Function));
-    emitBattleEvent("roundResolved", {
-      result: { message: "Ready to fight", playerScore: 1, opponentScore: 0 },
-      stat: "speed",
+    expect(eventsMod.onBattleEvent).toHaveBeenCalledWith("round.evaluated", expect.any(Function));
+    emitBattleEvent("round.evaluated", {
+      message: "Ready to fight",
+      scores: { player: 1, opponent: 0 },
+      statKey: "speed",
       playerVal: 5,
       opponentVal: 3
     });
@@ -42,9 +43,10 @@ describe("battleCLI state flows", () => {
     expect(message).toContain("Ready to fight");
     expect(message).toContain("You: 5");
 
-    emitBattleEvent("roundResolved", {
-      result: { message: "Another round", playerScore: 2, opponentScore: 1 },
-      stat: "power",
+    emitBattleEvent("round.evaluated", {
+      message: "Another round",
+      scores: { player: 2, opponent: 1 },
+      statKey: "power",
       playerVal: 4,
       opponentVal: 2
     });

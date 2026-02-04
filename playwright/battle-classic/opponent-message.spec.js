@@ -119,7 +119,7 @@ async function withBattleEventCapture(page, eventNames, callback) {
     const namesToCapture =
       Array.isArray(names) && names.length > 0
         ? names.filter(Boolean)
-        : ["opponentReveal", "roundResolved"];
+        : ["opponentReveal", "round.evaluated"];
     const handler = (event) => {
       if (namesToCapture.includes(event.type)) {
         trackedEvents.push(event.type);
@@ -256,7 +256,7 @@ test.describe("Classic Battle Opponent Messages", () => {
     async ({ page }) => {
       await withBattleEventCapture(
         page,
-        ["opponentReveal", "roundResolved"],
+        ["opponentReveal", "round.evaluated"],
         async ({ getEvents }) => {
           const firstStat = page.locator(selectors.statButton()).first();
           await firstStat.click();
@@ -288,10 +288,10 @@ test.describe("Classic Battle Opponent Messages", () => {
           expect(capturedEvents).toContain("opponentReveal");
 
           const opponentRevealIndex = capturedEvents.indexOf("opponentReveal");
-          const roundResolvedIndex = capturedEvents.lastIndexOf("roundResolved");
+          const roundResolvedIndex = capturedEvents.lastIndexOf("round.evaluated");
           expect(opponentRevealIndex).toBeLessThan(
             roundResolvedIndex,
-            `Expected opponentReveal (index ${opponentRevealIndex}) to occur before roundResolved (index ${roundResolvedIndex}). Events: ${capturedEvents.join(", ")}`
+            `Expected opponentReveal (index ${opponentRevealIndex}) to occur before round.evaluated (index ${roundResolvedIndex}). Events: ${capturedEvents.join(", ")}`
           );
         }
       );
@@ -305,7 +305,7 @@ test.describe("Classic Battle Opponent Messages", () => {
       await setupStalledCliFallback(page);
 
       try {
-        await withBattleEventCapture(page, ["roundResolved"], async ({ getEvents }) => {
+        await withBattleEventCapture(page, ["round.evaluated"], async ({ getEvents }) => {
           const firstStat = page.locator(selectors.statButton()).first();
           await firstStat.click();
 
@@ -330,7 +330,7 @@ test.describe("Classic Battle Opponent Messages", () => {
           }
 
           const emittedEvents = await getEvents();
-          expect(emittedEvents).toContain("roundResolved");
+          expect(emittedEvents).toContain("round.evaluated");
         }); // Closing brace for `async ({ getEvents }) => { ... }`
       } finally {
         await cleanupStalledCliFallback(page);

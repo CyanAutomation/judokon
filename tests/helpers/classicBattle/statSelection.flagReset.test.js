@@ -123,7 +123,9 @@ describe("classicBattle stat selection flag reset", () => {
       opponentScore: 0,
       matchEnded: false
     };
-    const event = new CustomEvent("roundResolved", { detail: { result, store } });
+    const event = new CustomEvent("round.evaluated", {
+      detail: { store, matchEnded: false, message: result.message, scores: { player: 0, opponent: 0 } }
+    });
 
     await withMutedConsole(() =>
       handleRoundResolvedEvent(event, {

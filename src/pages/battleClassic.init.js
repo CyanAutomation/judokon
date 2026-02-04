@@ -1436,14 +1436,14 @@ function wireCooldownEvents(store) {
 }
 
 function wireGlobalBattleEvents(store) {
-  onBattleEvent("roundResolved", (e) => {
+  onBattleEvent("round.evaluated", (e) => {
     try {
-      const result = e?.detail?.result;
-      if (!result || !result.matchEnded) return;
-      const outcome = String(result?.outcome || "");
+      const detail = e?.detail || {};
+      if (!detail.matchEnded) return;
+      const outcome = String(detail?.outcome || "");
       const scores = {
-        player: Number(result?.playerScore) || 0,
-        opponent: Number(result?.opponentScore) || 0
+        player: Number(detail?.scores?.player) || 0,
+        opponent: Number(detail?.scores?.opponent) || 0
       };
       showEndModal(store, { outcome, scores });
     } catch {}

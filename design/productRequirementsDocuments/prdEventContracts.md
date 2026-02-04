@@ -122,6 +122,11 @@ Process:
 2. Add schema change and consumer contract tests in the same PR.
 3. For breaking changes, emit both old and new event shapes for at least one release cycle and include telemetry to monitor consumer errors.
 
+### Legacy Event Notes
+
+- `roundEnded` is now an engine-internal legacy event. Consumers must prefer the domain event `round.evaluated`.
+- `roundResolved` remains a legacy compatibility event on the battle event bus. New handlers and tests should use `round.evaluated` for evaluation results.
+
 ## Consumer Test Guidance
 
 Provide lightweight consumer tests that validate event payloads in CI. Example (Node/Jest pseudo-code):

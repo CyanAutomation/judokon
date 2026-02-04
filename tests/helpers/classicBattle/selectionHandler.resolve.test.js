@@ -35,7 +35,7 @@ vi.mock("../../../src/helpers/classicBattle/eventBus.js", () => ({
 }));
 
 vi.mock("../../../src/helpers/classicBattle/promises.js", () => ({
-  getRoundResolvedPromise: vi.fn()
+  getRoundEvaluatedPromise: vi.fn()
 }));
 
 vi.mock("../../../src/helpers/showSnackbar.js", () => ({
@@ -73,14 +73,14 @@ describe("handleStatSelection resolution", () => {
     vi.restoreAllMocks();
   });
 
-  it("resolves round and dispatches roundResolved", async () => {
+  it("resolves round and dispatches round.evaluated", async () => {
     resolveMock.mockImplementation(async (s) => {
       s.playerChoice = null;
       return "direct";
     });
     const result = await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
     expect(resolveMock).toHaveBeenCalled();
-    expect(dispatchMock).toHaveBeenCalledWith("roundResolved");
+    expect(dispatchMock).toHaveBeenCalledWith("round.evaluated");
     expect(result).toBe("direct");
     expect(store.playerChoice).toBeNull();
   });
@@ -93,7 +93,7 @@ describe("handleStatSelection resolution", () => {
     });
     const result = await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
     expect(resolveMock).toHaveBeenCalled();
-    expect(dispatchMock).toHaveBeenCalledWith("roundResolved");
+    expect(dispatchMock).toHaveBeenCalledWith("round.evaluated");
     expect(result).toBe("direct");
     expect(store.playerChoice).toBeNull();
   });
@@ -110,7 +110,7 @@ describe("handleStatSelection resolution", () => {
       opponentVal: 2
     });
     expect(resolveMock).not.toHaveBeenCalled();
-    expect(dispatchMock).not.toHaveBeenCalledWith("roundResolved");
+    expect(dispatchMock).not.toHaveBeenCalledWith("round.evaluated");
     expect(result).toBeUndefined();
     expect(store.playerChoice).toBeNull();
   });
@@ -127,7 +127,7 @@ describe("handleStatSelection resolution", () => {
       opponentVal: 2
     });
     expect(resolveMock).not.toHaveBeenCalled();
-    expect(dispatchMock).not.toHaveBeenCalledWith("roundResolved");
+    expect(dispatchMock).not.toHaveBeenCalledWith("round.evaluated");
     expect(result).toBeUndefined();
     expect(store.playerChoice).toBeNull();
   });

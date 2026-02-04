@@ -84,7 +84,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe("roundResolved stat button reset", () => {
+describe("round.evaluated stat button reset", () => {
   it("clears stat selection via animation frame reset before timeout fallback", async () => {
     const timers = useCanonicalTimers();
     const rafUtils = await import("../../../src/utils/rafUtils.js");
@@ -110,7 +110,7 @@ describe("roundResolved stat button reset", () => {
     const btn = document.querySelector("#stat-buttons button");
     await withMutedConsole(() =>
       handleRoundResolvedEvent({
-        detail: { store: {}, result: { matchEnded: false } }
+        detail: { store: {}, matchEnded: false, scores: { player: 0, opponent: 0 } }
       })
     );
     expect(btn.classList.contains("selected")).toBe(true);
@@ -153,7 +153,7 @@ describe("roundResolved stat button reset", () => {
     const btn = document.querySelector("#stat-buttons button");
     await withMutedConsole(() =>
       handleRoundResolvedEvent({
-        detail: { store: {}, result: { matchEnded: false } }
+        detail: { store: {}, matchEnded: false, scores: { player: 0, opponent: 0 } }
       })
     );
     expect(btn.classList.contains("selected")).toBe(true);

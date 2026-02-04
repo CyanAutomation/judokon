@@ -35,7 +35,7 @@ vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
 }));
 
 vi.mock("../../src/helpers/classicBattle/promises.js", () => ({
-  getRoundResolvedPromise: vi.fn(() => Promise.resolve())
+  getRoundEvaluatedPromise: vi.fn(() => Promise.resolve())
 }));
 
 vi.mock("../../src/helpers/showSnackbar.js", () => ({
@@ -96,7 +96,7 @@ describe("handleStatSelection helpers", () => {
     }));
 
     vi.mock("../../src/helpers/classicBattle/promises.js", () => ({
-      getRoundResolvedPromise: vi.fn(() => Promise.resolve())
+      getRoundEvaluatedPromise: vi.fn(() => Promise.resolve())
     }));
 
     vi.mock("../../src/helpers/showSnackbar.js", () => ({
@@ -160,7 +160,7 @@ describe("handleStatSelection helpers", () => {
     expect(emitBattleEvent).toHaveBeenNthCalledWith(4, "input.ignored", {
       kind: "duplicateSelection"
     });
-    expect(dispatchBattleEvent).toHaveBeenCalledWith("roundResolved");
+    expect(dispatchBattleEvent).toHaveBeenCalledWith("round.evaluated");
     expect(store.selectionMade).toBe(true);
   });
 
@@ -292,21 +292,21 @@ describe("handleStatSelection helpers", () => {
     getBattleState.mockReturnValue("roundResolve");
     dispatchBattleEvent.mockResolvedValue(false);
 
-    // Create a deferred promise that resolves when roundResolved is emitted
-    let resolveRoundResolved;
-    const roundResolvedPromise = new Promise((resolve) => {
-      resolveRoundResolved = resolve;
+    // Create a deferred promise that resolves when round.evaluated is emitted
+    let resolveRoundEvaluated;
+    const roundEvaluatedPromise = new Promise((resolve) => {
+      resolveRoundEvaluated = resolve;
     });
 
-    // Mock getRoundResolvedPromise to return our controlled promise
+    // Mock getRoundEvaluatedPromise to return our controlled promise
     const promises = await import("../../src/helpers/classicBattle/promises.js");
-    promises.getRoundResolvedPromise.mockReturnValue(roundResolvedPromise);
+    promises.getRoundEvaluatedPromise.mockReturnValue(roundEvaluatedPromise);
 
-    // Make emitBattleEvent resolve the promise when roundResolved is emitted
+    // Make emitBattleEvent resolve the promise when round.evaluated is emitted
     const originalEmit = emitBattleEvent.getMockImplementation();
     emitBattleEvent.mockImplementation((eventName, ...args) => {
-      if (eventName === "roundResolved") {
-        resolveRoundResolved();
+      if (eventName === "round.evaluated") {
+        resolveRoundEvaluated();
       }
       return originalEmit ? originalEmit(eventName, ...args) : undefined;
     });

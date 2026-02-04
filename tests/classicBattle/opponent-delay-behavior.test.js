@@ -113,11 +113,13 @@ describe("Classic Battle opponent delay behavior", () => {
     });
 
     emitBattleEvent("opponentReveal");
-    emitBattleEvent("roundResolved", {
-      result: { message: "Result" },
-      stat: "power",
+    emitBattleEvent("round.evaluated", {
+      message: "Result",
+      statKey: "power",
       playerVal: 1,
-      opponentVal: 2
+      opponentVal: 2,
+      scores: { player: 0, opponent: 0 },
+      store: {}
     });
     await Promise.resolve();
     await Promise.resolve();

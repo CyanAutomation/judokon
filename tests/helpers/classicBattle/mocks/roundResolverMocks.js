@@ -75,7 +75,7 @@ const {
     emitBattleEvent: vi.fn()
   },
   mockPromises: {
-    getRoundResolvedPromise: vi.fn(() => Promise.resolve())
+    getRoundEvaluatedPromise: vi.fn(() => Promise.resolve())
   },
   mockTimerUtils: {
     resolveDelay: vi.fn(() => 0)

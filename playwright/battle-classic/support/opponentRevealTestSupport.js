@@ -419,8 +419,8 @@ async function manuallySyncBattleState(
 
       const eventCandidates = [];
       if (targetState === "roundDisplay") {
-        // Use actual state machine outcome events instead of "roundResolved" battle event
-        // The roundResolved event is emitted AFTER state transitions, not as a trigger
+        // Use actual state machine outcome events instead of "round.evaluated" battle event
+        // The round.evaluated event is emitted AFTER state transitions, not as a trigger
         eventCandidates.push("outcome=winPlayer", "outcome=winOpponent", "outcome=draw");
       }
       if (typeof targetState === "string" && targetState) {

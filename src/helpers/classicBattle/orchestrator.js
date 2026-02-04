@@ -62,19 +62,6 @@ function attachEngineEventBridge(engine) {
     });
   });
 
-  on.call(engine, "roundEnded", (detail) => {
-    emitBattleEvent("roundResolved", detail);
-    try {
-      const player = Number(detail?.playerScore) || 0;
-      const opponent = Number(detail?.opponentScore) || 0;
-      emitBattleEvent("round.evaluated", {
-        outcome: detail?.outcome,
-        message: detail?.message,
-        scores: { player, opponent }
-      });
-    } catch {}
-  });
-
   on.call(engine, "timerTick", (detail) => {
     const remaining = Number(detail?.remaining) || 0;
     if (detail?.phase === "round") {

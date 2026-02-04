@@ -16,7 +16,7 @@ vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => {
   const stateLog = [];
   return {
     dispatchBattleEvent: vi.fn(async (event) => {
-      if (event === "roundResolved") return;
+      if (event === "round.evaluated") return;
       if (event === "evaluate") state = "processingRound";
       else if (event.startsWith("outcome=")) state = "roundDisplay";
       else if (event === "continue") state = "roundWait";
@@ -202,9 +202,11 @@ describe("classicBattle stat selection", () => {
     expect(store.statButtonEls.power.classList.contains("selected")).toBe(true);
     expect(buttons.every((button) => button.disabled)).toBe(true);
 
-    emitBattleEvent("roundResolved", {
+    emitBattleEvent("round.evaluated", {
       store,
-      result: { matchEnded: false, message: "You win the round!", playerScore: 1, opponentScore: 0 }
+      matchEnded: false,
+      message: "You win the round!",
+      scores: { player: 1, opponent: 0 }
     });
     await timers.runAllTimersAsync();
     expect(document.querySelector("header #round-message").textContent).toMatch(/win the round/i);

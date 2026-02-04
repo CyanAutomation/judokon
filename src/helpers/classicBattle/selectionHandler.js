@@ -5,7 +5,7 @@ import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { resolveRound } from "./roundResolver.js";
 import { getCardStatValue } from "./cardStatUtils.js";
 import { getBattleState } from "./eventBus.js";
-import { getRoundResolvedPromise } from "./promises.js";
+import { getRoundEvaluatedPromise } from "./promises.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { writeScoreDisplay } from "./scoreDisplay.js";
 import { roundState } from "./roundState.js";
@@ -703,7 +703,7 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
  * @pseudocode
  * 1. Log debug information if in test environment.
  * 2. Validate that selection is allowed in current state.
- * 3. If validation fails and selection was already made, dispatch roundResolved.
+ * 3. If validation fails and selection was already made, dispatch round.evaluated.
  * 4. If validation fails, return null to indicate failure.
  * 5. If validation passes, apply selection to store and return values.
  *
@@ -727,7 +727,7 @@ export async function validateAndApplySelection(store, stat, playerVal, opponent
     logSelectionDebug("[test] handleStatSelection: validateSelectionState returned FALSE");
     if (store.selectionMade) {
       try {
-        await dispatchBattleEvent("roundResolved");
+        await dispatchBattleEvent("round.evaluated");
       } catch {}
     }
     return null;
@@ -925,7 +925,7 @@ export async function resolveWithFallback(
       }
 
       try {
-        getRoundResolvedPromise()
+        getRoundEvaluatedPromise()
           .then(() => {
             clearTimeout(timeoutId);
             if (store && store.selectionFallbackTimeoutId === timeoutId) {
@@ -964,7 +964,7 @@ export async function resolveWithFallback(
  * 1. Show the "opponent choosing" snackbar in Vitest environments.
  * 2. Resolve the round deterministically via `resolveRoundDirect`.
  * 3. Update DOM nodes for Vitest compatibility and scoreboard state.
- * 4. Dispatch `roundResolved` for downstream listeners.
+ * 4. Dispatch `round.evaluated` for downstream listeners.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
@@ -1027,7 +1027,7 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
     } catch {}
 
     try {
-      await dispatchBattleEvent("roundResolved");
+      await dispatchBattleEvent("round.evaluated");
     } catch {}
 
     return result;
@@ -1135,10 +1135,10 @@ export function handleStatSelection(store, stat, { playerVal, opponentVal, ...op
       if (handled) {
         logSelectionDebug("[handleStatSelection] resolveWithFallback returned true (handled)");
         try {
-          const roundResolvedPromise = getRoundResolvedPromise?.();
-          if (roundResolvedPromise && typeof roundResolvedPromise.then === "function") {
+          const roundEvaluatedPromise = getRoundEvaluatedPromise?.();
+          if (roundEvaluatedPromise && typeof roundEvaluatedPromise.then === "function") {
             await Promise.race([
-              roundResolvedPromise,
+              roundEvaluatedPromise,
               new Promise((resolve) => setTimeout(resolve, 5000)) // 5s timeout
             ]);
           }

@@ -9,7 +9,7 @@ import { getOpponentDelay } from "./snackbar.js";
  *
  * @pseudocode
  * 1. Listen for `roundStarted` and forward to the round UI handler.
- * 2. Listen for `roundResolved`, run UI cleanup, and surface the outcome message.
+ * 2. Listen for `round.evaluated`, run UI cleanup, and surface the outcome message.
  *
  * @returns {void}
  */
@@ -40,15 +40,16 @@ export function bindRoundFlowController() {
   };
 
   const scheduleRoundOutcomeDisplay = async (event) => {
-    const { result, stat, playerVal, opponentVal } = event?.detail || {};
-    if (!result) return;
+    const { message, statKey, stat, playerVal, opponentVal } = event?.detail || {};
+    const resolvedStat = statKey ?? stat;
+    if (!message && !resolvedStat) return;
     const sequence = ++outcomeSequence;
     clearPendingOutcomeDelay();
     const delayEnabled = isEnabled("opponentDelayMessage");
     const delayMs = delayEnabled ? resolveOpponentDelayMs() : 0;
     if (!delayEnabled || !Number.isFinite(delayMs) || delayMs <= 0) {
       try {
-        showRoundOutcome(result.message || "", stat, playerVal, opponentVal);
+        showRoundOutcome(message || "", resolvedStat, playerVal, opponentVal);
       } catch {}
       return;
     }
@@ -60,7 +61,7 @@ export function bindRoundFlowController() {
       return;
     }
     try {
-      showRoundOutcome(result.message || "", stat, playerVal, opponentVal);
+      showRoundOutcome(message || "", resolvedStat, playerVal, opponentVal);
     } catch {}
   };
 
@@ -68,7 +69,7 @@ export function bindRoundFlowController() {
     handleRoundStartedEvent(event).catch(() => {});
   });
 
-  onBattleEvent("roundResolved", async (event) => {
+  onBattleEvent("round.evaluated", async (event) => {
     await scheduleRoundOutcomeDisplay(event);
     await handleRoundResolvedEvent(event);
   });

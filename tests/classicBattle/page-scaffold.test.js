@@ -282,7 +282,7 @@ vi.mock("../../src/helpers/classicBattle/selectionHandler.js", () => {
   const handleStatSelection = vi.fn(async (...args) => {
     void args;
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
-    emitBattleEvent("roundResolved");
+    emitBattleEvent("round.evaluated");
     return {
       playerScore: 1,
       opponentScore: 0,
@@ -618,7 +618,7 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
       await handler(store, stat, {});
       const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
       disableRef.current?.();
-      emitBattleEvent("roundResolved", { stat });
+      emitBattleEvent("round.evaluated", { statKey: stat, scores: { player: 0, opponent: 0 } });
     };
   };
 
@@ -1388,10 +1388,10 @@ describe("Classic Battle page scaffold (behavioral)", () => {
         expect(buttons.length).toBeGreaterThan(0);
         buttons.forEach((b) => expect(b.disabled).toBe(false));
 
-        const { getRoundResolvedPromise } = await import(
+        const { getRoundEvaluatedPromise } = await import(
           "../../src/helpers/classicBattle/promises.js"
         );
-        const resolved = getRoundResolvedPromise();
+        const resolved = getRoundEvaluatedPromise();
         buttons[0].click();
         const { handleStatSelection } = await import(
           "../../src/helpers/classicBattle/selectionHandler.js"

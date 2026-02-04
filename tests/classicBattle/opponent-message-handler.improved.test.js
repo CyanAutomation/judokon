@@ -177,7 +177,7 @@ describe("UI handlers: opponent message events", () => {
     // Bind handlers with mocked dependencies
     bindUIHelperEventHandlersDynamic(deps);
 
-    emitBattleEvent("roundResolved", { result: { message: "Test" } });
+    emitBattleEvent("round.evaluated", { message: "Test", scores: { player: 0, opponent: 0 } });
 
     // Give any async callbacks a chance to run
     await timers.runAllTimersAsync();
@@ -213,7 +213,7 @@ describe("UI handlers: opponent message events", () => {
     // Use the default delay of 500ms
     bindUIHelperEventHandlersDynamic(deps);
 
-    emitBattleEvent("roundResolved", { result: { message: "Test" } });
+    emitBattleEvent("round.evaluated", { message: "Test", scores: { player: 0, opponent: 0 } });
     await timers.runAllTimersAsync();
 
     // Snackbar appears with HIGH priority and minDuration

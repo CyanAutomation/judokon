@@ -52,7 +52,7 @@ export let matchOverPromise;
 export let countdownStartedPromise;
 export let roundTimeoutPromise;
 export let statSelectionStalledPromise;
-export let roundResolvedPromise;
+export let roundEvaluatedPromise;
 
 /**
  * @summary Reset and initialize the suite of battle event promises used by tests.
@@ -74,7 +74,7 @@ export function resetBattlePromises() {
     "statSelectionStalledPromise",
     "statSelectionStalled"
   )();
-  roundResolvedPromise = setupPromise("roundResolvedPromise", "roundResolved")();
+  roundEvaluatedPromise = setupPromise("roundEvaluatedPromise", "round.evaluated")();
 }
 
 // Return the latest promise instance for each awaitable, using the window-scoped
@@ -129,16 +129,17 @@ export const getRoundPromptPromise = () => latest("roundPromptPromise", roundPro
 export const getCountdownStartedPromise = () =>
   latest("countdownStartedPromise", countdownStartedPromise);
 /**
- * Return a Promise that resolves on the next `roundResolved` event.
+ * Return a Promise that resolves on the next `round.evaluated` event.
  *
  * @pseudocode
  * 1. If the resolved marker is set on window, return Promise.resolve().
  * 2. If a window-scoped promise exists, return it.
  * 3. Otherwise return the module-level fallback promise.
  *
- * @returns {Promise<void>} Promise resolved when a round has been resolved.
+ * @returns {Promise<void>} Promise resolved when a round has been evaluated.
  */
-export const getRoundResolvedPromise = () => latest("roundResolvedPromise", roundResolvedPromise);
+export const getRoundEvaluatedPromise = () =>
+  latest("roundEvaluatedPromise", roundEvaluatedPromise);
 /**
  * Return a Promise that resolves when a `roundTimeout` event occurs.
  *

@@ -386,6 +386,15 @@ export class BattleEngine {
       _version: ENGINE_VERSION
     };
     this.#safeLog("BattleEngine.finalizeRound.out", result);
+    const evaluatedPayload = {
+      ...result,
+      scores: {
+        player: this.playerScore,
+        opponent: this.opponentScore
+      }
+    };
+    this.#safeEmit("round.evaluated", evaluatedPayload);
+    // Legacy event retained for compatibility; prefer round.evaluated.
     this.#safeEmit("roundEnded", result);
     // matchEnded event only emitted when match actually ends (not on every round)
     if (this.matchEnded) this.#safeEmit("matchEnded", result);
