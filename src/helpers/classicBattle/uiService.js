@@ -135,6 +135,27 @@ function handleScoreUpdate(event) {
   } catch {}
 }
 
+function extractScorePair(detail) {
+  const scores = detail?.scores;
+  if (scores && typeof scores.player === "number" && typeof scores.opponent === "number") {
+    return {
+      player: scores.player,
+      opponent: scores.opponent
+    };
+  }
+  const player = detail?.playerScore ?? detail?.player;
+  const opponent = detail?.opponentScore ?? detail?.opponent;
+  return {
+    player: typeof player === "number" ? player : 0,
+    opponent: typeof opponent === "number" ? opponent : 0
+  };
+}
+
+function handleDomainScoreUpdate(event) {
+  const { player, opponent } = extractScorePair(event?.detail);
+  handleScoreUpdate({ detail: { player, opponent } });
+}
+
 function handleAutoSelectShow(event) {
   const stat = event?.detail?.stat;
   if (typeof stat !== "string" || stat.length === 0) return;
@@ -160,6 +181,8 @@ function bindScoreboardEventHandlers() {
   onBattleEvent("display.timer.tick", handleTimerTick);
   onBattleEvent("display.timer.hide", handleTimerHide);
   onBattleEvent("display.score.update", handleScoreUpdate);
+  onBattleEvent("round.evaluated", handleDomainScoreUpdate);
+  onBattleEvent("match.concluded", handleDomainScoreUpdate);
   onBattleEvent("display.autoSelect.show", handleAutoSelectShow);
   onBattleEvent("display.tempMessage", handleTempMessage);
   // Also listen to cooldown timer ticks to update the timer display during cooldown

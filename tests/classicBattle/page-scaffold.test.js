@@ -1210,8 +1210,10 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     expect(roundDiff).toBeLessThanOrEqual(10);
     expect(scoreboardMock.updateRoundCounter.mock.calls.at(-1)).toEqual([3]);
 
-    const roundEnded = engineMock.listeners.get("roundEnded");
-    roundEnded?.({ playerScore: 4, opponentScore: 1 });
+    emitBattleEvent("round.evaluated", {
+      outcome: "winPlayer",
+      scores: { player: 4, opponent: 1 }
+    });
 
     // Ensure any RAF-scheduled UI updates have run
     currentEnv.testController.advanceFrame();
