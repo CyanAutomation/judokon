@@ -137,17 +137,19 @@ function handleScoreUpdate(event) {
 
 function extractScorePair(detail) {
   const scores = detail?.scores;
-  if (scores && typeof scores.player === "number" && typeof scores.opponent === "number") {
+  const scorePlayer = scores?.player;
+  const scoreOpponent = scores?.opponent;
+  if (Number.isFinite(scorePlayer) && Number.isFinite(scoreOpponent)) {
     return {
-      player: scores.player,
-      opponent: scores.opponent
+      player: scorePlayer,
+      opponent: scoreOpponent
     };
   }
   const player = detail?.playerScore ?? detail?.player;
   const opponent = detail?.opponentScore ?? detail?.opponent;
   return {
-    player: typeof player === "number" ? player : 0,
-    opponent: typeof opponent === "number" ? opponent : 0
+    player: Number.isFinite(player) ? player : 0,
+    opponent: Number.isFinite(opponent) ? opponent : 0
   };
 }
 

@@ -194,8 +194,7 @@ export async function updateScoreboard(result) {
  * @pseudocode
  * 1. Emit roundResolved event with complete round data.
  * 2. Emit round.evaluated event with normalized data structure.
- * 3. Emit display.score.update event for scoreboard synchronization.
- * 4. Update DOM directly for test environments.
+ * 3. Update DOM directly for test environments.
  *
  * @returns {void}
  */
@@ -213,16 +212,6 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
       }
     });
   } catch {}
-  // Also emit a PRD display score update so any scoreboard adapters reliably
-  // receive the latest scores regardless of how the resolution was driven
-  // (orchestrator vs direct resolution). This makes tests less brittle and
-  // ensures the scoreboard UI stays in sync.
-  try {
-    const player = Number(result?.playerScore) || 0;
-    const opponent = Number(result?.opponentScore) || 0;
-    emitBattleEvent("display.score.update", { player, opponent });
-  } catch {}
-
   if (store && typeof store === "object") {
     store.playerChoice = null;
     store.lastRoundResult = result;
