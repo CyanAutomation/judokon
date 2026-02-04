@@ -16,6 +16,7 @@ import { getOpponentDelay } from "./snackbar.js";
 export function bindRoundFlowController() {
   let outcomeSequence = 0;
   let pendingOutcomeTimeoutId = null;
+  let cachedOutcome = null;
   const clearPendingOutcomeDelay = () => {
     if (pendingOutcomeTimeoutId) {
       clearTimeout(pendingOutcomeTimeoutId);
@@ -39,8 +40,8 @@ export function bindRoundFlowController() {
     return 0;
   };
 
-  const scheduleRoundOutcomeDisplay = async (event) => {
-    const { message, statKey, stat, playerVal, opponentVal } = event?.detail || {};
+  const scheduleRoundOutcomeDisplay = async (outcome) => {
+    const { message, statKey, stat, playerVal, opponentVal } = outcome || {};
     const resolvedStat = statKey ?? stat;
     if (!message && !resolvedStat) return;
     const sequence = ++outcomeSequence;
@@ -66,12 +67,24 @@ export function bindRoundFlowController() {
   };
 
   onBattleEvent("roundStarted", (event) => {
+    cachedOutcome = null;
     handleRoundStartedEvent(event).catch(() => {});
   });
 
   onBattleEvent("round.evaluated", async (event) => {
-    await scheduleRoundOutcomeDisplay(event);
+    cachedOutcome = event?.detail || null;
     await handleRoundResolvedEvent(event);
+  });
+
+  onBattleEvent("control.state.changed", (event) => {
+    const toState = event?.detail?.to;
+    if (toState !== "roundDisplay" && toState !== "evaluation") {
+      return;
+    }
+    if (!cachedOutcome) return;
+    const outcomeToDisplay = cachedOutcome;
+    cachedOutcome = null;
+    scheduleRoundOutcomeDisplay(outcomeToDisplay).catch(() => {});
   });
 }
 

@@ -24,6 +24,7 @@ let _currentState = null;
 // eslint-disable-next-line no-unused-vars -- Reserved for future API or debugging
 let _lastOutcome = "none";
 let _lastRoundIndex = 0;
+let _pendingEvaluation = null;
 let _handlers = [];
 let _waitingTimer = null;
 let _waitingClearer = null;
@@ -194,6 +195,7 @@ export function initBattleScoreboardAdapter() {
   if (_bound) return disposeBattleScoreboardAdapter;
   _bound = true;
   _handlers = [];
+  _pendingEvaluation = null;
   registerResetUiListener();
   // Schedule fallback message if no state is observed within 500ms
   try {
@@ -258,7 +260,7 @@ export function initBattleScoreboardAdapter() {
           : undefined);
       const { player, opponent } = extractScores({ scores });
       updateScore(player, opponent);
-      displayOutcome(outcome, message);
+      _pendingEvaluation = { outcome, message };
     } catch {}
   });
 
@@ -270,6 +272,7 @@ export function initBattleScoreboardAdapter() {
       const { player, opponent } = extractScores(d);
       updateScore(player, opponent);
       clearRoundCounter();
+      _pendingEvaluation = null;
       displayOutcome(d?.winner || d?.reason, d.message);
     } catch {}
   });
@@ -280,8 +283,16 @@ export function initBattleScoreboardAdapter() {
     try {
       const to = e?.detail?.to;
       _currentState = to || _currentState;
+      if (to === "roundDisplay" || to === "evaluation") {
+        if (_pendingEvaluation) {
+          displayOutcome(_pendingEvaluation.outcome, _pendingEvaluation.message);
+          _pendingEvaluation = null;
+        }
+        return;
+      }
       if (to === "selection" || to === "roundSelect" || to === "roundWait") {
         // Clear outcome on authoritative transition back to selection/cooldown
+        _pendingEvaluation = null;
         displayOutcome("none");
       }
     } catch {}
