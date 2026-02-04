@@ -124,6 +124,12 @@ Process:
 
 ### Breaking Change Decision Tree
 
+> **Status**: ASPIRATIONAL - Full 1-cycle compatibility layer **NOT YET IMPLEMENTED**
+>
+> Current state: Events are either current OR deprecated; no intermediate dual-emission window is observed in production. See [Event Lifecycle Diagram](#event-lifecycle-diagram) for implemented behavior.
+>
+> Future implementation roadmap: Track field removals in event aliases and emit both old and new names during transition period (1 cycle = 1 release).
+
 ```mermaid
 flowchart TD
     A["Proposed Event Change"] --> B{"Is field<br/>required?"}
@@ -135,11 +141,11 @@ flowchart TD
     D -->|No| G["🟢 NON-BREAKING"]
     F -->|Yes| E
     F -->|No| G
-    E --> H["Action: Major Release<br/>+ 1-cycle Compatibility<br/>+ Telemetry"]
+    E --> H["Action: Major Release<br/>+ 1-cycle Compatibility (Proposed)<br/>+ Telemetry"]
     G --> I["Action: Minor Release<br/>+ Announce Change<br/>No Consumer Urgency"]
 ```
 
-**Rationale**: This flowchart encodes the versioning policy from the narrative section above, enabling test authors and implementers to classify changes algorithmically.
+**Rationale**: This flowchart encodes the intended versioning policy, enabling test authors and implementers to classify changes algorithmically. The 1-cycle compatibility layer is planned but not yet implemented.
 
 ### Legacy Event Notes
 
@@ -148,11 +154,17 @@ flowchart TD
 
 ### Event Lifecycle Diagram
 
+> **Status**: ASPIRATIONAL - ProposedDual and 1-cycle compatibility flow **NOT FULLY IMPLEMENTED**
+>
+> Current implementation: Events transition directly from Current → Deprecated → Removed. The ProposedDual state and telemetry tracking shown in this diagram are planned but not yet active in production.
+>
+> Future enhancement: Implement ProposedDual state and dual-emission logic to emit both old and new event names simultaneously during 1-cycle transition periods, with error telemetry.
+
 ```mermaid
 stateDiagram-v2
     [*] --> Current: Event introduced
-    Current --> ProposedDual: Rename proposed<br/>(breaking change)
-    ProposedDual --> Deprecated: End of 1-cycle<br/>compatibility period
+    Current --> ProposedDual: Rename proposed<br/>(breaking change)<br/>⚠️ Planned
+    ProposedDual --> Deprecated: End of 1-cycle<br/>compatibility period<br/>⚠️ Planned
     Deprecated --> Removed: Major version<br/>boundary
     Current --> DeprecatedNoMigration: Old event<br/>(no migration)
     DeprecatedNoMigration --> Removed: Hard removal
@@ -164,6 +176,7 @@ stateDiagram-v2
     end note
 
     note right of ProposedDual
+        Dual emission (planned):
         Both old + new names emitted
         for 1 release cycle.
         Telemetry tracks consumer errors.
@@ -181,7 +194,7 @@ stateDiagram-v2
     end note
 ```
 
-**Rationale**: This state diagram visualizes the event evolution process, showing the 1-cycle compatibility window and deprecation phases.
+**Rationale**: This state diagram visualizes the intended event evolution process, showing the 1-cycle compatibility window and deprecation phases. The ProposedDual and advanced telemetry tracking are planned enhancements.
 
 ## Consumer Test Guidance
 

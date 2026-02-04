@@ -141,6 +141,12 @@ stateDiagram-v2
 
 ### Round Modification Overlay (Feature-Flagged)
 
+> **Status**: FEATURE PRESENT but may be ASPIRATIONAL/INCOMPLETE
+>
+> The `FF_ROUND_MODIFY` flag exists and the overlay is wired to the interrupt flow, but comprehensive testing and integration is limited. This is available for developer/test use but may not be fully production-ready.
+>
+> Implementation status: The feature flag guards the state transition and UI rendering. Full modification workflow (apply changes → validate → advance) may require additional refinement.
+
 The round modification path is an optional overlay that attaches to the interrupt flow only when
 `FF_ROUND_MODIFY` is enabled. It is intentionally excluded from the canonical graph so the main
 round loop remains readable without admin/test context.

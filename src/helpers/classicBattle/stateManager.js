@@ -332,7 +332,7 @@ function resolveRoundResolveTransition(eventName) {
   return null;
 }
 
-function resolveRoundDisplayTransition(eventName, context) {
+function resolveRoundDisplayTransition(eventName) {
   if (eventName === "matchPointReached") return "matchEvaluate";
   if (eventName === "continue") return "matchEvaluate";
   return null;
@@ -384,7 +384,7 @@ function resolveClassicBattleTransition(currentState, eventName, _context, guard
     case "roundResolve":
       return resolveRoundResolveTransition(eventName);
     case "roundDisplay":
-      return resolveRoundDisplayTransition(eventName, _context);
+      return resolveRoundDisplayTransition(eventName);
     case "matchEvaluate":
       return resolveMatchEvaluateTransition(eventName, _context);
     case "matchDecision":

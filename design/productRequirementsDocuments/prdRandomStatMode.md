@@ -86,32 +86,37 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A["Battle round start<br/>Stat selection phase"] --> B["Load timer config<br/>from settings"]
-    B --> C{"Config load<br/>successful?"}
+    A["Battle round start<br/>Stat selection phase"] --> B["Initialize selection timer<br/>Hardcoded: 30 seconds"]
+    B --> C{"Check FF_AUTO_SELECT?"}
 
-    C -->|YES| D["Initialize timer<br/>with configured duration"]
-    C -->|NO| E["⚠️ Config failed<br/>Use hardcoded 30s fallback"]
+    C -->|Enabled| D["Timer active<br/>Auto-select on timeout"]
+    C -->|Disabled| E["Timer active<br/>No auto-select"]
 
-    D --> F{"Display timer<br/>if FF_AUTO_SELECT ON?"}
+    D --> F{"Display timer<br/>if FF_SHOW_SELECTION_TIMER ON?"}
     E --> F
 
-    F -->|YES| G["Show countdown timer<br/>🔊 Announce: 'Timer: X seconds'"]
-    F -->|NO| H["No timer display<br/>Unlimited time mode"]
+    F -->|YES| G["Show countdown in UI<br/>🔊 Announce: 'Timer: X seconds'"]
+    F -->|NO| H["No timer display<br/>Timer runs silently"]
 
-    G --> I["Countdown active"]
+    G --> I["Wait for user action<br/>or timeout"]
     H --> I
 
-    I --> J["On timeout or manual selection<br/>Clear timer"]
+    I --> J{"Selection complete?"}
+    J -->|User clicked stat| K["Clear timer"]
+    J -->|Timeout| L{"FF_AUTO_SELECT ON?"}
+    L -->|YES| M["Auto-select random stat"]
+    L -->|NO| N["Manual selection required"]
+    M --> K
+    N --> K
 
     style A fill:#e3f2fd
-    style D fill:#c8e6c9
-    style E fill:#ffcdd2
+    style B fill:#c8e6c9
     style G fill:#fff9c4
     style H fill:#e8f5e9
-    style J fill:#e0e0e0
+    style K fill:#e0e0e0
 ```
 
-**Rationale**: Clarifies the initialization path and fallback mechanism. The ⚠️ annotation flags the error state. This diagram ensures config failures don't break the feature—the system degrades gracefully to a known default.
+**Rationale**: The selection timer is **hardcoded to 30 seconds** and does not load from external configuration. This diagram shows the actual implementation: initialize at 30s, check feature flags for auto-select and display behavior, and wait for user action or timeout. No fallback mechanism is needed because the timer has a known, static default value.
 
 ## Non-Functional Requirements / Design Considerations
 
@@ -121,6 +126,8 @@ flowchart TD
 - Performance impact of enabling timer and message display should be minimal.
 
 ### Settings Persistence Lifecycle
+
+> **Note**: This diagram illustrates the intended persistence flow. Race condition handling (e.g., persistence failure while next round starts) is simplified for clarity. See implementation in `src/config/settingsDefaults.js` for error handling details.
 
 ```mermaid
 flowchart TD
