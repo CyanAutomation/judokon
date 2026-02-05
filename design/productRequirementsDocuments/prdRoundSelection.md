@@ -40,30 +40,30 @@ Acceptance Criteria:
 flowchart TB
     A["Page load<br/>battleJudoka.html"] --> B["resolveRoundStartPolicy called"]
     B --> C{"Query param<br/>?autostart=1?"}
-    
+
     C -->|YES| D["Start match<br/>with default settings<br/>(10 points)"]
     C -->|NO| E["Check localStorage<br/>key: battle.pointsToWin"]
-    
+
     E --> F{"Saved preference<br/>found?"}
-    
+
     F -->|YES| G["Start match<br/>with saved points"]
     F -->|NO| H["Attempt to load<br/>modal component"]
-    
+
     H --> I{"Modal load<br/>successful?"}
-    
+
     I -->|YES| J["🔊 Show modal<br/>Options: 3, 5, 10 points"]
     I -->|NO| K["⚠️ Log error<br/>Show fallback button"]
-    
+
     J --> L["Player selects option"]
     K --> L
-    
+
     L --> M["Store selection<br/>localStorage<br/>battle.pointsToWin"]
     M --> N["🔊 Log telemetry<br/>Start match"]
     N --> O["Match begins"]
-    
+
     G --> O
     D --> O
-    
+
     style A fill:#e3f2fd
     style C fill:#fff9c4
     style E fill:#fff9c4
