@@ -45,7 +45,7 @@ import {
   setAutoContinue,
   getAutoContinue
 } from "../../helpers/classicBattle/orchestratorHandlers.js";
-import { initRoundSelectModal } from "../../helpers/classicBattle/roundSelectModal.js";
+import { resolveRoundStartPolicy } from "../../helpers/classicBattle/roundSelectModal.js";
 import { domStateListener } from "../../helpers/classicBattle/stateTransitionListeners.js";
 import { bindRoundUIEventHandlersDynamic } from "../../helpers/classicBattle/roundUI.js";
 import { bindRoundFlowControllerOnce } from "../../helpers/classicBattle/roundFlowController.js";
@@ -772,7 +772,7 @@ export async function resetMatch() {
 /**
  * Start callback for round selection that dispatches to the state machine.
  *
- * Used to satisfy initRoundSelectModal's `onStart` parameter in the CLI,
+ * Used to satisfy resolveRoundStartPolicy's `onStart` parameter in the CLI,
  * triggering the state machine when a round value has been selected from storage.
  */
 async function startCallback() {
@@ -3355,7 +3355,7 @@ export function wireEvents() {
  * subscribeEngine()
  * await resetMatch()
  * await resetPromise
- * try initRoundSelectModal()
+ * try resolveRoundStartPolicy()
  * catch → announce match ready with focus
  * otherwise announce match ready without focus
  * wireEvents()
@@ -3464,7 +3464,7 @@ export async function init() {
 
   let announceWithFocus = false;
   try {
-    await initRoundSelectModal(startCallback);
+    await resolveRoundStartPolicy(startCallback);
   } catch {
     announceWithFocus = true;
   }

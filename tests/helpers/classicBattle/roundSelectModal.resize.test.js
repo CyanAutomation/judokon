@@ -68,11 +68,11 @@ describe("roundSelectModal responsive inset and cleanup", () => {
     const addSpy = vi.spyOn(window, "addEventListener");
     const removeSpy = vi.spyOn(window, "removeEventListener");
 
-    const { initRoundSelectModal } = await import(
+    const { resolveRoundStartPolicy } = await import(
       "../../../src/helpers/classicBattle/roundSelectModal.js"
     );
 
-    await initRoundSelectModal(() => {});
+    await resolveRoundStartPolicy(() => {});
 
     expect(modalInstance).toBeTruthy();
     expect(backdrop.dataset.roundSelectModalActive).toBe("true");
@@ -108,11 +108,11 @@ describe("roundSelectModal responsive inset and cleanup", () => {
     backdrop.className = "modal";
     configureModalMock(backdrop);
 
-    const { initRoundSelectModal } = await import(
+    const { resolveRoundStartPolicy } = await import(
       "../../../src/helpers/classicBattle/roundSelectModal.js"
     );
 
-    await initRoundSelectModal(() => {});
+    await resolveRoundStartPolicy(() => {});
 
     // initial
     expect(backdrop.style.getPropertyValue("--modal-inset-top")).toBe("64px");

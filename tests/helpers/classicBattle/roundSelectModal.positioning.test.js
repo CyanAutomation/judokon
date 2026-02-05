@@ -37,7 +37,7 @@ describe("roundSelectModal positioning and skinning", () => {
       syncWinTargetDropdown: vi.fn()
     }));
 
-    const { initRoundSelectModal } = await import(
+    const { resolveRoundStartPolicy } = await import(
       "../../../src/helpers/classicBattle/roundSelectModal.js"
     );
 
@@ -46,9 +46,9 @@ describe("roundSelectModal positioning and skinning", () => {
       initTooltips: () => Promise.resolve(() => {})
     }));
 
-    await initRoundSelectModal(() => {});
+    await resolveRoundStartPolicy(() => {});
 
-    // The element is appended to the body by initRoundSelectModal
+    // The element is appended to the body by resolveRoundStartPolicy
     expect(document.body.contains(backdrop)).toBe(true);
     expect(backdrop.classList.contains("classic-modal")).toBe(true);
     expect(backdrop.classList.contains("header-aware")).toBe(true);
@@ -70,7 +70,7 @@ describe("roundSelectModal positioning and skinning", () => {
       syncWinTargetDropdown: vi.fn()
     }));
 
-    const { initRoundSelectModal } = await import(
+    const { resolveRoundStartPolicy } = await import(
       "../../../src/helpers/classicBattle/roundSelectModal.js"
     );
 
@@ -79,7 +79,7 @@ describe("roundSelectModal positioning and skinning", () => {
       initTooltips: () => Promise.resolve(() => {})
     }));
 
-    await initRoundSelectModal(() => {});
+    await resolveRoundStartPolicy(() => {});
 
     expect(document.body.contains(backdrop)).toBe(true);
     expect(backdrop.classList.contains("cli-modal")).toBe(true);

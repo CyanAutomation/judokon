@@ -10,7 +10,7 @@ const { mockInitRoundSelectModal } = vi.hoisted(() => ({
 
 // ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
 vi.mock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
-  initRoundSelectModal: mockInitRoundSelectModal
+  resolveRoundStartPolicy: mockInitRoundSelectModal
 }));
 
 describe("battleCLI start control", () => {

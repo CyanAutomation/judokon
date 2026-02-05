@@ -42,7 +42,7 @@ describe("Classic Battle round select fallback", () => {
     const roundManager = await import("../../src/helpers/classicBattle/roundManager.js");
     const { withMutedConsole } = await import("../utils/console.js");
 
-    vi.spyOn(roundSelectModal, "initRoundSelectModal").mockRejectedValueOnce(
+    vi.spyOn(roundSelectModal, "resolveRoundStartPolicy").mockRejectedValueOnce(
       new Error("round select modal failed")
     );
 
@@ -95,7 +95,7 @@ describe("Classic Battle round select fallback", () => {
     const uiHelpers = await import("../../src/helpers/classicBattle/uiHelpers.js");
     const { withMutedConsole } = await import("../utils/console.js");
 
-    vi.spyOn(roundSelectModal, "initRoundSelectModal").mockRejectedValueOnce(
+    vi.spyOn(roundSelectModal, "resolveRoundStartPolicy").mockRejectedValueOnce(
       new Error("round select modal failed hard")
     );
 

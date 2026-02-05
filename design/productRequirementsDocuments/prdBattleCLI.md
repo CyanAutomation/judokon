@@ -258,7 +258,7 @@ This appendix consolidates the previously separate CLI usage, module structure, 
 - `onKeyDown` processes CLI key events and respects `shouldProcessKey`/`routeKeyByState` guardrails.
 - The `battleCLI` export exposes helpers (e.g., `renderStatList`) for integration tests and bootstrap scripts.
 - Background clicks advance the flow from `roundOver` or `cooldown` states but ignore stat row clicks to avoid misfires.
-- Round target acquisition requests `initRoundSelectModal` and falls back to a **Start match** button if the modal fails to load.
+- Round target acquisition requests `resolveRoundStartPolicy` and falls back to a **Start match** button if the modal fails to load.
 - Numeric `?seed=` values enable deterministic test mode; clearing or providing invalid input disables test mode and restores default randomness.
 
 ### Testing Notes

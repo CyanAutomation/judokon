@@ -98,7 +98,7 @@ export function mockTestModeUtils() {
 
 export function mockRoundSelectModal() {
   vi.doMock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
-    initRoundSelectModal: vi.fn(async (onStart) => {
+    resolveRoundStartPolicy: vi.fn(async (onStart) => {
       if (typeof onStart === "function") await onStart();
     })
   }));

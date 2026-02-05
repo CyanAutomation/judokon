@@ -23,7 +23,7 @@ const applyEventDispatcherMock = () => {
 applyEventDispatcherMock();
 
 vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
-  initRoundSelectModal: vi.fn(async (cb) => {
+  resolveRoundStartPolicy: vi.fn(async (cb) => {
     await cb?.();
   })
 }));

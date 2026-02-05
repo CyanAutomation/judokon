@@ -30,7 +30,7 @@ Acceptance Criteria:
 
 -Notes:
 
-1. On page load, `initRoundSelectModal` checks for `?autostart=1` or a saved selection and starts a match immediately if found.
+1. On page load, `resolveRoundStartPolicy` checks for `?autostart=1` or a saved selection and starts a match immediately if found.
 2. When no preference or autostart override is available, present the modal so the player can choose a win target; selecting an option stores it, logs telemetry, and launches the match.
 3. If the modal fails to load, log the error and surface a fallback **Start Match** button that begins a match with default settings.
 
@@ -38,7 +38,7 @@ Acceptance Criteria:
 
 ```mermaid
 flowchart TB
-    A["Page load<br/>battleJudoka.html"] --> B["initRoundSelectModal called"]
+    A["Page load<br/>battleJudoka.html"] --> B["resolveRoundStartPolicy called"]
     B --> C{"Query param<br/>?autostart=1?"}
     
     C -->|YES| D["Start match<br/>with default settings<br/>(10 points)"]
