@@ -3,7 +3,7 @@ import { SimpleEmitter } from "../../../src/helpers/events/SimpleEmitter.js";
 
 // Minimal mocks for modules required by orchestrator
 vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
-  initRoundSelectModal: vi.fn()
+  resolveRoundStartPolicy: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
   resetGame: vi.fn(),

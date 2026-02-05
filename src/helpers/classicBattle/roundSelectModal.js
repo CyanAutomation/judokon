@@ -46,12 +46,24 @@ export function shouldAutostart() {
  *
  * @param {number} value - Points needed to win the round.
  */
-function persistRoundAndLog(value) {
+function persistRoundSelection(storage, value) {
   try {
-    wrap(BATTLE_POINTS_TO_WIN).set(value);
+    storage.set(value);
   } catch {}
+}
+
+/**
+ * Log match start telemetry.
+ *
+ * @pseudocode
+ * 1. Call logEvent('battle.start') with pointsToWin and source.
+ * 2. Swallow errors so telemetry never blocks gameplay.
+ *
+ * @param {{pointsToWin: number, source: string, nonBlocking?: boolean}} params
+ */
+function logMatchStartTelemetry({ pointsToWin, source }) {
   try {
-    logEvent("battle.start", { pointsToWin: value, source: "modal" });
+    logEvent("battle.start", { pointsToWin, source });
   } catch {}
 }
 
@@ -68,15 +80,16 @@ function persistRoundAndLog(value) {
  * 7. Always dispatch startClicked to state machine.
  * 8. Log error if dispatch fails.
  *
- * @param {number} value - Points needed to win.
+ * @param {number} pointsToWin - Points needed to win.
+ * @param {string} source - Source identifier for telemetry and logging.
  * @param {Function} onStart - Callback invoked after setup.
  * @param {boolean} emitEvents - Whether to emit DOM events.
  * @returns {Promise<void>}
  */
-async function startRound(value, onStart, emitEvents) {
-  setPointsToWin(value);
+async function startMatch({ pointsToWin, source, onStart, emitEvents }) {
+  setPointsToWin(pointsToWin);
   try {
-    document.body.dataset.target = String(value);
+    document.body.dataset.target = String(pointsToWin);
   } catch {}
   // Sync the settings dropdown to reflect the new win target
   try {
@@ -85,7 +98,7 @@ async function startRound(value, onStart, emitEvents) {
   try {
     // Use LOW priority so this doesn't override opponent/countdown messages
     snackbarManager.show({
-      text: ROUND_SELECT_UI.MESSAGES.winTarget(value),
+      text: ROUND_SELECT_UI.MESSAGES.winTarget(pointsToWin),
       priority: SnackbarPriority.LOW,
       minDuration: 2000,
       ttl: 3000
@@ -105,7 +118,8 @@ async function startRound(value, onStart, emitEvents) {
       logEvent("battle.error", {
         type: "dispatchFailed",
         event: "startClicked",
-        context: "roundSelectModal"
+        context: "roundSelectModal",
+        source
       });
     }
   } catch (err) {
@@ -113,7 +127,8 @@ async function startRound(value, onStart, emitEvents) {
       type: "startFailed",
       error: err.message,
       stack: err.stack,
-      context: "roundSelectModal"
+      context: "roundSelectModal",
+      source
     });
   }
 }
@@ -164,19 +179,6 @@ function resolveEnvironmentFlags() {
  * @param {{emitEvents: boolean, isPlaywright: boolean, showModalInTest: boolean}} env - Environment flags.
  * @returns {Promise<boolean>} True if auto-started, false if modal should be shown.
  */
-async function handleAutostartAndTestMode(onStart, { emitEvents, isPlaywright, showModalInTest }) {
-  const autoStartRequested = shouldAutostart();
-  const bypassForTests = !showModalInTest && (isTestModeEnabled() || isPlaywright);
-
-  if (autoStartRequested || bypassForTests) {
-    const resolvedTarget = resolveWinTarget();
-    await startRound(resolvedTarget, onStart, emitEvents);
-    return true;
-  }
-
-  return false;
-}
-
 /**
  * Resolve the win target using the fallback chain.
  *
@@ -185,22 +187,23 @@ async function handleAutostartAndTestMode(onStart, { emitEvents, isPlaywright, s
  * 2. If engine target is invalid, try to load persisted selection from storage.
  * 3. If no persisted selection, return DEFAULT_POINTS_TO_WIN as final fallback.
  *
- * @returns {number} The resolved win target value.
+ * @param {{autostart: boolean, storage: {get: Function}}} params
+ * @returns {{pointsToWin: number, source: string}} The resolved win target value and source.
  */
-function resolveWinTarget() {
+function resolvePointsToWin({ autostart, storage }) {
   try {
     const engineTarget = Number(getPointsToWin());
     if (Number.isFinite(engineTarget) && engineTarget > 0) {
-      return engineTarget;
+      return { pointsToWin: engineTarget, source: "engine" };
     }
   } catch {}
 
-  const persistedTarget = loadPersistedSelection();
+  const persistedTarget = loadPersistedSelection(storage);
   if (persistedTarget !== null) {
-    return persistedTarget;
+    return { pointsToWin: persistedTarget, source: autostart ? "autostart" : "storage" };
   }
 
-  return DEFAULT_POINTS_TO_WIN;
+  return { pointsToWin: DEFAULT_POINTS_TO_WIN, source: autostart ? "autostart" : "default" };
 }
 
 /**
@@ -214,9 +217,8 @@ function resolveWinTarget() {
  *
  * @returns {number|null} The persisted value or null if not found/invalid.
  */
-function loadPersistedSelection() {
+function loadPersistedSelection(storage) {
   try {
-    const storage = wrap(BATTLE_POINTS_TO_WIN);
     const saved = storage.get();
     const numeric = Number(saved);
     if (POINTS_TO_WIN_OPTIONS.includes(numeric)) {
@@ -292,7 +294,7 @@ function createCleanupRegistry() {
  * @param {{modal: object, container: HTMLElement, cleanupRegistry: object, onStart: Function, defaultValue: number}} params
  * @returns {{buttons: HTMLElement[], defaultButton: HTMLElement|null}} Buttons array and default selection.
  */
-function wireRoundSelectionButtons({ modal, container, cleanupRegistry, onStart, defaultValue }) {
+function wireRoundSelectionButtons({ modal, container, cleanupRegistry, onSelect, defaultValue }) {
   const buttons = [];
   let defaultButton = null;
 
@@ -313,7 +315,7 @@ function wireRoundSelectionButtons({ modal, container, cleanupRegistry, onStart,
         value: round.value,
         modal,
         cleanupRegistry,
-        onStart,
+        onSelect,
         emitEvents: true
       });
     });
@@ -445,18 +447,16 @@ function setupTooltipLifecycle(modalElement) {
  * Handle round selection and start the battle.
  *
  * @pseudocode
- * 1. Persist the selected value to storage and log event.
- * 2. Close the modal.
- * 3. Call tooltip cleanup function from registry.
- * 4. Call keyboard cleanup function from registry.
- * 5. Destroy modal instance.
- * 6. Call startRound with value, onStart callback, and emitEvents flag.
+ * 1. Close the modal.
+ * 2. Call tooltip cleanup function from registry.
+ * 3. Call keyboard cleanup function from registry.
+ * 4. Destroy modal instance.
+ * 5. Invoke the provided onSelect callback to start the match.
  *
- * @param {{value: number, modal: object, cleanupRegistry: object, onStart: Function, emitEvents: boolean}} params
+ * @param {{value: number, modal: object, cleanupRegistry: object, onSelect: Function, emitEvents: boolean}} params
  * @returns {Promise<void>}
  */
-async function handleRoundSelect({ value, modal, cleanupRegistry, onStart, emitEvents }) {
-  persistRoundAndLog(value);
+async function handleRoundSelect({ value, modal, cleanupRegistry, onSelect, emitEvents }) {
   modal.close();
   try {
     cleanupRegistry.tooltips();
@@ -467,30 +467,22 @@ async function handleRoundSelect({ value, modal, cleanupRegistry, onStart, emitE
   try {
     modal.destroy();
   } catch {}
-  await startRound(value, onStart, emitEvents);
+  await onSelect({ pointsToWin: value, emitEvents });
 }
 
 /**
- * Initialize round selection modal for Classic Battle.
+ * Create and display the round selection modal UI.
  *
  * @pseudocode
- * 1. Autostart or test mode → start default round.
- * 2. If a persisted round exists → start and skip modal.
- * 3. Build modal with buttons for each round in `rounds`.
- * 4. Initialize tooltips, open modal, emit readiness event.
+ * 1. Build modal structure and apply positioning.
+ * 2. Wire buttons to onSelect callback.
+ * 3. Setup keyboard navigation and tooltips.
+ * 4. Open modal and emit readiness event.
  *
- * @param {Function} onStart - Callback to invoke after selecting rounds.
- * @returns {Promise<void>} Resolves when modal is initialized.
+ * @param {{onSelect: Function, defaultValue: number|null}} params
+ * @returns {{modal: object, cleanupRegistry: object, buttons: HTMLElement[], defaultButton: HTMLElement|null}}
  */
-export async function initRoundSelectModal(onStart) {
-  const environment = resolveEnvironmentFlags();
-
-  if (await handleAutostartAndTestMode(onStart, environment)) {
-    return;
-  }
-
-  const persistedSelection = loadPersistedSelection();
-
+function loadRoundSelectModal({ onSelect, defaultValue }) {
   const { modal, buttonContainer } = createRoundSelectModal();
 
   const positioner = new RoundSelectPositioner(modal);
@@ -501,8 +493,8 @@ export async function initRoundSelectModal(onStart) {
     modal,
     container: buttonContainer,
     cleanupRegistry,
-    onStart,
-    defaultValue: persistedSelection
+    onSelect,
+    defaultValue
   });
 
   const modalElement = modal.element;
@@ -526,5 +518,61 @@ export async function initRoundSelectModal(onStart) {
 
   emitBattleEvent("roundOptionsReady");
 
-  await Promise.resolve();
+  return {
+    modal,
+    cleanupRegistry,
+    buttons,
+    defaultButton
+  };
+}
+
+/**
+ * Resolve round start policy for Classic Battle.
+ *
+ * @pseudocode
+ * 1. Resolve environment flags and autostart/test bypass.
+ * 2. If autostart/test bypass is active, resolve points and start match.
+ * 3. Otherwise show the round selection modal UI.
+ *
+ * @param {Function} onStart - Callback to invoke after selecting rounds.
+ * @returns {Promise<void>} Resolves when modal is initialized.
+ */
+export async function resolveRoundStartPolicy(onStart) {
+  const environment = resolveEnvironmentFlags();
+  const storage = wrap(BATTLE_POINTS_TO_WIN);
+
+  const autoStartRequested = shouldAutostart();
+  const bypassForTests = !environment.showModalInTest && (isTestModeEnabled() || environment.isPlaywright);
+
+  if (autoStartRequested || bypassForTests) {
+    const { pointsToWin, source } = resolvePointsToWin({
+      autostart: true,
+      storage
+    });
+    await startMatch({
+      pointsToWin,
+      source,
+      onStart,
+      emitEvents: environment.emitEvents
+    });
+    return;
+  }
+
+  const persistedSelection = loadPersistedSelection(storage);
+
+  const onSelect = async ({ pointsToWin, emitEvents }) => {
+    persistRoundSelection(storage, pointsToWin);
+    logMatchStartTelemetry({ pointsToWin, source: "modal", nonBlocking: true });
+    await startMatch({
+      pointsToWin,
+      source: "modal",
+      onStart,
+      emitEvents
+    });
+  };
+
+  loadRoundSelectModal({
+    onSelect,
+    defaultValue: persistedSelection
+  });
 }

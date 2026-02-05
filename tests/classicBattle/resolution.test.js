@@ -147,7 +147,7 @@ vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
 }));
 
 vi.mock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
-  initRoundSelectModal: vi.fn(async (onStart) => {
+  resolveRoundStartPolicy: vi.fn(async (onStart) => {
     await onStart();
   })
 }));
@@ -241,7 +241,7 @@ test("score updates after auto-select on expiry", async () => {
 
   const { computeRoundResult } = await import("../../src/helpers/classicBattle/roundResolver.js");
   const { startRound } = await import("../../src/helpers/classicBattle/roundManager.js");
-  const { initRoundSelectModal } = await import(
+  const { resolveRoundStartPolicy } = await import(
     "../../src/helpers/classicBattle/roundSelectModal.js"
   );
 
@@ -265,7 +265,7 @@ test("score updates after auto-select on expiry", async () => {
 
   const mod = await import("../../src/pages/battleClassic.init.js");
   await mod.init();
-  expect(initRoundSelectModal).toHaveBeenCalled();
+  expect(resolveRoundStartPolicy).toHaveBeenCalled();
   expect(startRound).toHaveBeenCalled();
   await harness.timerControl.runAllTimersAsync();
   await Promise.resolve();

@@ -7,7 +7,7 @@ vi.mock("../../src/helpers/domReady.js", () => ({
 }));
 
 vi.mock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
-  initRoundSelectModal: vi.fn(async (callback) => {
+  resolveRoundStartPolicy: vi.fn(async (callback) => {
     if (typeof callback === "function") {
       await callback();
     }

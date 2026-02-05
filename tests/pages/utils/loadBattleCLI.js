@@ -207,7 +207,7 @@ export async function loadBattleCLI(options = {}) {
     updateBattleStateBadge: vi.fn()
   }));
   vi.doMock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
-    initRoundSelectModal: vi.fn().mockRejectedValue(new Error("Modal init failed"))
+    resolveRoundStartPolicy: vi.fn().mockRejectedValue(new Error("Modal init failed"))
   }));
   const showSnackbar = vi.fn();
   vi.doMock("../../../src/helpers/showSnackbar.js", () => ({

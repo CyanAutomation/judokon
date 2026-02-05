@@ -10,7 +10,7 @@ import { ClassicBattleController } from "./controller.js";
 import { ClassicBattleView } from "./view.js";
 import createClassicBattleDebugAPI from "./setupTestHelpers.js";
 import { onDomReady } from "../domReady.js";
-import { initRoundSelectModal } from "./roundSelectModal.js";
+import { resolveRoundStartPolicy } from "./roundSelectModal.js";
 import { isEnabled } from "../featureFlags.js";
 import * as engineFacade from "../BattleEngine.js";
 import { registerBridgeOnEngineCreated } from "./orchestrator.js";
@@ -34,7 +34,7 @@ function canAccessWindow() {
  * @pseudocode
  * 1. Create the view and controller, exposing the controller's battle store globally for tests.
  * 2. Define `startCallback` which binds and initializes both, then creates the debug API.
- * 3. Await `initRoundSelectModal(startCallback)`.
+ * 3. Await `resolveRoundStartPolicy(startCallback)`.
  * 4. Await `startPromise` and expose readiness markers on `window`.
  * 5. Return the debug API after the round is selected.
  *
@@ -124,7 +124,7 @@ export async function setupClassicBattlePage() {
     }
   }
 
-  await initRoundSelectModal(startCallback);
+  await resolveRoundStartPolicy(startCallback);
 
   if (canAccessWindow()) {
     try {

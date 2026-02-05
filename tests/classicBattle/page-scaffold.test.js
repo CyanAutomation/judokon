@@ -81,7 +81,7 @@ vi.mock("../../src/helpers/BattleEngine.js", () => {
 });
 
 vi.mock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
-  initRoundSelectModal: vi.fn(async (onStart) => {
+  resolveRoundStartPolicy: vi.fn(async (onStart) => {
     modalMock.onStart = onStart;
   })
 }));

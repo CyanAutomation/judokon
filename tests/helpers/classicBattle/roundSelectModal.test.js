@@ -65,9 +65,9 @@ vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
 }));
 vi.mock("../../../src/helpers/telemetry.js", () => ({ logEvent: mocks.logEvent }));
 
-import { initRoundSelectModal } from "../../../src/helpers/classicBattle/roundSelectModal.js";
+import { resolveRoundStartPolicy } from "../../../src/helpers/classicBattle/roundSelectModal.js";
 
-describe("initRoundSelectModal", () => {
+describe("resolveRoundStartPolicy", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
     wrap(BATTLE_POINTS_TO_WIN).remove();
@@ -79,7 +79,7 @@ describe("initRoundSelectModal", () => {
   });
 
   it("renders three options from battleRounds.js", async () => {
-    await initRoundSelectModal(vi.fn());
+    await resolveRoundStartPolicy(vi.fn());
     const buttons = document.querySelectorAll(".round-select-buttons button");
     expect(buttons).toHaveLength(3);
     expect([...buttons].map((b) => b.textContent)).toEqual(rounds.map((r) => r.label));
@@ -91,7 +91,7 @@ describe("initRoundSelectModal", () => {
     const setPointsCalled = observeMockCall(mocks.setPointsToWin, (value) => value);
     const loggedStart = observeMockCall(mocks.logEvent);
 
-    await initRoundSelectModal(onStart);
+    await resolveRoundStartPolicy(onStart);
     const first = document.querySelector(".round-select-buttons button");
     first.click();
     const startComplete = onStart.mock.results[0]?.value ?? Promise.resolve();
@@ -116,7 +116,7 @@ describe("initRoundSelectModal", () => {
     const onStart = vi.fn();
     const error = new Error("tooltip fail");
     mocks.initTooltips.mockRejectedValue(error);
-    await initRoundSelectModal(onStart);
+    await resolveRoundStartPolicy(onStart);
     expect(mocks.modal.open).toHaveBeenCalled();
     expect(mocks.logEvent).toHaveBeenCalledWith("tooltip.error", {
       type: "initializationFailed",
@@ -131,7 +131,7 @@ describe("initRoundSelectModal", () => {
   it("auto-starts a default match when ?autostart=1 is present", async () => {
     const onStart = vi.fn();
     window.history.replaceState({}, "", "?autostart=1");
-    await initRoundSelectModal(onStart);
+    await resolveRoundStartPolicy(onStart);
     expect(mocks.setPointsToWin).toHaveBeenCalledWith(CLASSIC_BATTLE_POINTS_TO_WIN);
     expect(onStart).toHaveBeenCalled();
     expect(document.querySelector(".round-select-buttons")).toBeNull();
@@ -145,7 +145,7 @@ describe("initRoundSelectModal", () => {
   it("preselects persisted selection but still requires confirmation", async () => {
     const onStart = vi.fn();
     wrap(BATTLE_POINTS_TO_WIN).set(rounds[1].value);
-    await initRoundSelectModal(onStart);
+    await resolveRoundStartPolicy(onStart);
     const buttons = document.querySelectorAll(".round-select-buttons button");
     expect(buttons).toHaveLength(3);
     expect(onStart).not.toHaveBeenCalled();
@@ -171,7 +171,7 @@ describe("initRoundSelectModal", () => {
     mocks.createModal.mockImplementation(() => {
       throw error;
     });
-    await expect(initRoundSelectModal(onStart)).rejects.toThrow(error);
+    await expect(resolveRoundStartPolicy(onStart)).rejects.toThrow(error);
     expect(onStart).not.toHaveBeenCalled();
   });
 });

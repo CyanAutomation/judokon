@@ -30,7 +30,7 @@ import {
   getPointsToWin
 } from "../helpers/BattleEngine.js";
 import { getStateSnapshot } from "../helpers/classicBattle/battleDebug.js";
-import { initRoundSelectModal } from "../helpers/classicBattle/roundSelectModal.js";
+import { resolveRoundStartPolicy } from "../helpers/classicBattle/roundSelectModal.js";
 import { startTimer, onNextButtonClick } from "../helpers/classicBattle/timerService.js";
 import { emitBattleEvent, onBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { bindScoreboardEventHandlersOnce } from "../helpers/classicBattle/uiService.js";
@@ -1647,7 +1647,7 @@ function wireCardEventHandlers(store) {
 async function initializeMatchStart(store) {
   console.log("battleClassic: initializeMatchStart");
   try {
-    await initRoundSelectModal(async () => {
+    await resolveRoundStartPolicy(async () => {
       try {
         if (typeof process !== "undefined" && process.env && process.env.VITEST) {
           console.debug(
@@ -1669,7 +1669,7 @@ async function initializeMatchStart(store) {
         } catch {}
         setBadgeText("Lobby");
         if (err instanceof JudokaDataLoadError) {
-          recordJudokaLoadFailureTelemetry("initRoundSelectModal.startRoundCycle");
+          recordJudokaLoadFailureTelemetry("resolveRoundStartPolicy.startRoundCycle");
           return;
         }
         showFatalInitError(err);
@@ -1677,9 +1677,9 @@ async function initializeMatchStart(store) {
       }
     });
   } catch (err) {
-    console.error("battleClassic: initRoundSelectModal failed", err);
+    console.error("battleClassic: resolveRoundStartPolicy failed", err);
     if (err instanceof JudokaDataLoadError) {
-      recordJudokaLoadFailureTelemetry("initRoundSelectModal.bootstrap");
+      recordJudokaLoadFailureTelemetry("resolveRoundStartPolicy.bootstrap");
     }
     try {
       showRoundSelectFallback(store);
