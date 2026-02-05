@@ -294,7 +294,7 @@ function createCleanupRegistry() {
  * @param {{modal: object, container: HTMLElement, cleanupRegistry: object, onStart: Function, defaultValue: number}} params
  * @returns {{buttons: HTMLElement[], defaultButton: HTMLElement|null}} Buttons array and default selection.
  */
-function wireRoundSelectionButtons({ modal, container, cleanupRegistry, onSelect, defaultValue }) {
+ * @param {{modal: object, container: HTMLElement, cleanupRegistry: object, onSelect: Function, defaultValue: number}} params
   const buttons = [];
   let defaultButton = null;
 
