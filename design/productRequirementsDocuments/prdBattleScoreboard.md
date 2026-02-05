@@ -132,21 +132,21 @@ The following flowchart details the decision logic that Scoreboard uses to guard
 ```mermaid
 flowchart TD
     Start([Event Received]) --> CheckState{"Is event<br/>control.state.changed?"}
-    
+
     CheckState -->|Yes| ApplyTransition["✅ Apply state transition<br/>(ui state ← to)<br/>Clear outcome area<br/>Reset timer if needed"]
     CheckState -->|No| CheckDuplicate{"Is event<br/>roundIndex < current?"}
-    
+
     CheckDuplicate -->|Yes| IgnoreOldEvent["🔴 Ignore<br/>(out-of-order event)"]
     CheckDuplicate -->|No| CheckExact{"Same roundIndex<br/>+ statKey<br/>as last event?"}
-    
+
     CheckExact -->|Yes| IgnoreDuplicate["🔴 Ignore<br/>(duplicate)"]
     CheckExact -->|No| UpdateValue["✅ Update value only<br/>(timer, outcome, scores)<br/>Preserve state<br/>No transition"]
-    
+
     ApplyTransition --> End([Render])
     UpdateValue --> End
     IgnoreOldEvent --> End
     IgnoreDuplicate --> End
-    
+
     style ApplyTransition fill:#c8e6c9
     style UpdateValue fill:#c8e6c9
     style IgnoreOldEvent fill:#ffcdd2
