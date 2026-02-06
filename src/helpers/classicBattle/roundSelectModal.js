@@ -64,10 +64,20 @@ function persistRoundSelection(storage, value) {
  * 3. Otherwise call logEvent immediately.
  * 4. Swallow errors so telemetry never blocks gameplay.
  *
- * @param {{pointsToWin: number, source: string, nonBlocking?: boolean}} params
+* @param {{pointsToWin: number, source: string, selectionMode: string, policy?: object, nonBlocking?: boolean}} params
  */
-function logMatchStartTelemetry({ pointsToWin, source, selectionMode, nonBlocking = false }) {
+function logMatchStartTelemetry({
+  pointsToWin,
+  source,
+  selectionMode,
+  policy = null,
+  nonBlocking = false
+}) {
   const payload = { pointsToWin, source, selectionMode };
+  if (policy && typeof policy === "object") {
+    payload.autostartPreferencePolicy = policy.autostartPreferencePolicy;
+    payload.shouldPersistAutostartDefault = policy.shouldPersistAutostartDefault;
+  }
   const safelyLogTelemetry = () => {
     try {
       logEvent("battle.start", payload);
@@ -106,8 +116,8 @@ function logMatchStartTelemetry({ pointsToWin, source, selectionMode, nonBlockin
  * @param {boolean} emitEvents - Whether to emit DOM events.
  * @returns {Promise<void>}
  */
-async function startMatch({ pointsToWin, source, selectionMode, onStart, emitEvents }) {
-  logMatchStartTelemetry({ pointsToWin, source, selectionMode, nonBlocking: true });
+async function startMatch({ pointsToWin, source, selectionMode, policy, onStart, emitEvents }) {
+  logMatchStartTelemetry({ pointsToWin, source, selectionMode, policy, nonBlocking: true });
   setPointsToWin(pointsToWin);
   try {
     document.body.dataset.target = String(pointsToWin);
@@ -221,14 +231,33 @@ function resolvePointsToWin({ autostart, storage }) {
 
   const persistedTarget = loadPersistedSelection(storage);
   if (persistedTarget !== null) {
-    return { pointsToWin: persistedTarget, source: autostart ? "autostart" : "storage" };
+    return {
+      pointsToWin: persistedTarget,
+      source: autostart ? "autostart-saved-preference" : "storage"
+    };
   }
 
   if (autostart) {
-    return { pointsToWin: DEFAULT_AUTOSTART_POINTS_TO_WIN, source: "autostart" };
+    return { pointsToWin: DEFAULT_AUTOSTART_POINTS_TO_WIN, source: "autostart-default" };
   }
 
   return { pointsToWin: DEFAULT_POINTS_TO_WIN, source: "default" };
+}
+
+/**
+ * Resolve autostart persistence policy for default win-target behavior.
+ *
+ * @pseudocode
+ * 1. Choose whether autostart defaults should overwrite saved preferences.
+ * 2. Return policy object with explicit boolean and human-readable label.
+ *
+ * @returns {{shouldPersistAutostartDefault: boolean, autostartPreferencePolicy: string}}
+ */
+function resolveAutostartPolicy() {
+  return {
+    shouldPersistAutostartDefault: false,
+    autostartPreferencePolicy: "preserve-existing-preference"
+  };
 }
 
 /**
@@ -613,16 +642,23 @@ export async function resolveRoundStartPolicy(onStart) {
   const autoStartRequested = shouldAutostart();
   const bypassForTests =
     !environment.showModalInTest && (isTestModeEnabled() || environment.isPlaywright);
+  const autostartPolicy = resolveAutostartPolicy();
 
   if (autoStartRequested || bypassForTests) {
     const { pointsToWin, source } = resolvePointsToWin({
       autostart: true,
       storage
     });
+
+    if (autostartPolicy.shouldPersistAutostartDefault && source === "autostart-default") {
+      persistRoundSelection(storage, pointsToWin);
+    }
+
     await startMatch({
       pointsToWin,
       source,
       selectionMode: "fallback-imposed",
+      policy: autoStartRequested ? autostartPolicy : undefined,
       onStart,
       emitEvents: environment.emitEvents
     });
