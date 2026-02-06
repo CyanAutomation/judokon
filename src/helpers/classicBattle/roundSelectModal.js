@@ -84,17 +84,6 @@ function logMatchStartTelemetry({ pointsToWin, source, nonBlocking = false }) {
   }
 
   logTelemetry();
-
-  if (nonBlocking) {
-    try {
-      queueMicrotask(safelyLogTelemetry);
-    } catch {
-      setTimeout(safelyLogTelemetry, 0);
-    }
-    return;
-  }
-
-  safelyLogTelemetry();
 }
 
 /**
