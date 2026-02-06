@@ -258,4 +258,48 @@ describe("battleCLI points select", () => {
     const rootElement = document.getElementById("cli-root");
     expect(rootElement.dataset.target).toBe("10");
   });
+
+  it("treats invalid stored pointsToWin as missing", async () => {
+    localStorage.setItem(BATTLE_POINTS_TO_WIN, "not-a-number");
+    const mod = await loadBattleCLI({ pointsToWin: 5 });
+    const root = mod.ensureCliDomForTest();
+    const select = root.querySelector("#points-select");
+    await mod.init();
+
+    const { setPointsToWin, getPointsToWin } = await import("../../src/helpers/BattleEngine.js");
+    setPointsToWin.mockClear();
+
+    await mod.restorePointsToWin();
+
+    expect(setPointsToWin).not.toHaveBeenCalled();
+    expect(getPointsToWin()).toBe(5);
+    expect(select.value).toBe("5");
+  });
+
+  it("warns and continues when reading pointsToWin from storage throws", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const getItemSpy = vi.spyOn(Storage.prototype, "getItem");
+    const originalGetItem = getItemSpy.getMockImplementation();
+    getItemSpy.mockImplementation(function mockGetItem(key) {
+      if (key === BATTLE_POINTS_TO_WIN) {
+        throw new DOMException("Blocked", "SecurityError");
+      }
+      if (typeof originalGetItem === "function") {
+        return originalGetItem.call(this, key);
+      }
+      return null;
+    });
+
+    const mod = await loadBattleCLI({ pointsToWin: 5 });
+    await mod.init();
+
+    expect(() => mod.restorePointsToWin()).not.toThrow();
+    expect(warnSpy).toHaveBeenCalledWith(
+      "Failed to restore pointsToWin from localStorage:",
+      expect.any(Error)
+    );
+
+    getItemSpy.mockRestore();
+    warnSpy.mockRestore();
+  });
 });
