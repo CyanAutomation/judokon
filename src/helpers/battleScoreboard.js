@@ -21,15 +21,26 @@ const EVENTS = {
 };
 
 let _bound = false;
-let _currentState = null;
+let _viewModel = createInitialViewModel();
 // eslint-disable-next-line no-unused-vars -- Reserved for future API or debugging
 let _lastOutcome = "none";
-let _lastRoundIndex = 0;
-let _pendingEvaluation = null;
 let _handlers = [];
 let _waitingTimer = null;
 let _waitingClearer = null;
 let _onResetUi = null;
+
+function createInitialViewModel() {
+  return {
+    controlState: null,
+    lastRoundIndex: 0,
+    lastValues: {
+      timerSeconds: null,
+      scores: { player: 0, opponent: 0 },
+      evaluation: null,
+      matchConclusion: null
+    }
+  };
+}
 
 /**
  * Detects if the application is running in CLI mode.
@@ -91,7 +102,7 @@ const extractRoundNumber = (detail) => {
  */
 const isNewRound = (roundNumber) => {
   if (typeof roundNumber !== "number" || roundNumber < 0) return false;
-  return roundNumber > _lastRoundIndex;
+  return roundNumber > _viewModel.lastRoundIndex;
 };
 
 /**
@@ -117,6 +128,23 @@ const extractSecondsRemaining = (detail) => {
   const seconds = detail?.secondsRemaining;
   return Number.isFinite(seconds) ? seconds : null;
 };
+
+/**
+ * Update scoreboard scores when values changed.
+ *
+ * @param {{player:number,opponent:number}} nextScores - Incoming scores.
+ * @returns {void}
+ */
+function applyScoreUpdate(nextScores) {
+  const current = _viewModel.lastValues.scores;
+  const unchanged =
+    current.player === nextScores.player && current.opponent === nextScores.opponent;
+  if (unchanged) {
+    return;
+  }
+  _viewModel.lastValues.scores = { ...nextScores };
+  updateScore(nextScores.player, nextScores.opponent);
+}
 
 /**
  * Displays outcome information and optional message.
@@ -164,7 +192,7 @@ function registerResetUiListener() {
     return;
   }
   const handler = () => {
-    _lastRoundIndex = 0;
+    _viewModel.lastRoundIndex = 0;
     try {
       clearRoundCounter();
     } catch {}
@@ -206,8 +234,8 @@ function unregisterResetUiListener() {
 export function initBattleScoreboardAdapter() {
   if (_bound) return disposeBattleScoreboardAdapter;
   _bound = true;
+  _viewModel = createInitialViewModel();
   _handlers = [];
-  _pendingEvaluation = null;
   registerResetUiListener();
   // Schedule fallback message if no state is observed within 500ms
   try {
@@ -233,11 +261,8 @@ export function initBattleScoreboardAdapter() {
       const roundNum = extractRoundNumber(d);
       if (isNewRound(roundNum)) {
         if (!isCliMode()) updateRoundCounter(roundNum);
-        _lastRoundIndex = roundNum;
+        _viewModel.lastRoundIndex = roundNum;
       }
-      _pendingEvaluation = null;
-      // Ensure root outcome resets to none at round start
-      displayOutcome("none");
     } catch {}
   });
 
@@ -262,6 +287,7 @@ export function initBattleScoreboardAdapter() {
       try {
         const seconds = extractSecondsRemaining(getEventDetail(e));
         if (seconds === null) return;
+        _viewModel.lastValues.timerSeconds = seconds;
         updateTimer(seconds);
       } catch {}
     });
@@ -283,40 +309,54 @@ export function initBattleScoreboardAdapter() {
             }
           : undefined);
       const { player, opponent } = extractScores({ scores });
-      updateScore(player, opponent);
-      _pendingEvaluation = { outcome, message };
+      applyScoreUpdate({ player, opponent });
+      _viewModel.lastValues.evaluation = { outcome, message };
     } catch {}
   });
 
-  // match.concluded → final scores + clear round counter (+ optional message)
+  // match.concluded carries values only; state transitions remain authoritative.
   on(EVENTS.MATCH_CONCLUDED, (e) => {
     _cancelWaiting();
     try {
       const d = getEventDetail(e);
       const { player, opponent } = extractScores(d);
-      updateScore(player, opponent);
-      clearRoundCounter();
-      _pendingEvaluation = null;
-      displayOutcome(d?.winner || d?.reason, d.message);
+      applyScoreUpdate({ player, opponent });
+      _viewModel.lastValues.matchConclusion = {
+        outcome: d?.winner || d?.reason,
+        message: d?.message
+      };
     } catch {}
   });
 
-  // control.state.changed reserved for Phase 2
+  // control.state.changed is the authoritative source for view mode transitions.
   on(EVENTS.CONTROL_STATE_CHANGED, (e) => {
     _cancelWaiting();
     try {
       const to = e?.detail?.to;
-      _currentState = to || _currentState;
+      if (typeof to !== "string" || to.length === 0) {
+        return;
+      }
+      _viewModel.controlState = to;
+
       if (to === "roundDisplay" || to === "evaluation") {
-        if (_pendingEvaluation) {
-          displayOutcome(_pendingEvaluation.outcome, _pendingEvaluation.message);
-          _pendingEvaluation = null;
+        const evaluation = _viewModel.lastValues.evaluation;
+        if (evaluation) {
+          displayOutcome(evaluation.outcome, evaluation.message);
         }
         return;
       }
+
+      if (to === "matchOver") {
+        const conclusion = _viewModel.lastValues.matchConclusion;
+        clearRoundCounter();
+        if (conclusion) {
+          displayOutcome(conclusion.outcome, conclusion.message);
+        }
+        return;
+      }
+
       if (to === "selection" || to === "roundSelect" || to === "roundWait") {
-        // Clear outcome on authoritative transition back to selection/cooldown
-        _pendingEvaluation = null;
+        // Clear outcome on authoritative transition back to selection/cooldown.
         displayOutcome("none");
       }
     } catch {}
