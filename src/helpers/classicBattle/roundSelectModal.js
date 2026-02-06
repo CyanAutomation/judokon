@@ -70,16 +70,22 @@ function logMatchStartTelemetry({ pointsToWin, source, nonBlocking = false }) {
     } catch {}
   };
 
+  const safelyLogTelemetry = () => {
+    try {
+      logTelemetry();
+    } catch {}
+  };
+
   if (nonBlocking) {
     try {
-      queueMicrotask(logTelemetry);
+      queueMicrotask(safelyLogTelemetry);
     } catch {
-      setTimeout(logTelemetry, 0);
+      setTimeout(safelyLogTelemetry, 0);
     }
     return;
   }
 
-  logTelemetry();
+  safelyLogTelemetry();
 }
 
 /**
@@ -557,7 +563,8 @@ export async function resolveRoundStartPolicy(onStart) {
   const storage = wrap(BATTLE_POINTS_TO_WIN);
 
   const autoStartRequested = shouldAutostart();
-  const bypassForTests = !environment.showModalInTest && (isTestModeEnabled() || environment.isPlaywright);
+  const bypassForTests =
+    !environment.showModalInTest && (isTestModeEnabled() || environment.isPlaywright);
 
   if (autoStartRequested || bypassForTests) {
     const { pointsToWin, source } = resolvePointsToWin({
