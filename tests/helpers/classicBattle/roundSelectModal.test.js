@@ -138,7 +138,8 @@ describe("resolveRoundStartPolicy", () => {
 
     expect(mocks.logEvent).toHaveBeenCalledWith("battle.start", {
       pointsToWin: rounds[0].value,
-      source: "modal"
+      source: "modal-selection",
+      selectionMode: "user-selected"
     });
   });
 
@@ -194,6 +195,24 @@ describe("resolveRoundStartPolicy", () => {
 
     expect(mocks.setPointsToWin).toHaveBeenCalledWith(rounds[1].value);
     expect(onStart).toHaveBeenCalled();
+  });
+
+  it("auto-start preserves saved preference without overwriting storage", async () => {
+    const onStart = vi.fn();
+    window.history.replaceState({}, "", "?autostart=1");
+    wrap(BATTLE_POINTS_TO_WIN).set(rounds[2].value);
+
+    await resolveRoundStartPolicy(onStart);
+
+    expect(mocks.setPointsToWin).toHaveBeenCalledWith(rounds[2].value);
+    expect(wrap(BATTLE_POINTS_TO_WIN).get()).toBe(rounds[2].value);
+    expect(mocks.logEvent).toHaveBeenCalledWith("battle.start", {
+      pointsToWin: rounds[2].value,
+      source: "autostart-saved-preference",
+      selectionMode: "fallback-imposed",
+      autostartPreferencePolicy: "preserve-existing-preference",
+      shouldPersistAutostartDefault: false
+    });
   });
 
   it("falls back to direct start when modal creation fails", async () => {
