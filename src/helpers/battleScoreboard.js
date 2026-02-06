@@ -136,6 +136,9 @@ const extractSecondsRemaining = (detail) => {
  * @returns {void}
  */
 function applyScoreUpdate(nextScores) {
+  if (!nextScores || typeof nextScores !== "object") {
+    return;
+  }
   const current = _viewModel.lastValues.scores;
   const unchanged =
     current.player === nextScores.player && current.opponent === nextScores.opponent;
