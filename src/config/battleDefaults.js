@@ -18,7 +18,7 @@ export const POINTS_TO_WIN_OPTIONS = [3, 5, 10];
  * @pseudocode
  * 1. When round selection is bypassed by explicit auto-start policy, set the win target to this value.
  * 2. Keep this centralized to avoid magic numbers in round-start policy branches.
- * @returns {number}
+ * @type {number}
  */
 export const DEFAULT_AUTOSTART_POINTS_TO_WIN = 10;
 
