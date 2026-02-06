@@ -36,14 +36,13 @@ export function shouldAutostart() {
 }
 
 /**
- * Persist round selection and log the event.
+ * Persist round selection to storage.
  *
  * @pseudocode
- * 1. Try to persist the value to storage using wrap(BATTLE_POINTS_TO_WIN).set().
+ * 1. Try to persist the value to storage using storage.set().
  * 2. Catch and ignore storage errors.
- * 3. Try to log 'battle.start' event with pointsToWin and source='modal'.
- * 4. Catch and ignore logging errors.
  *
+ * @param {object} storage - Storage wrapper instance with set() method.
  * @param {number} value - Points needed to win the round.
  */
 function persistRoundSelection(storage, value) {
@@ -56,15 +55,31 @@ function persistRoundSelection(storage, value) {
  * Log match start telemetry.
  *
  * @pseudocode
- * 1. Call logEvent('battle.start') with pointsToWin and source.
- * 2. Swallow errors so telemetry never blocks gameplay.
+ * 1. Define the log payload with pointsToWin and source.
+ * 2. If nonBlocking is true, queue the log call asynchronously.
+ * 3. Otherwise call logEvent immediately.
+ * 4. Swallow errors so telemetry never blocks gameplay.
  *
  * @param {{pointsToWin: number, source: string, nonBlocking?: boolean}} params
  */
-function logMatchStartTelemetry({ pointsToWin, source }) {
-  try {
-    logEvent("battle.start", { pointsToWin, source });
-  } catch {}
+function logMatchStartTelemetry({ pointsToWin, source, nonBlocking = false }) {
+  const payload = { pointsToWin, source };
+  const logTelemetry = () => {
+    try {
+      logEvent("battle.start", payload);
+    } catch {}
+  };
+
+  if (nonBlocking) {
+    try {
+      queueMicrotask(logTelemetry);
+    } catch {
+      setTimeout(logTelemetry, 0);
+    }
+    return;
+  }
+
+  logTelemetry();
 }
 
 /**
@@ -291,10 +306,10 @@ function createCleanupRegistry() {
  * 5. Track defaultButton if round.value matches defaultValue.
  * 6. Return buttons array and defaultButton reference.
  *
- * @param {{modal: object, container: HTMLElement, cleanupRegistry: object, onStart: Function, defaultValue: number}} params
+ * @param {{modal: object, container: HTMLElement, cleanupRegistry: object, onSelect: Function, defaultValue: number}} params
  * @returns {{buttons: HTMLElement[], defaultButton: HTMLElement|null}} Buttons array and default selection.
  */
- * @param {{modal: object, container: HTMLElement, cleanupRegistry: object, onSelect: Function, defaultValue: number}} params
+function wireRoundSelectionButtons({ modal, container, cleanupRegistry, onSelect, defaultValue }) {
   const buttons = [];
   let defaultButton = null;
 
