@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { CLASSIC_BATTLE_POINTS_TO_WIN } from "../../../src/helpers/constants.js";
+import { DEFAULT_AUTOSTART_POINTS_TO_WIN } from "../../../src/config/battleDefaults.js";
 import { wrap } from "../../../src/helpers/storage.js";
 import { BATTLE_POINTS_TO_WIN } from "../../../src/config/storageKeys.js";
 import rounds from "../../../src/data/battleRounds.js";
@@ -117,6 +117,7 @@ describe("resolveRoundStartPolicy", () => {
     const error = new Error("tooltip fail");
     mocks.initTooltips.mockRejectedValue(error);
     await resolveRoundStartPolicy(onStart);
+    await Promise.resolve();
     expect(mocks.modal.open).toHaveBeenCalled();
     expect(mocks.logEvent).toHaveBeenCalledWith("tooltip.error", {
       type: "initializationFailed",
@@ -132,7 +133,7 @@ describe("resolveRoundStartPolicy", () => {
     const onStart = vi.fn();
     window.history.replaceState({}, "", "?autostart=1");
     await resolveRoundStartPolicy(onStart);
-    expect(mocks.setPointsToWin).toHaveBeenCalledWith(CLASSIC_BATTLE_POINTS_TO_WIN);
+    expect(mocks.setPointsToWin).toHaveBeenCalledWith(DEFAULT_AUTOSTART_POINTS_TO_WIN);
     expect(onStart).toHaveBeenCalled();
     expect(document.querySelector(".round-select-buttons")).toBeNull();
     expect(mocks.emit).not.toHaveBeenCalled();
