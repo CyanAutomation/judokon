@@ -116,6 +116,32 @@ describe("resolveRoundStartPolicy", () => {
     expect(first.getAttribute("aria-pressed")).toBe("true");
   });
 
+  it("schedules modal telemetry asynchronously when selection starts", async () => {
+    const onStart = vi.fn(() => Promise.resolve());
+    let deferredTelemetry;
+    const queueMicrotaskSpy = vi
+      .spyOn(globalThis, "queueMicrotask")
+      .mockImplementation((callback) => {
+        deferredTelemetry = callback;
+      });
+
+    await resolveRoundStartPolicy(onStart);
+    const first = document.querySelector(".round-select-buttons button");
+
+    first.click();
+
+    expect(queueMicrotaskSpy).toHaveBeenCalledTimes(1);
+    expect(mocks.logEvent).not.toHaveBeenCalledWith("battle.start", expect.any(Object));
+
+    expect(deferredTelemetry).toBeDefined();
+    deferredTelemetry();
+
+    expect(mocks.logEvent).toHaveBeenCalledWith("battle.start", {
+      pointsToWin: rounds[0].value,
+      source: "modal"
+    });
+  });
+
   it("opens modal and starts match even if tooltip init fails", async () => {
     const onStart = vi.fn();
     const error = new Error("tooltip fail");
