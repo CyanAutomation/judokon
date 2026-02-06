@@ -64,7 +64,7 @@ function persistRoundSelection(storage, value) {
  * 3. Otherwise call logEvent immediately.
  * 4. Swallow errors so telemetry never blocks gameplay.
  *
- * @param {{pointsToWin: number, source: string, nonBlocking?: boolean}} params
+* @param {{pointsToWin: number, source: string, selectionMode: string, policy?: object, nonBlocking?: boolean}} params
  */
 function logMatchStartTelemetry({
   pointsToWin,
