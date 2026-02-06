@@ -70,11 +70,16 @@ function logMatchStartTelemetry({ pointsToWin, source, nonBlocking = false }) {
     } catch {}
   };
 
-  const safelyLogTelemetry = () => {
+  if (nonBlocking) {
     try {
-      logTelemetry();
-    } catch {}
-  };
+      queueMicrotask(logTelemetry);
+    } catch {
+      setTimeout(logTelemetry, 0);
+    }
+    return;
+  }
+
+  logTelemetry();
 
   if (nonBlocking) {
     try {
