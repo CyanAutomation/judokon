@@ -386,6 +386,9 @@ export function initBattleScoreboardAdapter() {
     _cancelWaiting();
     try {
       const d = getEventDetail(e);
+      if (!_viewModel) {
+        return;
+      }
       const identity = extractRoundIdentity(d?.result || d);
       if (isStaleAgainstAuthority(identity, _viewModel.controlAuthority)) {
         return;
