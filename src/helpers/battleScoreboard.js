@@ -437,6 +437,9 @@ export function initBattleScoreboardAdapter() {
         return;
       }
       _viewModel.controlState = to;
+      if (!_viewModel) {
+        return;
+      }
       updateControlAuthority(getEventDetail(e));
 
       if (shouldRenderEvaluation(to)) {
