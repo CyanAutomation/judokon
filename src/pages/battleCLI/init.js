@@ -208,7 +208,7 @@ function safeGetPointsToWinFromStorage() {
       return { found: false };
     }
     const rawValue = localStorage.getItem(BATTLE_POINTS_TO_WIN);
-    if (rawValue === null || rawValue === undefined || rawValue === "") {
+    if (rawValue === null || rawValue === "") {
       return { found: false };
     }
     const parsedValue = Number(rawValue);
