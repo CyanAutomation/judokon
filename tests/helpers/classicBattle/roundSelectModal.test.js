@@ -129,7 +129,8 @@ describe("resolveRoundStartPolicy", () => {
     expect(queueMicrotaskSpy).toHaveBeenCalledTimes(1);
     expect(mocks.logEvent).not.toHaveBeenCalledWith("battle.start", expect.any(Object));
 
-    deferredTelemetry?.();
+    expect(deferredTelemetry).toBeDefined();
+    deferredTelemetry();
 
     expect(mocks.logEvent).toHaveBeenCalledWith("battle.start", {
       pointsToWin: rounds[0].value,
