@@ -64,7 +64,7 @@ function persistRoundSelection(storage, value) {
  * 3. Otherwise call logEvent immediately.
  * 4. Swallow errors so telemetry never blocks gameplay.
  *
-* @param {{pointsToWin: number, source: string, selectionMode: string, policy?: object, nonBlocking?: boolean}} params
+ * @param {{pointsToWin: number, source: string, selectionMode: string, policy?: object, nonBlocking?: boolean}} params
  */
 function logMatchStartTelemetry({
   pointsToWin,
@@ -109,11 +109,14 @@ function logMatchStartTelemetry({
  * 7. Always dispatch startClicked to state machine.
  * 8. Log error if dispatch fails.
  *
- * @param {number} pointsToWin - Points needed to win.
- * @param {string} source - Source identifier for telemetry and logging.
- * @param {"user-selected"|"fallback-imposed"} selectionMode - Whether win target came from user choice.
- * @param {Function} onStart - Callback invoked after setup.
- * @param {boolean} emitEvents - Whether to emit DOM events.
+ * @param {{
+ *   pointsToWin: number,
+ *   source: string,
+ *   selectionMode: "user-selected"|"fallback-imposed",
+ *   policy?: {shouldPersistAutostartDefault?: boolean, autostartPreferencePolicy?: string}|null,
+ *   onStart?: Function,
+ *   emitEvents: boolean
+ * }} params - Start-match configuration values.
  * @returns {Promise<void>}
  */
 async function startMatch({ pointsToWin, source, selectionMode, policy, onStart, emitEvents }) {
