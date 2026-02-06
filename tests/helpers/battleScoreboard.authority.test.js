@@ -76,4 +76,41 @@ describe("battleScoreboard authority + persistence", () => {
     emitBattleEvent("control.state.changed", { to: "roundWait" });
     expect(header.dataset.outcome).toBe("none");
   });
+
+  it("does not replay legacy evaluation without round identity on roundDisplay", async () => {
+    const header = document.querySelector("header");
+    emitBattleEvent("round.evaluated", {
+      outcome: "winPlayer",
+      scores: { player: 2, opponent: 0 },
+      message: "Legacy"
+    });
+    expect(header.dataset.outcome).toBe("playerWin");
+
+    emitBattleEvent("control.state.changed", {
+      to: "selection",
+      context: { roundIndex: 6 }
+    });
+    expect(header.dataset.outcome).toBe("none");
+
+    emitBattleEvent("control.state.changed", {
+      to: "roundDisplay",
+      context: { roundIndex: 6 }
+    });
+    expect(header.dataset.outcome).toBe("none");
+  });
+
+  it("ignores events safely after disposal", async () => {
+    const { disposeBattleScoreboardAdapter } = await import(
+      "../../src/helpers/battleScoreboard.js"
+    );
+    disposeBattleScoreboardAdapter();
+
+    expect(() => {
+      emitBattleEvent("round.evaluated", {
+        outcome: "winPlayer",
+        message: "No crash"
+      });
+      emitBattleEvent("control.state.changed", { to: "roundDisplay" });
+    }).not.toThrow();
+  });
 });

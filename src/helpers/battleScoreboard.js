@@ -85,7 +85,6 @@ function isStaleAgainstAuthority(incoming, authority) {
   }
   return false;
 }
-}
 
 function updateControlAuthority(detail) {
   if (!_viewModel) {
@@ -109,6 +108,17 @@ function updateControlAuthority(detail) {
     matchToken: incoming.matchToken ?? current.matchToken,
     sequence: Number.isFinite(incoming.sequence) ? incoming.sequence : current.sequence
   };
+}
+
+function hasRoundIdentity(identity) {
+  if (!identity) {
+    return false;
+  }
+  return (
+    Number.isFinite(identity.roundIndex) ||
+    Number.isFinite(identity.sequence) ||
+    typeof identity.matchToken === "string"
+  );
 }
 
 function shouldRenderEvaluation(controlState) {
@@ -390,6 +400,7 @@ export function initBattleScoreboardAdapter() {
         return;
       }
       const identity = extractRoundIdentity(d?.result || d);
+      const roundIdentity = hasRoundIdentity(identity) ? identity : null;
       if (isStaleAgainstAuthority(identity, _viewModel.controlAuthority)) {
         return;
       }
@@ -408,7 +419,7 @@ export function initBattleScoreboardAdapter() {
       _viewModel.lastValues.evaluation = {
         outcome,
         message,
-        roundIdentity: identity
+        roundIdentity
       };
       displayOutcome(outcome, message);
     } catch {}
@@ -432,20 +443,21 @@ export function initBattleScoreboardAdapter() {
   on(EVENTS.CONTROL_STATE_CHANGED, (e) => {
     _cancelWaiting();
     try {
+      if (!_viewModel) {
+        return;
+      }
       const to = e?.detail?.to;
       if (typeof to !== "string") {
         return;
       }
       _viewModel.controlState = to;
-      if (!_viewModel) {
-        return;
-      }
       updateControlAuthority(getEventDetail(e));
 
       if (shouldRenderEvaluation(to)) {
         const evaluation = _viewModel.lastValues.evaluation;
         if (
           evaluation &&
+          evaluation.roundIdentity &&
           !isStaleAgainstAuthority(evaluation.roundIdentity, _viewModel.controlAuthority)
         ) {
           displayOutcome(evaluation.outcome, evaluation.message);
@@ -490,6 +502,7 @@ export function disposeBattleScoreboardAdapter() {
   _handlers = [];
 
   _bound = false;
+  _viewModel = null;
   unregisterResetUiListener();
 }
 
