@@ -32,6 +32,11 @@ let _onResetUi = null;
 function createInitialViewModel() {
   return {
     controlState: null,
+    controlAuthority: {
+      roundIndex: null,
+      matchToken: null,
+      sequence: null
+    },
     lastRoundIndex: 0,
     lastValues: {
       timerSeconds: null,
@@ -40,6 +45,69 @@ function createInitialViewModel() {
       matchConclusion: null
     }
   };
+}
+
+function extractRoundIdentity(detail) {
+  const sequence = safeNumber(detail?.sequence ?? detail?.eventSequence, null);
+  const context = detail?.context;
+  const roundIndex = safeNumber(
+    detail?.roundIndex ?? detail?.roundNumber ?? context?.roundIndex ?? context?.roundNumber,
+    null
+  );
+  const matchTokenRaw = detail?.matchToken ?? context?.matchToken;
+  const matchToken =
+    typeof matchTokenRaw === "string" || typeof matchTokenRaw === "number"
+      ? String(matchTokenRaw)
+      : null;
+  return {
+    roundIndex: Number.isFinite(roundIndex) ? roundIndex : null,
+    matchToken,
+    sequence: Number.isFinite(sequence) ? sequence : null
+  };
+}
+
+function isStaleAgainstAuthority(incoming, authority) {
+  if (!incoming || !authority) {
+    return false;
+  }
+  if (Number.isFinite(authority.sequence) && Number.isFinite(incoming.sequence)) {
+    return incoming.sequence < authority.sequence;
+  }
+  if (Number.isFinite(authority.roundIndex) && Number.isFinite(incoming.roundIndex)) {
+    return incoming.roundIndex < authority.roundIndex;
+  }
+  if (authority.matchToken && incoming.matchToken && authority.matchToken !== incoming.matchToken) {
+    return true;
+  }
+  return false;
+}
+
+function updateControlAuthority(detail) {
+  if (!_viewModel) {
+    return;
+  }
+  const current = _viewModel.controlAuthority;
+  const incoming = extractRoundIdentity(detail);
+  const hasIncomingIdentity =
+    Number.isFinite(incoming.roundIndex) ||
+    Number.isFinite(incoming.sequence) ||
+    typeof incoming.matchToken === "string";
+  if (!hasIncomingIdentity) {
+    return;
+  }
+  const incomingIsStale = isStaleAgainstAuthority(incoming, current);
+  if (incomingIsStale) {
+    return;
+  }
+  _viewModel.controlAuthority = {
+    roundIndex: Number.isFinite(incoming.roundIndex) ? incoming.roundIndex : current.roundIndex,
+    matchToken: incoming.matchToken ?? current.matchToken,
+    sequence: Number.isFinite(incoming.sequence) ? incoming.sequence : current.sequence
+  };
+}
+
+function shouldRenderEvaluation(controlState) {
+  return controlState === "roundDisplay" || controlState === "evaluation";
 }
 
 /**
@@ -313,6 +381,10 @@ export function initBattleScoreboardAdapter() {
     _cancelWaiting();
     try {
       const d = getEventDetail(e);
+      const identity = extractRoundIdentity(d?.result || d);
+      if (isStaleAgainstAuthority(identity, _viewModel.controlAuthority)) {
+        return;
+      }
       const message = d?.message ?? d?.result?.message;
       const outcome = d?.outcome ?? d?.result?.outcome;
       const scores =
@@ -325,7 +397,12 @@ export function initBattleScoreboardAdapter() {
           : undefined);
       const { player, opponent } = extractScores({ scores });
       applyScoreUpdate({ player, opponent });
-      _viewModel.lastValues.evaluation = { outcome, message };
+      _viewModel.lastValues.evaluation = {
+        outcome,
+        message,
+        roundIdentity: identity
+      };
+      displayOutcome(outcome, message);
     } catch {}
   });
 
@@ -352,10 +429,14 @@ export function initBattleScoreboardAdapter() {
         return;
       }
       _viewModel.controlState = to;
+      updateControlAuthority(getEventDetail(e));
 
-      if (to === "roundDisplay" || to === "evaluation") {
+      if (shouldRenderEvaluation(to)) {
         const evaluation = _viewModel.lastValues.evaluation;
-        if (evaluation) {
+        if (
+          evaluation &&
+          !isStaleAgainstAuthority(evaluation.roundIdentity, _viewModel.controlAuthority)
+        ) {
           displayOutcome(evaluation.outcome, evaluation.message);
         }
         return;
