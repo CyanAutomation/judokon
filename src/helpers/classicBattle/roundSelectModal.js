@@ -66,24 +66,13 @@ function persistRoundSelection(storage, value) {
  *
  * @param {{pointsToWin: number, source: string, nonBlocking?: boolean}} params
  */
-function logMatchStartTelemetry({ pointsToWin, source, nonBlocking = false }) {
-  const payload = { pointsToWin, source };
-  const logTelemetry = () => {
+function logMatchStartTelemetry({ pointsToWin, source, selectionMode, nonBlocking = false }) {
+  const payload = { pointsToWin, source, selectionMode };
+  const safelyLogTelemetry = () => {
     try {
       logEvent("battle.start", payload);
     } catch {}
   };
-
-  if (nonBlocking) {
-    try {
-      queueMicrotask(logTelemetry);
-    } catch {
-      setTimeout(logTelemetry, 0);
-    }
-    return;
-  }
-
-  logTelemetry();
 
   if (nonBlocking) {
     try {
@@ -112,11 +101,13 @@ function logMatchStartTelemetry({ pointsToWin, source, nonBlocking = false }) {
  *
  * @param {number} pointsToWin - Points needed to win.
  * @param {string} source - Source identifier for telemetry and logging.
+ * @param {"user-selected"|"fallback-imposed"} selectionMode - Whether win target came from user choice.
  * @param {Function} onStart - Callback invoked after setup.
  * @param {boolean} emitEvents - Whether to emit DOM events.
  * @returns {Promise<void>}
  */
-async function startMatch({ pointsToWin, source, onStart, emitEvents }) {
+async function startMatch({ pointsToWin, source, selectionMode, onStart, emitEvents }) {
+  logMatchStartTelemetry({ pointsToWin, source, selectionMode, nonBlocking: true });
   setPointsToWin(pointsToWin);
   try {
     document.body.dataset.target = String(pointsToWin);
@@ -561,6 +552,50 @@ function loadRoundSelectModal({ onSelect, defaultValue }) {
 }
 
 /**
+ * Start match via a dedicated modal-failure fallback path.
+ *
+ * @pseudocode
+ * 1. Resolve fallback points using standard fallback chain.
+ * 2. Emit warning telemetry for modal initialization failure.
+ * 3. Show fallback snackbar messaging so users know default target was applied.
+ * 4. Start match with modal-fallback source and fallback-imposed selection mode.
+ *
+ * @param {{error: Error, storage: {get: Function}, onStart: Function, emitEvents: boolean}} params
+ * @returns {Promise<void>}
+ */
+async function startMatchFromModalFallback({ error, storage, onStart, emitEvents }) {
+  const { pointsToWin: fallbackPointsToWin } = resolvePointsToWin({
+    autostart: false,
+    storage
+  });
+
+  logEvent("battle.error", {
+    type: "modalLoadFailed",
+    error: error?.message ?? "unknown",
+    context: "roundSelectModal",
+    source: "modal-fallback",
+    fallbackPointsToWin
+  });
+
+  try {
+    snackbarManager.show({
+      text: `Match options unavailable. Starting with first-to-${fallbackPointsToWin}.`,
+      priority: SnackbarPriority.HIGH,
+      minDuration: 2500,
+      ttl: 4500
+    });
+  } catch {}
+
+  await startMatch({
+    pointsToWin: fallbackPointsToWin,
+    source: "modal-fallback",
+    selectionMode: "fallback-imposed",
+    onStart,
+    emitEvents
+  });
+}
+
+/**
  * Resolve round start policy for Classic Battle.
  *
  * @pseudocode
@@ -587,6 +622,7 @@ export async function resolveRoundStartPolicy(onStart) {
     await startMatch({
       pointsToWin,
       source,
+      selectionMode: "fallback-imposed",
       onStart,
       emitEvents: environment.emitEvents
     });
@@ -597,17 +633,26 @@ export async function resolveRoundStartPolicy(onStart) {
 
   const onSelect = async ({ pointsToWin, emitEvents }) => {
     persistRoundSelection(storage, pointsToWin);
-    logMatchStartTelemetry({ pointsToWin, source: "modal", nonBlocking: true });
     await startMatch({
       pointsToWin,
-      source: "modal",
+      source: "modal-selection",
+      selectionMode: "user-selected",
       onStart,
       emitEvents
     });
   };
 
-  loadRoundSelectModal({
-    onSelect,
-    defaultValue: persistedSelection
-  });
+  try {
+    loadRoundSelectModal({
+      onSelect,
+      defaultValue: persistedSelection
+    });
+  } catch (error) {
+    await startMatchFromModalFallback({
+      error,
+      storage,
+      onStart,
+      emitEvents: environment.emitEvents
+    });
+  }
 }

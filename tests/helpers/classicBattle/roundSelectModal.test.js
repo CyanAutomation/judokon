@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { DEFAULT_AUTOSTART_POINTS_TO_WIN } from "../../../src/config/battleDefaults.js";
+import {
+  DEFAULT_AUTOSTART_POINTS_TO_WIN,
+  DEFAULT_POINTS_TO_WIN
+} from "../../../src/config/battleDefaults.js";
 import { wrap } from "../../../src/helpers/storage.js";
 import { BATTLE_POINTS_TO_WIN } from "../../../src/config/storageKeys.js";
 import rounds from "../../../src/data/battleRounds.js";
@@ -102,7 +105,8 @@ describe("resolveRoundStartPolicy", () => {
     expect(mocks.cleanup).toHaveBeenCalled();
     expect(mocks.logEvent).toHaveBeenCalledWith("battle.start", {
       pointsToWin: rounds[0].value,
-      source: "modal"
+      source: "modal-selection",
+      selectionMode: "user-selected"
     });
     expect(mocks.emit).toHaveBeenNthCalledWith(1, "roundOptionsReady");
     expect(mocks.emit).toHaveBeenNthCalledWith(2, "startClicked");
@@ -166,13 +170,26 @@ describe("resolveRoundStartPolicy", () => {
     expect(onStart).toHaveBeenCalled();
   });
 
-  it("propagates errors when modal creation fails", async () => {
+  it("falls back to direct start when modal creation fails", async () => {
     const onStart = vi.fn();
     const error = new Error("modal fail");
     mocks.createModal.mockImplementation(() => {
       throw error;
     });
-    await expect(resolveRoundStartPolicy(onStart)).rejects.toThrow(error);
-    expect(onStart).not.toHaveBeenCalled();
+    await resolveRoundStartPolicy(onStart);
+    expect(onStart).toHaveBeenCalled();
+    expect(mocks.setPointsToWin).toHaveBeenCalledWith(DEFAULT_POINTS_TO_WIN);
+    expect(mocks.logEvent).toHaveBeenCalledWith("battle.error", {
+      type: "modalLoadFailed",
+      error: error.message,
+      context: "roundSelectModal",
+      source: "modal-fallback",
+      fallbackPointsToWin: DEFAULT_POINTS_TO_WIN
+    });
+    expect(mocks.logEvent).toHaveBeenCalledWith("battle.start", {
+      pointsToWin: DEFAULT_POINTS_TO_WIN,
+      source: "modal-fallback",
+      selectionMode: "fallback-imposed"
+    });
   });
 });
