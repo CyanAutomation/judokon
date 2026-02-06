@@ -148,6 +148,9 @@ function applyScoreUpdate(nextScores) {
     player: safeNumber(nextScores.player),
     opponent: safeNumber(nextScores.opponent)
   };
+  if (!_viewModel) {
+    return;
+  }
   const current = _viewModel.lastValues.scores;
   const unchanged =
     current.player === normalized.player && current.opponent === normalized.opponent;
