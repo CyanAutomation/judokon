@@ -139,14 +139,26 @@ function applyScoreUpdate(nextScores) {
   if (!nextScores || typeof nextScores !== "object") {
     return;
   }
+  const hasPlayer = Object.hasOwn(nextScores, "player");
+  const hasOpponent = Object.hasOwn(nextScores, "opponent");
+  if (!hasPlayer || !hasOpponent) {
+    return;
+  }
+  const normalized = {
+    player: safeNumber(nextScores.player),
+    opponent: safeNumber(nextScores.opponent)
+  };
+  if (!_viewModel) {
+    return;
+  }
   const current = _viewModel.lastValues.scores;
   const unchanged =
-    current.player === nextScores.player && current.opponent === nextScores.opponent;
+    current.player === normalized.player && current.opponent === normalized.opponent;
   if (unchanged) {
     return;
   }
-  _viewModel.lastValues.scores = { ...nextScores };
-  updateScore(nextScores.player, nextScores.opponent);
+  _viewModel.lastValues.scores = normalized;
+  updateScore(normalized.player, normalized.opponent);
 }
 
 /**
@@ -336,7 +348,7 @@ export function initBattleScoreboardAdapter() {
     _cancelWaiting();
     try {
       const to = e?.detail?.to;
-      if (typeof to !== "string" || to.length === 0) {
+      if (typeof to !== "string") {
         return;
       }
       _viewModel.controlState = to;
