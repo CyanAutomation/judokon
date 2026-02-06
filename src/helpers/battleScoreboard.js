@@ -21,7 +21,7 @@ const EVENTS = {
 };
 
 let _bound = false;
-let _viewModel = createInitialViewModel();
+let _viewModel = null;
 // eslint-disable-next-line no-unused-vars -- Reserved for future API or debugging
 let _lastOutcome = "none";
 let _handlers = [];
