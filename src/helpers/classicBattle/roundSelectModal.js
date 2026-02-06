@@ -6,7 +6,11 @@ import { isTestModeEnabled } from "../testModeUtils.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { wrap } from "../storage.js";
-import { POINTS_TO_WIN_OPTIONS, DEFAULT_POINTS_TO_WIN } from "../../config/battleDefaults.js";
+import {
+  POINTS_TO_WIN_OPTIONS,
+  DEFAULT_POINTS_TO_WIN,
+  DEFAULT_AUTOSTART_POINTS_TO_WIN
+} from "../../config/battleDefaults.js";
 import { BATTLE_POINTS_TO_WIN } from "../../config/storageKeys.js";
 import { ROUND_SELECT_UI } from "../../config/roundSelectConstants.js";
 import { logEvent } from "../telemetry.js";
@@ -200,7 +204,7 @@ function resolveEnvironmentFlags() {
  * @pseudocode
  * 1. Try to get engine target from getPointsToWin() and validate it's finite and positive.
  * 2. If engine target is invalid, try to load persisted selection from storage.
- * 3. If no persisted selection, return DEFAULT_POINTS_TO_WIN as final fallback.
+ * 3. If no persisted selection, use PRD-backed defaults: auto-start uses DEFAULT_AUTOSTART_POINTS_TO_WIN, otherwise DEFAULT_POINTS_TO_WIN.
  *
  * @param {{autostart: boolean, storage: {get: Function}}} params
  * @returns {{pointsToWin: number, source: string}} The resolved win target value and source.
@@ -218,7 +222,11 @@ function resolvePointsToWin({ autostart, storage }) {
     return { pointsToWin: persistedTarget, source: autostart ? "autostart" : "storage" };
   }
 
-  return { pointsToWin: DEFAULT_POINTS_TO_WIN, source: autostart ? "autostart" : "default" };
+  if (autostart) {
+    return { pointsToWin: DEFAULT_AUTOSTART_POINTS_TO_WIN, source: "autostart" };
+  }
+
+  return { pointsToWin: DEFAULT_POINTS_TO_WIN, source: "default" };
 }
 
 /**
@@ -557,7 +565,8 @@ export async function resolveRoundStartPolicy(onStart) {
   const storage = wrap(BATTLE_POINTS_TO_WIN);
 
   const autoStartRequested = shouldAutostart();
-  const bypassForTests = !environment.showModalInTest && (isTestModeEnabled() || environment.isPlaywright);
+  const bypassForTests =
+    !environment.showModalInTest && (isTestModeEnabled() || environment.isPlaywright);
 
   if (autoStartRequested || bypassForTests) {
     const { pointsToWin, source } = resolvePointsToWin({

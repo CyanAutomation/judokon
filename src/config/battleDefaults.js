@@ -10,6 +10,18 @@
  * `statHotkeys`). Older docs may reference FF_* names; prefer camelCase going forward.
  */
 export const POINTS_TO_WIN_OPTIONS = [3, 5, 10];
+
+/**
+ * PRD-backed auto-start policy target for Classic Battle.
+ *
+ * @summary Auto-start flows should use the long-form 10-point match target.
+ * @pseudocode
+ * 1. When round selection is bypassed by explicit auto-start policy, set the win target to this value.
+ * 2. Keep this centralized to avoid magic numbers in round-start policy branches.
+ * @returns {number}
+ */
+export const DEFAULT_AUTOSTART_POINTS_TO_WIN = 10;
+
 /**
  * Default points-to-win used when no prior value is stored.
  *
