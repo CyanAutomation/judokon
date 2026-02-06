@@ -120,6 +120,29 @@ describe("battleScoreboard out-of-order guards", () => {
     expect(scoreText).toContain("Opponent: 0");
   });
 
+  it("accepts newer match payloads when match token changes with higher sequence", async () => {
+    emitBattleEvent("control.state.changed", {
+      to: "roundDisplay",
+      matchToken: "match-a",
+      sequence: 10,
+      context: { roundIndex: 2 }
+    });
+
+    emitBattleEvent("round.evaluated", {
+      matchToken: "match-b",
+      sequence: 11,
+      roundIndex: 1,
+      outcome: "winPlayer",
+      message: "New match accepted",
+      scores: { player: 1, opponent: 0 }
+    });
+
+    const header = document.querySelector(".battle-header");
+    const message = document.getElementById("round-message").textContent;
+    expect(header.dataset.outcome).toBe("playerWin");
+    expect(message).toBe("New match accepted");
+  });
+
   it("ignores older round.started events after a newer one", async () => {
     emitBattleEvent("round.started", { roundIndex: 3 });
     expect(document.getElementById("round-counter").textContent).toBe("Round 3");
