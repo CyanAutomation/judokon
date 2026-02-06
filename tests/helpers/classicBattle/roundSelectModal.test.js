@@ -106,6 +106,7 @@ describe("resolveRoundStartPolicy", () => {
     expect(mocks.logEvent).toHaveBeenCalledWith("battle.start", {
       pointsToWin: rounds[0].value,
       source: "modal-selection",
+      trigger: "modal",
       selectionMode: "user-selected"
     });
     expect(mocks.emit).toHaveBeenNthCalledWith(1, "roundOptionsReady");
@@ -139,8 +140,37 @@ describe("resolveRoundStartPolicy", () => {
     expect(mocks.logEvent).toHaveBeenCalledWith("battle.start", {
       pointsToWin: rounds[0].value,
       source: "modal-selection",
+      trigger: "modal",
       selectionMode: "user-selected"
     });
+  });
+
+  it("logs a warning when fire-and-forget telemetry dispatch fails", async () => {
+    const onStart = vi.fn(() => Promise.resolve());
+    const telemetryError = new Error("telemetry failed");
+    mocks.logEvent.mockImplementation((eventName) => {
+      if (eventName === "battle.start") {
+        throw telemetryError;
+      }
+    });
+
+    let deferredTelemetry;
+    vi.spyOn(globalThis, "queueMicrotask").mockImplementation((callback) => {
+      deferredTelemetry = callback;
+    });
+
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    await resolveRoundStartPolicy(onStart);
+    document.querySelector(".round-select-buttons button")?.click();
+
+    deferredTelemetry();
+    await Promise.resolve();
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      "Failed to dispatch battle.start telemetry",
+      telemetryError
+    );
   });
 
   it("opens modal and starts match even if tooltip init fails", async () => {
@@ -209,6 +239,7 @@ describe("resolveRoundStartPolicy", () => {
     expect(mocks.logEvent).toHaveBeenCalledWith("battle.start", {
       pointsToWin: rounds[2].value,
       source: "autostart-saved-preference",
+      trigger: "saved",
       selectionMode: "fallback-imposed",
       autostartPreferencePolicy: "preserve-existing-preference",
       shouldPersistAutostartDefault: false
@@ -234,6 +265,7 @@ describe("resolveRoundStartPolicy", () => {
     expect(mocks.logEvent).toHaveBeenCalledWith("battle.start", {
       pointsToWin: DEFAULT_POINTS_TO_WIN,
       source: "modal-fallback",
+      trigger: "fallback",
       selectionMode: "fallback-imposed"
     });
   });
