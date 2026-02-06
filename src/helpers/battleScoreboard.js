@@ -74,12 +74,17 @@ function isStaleAgainstAuthority(incoming, authority) {
     return incoming.sequence < authority.sequence;
   }
   if (Number.isFinite(authority.roundIndex) && Number.isFinite(incoming.roundIndex)) {
-    return incoming.roundIndex < authority.roundIndex;
+    if (incoming.roundIndex !== authority.roundIndex) {
+      return incoming.roundIndex < authority.roundIndex;
+    }
   }
   if (authority.matchToken && incoming.matchToken && authority.matchToken !== incoming.matchToken) {
-    return true;
+    if (!Number.isFinite(incoming.sequence) && !Number.isFinite(incoming.roundIndex)) {
+      return true;
+    }
   }
   return false;
+}
 }
 
 function updateControlAuthority(detail) {
