@@ -62,10 +62,10 @@ function persistRoundSelection(storage, value) {
  * failures are logged as warnings only.
  *
  * @pseudocode
- * 1. Define the log payload with pointsToWin and source.
- * 2. If nonBlocking is true, queue the log call asynchronously.
- * 3. Otherwise call logEvent immediately.
- * 4. Swallow errors so telemetry never blocks gameplay.
+ * 1. Define the log payload with pointsToWin, source, trigger, and selectionMode.
+ * 2. Queue the log call asynchronously via queueMicrotask (fallback to setTimeout).
+ * 3. Swallow errors and log warnings so telemetry never blocks gameplay.
+ *
  *
  * @param {{pointsToWin: number, source: string, trigger: string, selectionMode: string, policy?: object}} params
  */
