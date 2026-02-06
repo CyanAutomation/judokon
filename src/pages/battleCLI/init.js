@@ -192,6 +192,41 @@ function disposeClassicBattleOrchestrator() {
 }
 
 /**
+ * Safely read and validate a saved points-to-win preference from localStorage.
+ *
+ * @returns {{found: boolean, value?: number, error?: Error}}
+ * @pseudocode
+ * 1. Try to read the raw `BATTLE_POINTS_TO_WIN` value from localStorage.
+ * 2. If localStorage access throws, return `{ found: false, error }`.
+ * 3. Treat empty/missing values as `{ found: false }`.
+ * 4. Parse to number and validate as finite positive integer.
+ * 5. Return `{ found: true, value }` for valid values, otherwise `{ found: false }`.
+ */
+function safeGetPointsToWinFromStorage() {
+  try {
+    if (typeof localStorage === "undefined") {
+      return { found: false };
+    }
+    const rawValue = localStorage.getItem(BATTLE_POINTS_TO_WIN);
+    if (rawValue === null || rawValue === undefined || rawValue === "") {
+      return { found: false };
+    }
+    const parsedValue = Number(rawValue);
+    const isValid =
+      Number.isFinite(parsedValue) && Number.isInteger(parsedValue) && parsedValue > 0;
+    if (!isValid) {
+      return { found: false };
+    }
+    return { found: true, value: parsedValue };
+  } catch (error) {
+    return {
+      found: false,
+      error: error instanceof Error ? error : new Error(String(error))
+    };
+  }
+}
+
+/**
  * Safely dispatch an event to the classic battle machine.
  *
  * @param {string} eventName
@@ -732,17 +767,13 @@ export async function resetMatch() {
   // Perform asynchronous reset work
   const next = (async () => {
     // Read pointsToWin from localStorage BEFORE creating new engine
-    let preserveConfig = { forceCreate: true };
-    try {
-      const storage = wrap(BATTLE_POINTS_TO_WIN, { fallback: "none" });
-      const rawValue = storage.get();
-      const saved = Number(rawValue);
-      // Validate: must be finite AND greater than 0 (to reject Number(null)=0)
-      if (Number.isFinite(saved) && saved > 0) {
-        preserveConfig.pointsToWin = saved;
-      }
-    } catch (error) {
-      console.warn("Failed to read pointsToWin from localStorage:", error);
+    const preserveConfig = { forceCreate: true };
+    const savedPoints = safeGetPointsToWinFromStorage();
+    if (savedPoints.found) {
+      preserveConfig.pointsToWin = savedPoints.value;
+    }
+    if (savedPoints.error) {
+      console.warn("Failed to read pointsToWin from localStorage:", savedPoints.error);
     }
 
     disposeClassicBattleOrchestrator();
@@ -2068,10 +2099,13 @@ export function restorePointsToWin() {
       .filter((value) => Number.isFinite(value));
     const validTargets = new Set([...POINTS_TO_WIN_OPTIONS, ...optionValues]);
     const storage = wrap(BATTLE_POINTS_TO_WIN, { fallback: "none" });
-    const saved = Number(storage.get());
-    if (validTargets.has(saved)) {
-      engineFacade.setPointsToWin?.(saved);
-      select.value = String(saved);
+    const savedPoints = safeGetPointsToWinFromStorage();
+    if (savedPoints.error) {
+      console.warn("Failed to restore pointsToWin from localStorage:", savedPoints.error);
+    }
+    if (savedPoints.found && validTargets.has(savedPoints.value)) {
+      engineFacade.setPointsToWin?.(savedPoints.value);
+      select.value = String(savedPoints.value);
     }
     const round = Number(byId("cli-root")?.dataset.round || 0);
     updateRoundHeader(round, engineFacade.getPointsToWin?.());
