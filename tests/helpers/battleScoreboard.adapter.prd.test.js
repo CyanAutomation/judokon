@@ -1,4 +1,4 @@
-import { describe, it, beforeEach, expect } from "vitest";
+import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 
 import {
   __resetBattleEventTarget,
@@ -38,7 +38,12 @@ describe("battleScoreboard PRD adapter", () => {
     initBattleScoreboardAdapter({ scheduler: mock.createMockScheduler() });
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    const { disposeBattleScoreboardAdapter } = await import(
+      "../../src/helpers/battleScoreboard.js"
+    );
+    disposeBattleScoreboardAdapter();
+    vi.restoreAllMocks();
     clearBody();
   });
 
@@ -57,6 +62,72 @@ describe("battleScoreboard PRD adapter", () => {
       .trim();
     expect(scoreText).toContain("You: 4");
     expect(scoreText).toContain("Opponent: 2");
+  });
+
+  it("accepts supported catalog versions during subscription and runtime", async () => {
+    const { disposeBattleScoreboardAdapter, initBattleScoreboardAdapter } = await import(
+      "../../src/helpers/battleScoreboard.js"
+    );
+    disposeBattleScoreboardAdapter();
+    initBattleScoreboardAdapter({ catalogVersion: "v2" });
+
+    emitBattleEvent("round.started", { roundIndex: 2, catalogVersion: "v2" });
+    emitBattleEvent("round.evaluated", {
+      catalogVersion: "v2",
+      scores: { player: 3, opponent: 1 }
+    });
+
+    const scoreText = document
+      .getElementById("score-display")
+      .textContent.replace(/\s+/g, " ")
+      .trim();
+    expect(document.getElementById("round-counter").textContent).toBe("Round 2");
+    expect(scoreText).toContain("You: 3");
+    expect(scoreText).toContain("Opponent: 1");
+  });
+
+  it("renders degraded fallback and logs once for bootstrap catalog mismatch", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { disposeBattleScoreboardAdapter, initBattleScoreboardAdapter } = await import(
+      "../../src/helpers/battleScoreboard.js"
+    );
+
+    disposeBattleScoreboardAdapter();
+    initBattleScoreboardAdapter({ catalogVersion: "v999" });
+    initBattleScoreboardAdapter({ catalogVersion: "v999" });
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    const roundMessage = document.getElementById("round-message").textContent;
+    expect(roundMessage).toContain("Scoreboard unavailable");
+  });
+
+  it("prevents partial processing when runtime catalog version is incompatible", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    emitBattleEvent("round.evaluated", {
+      catalogVersion: "v2",
+      scores: { player: 1, opponent: 0 }
+    });
+
+    emitBattleEvent("round.evaluated", {
+      catalogVersion: "v999",
+      scores: { player: 8, opponent: 8 }
+    });
+
+    // Adapter should be disposed after mismatch, so this should not be processed.
+    emitBattleEvent("round.evaluated", {
+      catalogVersion: "v2",
+      scores: { player: 9, opponent: 9 }
+    });
+
+    const scoreText = document
+      .getElementById("score-display")
+      .textContent.replace(/\s+/g, " ")
+      .trim();
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(scoreText).toContain("You: 1");
+    expect(scoreText).toContain("Opponent: 0");
+    expect(scoreText).not.toContain("You: 9");
   });
 
   it("disposes listeners and stops updating", async () => {
