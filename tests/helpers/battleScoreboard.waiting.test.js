@@ -1,11 +1,39 @@
-import { describe, it, beforeEach, expect } from "vitest";
+import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 import {
   __resetBattleEventTarget,
   emitBattleEvent
 } from "../../src/helpers/classicBattle/battleEvents.js";
 import { mount, clearBody } from "./domUtils.js";
 
+function createTrackedScheduler() {
+  let now = 0;
+  const tasks = [];
+  const setTimeout = vi.fn((cb, ms) => {
+    const id = Symbol("timer");
+    tasks.push({ id, time: now + ms, cb });
+    tasks.sort((a, b) => a.time - b.time);
+    return id;
+  });
+  const clearTimeout = vi.fn((id) => {
+    const idx = tasks.findIndex((task) => task.id === id);
+    if (idx !== -1) tasks.splice(idx, 1);
+  });
+
+  function tick(ms) {
+    now += ms;
+    tasks.sort((a, b) => a.time - b.time);
+    while (tasks.length && tasks[0].time <= now) {
+      const task = tasks.shift();
+      task.cb();
+    }
+  }
+
+  return { setTimeout, clearTimeout, tick };
+}
+
 describe("battleScoreboard waiting fallback", () => {
+  let scheduler;
+
   beforeEach(async () => {
     __resetBattleEventTarget();
     const { container } = mount();
@@ -30,24 +58,25 @@ describe("battleScoreboard waiting fallback", () => {
       </p>
     `;
     container.appendChild(header);
+
     const { initScoreboard, resetScoreboard } = await import("../../src/components/Scoreboard.js");
     resetScoreboard();
     initScoreboard(header);
-    const mock = await import("./mockScheduler.js");
-    // Import setScheduler dynamically here to ensure same module instance
-    const { setScheduler } = await import("../../src/helpers/scheduler.js");
-    setScheduler(mock.createMockScheduler());
+
+    scheduler = createTrackedScheduler();
     const { initBattleScoreboardAdapter } = await import("../../src/helpers/battleScoreboard.js");
-    initBattleScoreboardAdapter();
+    initBattleScoreboardAdapter({ scheduler });
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    const { disposeBattleScoreboardAdapter } = await import(
+      "../../src/helpers/battleScoreboard.js"
+    );
+    disposeBattleScoreboardAdapter();
     clearBody();
   });
 
   it("shows 'Waiting…' after 500ms and clears on first state event", async () => {
-    const { getScheduler } = await import("../../src/helpers/scheduler.js");
-    const scheduler = getScheduler();
     const msg = document.getElementById("round-message");
     expect(msg.textContent).toBe("");
     scheduler.tick(499);
@@ -55,8 +84,17 @@ describe("battleScoreboard waiting fallback", () => {
     scheduler.tick(1);
     expect(msg.textContent).toMatch(/Waiting/);
 
-    // Next state should clear it
     emitBattleEvent("control.state.changed", { to: "selection" });
+    expect(msg.textContent).toBe("");
+  });
+
+  it("cancels waiting fallback when a state event arrives before timeout", async () => {
+    const msg = document.getElementById("round-message");
+
+    emitBattleEvent("control.state.changed", { to: "selection" });
+    expect(scheduler.clearTimeout).toHaveBeenCalledTimes(1);
+
+    scheduler.tick(500);
     expect(msg.textContent).toBe("");
   });
 });
