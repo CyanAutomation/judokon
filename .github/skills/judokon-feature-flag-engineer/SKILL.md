@@ -17,7 +17,7 @@ This skill ensures controlled experimentation.
 
 - `src/config/settingsDefaults.js`
 - `src/pages/settings.html`
-- `src/helpers/battleEngineFacade.js`
+- `src/helpers/BattleEngine.js`
 - `tests/`
 
 ## What this skill helps accomplish
@@ -61,10 +61,10 @@ This skill ensures controlled experimentation.
   - Run core checks: `npm run check:jsdoc && npx prettier . --check && npx eslint . && npm run check:contrast`.
   - Run only targeted tests for changed files (`npx vitest run <path>` / focused Playwright spec). Run full suite only for cross-cutting changes.
 - **Critical prohibitions (must not violate):**
-  - No dynamic imports in hot paths: `src/helpers/classicBattle*`, `src/helpers/battleEngineFacade.js`, `src/helpers/battle/*`.
+  - No dynamic imports in hot paths: `src/helpers/classicBattle*`, `src/helpers/BattleEngine.js`, `src/helpers/battle/*`.
   - No unsilenced `console.warn/error` in tests (use `tests/utils/console.js` helpers).
   - Validate prohibitions with:
-    - `grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle 2>/dev/null`
+    - `grep -RIn "await import\(" src/helpers/classicBattle src/helpers/BattleEngine.js src/helpers/battle 2>/dev/null`
     - `grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js"`
 
 ## Expected output
