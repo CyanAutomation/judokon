@@ -468,7 +468,7 @@ function runHelper(name, helper, args) {
 export function setupScoreboard(controls, schedulerOrOptions = realScheduler) {
   const safeControls = controls ?? {};
   const resolvedScheduler =
-    schedulerOrOptions && typeof schedulerOrOptions.setTimeout === "function"
+    typeof schedulerOrOptions?.setTimeout === "function"
       ? schedulerOrOptions
       : (schedulerOrOptions?.scheduler ?? realScheduler);
   safeControls.scheduler = resolvedScheduler;
