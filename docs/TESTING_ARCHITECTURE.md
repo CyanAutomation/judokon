@@ -38,6 +38,5 @@ Real product behavior remains covered by focused suites:
 
 - **Battle CLI**: See `tests/pages/battleCLI.*` and `tests/styles/battleCLI.*`.
 - **classicBattle**: Covered by `tests/classicBattle/*` and `tests/helpers/classicBattle/*` integrations.
-- **queryRag**: Functional flows validated in `tests/queryRag/*`.
 
 Use these suites for behavioral confidence and the templates above for authoring guidance without slowing CI.
