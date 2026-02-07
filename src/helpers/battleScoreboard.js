@@ -471,6 +471,13 @@ function renderControlStateOutcome(to) {
  * Schedule control-state outcome rendering on the next animation frame.
  * Supersedes any in-progress frame.
  *
+ * @pseudocode
+ * 1. Cancel any active animation to supersede previous renders.
+ * 2. Create unique token for this animation request.
+ * 3. Resolve scheduler methods (requestAnimationFrame or setTimeout fallback).
+ * 4. Build animation tracking object with token, cancelled flag, and cancel callback.
+ * 5. Store as active animation and render immediately.
+ * 6. Schedule frame callback that clears active reference only if token matches and not cancelled.
  * @param {string} to - The target control state.
  * @returns {void}
  */
