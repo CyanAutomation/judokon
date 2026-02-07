@@ -58,42 +58,40 @@ function persistRoundSelection(storage, value) {
 /**
  * Log match start telemetry.
  *
- * @pseudocode
- * 1. Define the log payload with pointsToWin and source.
- * 2. If nonBlocking is true, queue the log call asynchronously.
- * 3. Otherwise call logEvent immediately.
- * 4. Swallow errors so telemetry never blocks gameplay.
+ * @note Telemetry must never block match start. Dispatch is fire-and-forget and
+ * failures are logged as warnings only.
  *
- * @param {{pointsToWin: number, source: string, selectionMode: string, policy?: object, nonBlocking?: boolean}} params
+ * @pseudocode
+ * 1. Define the log payload with pointsToWin, source, trigger, and selectionMode.
+ * 2. Queue the log call asynchronously via queueMicrotask (fallback to setTimeout).
+ * 3. Swallow errors and log warnings so telemetry never blocks gameplay.
+ *
+ *
+ * @param {{pointsToWin: number, source: string, trigger: string, selectionMode: string, policy?: object}} params
  */
-function logMatchStartTelemetry({
-  pointsToWin,
-  source,
-  selectionMode,
-  policy = null,
-  nonBlocking = false
-}) {
-  const payload = { pointsToWin, source, selectionMode };
+function logMatchStartTelemetry({ pointsToWin, source, trigger, selectionMode, policy = null }) {
+  const payload = { pointsToWin, source, trigger, selectionMode };
   if (policy && typeof policy === "object") {
     payload.autostartPreferencePolicy = policy.autostartPreferencePolicy;
     payload.shouldPersistAutostartDefault = policy.shouldPersistAutostartDefault;
   }
+
   const safelyLogTelemetry = () => {
     try {
       logEvent("battle.start", payload);
-    } catch {}
+    } catch (error) {
+      try {
+        console.warn("Failed to dispatch battle.start telemetry", error);
+      } catch {}
+    }
   };
 
-  if (nonBlocking) {
-    try {
-      queueMicrotask(safelyLogTelemetry);
-    } catch {
-      setTimeout(safelyLogTelemetry, 0);
-    }
-    return;
+  // Keep telemetry out of the match-start critical path.
+  try {
+    queueMicrotask(safelyLogTelemetry);
+  } catch {
+    setTimeout(safelyLogTelemetry, 0);
   }
-
-  safelyLogTelemetry();
 }
 
 /**
@@ -120,7 +118,13 @@ function logMatchStartTelemetry({
  * @returns {Promise<void>}
  */
 async function startMatch({ pointsToWin, source, selectionMode, policy, onStart, emitEvents }) {
-  logMatchStartTelemetry({ pointsToWin, source, selectionMode, policy, nonBlocking: true });
+  logMatchStartTelemetry({
+    pointsToWin,
+    source,
+    trigger: deriveTelemetryTrigger(source),
+    selectionMode,
+    policy
+  });
   setPointsToWin(pointsToWin);
   try {
     document.body.dataset.target = String(pointsToWin);
@@ -165,6 +169,28 @@ async function startMatch({ pointsToWin, source, selectionMode, policy, onStart,
       source
     });
   }
+}
+
+/**
+ * Derive telemetry trigger labels for match starts.
+ *
+ * @param {string} source - Source emitted by match-start resolution logic.
+ * @returns {"autostart"|"saved"|"modal"|"fallback"} Trigger classification.
+ */
+function deriveTelemetryTrigger(source) {
+  if (source === "modal-selection") {
+    return "modal";
+  }
+
+  if (source === "storage" || source === "autostart-saved-preference") {
+    return "saved";
+  }
+
+  if (source?.startsWith("autostart-")) {
+    return "autostart";
+  }
+
+  return "fallback";
 }
 
 /**
