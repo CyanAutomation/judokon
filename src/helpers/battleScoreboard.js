@@ -457,7 +457,7 @@ export function initBattleScoreboardAdapter() {
         outcome: d?.winner || d?.reason,
         message: d?.message
       };
-      if (isFinalControlState(_viewModel.controlState)) {
+      if (_viewModel && isFinalControlState(_viewModel.controlState)) {
         renderFinalOutcome();
       }
     } catch {}
