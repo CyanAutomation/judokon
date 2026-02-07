@@ -16,7 +16,7 @@ This skill ensures that all changes respect the established JU-DO-KON! architect
 ## Key files
 
 - `src/helpers/classicBattle.js`
-- `src/helpers/battleEngineFacade.js`
+- `src/helpers/BattleEngine.js`
 - `src/components/Scoreboard.js`
 - `design/productRequirementsDocuments/prdDevelopmentStandards.md`
 
@@ -74,15 +74,15 @@ This skill ensures that all changes respect the established JU-DO-KON! architect
   - Run core checks: `npm run check:jsdoc && npx prettier . --check && npx eslint . && npm run check:contrast`.
   - Run only targeted tests for changed files (`npx vitest run <path>` / focused Playwright spec). Run full suite only for cross-cutting changes.
 - **Critical prohibitions (must not violate):**
-  - No dynamic imports in hot paths: `src/helpers/classicBattle*`, `src/helpers/battleEngineFacade.js`, `src/helpers/battle/*`.
+  - No dynamic imports in hot paths: `src/helpers/classicBattle*`, `src/helpers/BattleEngine.js`, `src/helpers/battle/*`.
   - No unsilenced `console.warn/error` in tests (use `tests/utils/console.js` helpers).
   - Validate prohibitions with:
-    - `grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle 2>/dev/null`
+    - `grep -RIn "await import\(" src/helpers/classicBattle src/helpers/BattleEngine.js src/helpers/battle 2>/dev/null`
     - `grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js"`
 
 ## Check yourself
 
-- No dynamic imports in hot paths (`src/helpers/classicBattle*`, `src/helpers/battleEngineFacade.js`).
+- No dynamic imports in hot paths (`src/helpers/classicBattle*`, `src/helpers/BattleEngine.js`).
 - Engine logic has no DOM access; UI does not own rules.
 - New logic behind flags when experimental.
 
