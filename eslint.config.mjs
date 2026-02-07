@@ -18,8 +18,6 @@ export default defineConfig([
       ".git/**",
       "src/vendor/**",
       "models/**",
-      "src/data/client_embeddings.json",
-      "src/data/client_embeddings.meta.json",
       "src/data/offline_rag_metadata.json"
     ], // 🔥 Updated ignores
     files: ["**/*.{js,mjs,cjs}"],

@@ -4,7 +4,6 @@
  *
  * **OUTPUT STRUCTURE**: Generates `src/data/client_embeddings.json` as a **ROOT-LEVEL JSON ARRAY**
  * (NOT an object with an "embeddings" property). The root must always be `[{...}, {...}, ...]`.
- * See `src/data/schemas/client-embeddings.schema.json` for the full schema.
  *
  * @pseudocode
  * 1. Use glob to gather markdown, JSON, and JS sources, skipping existing
