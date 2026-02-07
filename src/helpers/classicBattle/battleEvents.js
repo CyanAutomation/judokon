@@ -123,6 +123,9 @@ function getTarget() {
  * @returns {string} Deterministic semantic key for dedupe tracking.
  */
 function buildSemanticDetailKey(detail) {
+  if (!detail) {
+    return "__no_detail__";
+  }
   const scorePlayer = detail?.scores?.player ?? detail?.player;
   const scoreOpponent = detail?.scores?.opponent ?? detail?.opponent;
   const components = [
