@@ -30,6 +30,7 @@ let _waitingClearer = null;
 let _onResetUi = null;
 let _compatibilityDisposers = [];
 let _adapterScheduler = realScheduler;
+let _activeOutcomeAnimation = null;
 const WAITING_FALLBACK_DELAY_MS = 500;
 const SUPPORTED_EVENT_CATALOG_VERSIONS = Object.freeze(["v2"]);
 const DEFAULT_EVENT_CATALOG_VERSION = SUPPORTED_EVENT_CATALOG_VERSIONS[0];
@@ -395,6 +396,101 @@ function _cancelWaiting() {
 }
 
 /**
+ * Cancel any in-progress scoreboard outcome animation.
+ *
+ * @returns {void}
+ */
+function cancelActiveOutcomeAnimation() {
+  if (!_activeOutcomeAnimation) {
+    return;
+  }
+  const animation = _activeOutcomeAnimation;
+  _activeOutcomeAnimation = null;
+  if (animation.cancelled) {
+    return;
+  }
+  animation.cancelled = true;
+  try {
+    if (typeof animation.cancel === "function") {
+      animation.cancel(animation.handle);
+    }
+  } catch {}
+}
+
+/**
+ * Render scoreboard view for a control-state transition.
+ *
+ * @param {string} to - The target control state.
+ * @returns {void}
+ */
+function renderControlStateOutcome(to) {
+  if (!_viewModel) {
+    return;
+  }
+
+  if (shouldRenderEvaluation(to)) {
+    const evaluation = _viewModel.lastValues.evaluation;
+    if (
+      evaluation &&
+      evaluation.roundIdentity &&
+      !isStaleAgainstAuthority(evaluation.roundIdentity, _viewModel.controlAuthority)
+    ) {
+      displayOutcome(evaluation.outcome, evaluation.message);
+    }
+    return;
+  }
+
+  if (isFinalControlState(to)) {
+    renderFinalOutcome();
+    return;
+  }
+
+  if (to === "selection" || to === "roundSelect" || to === "roundWait") {
+    // Clear outcome on authoritative transition back to selection/cooldown.
+    displayOutcome("none");
+  }
+}
+
+/**
+ * Schedule control-state outcome rendering on the next animation frame.
+ * Supersedes any in-progress frame.
+ *
+ * @param {string} to - The target control state.
+ * @returns {void}
+ */
+function scheduleControlStateOutcomeRender(to) {
+  cancelActiveOutcomeAnimation();
+  const token = Symbol("scoreboard-outcome-animation");
+  const requestFrame =
+    typeof _adapterScheduler.requestAnimationFrame === "function"
+      ? _adapterScheduler.requestAnimationFrame.bind(_adapterScheduler)
+      : (callback) => _adapterScheduler.setTimeout(callback, 0);
+  const cancelFrame =
+    typeof _adapterScheduler.cancelAnimationFrame === "function"
+      ? _adapterScheduler.cancelAnimationFrame.bind(_adapterScheduler)
+      : _adapterScheduler.clearTimeout.bind(_adapterScheduler);
+
+  const animation = {
+    token,
+    cancelled: false,
+    handle: null,
+    cancel: cancelFrame
+  };
+  _activeOutcomeAnimation = animation;
+  renderControlStateOutcome(to);
+  animation.handle = requestFrame(() => {
+    if (
+      !_activeOutcomeAnimation ||
+      _activeOutcomeAnimation.token !== token ||
+      animation.cancelled
+    ) {
+      return;
+    }
+    _activeOutcomeAnimation = null;
+  });
+}
+
+/**
  * Registers a window event listener to reset the UI and reset round counter on game:reset-ui.
  */
 function registerResetUiListener() {
@@ -597,28 +693,7 @@ export function initBattleScoreboardAdapter(deps = {}) {
       }
       _viewModel.controlState = to;
       updateControlAuthority(getEventDetail(e));
-
-      if (shouldRenderEvaluation(to)) {
-        const evaluation = _viewModel.lastValues.evaluation;
-        if (
-          evaluation &&
-          evaluation.roundIdentity &&
-          !isStaleAgainstAuthority(evaluation.roundIdentity, _viewModel.controlAuthority)
-        ) {
-          displayOutcome(evaluation.outcome, evaluation.message);
-        }
-        return;
-      }
-
-      if (isFinalControlState(to)) {
-        renderFinalOutcome();
-        return;
-      }
-
-      if (to === "selection" || to === "roundSelect" || to === "roundWait") {
-        // Clear outcome on authoritative transition back to selection/cooldown.
-        displayOutcome("none");
-      }
+      scheduleControlStateOutcomeRender(to);
     } catch {}
   });
 
@@ -635,6 +710,7 @@ export function initBattleScoreboardAdapter(deps = {}) {
  */
 export function disposeBattleScoreboardAdapter() {
   _cancelWaiting();
+  cancelActiveOutcomeAnimation();
   for (const [type, fn] of _handlers) {
     try {
       offBattleEvent(type, fn);
