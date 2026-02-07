@@ -1,5 +1,5 @@
 import vectorSearch from "./vectorSearch/index.js";
-import { getExtractor } from "./api/vectorSearchPage.js";
+import { getExtractor } from "./api/ragExtractor.js";
 
 function isIterable(value) {
   return value !== null && value !== undefined && typeof value[Symbol.iterator] === "function";

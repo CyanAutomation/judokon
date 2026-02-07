@@ -9,7 +9,7 @@ vi.mock("@xenova/transformers", () => ({
   })
 }));
 
-vi.mock("../../src/helpers/api/vectorSearchPage.js", () => ({
+vi.mock("../../src/helpers/api/ragExtractor.js", () => ({
   getExtractor: vi.fn(async () => {
     // Mock extractor that returns fake embedding data
     return async () => ({ data: new Float32Array([0.1, 0.2, 0.3]) });

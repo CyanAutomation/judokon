@@ -31,7 +31,7 @@ describe("queryRag", () => {
 
     const extractor = vi.fn(async () => [1, 0]);
     const getExtractorMock = vi.fn(async () => extractor);
-    vi.doMock("../../src/helpers/api/vectorSearchPage.js", () => ({
+    vi.doMock("../../src/helpers/api/ragExtractor.js", () => ({
       getExtractor: getExtractorMock
     }));
 
@@ -73,7 +73,7 @@ describe("queryRag", () => {
 
     const extractor = vi.fn(async () => new Float32Array([1, 0]));
     const getExtractorMock = vi.fn(async () => extractor);
-    vi.doMock("../../src/helpers/api/vectorSearchPage.js", () => ({
+    vi.doMock("../../src/helpers/api/ragExtractor.js", () => ({
       getExtractor: getExtractorMock
     }));
 

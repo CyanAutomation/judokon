@@ -197,7 +197,7 @@ describe("prepareLocalModel", () => {
     }));
 
     // Act
-    const { getExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
+    const { getExtractor } = await import("../../src/helpers/api/ragExtractor.js");
     await getExtractor();
 
     // Assert
