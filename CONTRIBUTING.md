@@ -33,7 +33,6 @@ npx vitest run # run unit tests
 npx playwright test # run Playwright UI tests
 npm run check:jsdoc # ensure exported helpers have JSDoc + @pseudocode
 npm run check:contrast # verify accessibility compliance
-npm run rag:validate # RAG preflight + evaluator + JSON + hot‑path checks
 ```
 
 The MCP RAG server smoke test is separated from the user-facing UI suite. Run it only when needed:
@@ -74,103 +73,16 @@ grep -r "waitForTimeout\|setTimeout" playwright/ && echo "❌ Found hardcoded wa
 - Use `src/helpers/storage.js` for persistent data access instead of direct `localStorage` calls.
 - Use the shared scheduler (`src/utils/scheduler.js`) for all timing-sensitive work instead of standalone timers.
 
-### RAG Contribution Checklist
+### Branch Protection Required Checks
 
-- Use `queryRag` to collect context before large refactors or doc changes; prefer `withProvenance: true` and include `contextPath` in PR descriptions when relevant.
-- For offline/CI environments, hydrate the local model once:
+The default branch protection should only require active CI workflows. Remove any required checks tied to deleted RAG workflows (for example, `RAG Validation` and embedding update jobs) so PRs are not blocked waiting for non-existent jobs.
 
-  ```bash
-  npm run rag:prepare:models
-  # or hydrate from an existing directory of MiniLM files
-  npm run rag:prepare:models -- --from-dir /path/to/minilm
-  ```
+Recommended required checks:
 
-- Enforce strict offline in CI jobs that run RAG queries:
-
-  ```bash
-  RAG_STRICT_OFFLINE=1 npm run rag:validate
-  ```
-
-- Optional degraded mode: if you must run queries without a model, enable lexical fallback explicitly (do not leave it on by default):
-
-  ```bash
-  RAG_ALLOW_LEXICAL_FALLBACK=1 npm run rag:query "tooltip guidelines"
-  ```
-
-Notes:
-
-- The model is expected under `models/minilm`. The preflight will fail if strict offline is enabled and files are missing.
-- Keep tests free of unsuppressed `console.warn/error`. Use `withMutedConsole` or spies as needed.
-
-### Offline RAG Setup & Troubleshooting
-
-**Complete offline RAG guide:** See [docs/RAG_MODEL_PATHS.md](./docs/RAG_MODEL_PATHS.md) for detailed path resolution, troubleshooting, and advanced setup.
-
-**Health check:**
-
-```bash
-npm run rag:health
-```
-
-This provides comprehensive diagnostics including local model status, configuration validation, RAG functionality test, and offline mode readiness.
-
-**Validate configuration:**
-
-```bash
-npm run validate:rag:config
-```
-
-Ensures both the preparation script and loader use consistent path configuration for model resolution.
-
-**Development workflow for offline mode:**
-
-1. **First time setup:**
-
-   ```bash
-   npm run rag:prepare:models
-   npm run rag:health
-   ```
-
-2. **During development:**
-
-   ```bash
-   # Run tests with offline mode enabled (fails fast if model missing)
-   RAG_STRICT_OFFLINE=1 npm run test -- tests/queryRag/
-   ```
-
-3. **Troubleshooting:**
-
-   ```bash
-   # Full health diagnostic
-   npm run rag:health
-
-   # Check if files exist with correct sizes
-   npm run check:rag
-
-   # Validate path configuration
-   npm run validate:rag:config
-
-   # Re-prepare if issues found
-   npm run rag:prepare:models -- --force
-   ```
-
-**For air-gapped environments:**
-
-```bash
-# On machine with internet: prepare and transport
-npm run rag:prepare:models
-cp -r models/minilm /transport/path/
-
-# On offline machine: hydrate from transported files
-npm run rag:prepare:models -- --from-dir /transport/path/minilm
-```
-
-**Key points:**
-
-- Always run `npm run rag:health` after setup to verify everything works
-- Use `RAG_STRICT_OFFLINE=1` during development to catch offline mode issues early
-- Configuration must match: both scripts should reference repository root for `env.localModelPath`
-- Model files in `models/minilm/` should total ~23 MB; files < minimum size indicate incomplete download
+- `ESLint`
+- `Run Unit Tests`
+- `JSDoc Check`
+- `Playwright Patterns`
 
 ### Animation Scheduler Guidelines
 
