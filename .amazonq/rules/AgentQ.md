@@ -49,13 +49,14 @@ src/config/settingsDefaults.js # Settings source of truth
 
 ## ✅ Essential Validation
 
-```bash
-# Core validation (run before commit)
-npm run check:jsdoc && npx prettier . --check && npx eslint . && npm run check:contrast
+### Summary
 
-# Agent-specific checks
-grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle && echo "❌ Dynamic import in hot path"
-```
+- Run baseline quality gates (JSDoc, formatting, lint, and contrast when visuals are affected).
+- Run targeted test coverage for touched behavior and only scale up when change scope expands.
+- Enforce hot-path import safety and test log-discipline rules before final delivery.
+- Use the canonical PRD command catalogs for exact command variants and troubleshooting.
+
+Canonical links: [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) · [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference).
 
 ### 🚫 Critical Violations
 
@@ -130,21 +131,14 @@ Deterministic rules, workflows, and safety requirements for AI Agents operating 
 4. Validation (lint, format, targeted tests, contrast, logs)
 5. Delivery (PR body with verification summary)
 
-```bash
-# Fail if dynamic import appears in hot paths
-grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle 2>/dev/null
-  && echo "Found dynamic import in hot path" && exit 1 || true
+### Validation Summary
 
-# Fail if unsilenced console.warn/error found in tests (ignore utility wrapper)
-grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js"
-  && echo "Unsilenced console found" && exit 1 || true
+- Verify hot-path safety (no dynamic imports where prohibited).
+- Verify console discipline expectations in test code.
+- Validate data/schema integrity for changed datasets.
+- Run targeted tests and quality gates relevant to the change set.
 
-# JSON validation
-npm run validate:data
-
-```
-
-**For complete validation commands, quality verification, and troubleshooting, see [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) and [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference).**
+Canonical links: [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) · [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference).
 
 ---
 
@@ -1213,50 +1207,15 @@ Complete plan and guidelines available in:
 
 ## 🛠 Validation Commands
 
-**Complete command reference:** [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) | [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference)
-**See also**: [Quick Reference Cards](#-quick-reference-cards) for essential commands
+### Summary
 
-**Essential validation (run before commit):**
+- This guide defines workflow policy; command catalogs are canonical in PRD docs.
+- Run baseline gates (data validation, formatting, lint, JSDoc, and contrast where applicable).
+- Run targeted Vitest/Playwright checks for touched behavior before broadening scope.
+- Apply hot-path and console-discipline guardrails as part of final validation.
+- Use Quick Reference Cards for fast orientation, then execute exact commands from PRD anchors.
 
-```bash
-# Step 1: Data integrity
-npm run validate:data
-
-# Step 2: Code quality
-npx prettier . --check
-npx eslint .
-npm run check:jsdoc
-
-# Step 3: Tests (run targeted tests, not the full suite)
-# See the "Targeted Testing" section for details.
-npx vitest run <path/to/relevant/tests.spec.js>
-npx playwright test <path/to/relevant/spec.js>
-npm run check:contrast
-```
-
-**Auto-fix commands:**
-
-```bash
-npx prettier . --write
-npx eslint . --fix
-npm run check:jsdoc:fix
-```
-
-**Agent-specific validation (includes hot-path checks):**
-
-```bash
-# Fail if dynamic import appears in hot paths
-grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle 2>/dev/null \
-  && echo "Found dynamic import in hot path" && exit 1 || true
-
-# Fail if unsilenced console.warn/error found in tests (ignore utility wrapper)
-grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js" \
-  && echo "Unsilenced console found" && exit 1 || true
-
-# JSON validation
-npm run validate:data
-
-```
+Canonical links: [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) · [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference).
 
 ---
 
