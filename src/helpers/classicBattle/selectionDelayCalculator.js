@@ -11,28 +11,32 @@
  * - Support configuration lookups for buffer times
  */
 
+const FALLBACK_SELECTION_READY_DELAY_MS = 50;
+const FALLBACK_OPPONENT_MESSAGE_BUFFER_MS = 100;
+const DEFAULT_POST_SELECTION_READY_DELAY_MS = 48;
+const DEFAULT_OPPONENT_MESSAGE_BUFFER_MS = 150;
+
 /**
  * Get the base selection-ready delay constant.
  * This is the minimum delay before stat selection is considered ready,
  * computed as the maximum of:
- * - CONFIG.POST_SELECTION_READY_DELAY_MS
- * - CONFIG.OPPONENT_MESSAGE_BUFFER_MS
+ * - DEFAULT_POST_SELECTION_READY_DELAY_MS
+ * - DEFAULT_OPPONENT_MESSAGE_BUFFER_MS
  *
  * @returns {number} The base delay in milliseconds
  * @pseudocode
- * 1. Attempt to load `CONFIG` lazily to avoid circular imports.
- * 2. If available, return the max of `POST_SELECTION_READY_DELAY_MS` and `OPPONENT_MESSAGE_BUFFER_MS`.
- * 3. On failure, return a safe default of 50 ms.
+ * 1. Resolve static default timing constants.
+ * 2. Return the max of post-selection and opponent-buffer delays.
+ * 3. Fall back to 50ms if constants are invalid.
  */
 export function getBaseSelectionReadyDelay() {
-  // Lazy-load to avoid circular dependencies
-  try {
-    const { CONFIG } = require("../config/constants.js");
-    return Math.max(CONFIG.POST_SELECTION_READY_DELAY_MS, CONFIG.OPPONENT_MESSAGE_BUFFER_MS);
-  } catch {
-    // Fallback to reasonable defaults if CONFIG unavailable
-    return 50;
-  }
+  const resolvedDelay = Math.max(
+    DEFAULT_POST_SELECTION_READY_DELAY_MS,
+    DEFAULT_OPPONENT_MESSAGE_BUFFER_MS
+  );
+  return Number.isFinite(resolvedDelay) && resolvedDelay >= 0
+    ? resolvedDelay
+    : FALLBACK_SELECTION_READY_DELAY_MS;
 }
 
 /**
@@ -46,8 +50,11 @@ export function getBaseSelectionReadyDelay() {
  * 3. Otherwise, return `null` to signal no override.
  */
 export function getSelectionDelayOverride() {
-  if (typeof window !== "undefined" && typeof window.__OPPONENT_RESOLVE_DELAY_MS === "number") {
-    return Number(window.__OPPONENT_RESOLVE_DELAY_MS);
+  if (
+    typeof globalThis !== "undefined" &&
+    typeof globalThis.__OPPONENT_RESOLVE_DELAY_MS === "number"
+  ) {
+    return Number(globalThis.__OPPONENT_RESOLVE_DELAY_MS);
   }
   return null;
 }
@@ -58,21 +65,21 @@ export function getSelectionDelayOverride() {
  * the configured buffer time after the opponent message.
  *
  * @param {number} opponentDelay - The opponent message delay in milliseconds
+ * @param {number} [bufferMs=DEFAULT_OPPONENT_MESSAGE_BUFFER_MS] - Buffer appended to delay
  * @returns {number} The adjusted delay in milliseconds
  * @pseudocode
  * 1. If `opponentDelay` is non-numeric or negative, return 0 immediately.
- * 2. Try to load the buffer value from `CONFIG.OPPONENT_MESSAGE_BUFFER_MS`.
+ * 2. Validate `bufferMs`, falling back to default buffer.
  * 3. Add the buffer to the opponent delay and return the sum.
- * 4. If the config load fails, add a fallback buffer of 100 ms instead.
  */
-export function computeDelayWithOpponentBuffer(opponentDelay) {
+export function computeDelayWithOpponentBuffer(
+  opponentDelay,
+  bufferMs = DEFAULT_OPPONENT_MESSAGE_BUFFER_MS
+) {
   if (!Number.isFinite(opponentDelay) || opponentDelay < 0) {
     return 0;
   }
-  try {
-    const { CONFIG } = require("../config/constants.js");
-    return opponentDelay + CONFIG.OPPONENT_MESSAGE_BUFFER_MS;
-  } catch {
-    return opponentDelay + 100; // Fallback buffer
-  }
+  const resolvedBuffer =
+    Number.isFinite(bufferMs) && bufferMs >= 0 ? bufferMs : FALLBACK_OPPONENT_MESSAGE_BUFFER_MS;
+  return opponentDelay + resolvedBuffer;
 }

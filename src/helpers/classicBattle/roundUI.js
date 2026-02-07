@@ -7,10 +7,16 @@ import * as scoreboard from "../setupScoreboard.js";
 import { dismissCountdownSnackbar } from "../CooldownRenderer.js";
 import { attachCountdownCoordinator } from "./countdownCoordinator.js";
 import { handleStatSelection } from "./selectionHandler.js";
-import { getCardStatValue } from "./cardStatUtils.js";
-import { getOpponentJudoka } from "./cardSelection.js";
 import * as roundManagerModule from "./roundManager.js";
 import { onBattleEvent, emitBattleEvent, getBattleEventTarget } from "./battleEvents.js";
+import { battleLog } from "./battleLogger.js";
+import {
+  validateRoundStartedEvent,
+  validateStatSelectedEvent,
+  validateRoundEvaluatedEvent
+} from "./eventValidators.js";
+import { createStatButtonCache } from "./statButtonCache.js";
+import { resolveStatValues } from "./statValuesHelper.js";
 import { updateSnackbar as _updateSnackbar } from "../showSnackbar.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 // import { createRoundTimer } from "../timers/createRoundTimer.js";
@@ -48,6 +54,7 @@ let showMatchSummaryModal = null;
 void _updateSnackbar;
 
 let hasScheduledMatchSummaryPreload = false;
+const statButtonCache = createStatButtonCache("#stat-buttons button[data-stat]", "stat-buttons");
 
 function preloadMatchSummaryModal() {
   import("/src/helpers/classicBattle/matchSummaryModal.js")
@@ -72,13 +79,22 @@ function collectStatButtons(store) {
 
   // Fallback to DOM query
   try {
-    if (typeof document?.querySelectorAll === "function") {
-      return Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
-    }
+    return statButtonCache.get();
   } catch {
     // Silently continue
   }
   return [];
+}
+
+function hydrateStatButtons(store) {
+  if (!store?.statButtonEls) {
+    store.statButtonEls = collectStatButtons(store).reduce((acc, btn) => {
+      const statKey = btn?.dataset?.stat;
+      if (statKey) acc[statKey] = btn;
+      return acc;
+    }, {});
+  }
+  return store.statButtonEls;
 }
 
 function clearStatButtonSelections(store) {
@@ -332,24 +348,10 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000, options 
     store.playerCardEl || (store.playerCardEl = document.getElementById("player-card"));
   const opponentCard =
     store.opponentCardEl || (store.opponentCardEl = document.getElementById("opponent-card"));
-  if (!store.statButtonEls) {
-    store.statButtonEls = Array.from(
-      document.querySelectorAll("#stat-buttons button[data-stat]")
-    ).reduce((acc, btn) => {
-      const s = btn.dataset.stat;
-      if (s) acc[s] = btn;
-      return acc;
-    }, {});
-  }
+  hydrateStatButtons(store);
   if (!skipTimer) {
     startTimer((stat, opts) => {
-      const playerVal = getCardStatValue(playerCard, stat);
-      let opponentVal = getCardStatValue(opponentCard, stat);
-      try {
-        const opp = getOpponentJudoka();
-        const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
-        opponentVal = Number.isFinite(raw) ? raw : opponentVal;
-      } catch {}
+      const { playerVal, opponentVal } = resolveStatValues(playerCard, opponentCard, stat);
       return handleStatSelection(store, stat, { playerVal, opponentVal, ...opts });
     }, store);
   }
@@ -360,13 +362,7 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000, options 
   handleStatSelectionTimeout(
     store,
     (s, opts) => {
-      const playerVal = getCardStatValue(playerCard, s);
-      let opponentVal = getCardStatValue(opponentCard, s);
-      try {
-        const opp = getOpponentJudoka();
-        const raw = opp && opp.stats ? Number(opp.stats[s]) : NaN;
-        opponentVal = Number.isFinite(raw) ? raw : opponentVal;
-      } catch {}
+      const { playerVal, opponentVal } = resolveStatValues(playerCard, opponentCard, s);
       return handleStatSelection(store, s, { playerVal, opponentVal, ...opts });
     },
     store.stallTimeoutMs
@@ -418,11 +414,10 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000, options 
  */
 export async function handleRoundStartedEvent(event, deps = {}) {
   const { applyRoundUI: applyRoundUiFn = applyRoundUI } = deps;
-  const { store, roundNumber } = event?.detail || {};
-  try {
-    // console.debug(`classicBattle.trace event:roundStarted t=${Date.now()} round=${roundNumber}`);
-  } catch {}
-  if (store && typeof roundNumber === "number") {
+  const validated = validateRoundStartedEvent(event);
+  if (validated) {
+    const { store, roundNumber } = validated;
+    battleLog.trace(`event:roundStarted t=${Date.now()} round=${roundNumber}`);
     applyRoundUiFn(store, roundNumber);
   }
 
@@ -461,11 +456,12 @@ export async function handleRoundStartedEvent(event, deps = {}) {
  * @returns {void}
  */
 export function handleStatSelectedEvent(event) {
-  try {
-    // console.debug(`classicBattle.trace event:statSelected t=${Date.now()}`);
-  } catch {}
-  const { stat, store } = event?.detail || {};
-  if (!stat || !store || !store.statButtonEls) return;
+  battleLog.trace(`event:statSelected t=${Date.now()}`);
+  const validated = validateStatSelectedEvent(event);
+  if (!validated) return;
+  const { stat, store } = validated;
+  hydrateStatButtons(store);
+  if (!store.statButtonEls) return;
   const btn = store.statButtonEls[stat];
   if (btn) {
     try {
@@ -533,6 +529,9 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
           }
         })();
   const detail = event?.detail || {};
+  if (!detail?.result && !validateRoundEvaluatedEvent(event)) {
+    return;
+  }
   const store = detail.store;
   const result = detail.result || {
     outcome: detail.outcome,
