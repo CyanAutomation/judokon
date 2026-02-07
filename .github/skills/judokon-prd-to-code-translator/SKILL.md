@@ -45,10 +45,21 @@ This skill turns intent into execution.
 
 ## Operational Guardrails
 
-- **Task Contract**: declare `inputs`, `outputs`, `success`, and `errorMode` before implementation.
-- **RAG-first**: run `queryRag(...)` for How/Why/What/Where/Which work; if results are weak twice, fallback to targeted `rg`/file search.
-- **Validation + targeted tests**: run `npm run check:jsdoc && npx prettier . --check && npx eslint .` plus `npm run check:contrast` when UI changes and only targeted `vitest`/Playwright tests related to changed files.
-- **Critical prohibitions**: no dynamic imports in hot paths (`src/helpers/classicBattle*`, `src/helpers/battleEngineFacade.js`), and no unsilenced `console.warn/error` in tests.
+- **Task Contract (required before implementation):**
+  - `inputs`: exact files/data/commands you will use.
+  - `outputs`: exact files/tests/docs you will change.
+  - `success`: required outcomes (checks/tests/log discipline).
+  - `errorMode`: explicit stop condition (for example: ask on public API change).
+- **RAG-first policy:**
+  1. Use `queryRag(...)` first for How/Why/What/Where/Which questions and implementation lookups.
+  2. If results are weak, rephrase and run a second RAG query.
+  3. If still weak, fall back to targeted `rg`/file search and cite what was checked.
+- **Required validation + targeted testing:**
+  - Run core checks: `npm run check:jsdoc && npx prettier . --check && npx eslint . && npm run check:contrast`.
+  - Run only targeted tests for changed files (`npx vitest run <path>` / focused Playwright spec). Run full suite only for cross-cutting changes.
+- **Critical prohibitions (must not violate):**
+  - No dynamic imports in hot paths: `src/helpers/classicBattle*`, `src/helpers/battleEngineFacade.js`, `src/helpers/battle/*`.
+  - No unsilenced `console.warn/error` in tests (use `tests/utils/console.js` helpers).
 
 ## Execution handoff target
 
