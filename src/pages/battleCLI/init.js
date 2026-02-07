@@ -13,7 +13,11 @@ import {
   resetGame
 } from "../../helpers/classicBattle/roundManager.js";
 import * as battleOrchestrator from "../../helpers/classicBattle/orchestrator.js";
-import { onBattleEvent, emitBattleEvent } from "../../helpers/classicBattle/battleEvents.js";
+import {
+  onBattleEvent,
+  emitBattleEvent,
+  resetBattleEventDedupeState
+} from "../../helpers/classicBattle/battleEvents.js";
 import { STATS } from "../../helpers/BattleEngine.js";
 import * as engineFacade from "../../helpers/BattleEngine.js";
 import statNamesData from "../../data/statNames.js";
@@ -736,6 +740,7 @@ let resetPromise = Promise.resolve();
  * @returns {Promise<void>} A promise that resolves when the reset is complete.
  */
 export async function resetMatch() {
+  resetBattleEventDedupeState();
   stopSelectionCountdown();
   handleCountdownFinished();
   state.roundResolving = false;

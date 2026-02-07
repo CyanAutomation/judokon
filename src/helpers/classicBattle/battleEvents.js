@@ -23,6 +23,21 @@ const VALUE_ONLY_EVENT_TYPES = new Set([
 ]);
 
 /**
+ * Clear semantic dedupe state for value-only battle events.
+ *
+ * @summary Reset value-event dedupe memory between matches.
+ * @pseudocode
+ * 1. Clear the module-level `lastSeenEventKeys` map.
+ * 2. Return immediately when no entries exist.
+ *
+ * @returns {void}
+ */
+export function resetBattleEventDedupeState() {
+  lastSeenEventKeys.clear();
+  lastSeenEventKeys.clear();
+}
+
+/**
  * Check if running in Vitest environment.
  *
  * @pseudocode
@@ -293,7 +308,7 @@ export function __resetBattleEventTarget() {
     console.log(`[EventTarget] Reset to new target: ${t.__debugId} at ${t.__createdAt}`);
   }
 
-  lastSeenEventKeys.clear();
+  resetBattleEventDedupeState();
 }
 
 /**

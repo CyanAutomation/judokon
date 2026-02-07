@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   __resetBattleEventTarget,
   emitBattleEvent,
-  onBattleEvent
+  onBattleEvent,
+  resetBattleEventDedupeState
 } from "../../../src/helpers/classicBattle/battleEvents.js";
 
 describe("battleEvents value-only dedupe", () => {
@@ -40,6 +41,30 @@ describe("battleEvents value-only dedupe", () => {
       payloadVersion: 4,
       payloadHash: "round-2-v4"
     });
+
+    expect(handler).toHaveBeenCalledTimes(2);
+  });
+
+  it("handles missing detail payloads without throwing while deduping value-only events", () => {
+    const handler = vi.fn();
+    onBattleEvent("round.evaluated", handler);
+
+    expect(() => {
+      emitBattleEvent("round.evaluated");
+      emitBattleEvent("round.evaluated");
+    }).not.toThrow();
+
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+
+  it("allows identical value-only events after dedupe state reset", () => {
+    const handler = vi.fn();
+    onBattleEvent("round.timer.tick", handler);
+
+    emitBattleEvent("round.timer.tick", { roundIndex: 1, remainingMs: 4000, payloadHash: "a" });
+    emitBattleEvent("round.timer.tick", { roundIndex: 1, remainingMs: 4000, payloadHash: "a" });
+    resetBattleEventDedupeState();
+    emitBattleEvent("round.timer.tick", { roundIndex: 1, remainingMs: 4000, payloadHash: "a" });
 
     expect(handler).toHaveBeenCalledTimes(2);
   });
