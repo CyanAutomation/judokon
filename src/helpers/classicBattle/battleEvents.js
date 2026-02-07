@@ -33,9 +33,7 @@ const VALUE_ONLY_EVENT_TYPES = new Set([
  * @returns {void}
  */
 export function resetBattleEventDedupeState() {
-  if (lastSeenEventKeys.size === 0) {
-    return;
-  }
+  lastSeenEventKeys.clear();
   lastSeenEventKeys.clear();
 }
 
