@@ -39,7 +39,7 @@ The original report also mentioned an unrelated issue about `clearRoundCounter` 
 
 The `quit-flow.test.js` test simulates a user clicking the "Quit" button and then awaits `window.quitConfirmButtonPromise`. This promise should be created and set on the `window` object by the `quitMatch` function in `src/helpers/classicBattle/quitModal.js` when the quit button's event handler is triggered.
 
-The failure suggested that the event handler was not being correctly attached or triggered in the test environment. The suspected root cause was how HTML content is loaded into `jsdom`, based on a similar issue documented in `progressBrowse.md` regarding `readFileSync` externalization.
+The failure suggested that the event handler was not being correctly attached or triggered in the test environment. The suspected root cause was how HTML content is loaded into `jsdom`, based on a similar issue documented in `docs/status/archive/progressBrowse.md` regarding `readFileSync` externalization.
 
 ### Verification of HTML Loading
 
