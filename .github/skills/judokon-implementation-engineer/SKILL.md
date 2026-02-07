@@ -25,6 +25,8 @@ Use this skill when prompts include or imply:
 
 ## Required sequence (must follow in order)
 
+Required execution flow: **context acquisition → task contract → implementation constraints → targeted validation → delivery summary**.
+
 1. **Context acquisition**
    - Review AGENTS/prior planning artifacts and run RAG-first queries for How/Why/What/Where/Which uncertainties.
    - Confirm impacted files, constraints, and non-goals before editing.
@@ -88,7 +90,7 @@ Use this skill when prompts include or imply:
 
 ## Output template
 
-Use this structure in delivery:
+Use this structure in delivery (must include changed files, test mapping, and risk notes):
 
 ```md
 ## Execution Summary
