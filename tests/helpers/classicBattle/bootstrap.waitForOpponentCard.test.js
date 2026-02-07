@@ -74,7 +74,12 @@ vi.mock("../../../src/helpers/featureFlags.js", () => ({
 
 describe("classic battle bootstrap wiring", () => {
   test("injects waitForOpponentCard from runtime utility and uses the real implementation", async () => {
-    document.body.innerHTML = '<div id="opponent-card"><div class="judoka-card"></div></div>';
+    const container = document.createElement("div");
+    container.id = "opponent-card";
+    const card = document.createElement("div");
+    card.className = "judoka-card";
+    container.appendChild(card);
+    document.body.appendChild(container);
     const { setupClassicBattlePage } = await import(
       "../../../src/helpers/classicBattle/bootstrap.js"
     );
