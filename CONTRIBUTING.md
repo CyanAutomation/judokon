@@ -31,43 +31,14 @@ Open the nearest implementation + test pair and expand scope only if needed.
 
 ## ✅ Required Programmatic Checks
 
-Before committing any changes, run the following commands from the repository root. Fix any issues and rerun the checks until they all pass.
+### Summary
 
-For complete command documentation, troubleshooting, and advanced quality verification, see **[PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks)** and **[PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference)**.
+- Run formatting, lint, JSDoc, and data checks as baseline quality gates before pushing.
+- Run targeted Vitest and Playwright coverage for the files and flows you changed; expand only when change scope requires it.
+- Include contrast/style checks when UI or visual behavior changes.
+- Resolve all failures before commit so PR reviewers can focus on behavior, not broken checks.
 
-**Core validation suite:**
-
-```bash
-npx prettier . --check # verify formatting
-npx eslint . # lint the codebase
-npx vitest run # run unit tests
-npx playwright test # run Playwright UI tests
-npm run check:jsdoc # ensure exported helpers have JSDoc + @pseudocode
-npm run check:contrast # verify accessibility compliance
-```
-
-**Style tests (run on demand):**
-
-```bash
-npm run test:style # run style tests when needed
-```
-
-### Test Quality Verification
-
-In addition to the core checks above, verify test quality standards compliance using the advanced verification commands detailed in [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference):
-
-**Quick quality check:**
-
-```bash
-# Unit Test Quality Verification
-grep -r "dispatchEvent\|createEvent" tests/ && echo "❌ Found synthetic events" || echo "✅ No synthetic events"
-grep -r "console\.(warn\|error)" tests/ | grep -v "tests/utils/console.js" && echo "❌ Found unsilenced console" || echo "✅ Console discipline maintained"
-
-# Playwright Test Quality Verification
-grep -r "waitForTimeout\|setTimeout" playwright/ && echo "❌ Found hardcoded waits" || echo "✅ No hardcoded timeouts"
-```
-
-**For complete quality verification commands, see [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference).**
+Canonical links: **[PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks)** · **[PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference)**.
 
 **Test Helpers Documentation:** See [tests/helpers/README.md](./tests/helpers/README.md) for shared utilities and best practices for writing reliable unit tests.
 
@@ -254,18 +225,13 @@ await vi.runAllTimersAsync();
 
 ### Quality Verification Commands
 
-Before submitting PRs, verify test quality compliance:
+### Summary
 
-```bash
-# Check for synthetic events
-grep -r "dispatchEvent\|createEvent" tests/ && echo "❌ Found synthetic events"
+- Validate unit tests against the anti-pattern policy (natural interactions, muted console output, deterministic timers).
+- Confirm new/updated tests include at least one happy-path and one edge-case assertion where applicable.
+- Keep verification scoped to touched modules first, then expand if shared behavior is affected.
 
-# Check for console discipline
-grep -r "console\.(warn\|error)" tests/ | grep -v "tests/utils/console.js" && echo "❌ Found unsilenced console"
-
-# Check for real timers
-grep -r "setTimeout\|setInterval" tests/ | grep -v "fake\|mock" && echo "❌ Found real timers"
-```
+Canonical link: [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference).
 
 ### Performance and Reliability Goals
 
@@ -347,18 +313,13 @@ test.beforeEach(async ({ page }) => {
 
 ### Quality Verification Commands
 
-Before submitting PRs, verify Playwright test quality compliance:
+### Summary
 
-```bash
-# Check for hardcoded timeouts
-grep -r "waitForTimeout\|setTimeout" playwright/ && echo "❌ Found hardcoded waits"
+- Prefer semantic selectors and natural user interactions in Playwright coverage.
+- Avoid hardcoded waits and direct DOM mutation patterns in end-to-end tests.
+- Confirm assertions rely on auto-retry-aware expectations for asynchronous UI states.
 
-# Check for semantic selector usage
-grep -r "data-testid\|role=\|getByLabel" playwright/ | wc -l && echo "✅ Semantic selectors count"
-
-# Check for DOM manipulation
-grep -r "page\.evaluate.*DOM\|innerHTML\|appendChild" playwright/ && echo "❌ Found DOM manipulation"
-```
+Canonical link: [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference).
 
 ### Performance and Reliability Goals
 
