@@ -13,6 +13,14 @@ import { emitBattleEventWithAliases as emitBattleEventWithAliasesCore } from "./
 
 const eventLogger = createComponentLogger("BattleEvents");
 const EVENT_TARGET_KEY = "__classicBattleEventTarget";
+const lastSeenEventKeys = new Map();
+const VALUE_ONLY_EVENT_TYPES = new Set([
+  "round.timer.tick",
+  "round.evaluated",
+  "display.score.update",
+  "match.score.update",
+  "match.score.updated"
+]);
 
 /**
  * Check if running in Vitest environment.
@@ -102,6 +110,78 @@ function getTarget() {
 }
 
 /**
+ * Produce a stable semantic key for value-only event deduplication.
+ *
+ * @internal
+ *
+ * @pseudocode
+ * 1. Read semantic identity from known payload fields (round/version/hash/remaining/scores).
+ * 2. Normalize each key segment to a string, replacing missing values with a sentinel.
+ * 3. Join the normalized segments into a deterministic composite key.
+ *
+ * @param {any} detail - Event payload to normalize.
+ * @returns {string} Deterministic semantic key for dedupe tracking.
+ */
+function buildSemanticDetailKey(detail) {
+  if (!detail) {
+    return "__no_detail__";
+  }
+  const scorePlayer = detail?.scores?.player ?? detail?.player;
+  const scoreOpponent = detail?.scores?.opponent ?? detail?.opponent;
+  const components = [
+    detail?.roundIndex,
+    detail?.round,
+    detail?.version,
+    detail?.payloadVersion,
+    detail?.payloadHash,
+    detail?.hash,
+    detail?.remainingMs,
+    detail?.state,
+    detail?.to,
+    scorePlayer,
+    scoreOpponent,
+    detail?.winner
+  ];
+  return components
+    .map((value) => (value === undefined ? "__undefined__" : String(value)))
+    .join("|");
+}
+
+/**
+ * Decide whether an emitted value-only event should be suppressed as duplicate.
+ *
+ * @internal
+ *
+ * @pseudocode
+ * 1. Skip dedupe for non-value events or authoritative control.state.changed.
+ * 2. Build semantic key from event type + normalized payload identity.
+ * 3. Compare against last seen key and suppress if identical.
+ * 4. Store current key as last seen and allow emission when changed.
+ *
+ * @param {string} type - Event name.
+ * @param {any} detail - Event payload.
+ * @returns {boolean} True when event should be suppressed.
+ */
+function shouldSuppressDuplicateValueEvent(type, detail) {
+  if (type === "control.state.changed") {
+    return false;
+  }
+  if (!VALUE_ONLY_EVENT_TYPES.has(type)) {
+    return false;
+  }
+
+  const dedupeKey = `${type}:${buildSemanticDetailKey(detail)}`;
+  const lastSeenKey = lastSeenEventKeys.get(type);
+
+  if (lastSeenKey === dedupeKey) {
+    return true;
+  }
+
+  lastSeenEventKeys.set(type, dedupeKey);
+  return false;
+}
+
+/**
  * Listen for a battle event.
  *
  * @param {string} type - Event name.
@@ -148,6 +228,11 @@ export function offBattleEvent(type, handler) {
  */
 export function emitBattleEvent(type, detail) {
   try {
+    if (shouldSuppressDuplicateValueEvent(type, detail)) {
+      eventLogger.debug(`Suppressed duplicate value event: ${type}`, detail);
+      return;
+    }
+
     // Debug logging for event emission
     logEventEmit(type, detail, { timestamp: Date.now() });
 
@@ -207,6 +292,8 @@ export function __resetBattleEventTarget() {
   if (isVitest() || typeof window !== "undefined") {
     console.log(`[EventTarget] Reset to new target: ${t.__debugId} at ${t.__createdAt}`);
   }
+
+  lastSeenEventKeys.clear();
 }
 
 /**
