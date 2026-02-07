@@ -2,11 +2,11 @@
  * Validate RAG configuration consistency across codebase.
  *
  * Ensures both preparation script (prepareLocalModel.mjs) and loader
- * (vectorSearchPage.js) use the same env.localModelPath configuration.
+ * (ragExtractor.js) use the same env.localModelPath configuration.
  *
  * @pseudocode
  * 1. Parse prepareLocalModel.mjs for env.localModelPath assignment
- * 2. Parse vectorSearchPage.js for env.localModelPath assignment
+ * 2. Parse ragExtractor.js for env.localModelPath assignment
  * 3. Compare both values
  * 4. Verify both reference the repo root (not a subdirectory)
  * 5. Report success or detailed mismatch
@@ -26,7 +26,7 @@ const filesToCheck = [
   },
   {
     name: "Loader",
-    file: path.join(rootDir, "src/helpers/api/vectorSearchPage.js"),
+    file: path.join(rootDir, "src/helpers/api/ragExtractor.js"),
     pattern: /env\.localModelPath\s*=\s*(\w+);/
   }
 ];

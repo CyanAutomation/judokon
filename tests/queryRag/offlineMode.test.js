@@ -75,7 +75,7 @@ describe("queryRag offline mode with local MiniLM model", () => {
       pipeline: pipelineMock,
       env: {
         allowLocalModels: true,
-        localModelPath: rootDir, // Should be set to repo root by vectorSearchPage.js
+        localModelPath: rootDir, // Should be set to repo root by ragExtractor.js
         backends: { onnx: { wasm: {} } }
       }
     }));
@@ -329,7 +329,7 @@ describe("queryRag offline mode with local MiniLM model", () => {
 
   /**
    * Test 7: Verify model path resolution is consistent
-   * Ensures prepareLocalModel.mjs and vectorSearchPage.js use same path
+   * Ensures prepareLocalModel.mjs and ragExtractor.js use same path
    */
   it("resolves model path consistently between prepare and load", async () => {
     // Check that env.localModelPath is set to repo root in both places
