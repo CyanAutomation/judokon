@@ -2,6 +2,13 @@
 
 This directory contains the complete test suite for JU-DO-KON!, including unit tests, integration tests, and testing utilities.
 
+## Testing Architecture Guides
+
+Start here for architecture and authoring guidance:
+
+1. **Canonical architecture guide**: [`docs/TESTING_ARCHITECTURE.md`](../docs/TESTING_ARCHITECTURE.md)
+2. **Quickstart / local conventions**: [`tests/TESTING_ARCHITECTURE.md`](./TESTING_ARCHITECTURE.md)
+
 ## Directory Structure
 
 ```
