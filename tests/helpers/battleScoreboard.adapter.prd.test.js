@@ -5,7 +5,6 @@ import {
   emitBattleEvent
 } from "../../src/helpers/classicBattle/battleEvents.js";
 import { mount, clearBody } from "./domUtils.js";
-import { setScheduler } from "../../src/helpers/scheduler.js";
 
 describe("battleScoreboard PRD adapter", () => {
   beforeEach(async () => {
@@ -35,9 +34,8 @@ describe("battleScoreboard PRD adapter", () => {
     resetScoreboard();
     initScoreboard(header);
     const mock = await import("./mockScheduler.js");
-    setScheduler(mock.createMockScheduler());
     const { initBattleScoreboardAdapter } = await import("../../src/helpers/battleScoreboard.js");
-    initBattleScoreboardAdapter();
+    initBattleScoreboardAdapter({ scheduler: mock.createMockScheduler() });
   });
 
   afterEach(() => {

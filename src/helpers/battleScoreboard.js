@@ -7,7 +7,7 @@ import {
   clearRoundCounter,
   showTemporaryMessage
 } from "./roundStatusDisplay.js";
-import { getScheduler } from "./scheduler.js";
+import { realScheduler } from "./scheduler.js";
 
 // Event names
 const EVENTS = {
@@ -28,6 +28,8 @@ let _handlers = [];
 let _waitingTimer = null;
 let _waitingClearer = null;
 let _onResetUi = null;
+let _adapterScheduler = realScheduler;
+const WAITING_FALLBACK_DELAY_MS = 500;
 
 function createInitialViewModel() {
   return {
@@ -266,8 +268,7 @@ const displayOutcome = (outcomeRaw, message) => {
 function _cancelWaiting() {
   try {
     if (_waitingTimer) {
-      const scheduler = getScheduler();
-      scheduler.clearTimeout(_waitingTimer);
+      _adapterScheduler.clearTimeout(_waitingTimer);
     }
   } catch {}
   _waitingTimer = null;
@@ -325,25 +326,32 @@ function unregisterResetUiListener() {
  *
  * @pseudocode
  * 1. Guard against double-binding.
- * 2. Subscribe to PRD events and forward data to Scoreboard API.
- * 3. Return a disposer that removes all listeners.
+ * 2. Resolve scheduler dependencies used for waiting fallbacks.
+ * 3. Subscribe to PRD events and forward data to Scoreboard API.
+ * 4. Return a disposer that removes all listeners.
+ *
+ * @param {{scheduler?: {setTimeout: Function, clearTimeout?: Function}}} [deps]
+ * Optional runtime dependencies used by the adapter.
  * @returns {() => void} dispose function
  */
-export function initBattleScoreboardAdapter() {
+export function initBattleScoreboardAdapter(deps = {}) {
   if (_bound) return disposeBattleScoreboardAdapter;
   _bound = true;
+  _adapterScheduler = deps.scheduler ?? realScheduler;
+  if (typeof _adapterScheduler.clearTimeout !== "function") {
+    _adapterScheduler.clearTimeout = realScheduler.clearTimeout;
+  }
   _viewModel = createInitialViewModel();
   _handlers = [];
   registerResetUiListener();
   // Schedule fallback message if no state is observed within 500ms
   try {
-    const scheduler = getScheduler();
-    _waitingTimer = scheduler.setTimeout(() => {
+    _waitingTimer = _adapterScheduler.setTimeout(() => {
       try {
         _waitingClearer =
           typeof showTemporaryMessage === "function" ? showTemporaryMessage("Waiting…") : null;
       } catch {}
-    }, 500);
+    }, WAITING_FALLBACK_DELAY_MS);
   } catch {}
 
   const on = (type, fn) => {
@@ -503,8 +511,17 @@ export function disposeBattleScoreboardAdapter() {
 
   _bound = false;
   _viewModel = null;
+  _adapterScheduler = realScheduler;
   unregisterResetUiListener();
 }
+
+/**
+ * Delay before rendering the fallback waiting message when no authoritative
+ * scoreboard state arrives after adapter initialization.
+ *
+ * @type {number}
+ */
+export { WAITING_FALLBACK_DELAY_MS };
 
 /**
  * Return current scoreboard snapshot (alias for PRD naming).
