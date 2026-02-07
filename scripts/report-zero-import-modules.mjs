@@ -16,6 +16,12 @@ const SOURCE_GLOBS = [
  * Determine whether an import specifier references a module path using direct
  * file or directory-index forms.
  *
+ * @pseudocode
+ * 1. Normalize the specifier by converting backslashes to forward slashes.
+ * 2. Generate candidate paths: full path, no extension, and directory (if index.js).
+ * 3. Check if the normalized specifier matches any candidate path exactly or as a suffix.
+ * 4. Return true if any candidate matches, false otherwise.
+ *
  * @param {string} specifier import path specifier
  * @param {string} modulePath normalized module path with extension
  * @returns {boolean}
