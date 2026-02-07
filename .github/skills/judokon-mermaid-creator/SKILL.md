@@ -20,62 +20,48 @@ This skill treats Mermaid diagrams as structured reasoning artefacts, not decora
 
 - Mermaid diagrams embedded in PRDs
 - Diagrams aligned with PRD semantics and terminology
-- Optional beautiful-mermaid annotations or layout hints
+- Optional beautiful-mermaid rendering guidance
 
 **Non-goals:**
 
-- Purely aesthetic diagrams
-- Diagrams that duplicate prose without adding structure
-- Overly detailed UML-style modelling unless explicitly requested
+- Rewriting PRD intent without confirmation
+- Producing decorative diagrams detached from requirements
 
-## What this skill helps accomplish
+## Key files
 
-- Make PRDs machine-readable and agent-friendly
-- Reduce ambiguity in workflows, state transitions, and ownership
-- Enable AI agents to reason about architecture and behaviour visually
-- Provide a single source of truth for feature structure
+- `design/productRequirementsDocuments/*.md`
+- `README.md`
+- `AGENTS.md`
 
 ## When to use this skill
 
-- Writing or updating PRDs
-- Introducing new features or game modes
-- Clarifying workflows, lifecycles, or decision trees
-- Explaining data flow, state machines, or component boundaries
+- Creating PRD diagrams from plain-language requirements
+- Updating architecture, sequence, state, or flow diagrams
+- Translating existing diagrams into cleaner semantic structures
 
-## Supported Mermaid diagram types
+## Diagram rules
 
-Use the simplest diagram that expresses intent:
+1. Match diagram type to intent (flowchart/sequence/state/class/ER).
+2. Keep labels explicit and domain-accurate.
+3. Keep node count manageable; split large diagrams.
+4. Prefer stable node IDs and deterministic ordering.
+5. Validate syntax before delivery.
 
-- **flowchart** — feature flows, decision logic, user journeys
-- **sequenceDiagram** — interactions between systems or actors
-- **stateDiagram-v2** — game states, modes, or lifecycle transitions
-- **classDiagram** — conceptual data models (not implementation classes)
-- **graph** — high-level architecture or dependency mapping
+## Styling and readability
 
-## Diagram design rules
-
-1. **Semantic clarity over completeness:** If a concept is not important to reasoning, omit it.
-2. **Stable naming:** Use PRD terminology exactly. Do not invent synonyms.
-3. **Explicit decision points:** Conditional logic must be visually obvious.
-4. **Bounded scope:** One diagram = one idea. Split if necessary.
-5. **AI-readable first:** Assume another agent will parse and build on this diagram.
-
-## beautiful-mermaid integration
-
-When appropriate, this skill may:
-
-- Use `%%{init: {...}}%%` blocks for layout clarity
-- Apply consistent directionality (`LR`, `TB`) across diagrams
-- Group related nodes using subgraphs
-- Prefer readable node IDs over auto-generated labels
+- Use consistent direction (`TD`/`LR`) per document section.
+- Group related nodes with `subgraph` when it clarifies domain boundaries.
+- Avoid excessive inline styling that harms readability.
+- Prefer readable node IDs over auto-generated labels.
 
 Aesthetic enhancements must never obscure semantic meaning.
 
-## Common PRD locations
+## Operational Guardrails
 
-- `docs/prd/*.md`
-- Feature sections within `README.md`
-- Design notes and architecture overviews
+- **Task Contract**: declare `inputs`, `outputs`, `success`, and `errorMode` before implementation.
+- **RAG-first**: run `queryRag(...)` for How/Why/What/Where/Which work; if results are weak twice, fallback to targeted `rg`/file search.
+- **Validation + targeted tests**: run `npm run check:jsdoc && npx prettier . --check && npx eslint .` plus `npm run check:contrast` when UI changes and only targeted `vitest`/Playwright tests related to changed files.
+- **Critical prohibitions**: no dynamic imports in hot paths (`src/helpers/classicBattle*`, `src/helpers/battleEngineFacade.js`), and no unsilenced `console.warn/error` in tests.
 
 ## Required behaviour
 
