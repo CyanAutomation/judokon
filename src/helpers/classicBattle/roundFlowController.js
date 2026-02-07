@@ -3,6 +3,7 @@ import { handleRoundStartedEvent, handleRoundResolvedEvent } from "./roundUI.js"
 import { showRoundOutcome } from "./uiHelpers.js";
 import { isEnabled } from "../featureFlags.js";
 import { getOpponentDelay } from "./snackbar.js";
+import { getSelectionDelayOverride } from "./selectionDelayCalculator.js";
 
 /**
  * Bind round flow UI handlers for engine-driven events.
@@ -25,12 +26,10 @@ export function bindRoundFlowController() {
   };
 
   const resolveOpponentDelayMs = () => {
-    try {
-      const override = Number(globalThis?.__OPPONENT_RESOLVE_DELAY_MS);
-      if (Number.isFinite(override) && override >= 0) {
-        return override;
-      }
-    } catch {}
+    const override = getSelectionDelayOverride();
+    if (Number.isFinite(override) && override >= 0) {
+      return override;
+    }
     try {
       const configured = Number(getOpponentDelay());
       if (Number.isFinite(configured) && configured >= 0) {
