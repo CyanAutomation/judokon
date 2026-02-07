@@ -67,6 +67,12 @@ function extractSpecifiers(content) {
 }
 
 /**
+ * Parse command-line arguments for the script.
+ *
+ * @pseudocode
+ * 1. Check if the argv array includes the "--strict" flag.
+ * 2. Return an object with strict property set to true if flag present, false otherwise.
+ *
  * @param {string[]} argv cli args
  * @returns {{strict:boolean}}
  */
