@@ -20,6 +20,7 @@ import { exposeClassicBattleTestAPI } from "../testing/exposeClassicBattleTestAp
 import { setBattleStateBadgeEnabled, bindUIHelperEventHandlers } from "./uiHelpers.js";
 import { bindRoundUIEventHandlersDynamic } from "./roundUI.js";
 import { bindRoundFlowControllerOnce } from "./roundFlowController.js";
+import { waitForOpponentCard } from "../opponentCardWait.js";
 
 /**
  * @returns {boolean} True if window is globally available and accessible
@@ -52,7 +53,7 @@ export async function setupClassicBattlePage() {
   }
   let debugApi;
   const view = new ClassicBattleView();
-  const controller = new ClassicBattleController();
+  const controller = new ClassicBattleController({ waitForOpponentCard });
   let resolveStart;
   let rejectStart;
   const startPromise = new Promise((resolve, reject) => {
