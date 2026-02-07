@@ -1,17 +1,12 @@
 #!/usr/bin/env node
 
 /**
- * MCP server for RAG queries in JU-DO-KON!
- *
- * This server provides access to the vector database for querying documentation
- * and code patterns using the queryRag function.
+ * MCP server for JU-DO-KON! judoka tools.
  */
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import queryRag from "../src/helpers/queryRag.js";
-import { LRUCache } from "../src/helpers/lruCache.js";
 import { expandQuery } from "../src/helpers/queryExpander.js";
 import { applyAdvancedFilters, validateAdvancedFilters } from "../src/helpers/advancedFilters.js";
 import {
@@ -33,35 +28,6 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// ============ Utility Functions ============
-
-/**
- * Compute vector norm (magnitude)
- * @param {number[]} vec
- * @returns {number}
- */
-function norm(vec) {
-  return Math.sqrt(vec.reduce((sum, val) => sum + val * val, 0));
-}
-
-/**
- * Compute cosine similarity between two vectors
- * @param {number[]} a
- * @param {number[]} b
- * @returns {number}
- * @deprecated Not used in v1, reserved for future enhancements
- */
-// eslint-disable-next-line no-unused-vars
-function cosine(a, b) {
-  let dot = 0;
-  for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i];
-  }
-  const aMag = norm(a);
-  const bMag = norm(b);
-  return dot / (aMag * bMag + 1e-12);
-}
-
 // ============ Data Loading ============
 
 // Load judoka data
@@ -69,22 +35,7 @@ const judokaPath = path.join(__dirname, "../src/data/judoka.json");
 const judokaData = JSON.parse(fs.readFileSync(judokaPath, "utf8"));
 const judokaById = new Map(judokaData.map((j) => [String(j.id), j]));
 
-// Load embeddings (stored as array of {id, text, embedding} objects)
-const embeddingsPath = path.join(__dirname, "../src/data/client_embeddings.json");
-const embeddingsArray = JSON.parse(fs.readFileSync(embeddingsPath, "utf8"));
-
-// Create embeddings map for quick lookup (reserved for future use)
-// eslint-disable-next-line no-unused-vars
-const embeddingsById = new Map(embeddingsArray.map((e) => [e.id, e]));
-
-// ============ Cache Setup ============
-
-// Initialize query cache (100 entries, 5-minute TTL)
-const queryCache = new LRUCache(100, 5 * 60 * 1000);
-
 console.error(`Loaded ${judokaData.length} judoka records`);
-console.error(`Loaded ${embeddingsArray.length} embeddings`);
-console.error(`Initialized query cache (100 entries, 5-minute TTL)`);
 
 const server = new Server(
   {
@@ -103,25 +54,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
-        name: "query_rag",
-        description:
-          "Query the JU-DO-KON! vector database for documentation, code patterns, and project information",
-        inputSchema: {
-          type: "object",
-          properties: {
-            query: {
-              type: "string",
-              description:
-                "The search query to find relevant information in the codebase and documentation"
-            }
-          },
-          required: ["query"]
-        }
-      },
-      {
         name: "judokon.search",
         description:
-          "Semantic search over judoka embeddings with optional filtering by country, rarity, weight class, and advanced criteria (stat thresholds, weight ranges, average stats)",
+          "Search judoka records with optional filtering by country, rarity, weight class, and advanced criteria (stat thresholds, weight ranges, average stats)",
         inputSchema: {
           type: "object",
           properties: {
@@ -279,35 +214,14 @@ async function executeJudokonSearch(query, topK, filters) {
   const expansion = await expandQuery(query);
   const searchQuery = expansion.hasExpansion ? expansion.expanded : query;
 
-  // Use queryRag to encode the query into the embedding space
-  const ragResults = await queryRag(searchQuery);
-
-  if (!ragResults || ragResults.length === 0) {
-    return {
-      results: [],
-      query,
-      message: "No results found for query",
-      _expansion: expansion
-    };
-  }
-
-  // Extract IDs from RAG results and create a score map
-  const scoreMap = new Map();
-  ragResults.slice(0, 10).forEach((result, index) => {
-    // Extract ID from the text or source
-    scoreMap.set(result.id || String(index), (10 - index) / 10);
-  });
-
-  // Find judoka matching the RAG results and apply filters
+  // Find judoka matching the query and apply filters
   const candidates = [];
+  const normalizedTerms = searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
 
   // Validate and prepare advanced filters
   const advancedFilters = validateAdvancedFilters(filters.advanced || {});
 
-  for (const embedding of embeddingsArray) {
-    const judoka = judokaById.get(embedding.id) || judokaById.get(String(embedding.id));
-    if (!judoka) continue;
-
+  for (const judoka of judokaData) {
     // Apply basic filters (country, rarity, exact weight)
     if (filters.country && judoka.country !== filters.country) continue;
     if (filters.rarity && judoka.rarity !== filters.rarity) continue;
@@ -315,8 +229,22 @@ async function executeJudokonSearch(query, topK, filters) {
     // Apply advanced filters (stat thresholds, weight ranges, averages)
     if (!applyAdvancedFilters(judoka, advancedFilters)) continue;
 
-    // Calculate relevance score
-    const ragScore = scoreMap.get(embedding.id) || 0;
+    const searchableText = [
+      judoka.firstname,
+      judoka.surname,
+      judoka.country,
+      judoka.rarity,
+      judoka.weightClass,
+      judoka.category,
+      judoka.bio
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    const hitCount = normalizedTerms.filter((term) => searchableText.includes(term)).length;
+    const score = normalizedTerms.length > 0 ? hitCount / normalizedTerms.length : 0;
+    if (score <= 0 || Number.isNaN(score)) continue;
+
     candidates.push({
       id: judoka.id,
       name: `${judoka.firstname} ${judoka.surname}`,
@@ -326,8 +254,7 @@ async function executeJudokonSearch(query, topK, filters) {
       weightClass: judoka.weightClass,
       stats: judoka.stats,
       bio: judoka.bio,
-      score: ragScore,
-      text: embedding.text
+      score
     });
   }
 
@@ -341,43 +268,6 @@ async function executeJudokonSearch(query, topK, filters) {
     filters: Object.keys(filters).length > 0 ? filters : null,
     count: results.length,
     _expansion: expansion
-  };
-}
-
-/**
- * Handle judokon.search tool requests with caching.
- * Checks cache first; on miss, executes search and caches result.
- * @param {string} query - Search query
- * @param {number} topK - Result limit
- * @param {Object} filters - Filter object
- * @returns {Promise<Object>} Search results with cache metadata
- */
-async function handleJudokonSearch(query, topK = 8, filters = {}) {
-  // Generate deterministic cache key
-  const cacheKey = LRUCache.generateKey(query, topK, filters);
-
-  // Check cache
-  const cached = queryCache.get(cacheKey);
-  if (cached) {
-    // Return cached result with metadata
-    return {
-      ...cached,
-      _cached: true,
-      _cacheKey: cacheKey
-    };
-  }
-
-  // Cache miss - execute search
-  const result = await executeJudokonSearch(query, topK, filters);
-
-  // Store in cache
-  queryCache.set(cacheKey, result);
-
-  // Return result with metadata
-  return {
-    ...result,
-    _cached: false,
-    _cacheKey: cacheKey
   };
 }
 
@@ -439,7 +329,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     try {
-      const searchResults = await handleJudokonSearch(query, topK, filters);
+      const searchResults = await executeJudokonSearch(query, topK, filters);
 
       if (searchResults.results.length === 0) {
         return {
@@ -710,68 +600,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
   }
 
-  if (name === "query_rag") {
-    const query = args.query;
-    if (!query || typeof query !== "string") {
-      throw new Error("Query parameter is required and must be a string");
-    }
-
-    try {
-      const matches = await queryRag(query);
-
-      if (!matches || matches.length === 0) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: "No matches found for the query."
-            }
-          ]
-        };
-      }
-
-      const results = matches
-        .map((match, index) => {
-          const { qaContext, text, score, source } = match;
-          return `**Result ${index + 1}:**\n${qaContext || text || "(no summary)"}\n*Source: ${source || "unknown"}*\n*Score: ${score?.toFixed(3) || "N/A"}*\n`;
-        })
-        .join("\n---\n");
-
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Found ${matches.length} matches for "${query}":\n\n${results}`
-          }
-        ]
-      };
-    } catch (error) {
-      console.error("RAG query failed:", error);
-      const errorMessage = String(error?.message || error).toLowerCase();
-
-      let hint = "";
-      if (errorMessage.includes("strict offline mode")) {
-        hint = "Hint: Provide a local MiniLM at models/minilm or run: npm run rag:prepare:models";
-      } else if (
-        /enet(?:unreach|down|reset|refused)/i.test(errorMessage) ||
-        errorMessage.includes("fetch failed")
-      ) {
-        hint =
-          "Hint: Network unreachable. For offline use, run: npm run rag:prepare:models -- --from-dir <path-with-minilm> or set RAG_STRICT_OFFLINE=1";
-      }
-
-      return {
-        content: [
-          {
-            type: "text",
-            text: `RAG query failed: ${error.message || error}\n${hint}`
-          }
-        ],
-        isError: true
-      };
-    }
-  }
-
   throw new Error(`Unknown tool: ${name}`);
 });
 
@@ -779,7 +607,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("JU-DO-KON! RAG MCP server started");
+  console.error("JU-DO-KON! MCP server started");
 }
 
 main().catch((error) => {
