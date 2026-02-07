@@ -158,7 +158,7 @@ describe("classicBattle battle control state", () => {
   });
 
   it("enables stat buttons only while waiting for player action", async () => {
-    const view = new ClassicBattleView({ waitForOpponentCard: vi.fn() });
+    const view = new ClassicBattleView();
     view.controller = {
       battleStore: {},
       timerControls: {},
