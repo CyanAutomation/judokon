@@ -243,7 +243,7 @@ async function executeJudokonSearch(query, topK, filters) {
 
     const hitCount = normalizedTerms.filter((term) => searchableText.includes(term)).length;
     const score = normalizedTerms.length > 0 ? hitCount / normalizedTerms.length : 0;
-    if (score <= 0) continue;
+    if (score <= 0 || Number.isNaN(score)) continue;
 
     candidates.push({
       id: judoka.id,
