@@ -431,6 +431,11 @@ function cancelActiveOutcomeAnimation() {
 /**
  * Render scoreboard view for a control-state transition.
  *
+ * @pseudocode
+ * 1. Exit early when no view model exists.
+ * 2. Handle evaluation states: display outcome when evaluation data exists and is not stale.
+ * 3. Handle final states: delegate to final outcome renderer.
+ * 4. Handle selection states: clear any active outcome display.
  * @param {string} to - The target control state.
  * @returns {void}
  */
