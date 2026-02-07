@@ -5,81 +5,40 @@ description: Performs release-level QA checks for JU-DO-KON!, identifying risk, 
 
 # Skill Instructions
 
-This skill thinks like a release manager.
-
 ## Inputs / Outputs / Non-goals
 
 - Inputs: diff summary, validation results, test run status.
 - Outputs: Go/No-Go assessment, risk list, next actions.
 - Non-goals: rewriting code or skipping required checks.
 
-## Key files
+## Trigger conditions
 
-- `AGENTS.md`
-- `design/productRequirementsDocuments/prdDevelopmentStandards.md`
-- `design/productRequirementsDocuments/prdTestingStandards.md`
-- `tests/` and `playwright/`
+Use this skill when prompts include or imply:
 
-## What this skill helps accomplish
+- Pre-merge QA review.
+- Release-readiness checks.
+- Post-refactor risk validation.
 
-- Catch issues before merge
-- Reduce broken builds
-- Improve confidence in changes
+## Mandatory rules
 
-## When to use this skill
+- Evaluate architecture alignment, test coverage, feature-flag correctness, and JSON/data integrity.
+- Apply Go/No-Go rubric: Go only when targeted tests and core checks are green with no critical policy violations.
+- Surface blocking risks with actionable remediation steps.
 
-- Before merging PRs
-- Before demos or releases
-- After major refactors
+## Validation checklist
 
-## QA checklist
+- [ ] Core checks reviewed: `npm run check:jsdoc`, `npx prettier . --check`, `npx eslint .`.
+- [ ] `npm run check:contrast` included when UI changes exist.
+- [ ] Targeted tests mapped to changed areas are passing.
+- [ ] Hot-path dynamic import and console discipline checks are clean.
 
-- Architecture respected
-- Tests updated and passing
-- Feature flags correct
-- No orphaned JSON changes
+## Expected output format
 
-## Go/No-Go rubric
+- Go/No-Go decision.
+- Prioritized risk summary with severity and owner/action.
+- Clear list of must-fix vs follow-up recommendations.
 
-- Go: targeted tests + lint/format checks green and no hot-path violations.
-- No-Go: missing tests, failing checks, or schema-breaking JSON changes.
+## Failure/stop conditions
 
-## Reference checks
-
-- `npm run check:jsdoc`, `npx prettier . --check`, `npx eslint .`
-- `npm run check:contrast` when UI changes exist
-
-## Operational Guardrails
-
-- **Task Contract (required before implementation):**
-  - `inputs`: exact files/data/commands you will use.
-  - `outputs`: exact files/tests/docs you will change.
-  - `success`: required outcomes (checks/tests/log discipline).
-  - `errorMode`: explicit stop condition (for example: ask on public API change).
-- **RAG-first rule + fallback process:**
-  1. Use `queryRag(...)` first for How/Why/What/Where/Which questions and implementation lookups.
-  2. If results are weak, rephrase and run a second RAG query.
-  3. If still weak, fall back to targeted `rg`/file search and cite what was checked.
-- **Required validation commands + targeted-test policy:**
-  - Run core checks: `npm run check:jsdoc && npx prettier . --check && npx eslint . && npm run check:contrast`.
-  - Run only targeted tests for changed files (`npx vitest run <path>` / focused Playwright spec). Run full suite only for cross-cutting changes.
-- **Critical prohibitions (must not violate):**
-  - No dynamic imports in hot paths: `src/helpers/classicBattle*`, `src/helpers/BattleEngine.js`, `src/helpers/battle/*`.
-  - No unsilenced `console.warn/error` in tests (use `tests/utils/console.js` helpers).
-  - Validate prohibitions with:
-    - `grep -RIn "await import\(" src/helpers/classicBattle src/helpers/BattleEngine.js src/helpers/battle 2>/dev/null`
-    - `grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js"`
-
-## Execution handoff target
-
-- For coding execution, hand off to `judokon-implementation-engineer` at `.github/skills/judokon-implementation-engineer/SKILL.md`.
-
-## Delivery-time handoff target
-
-- For PR title/body assembly and required delivery sections, hand off to `judokon-pr-delivery` at `.github/skills/judokon-pr-delivery/SKILL.md`.
-
-## Expected output
-
-- Go / No-Go assessment
-- Risk summary
-- Actionable recommendations
+- Stop with No-Go when required checks are missing or failing.
+- Stop with No-Go when high-severity risks lack mitigation.

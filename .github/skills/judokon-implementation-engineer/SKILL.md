@@ -5,122 +5,42 @@ description: Executes scoped JU-DO-KON! code changes safely, translating approve
 
 # Skill Instructions
 
-This skill is the execution handoff target after planning/translation and before final QA.
+## Inputs / Outputs / Non-goals
+
+- Inputs: approved plan/translation artifacts, impacted source files, relevant tests.
+- Outputs: scoped implementation, validation evidence, delivery-ready summary.
+- Non-goals: broad refactors outside scope or silent public API changes.
 
 ## Trigger conditions
 
 Use this skill when prompts include or imply:
 
-- **"implement feature"**
-- **"apply fix"**
-- **"refactor module"**
+- Implement feature.
+- Apply fix.
+- Refactor module.
 
-## Key files
+## Mandatory rules
 
-- `AGENTS.md`
-- `src/helpers/BattleEngine.js`
-- `src/helpers/classicBattle.js`
-- `tests/`
-- `playwright/`
+- Follow sequence: context acquisition → task contract → implementation constraints → targeted validation → delivery summary.
+- Treat exported interfaces/schemas/user-facing contracts as public API; document compatibility impact before changing.
+- Gate risky user-facing behavior behind feature flags with safe defaults.
+- Keep functions focused (≤50 lines where feasible) and add JSDoc `@pseudocode` for public/complex functions.
+- Respect hot-path import policy and test log discipline.
 
-## Required sequence (must follow in order)
+## Validation checklist
 
-Required execution flow: **context acquisition → task contract → implementation constraints → targeted validation → delivery summary**.
+- [ ] Run core checks: `npm run check:jsdoc && npx prettier . --check && npx eslint . && npm run check:contrast`.
+- [ ] Run targeted tests mapped to changed files first.
+- [ ] Validate no hot-path dynamic imports.
+- [ ] Validate no unsilenced `console.warn/error` in tests.
 
-1. **Context acquisition**
-   - Review AGENTS/prior planning artifacts and run RAG-first queries for How/Why/What/Where/Which uncertainties.
-   - Confirm impacted files, constraints, and non-goals before editing.
-2. **Task contract**
-   - Declare `inputs`, `outputs`, `success`, and `errorMode` before implementation.
-3. **Implementation constraints**
-   - Apply minimal, deterministic changes aligned to existing architecture.
-   - Respect hot-path import policy and test log discipline.
-4. **Targeted validation**
-   - Run targeted tests mapped to changed files first, then required lint/format/jsdoc checks.
-   - Include contrast checks for visual/UI changes.
-5. **Delivery summary**
-   - Provide changed-file summary, requirement/test mapping, and explicit risk notes.
+## Expected output format
 
-## Explicit rules
+- Execution summary listing changed files and reasons.
+- Requirement/test mapping with exact commands and pass/fail status.
+- Risk notes: public API impact, flag impact, and residual risks.
 
-### Public API changes
+## Failure/stop conditions
 
-- Treat exported module interfaces, schemas, and user-facing contracts as public API.
-- **Do not change public API silently.**
-- If change is required, document:
-  - reason,
-  - compatibility impact,
-  - migration path or fallback behavior,
-  - tests proving compatibility (or intentional break).
-
-### Feature-flag gating
-
-- New behavior that could alter user experience or rollout risk should be gated behind an explicit feature flag.
-- Default flags to safe/off behavior unless requirements state otherwise.
-- Add/adjust tests for both enabled and disabled states.
-- Avoid deleting legacy behavior until flag-removal criteria are met.
-
-### Function-size and modularity checks
-
-- Keep functions at or below 50 lines where feasible.
-- Split mixed-responsibility functions into focused helpers.
-- Add or update JSDoc (`@pseudocode`) for public/complex functions.
-- Prefer composable pure helpers for logic-heavy paths.
-
-## Operational Guardrails
-
-- **Task Contract (required before implementation):**
-  - `inputs`: exact files/data/commands you will use.
-  - `outputs`: exact files/tests/docs you will change.
-  - `success`: required outcomes (checks/tests/log discipline).
-  - `errorMode`: explicit stop condition (for example: ask on public API change).
-- **RAG-first rule + fallback process:**
-  1. Use `queryRag(...)` first for How/Why/What/Where/Which questions and implementation lookups.
-  2. If results are weak, rephrase and run a second RAG query.
-  3. If still weak, fall back to targeted `rg`/file search and cite what was checked.
-- **Required validation commands + targeted-test policy:**
-  - Run core checks: `npm run check:jsdoc && npx prettier . --check && npx eslint . && npm run check:contrast`.
-  - Run only targeted tests for changed files (`npx vitest run <path>` / focused Playwright spec). Run full suite only for cross-cutting changes.
-- **Critical prohibitions (must not violate):**
-  - No dynamic imports in hot paths: `src/helpers/classicBattle*`, `src/helpers/BattleEngine.js`, `src/helpers/battle/*`.
-  - No unsilenced `console.warn/error` in tests (use `tests/utils/console.js` helpers).
-  - Validate prohibitions with:
-    - `grep -RIn "await import\(" src/helpers/classicBattle src/helpers/BattleEngine.js src/helpers/battle 2>/dev/null`
-    - `grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js"`
-
-## Output template
-
-Use this structure in delivery (must include changed files, test mapping, and risk notes):
-
-```md
-## Execution Summary
-
-- Changed files:
-  - `<path>`: <what changed + why>
-
-## Test Mapping
-
-- `<requirement or behavior>` -> `<test file>` -> `<command run + pass/fail>`
-
-## Validation
-
-- Formatting/Lint/JSDoc:
-  - `<command>`: PASS/FAIL
-- Targeted tests:
-  - `<command>`: PASS/FAIL
-
-## Risk Notes
-
-- Public API impact: none | <details>
-- Feature-flag impact: none | <flag + rollout notes>
-- Residual risks: <list>
-```
-
-## Handoff and integration
-
-- Accepts handoff from:
-  - `judokon-planning-and-investigation`
-  - `judokon-prd-to-code-translator`
-- Produces implementation artifacts consumed by:
-  - `judokon-test-author`
-  - `judokon-release-qa`
+- Stop when requested changes require unapproved breaking API/schema modifications.
+- Stop when required checks fail and cannot be remediated within scope.

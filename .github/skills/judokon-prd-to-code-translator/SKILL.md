@@ -5,75 +5,41 @@ description: Translates JU-DO-KON! PRD sections into implementation plans, code 
 
 # Skill Instructions
 
-This skill turns intent into execution.
-
 ## Inputs / Outputs / Non-goals
 
 - Inputs: PRD sections, acceptance criteria, non-goals.
 - Outputs: implementation checklist, file targets, test mapping.
 - Non-goals: coding without confirmed requirements.
 
-## Key files
+## Trigger conditions
 
-- `design/productRequirementsDocuments/*.md`
-- `src/`
-- `tests/`
-- `playwright/`
+Use this skill when prompts include or imply:
 
-## What this skill helps accomplish
+- Starting a new feature from PRD requirements.
+- Reviewing scope before implementation.
+- Converting acceptance criteria into testable tasks.
 
-- Faithful PRD implementation
-- Traceability from requirement to code
-- Reduced rework
+## Mandatory rules
 
-## When to use this skill
+- Map functional requirements to concrete modules/files.
+- Map acceptance criteria to specific tests/validation commands.
+- Preserve PRD non-goals as explicit exclusions.
+- Call out missing or ambiguous requirements before coding.
 
-- Starting a new feature
-- Reviewing scope before coding
-- Validating completeness
+## Validation checklist
 
-## Translation rules
+- [ ] Requirement → file mapping is complete.
+- [ ] Acceptance criteria → test/check mapping is complete.
+- [ ] Ambiguities and assumptions are documented.
+- [ ] Handoff target for implementation is explicit.
 
-- Functional Requirements → modules
-- Acceptance Criteria → tests
-- Non-goals → explicit exclusions
+## Expected output format
 
-## Output format
+- Structured matrix: Requirement → File(s) → Test(s)/Validation.
+- Explicit section for non-goals and unresolved ambiguities.
+- Recommended implementation handoff notes.
 
-- Requirement → File(s) → Test(s)
-- Call out missing or ambiguous PRD items explicitly.
+## Failure/stop conditions
 
-## Operational Guardrails
-
-- **Task Contract (required before implementation):**
-  - `inputs`: exact files/data/commands you will use.
-  - `outputs`: exact files/tests/docs you will change.
-  - `success`: required outcomes (checks/tests/log discipline).
-  - `errorMode`: explicit stop condition (for example: ask on public API change).
-- **RAG-first rule + fallback process:**
-  1. Use `queryRag(...)` first for How/Why/What/Where/Which questions and implementation lookups.
-  2. If results are weak, rephrase and run a second RAG query.
-  3. If still weak, fall back to targeted `rg`/file search and cite what was checked.
-- **Required validation commands + targeted-test policy:**
-  - Run core checks: `npm run check:jsdoc && npx prettier . --check && npx eslint . && npm run check:contrast`.
-  - Run only targeted tests for changed files (`npx vitest run <path>` / focused Playwright spec). Run full suite only for cross-cutting changes.
-- **Critical prohibitions (must not violate):**
-  - No dynamic imports in hot paths: `src/helpers/classicBattle*`, `src/helpers/BattleEngine.js`, `src/helpers/battle/*`.
-  - No unsilenced `console.warn/error` in tests (use `tests/utils/console.js` helpers).
-  - Validate prohibitions with:
-    - `grep -RIn "await import\(" src/helpers/classicBattle src/helpers/BattleEngine.js src/helpers/battle 2>/dev/null`
-    - `grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js"`
-
-## Execution handoff target
-
-- For coding execution, hand off to `judokon-implementation-engineer` at `.github/skills/judokon-implementation-engineer/SKILL.md`.
-
-## Delivery-time handoff target
-
-- For PR title/body assembly and required delivery sections, hand off to `judokon-pr-delivery` at `.github/skills/judokon-pr-delivery/SKILL.md`.
-
-## Expected output
-
-- Implementation checklist
-- Suggested file changes
-- Test coverage mapping
+- Stop if PRD requirements are contradictory or incomplete.
+- Stop if acceptance criteria cannot be mapped to verifiable checks.
