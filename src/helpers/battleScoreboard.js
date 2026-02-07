@@ -398,11 +398,6 @@ function _cancelWaiting() {
 /**
  * Cancel any in-progress scoreboard outcome animation.
  *
- * @returns {void}
- */
-/**
- * Cancel any in-progress scoreboard outcome animation.
- *
  * @pseudocode
  * 1. Return early if no animation is active.
  * 2. Store reference and clear global tracker.
