@@ -285,6 +285,34 @@ describe("round UI handlers", () => {
     expect(createRoundTimer).not.toHaveBeenCalled();
   });
 
+  it("ignores result payloads with empty message fields", async () => {
+    vi.resetModules();
+    const createRoundTimer = vi.fn(() => ({
+      on: vi.fn(),
+      off: vi.fn(),
+      start: vi.fn(async () => {})
+    }));
+    const roundUI = await import("../../../src/helpers/classicBattle/roundUI.js");
+
+    await roundUI.handleRoundResolvedEvent(
+      {
+        detail: {
+          store: {},
+          result: {
+            message: ""
+          }
+        }
+      },
+      {
+        createRoundTimer
+      }
+    );
+
+    const scoreboard = await import("../../../src/helpers/setupScoreboard.js");
+    expect(scoreboard.updateScore).not.toHaveBeenCalled();
+    expect(createRoundTimer).not.toHaveBeenCalled();
+  });
+
   it("accepts result payloads that include score fields", async () => {
     vi.resetModules();
     const createRoundTimer = vi.fn(() => ({
