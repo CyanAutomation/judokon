@@ -32,12 +32,36 @@ let _compatibilityDisposers = [];
 let _adapterScheduler = realScheduler;
 const WAITING_FALLBACK_DELAY_MS = 500;
 const SUPPORTED_EVENT_CATALOG_VERSIONS = Object.freeze(["v2"]);
+const DEFAULT_EVENT_CATALOG_VERSION = SUPPORTED_EVENT_CATALOG_VERSIONS[0];
 const catalogCompatibilityLogs = new Set();
 
+/**
+ * Determines whether an event catalog version is explicitly supported.
+ *
+ * @pseudocode
+ * 1. Normalize the incoming version to a trimmed string.
+ * 2. Return true if the normalized value is in the supported version list.
+ * 3. Otherwise return false.
+ * @param {unknown} version - Candidate catalog version from adapter inputs/events.
+ * @returns {boolean} True when the version matches the supported catalog list.
+ */
 function isSupportedCatalogVersion(version) {
-  return SUPPORTED_EVENT_CATALOG_VERSIONS.includes(version);
+  const normalizedVersion = typeof version === "string" ? version.trim() : "";
+  return SUPPORTED_EVENT_CATALOG_VERSIONS.includes(normalizedVersion);
 }
 
+/**
+ * Logs a catalog compatibility mismatch once per unique signature.
+ *
+ * @pseudocode
+ * 1. Build a signature from phase, observed version, and supported versions.
+ * 2. Stop early when this mismatch was already logged.
+ * 3. Store the signature in the dedupe Set.
+ * 4. Emit console.error for bootstrap failures, otherwise console.warn.
+ * @param {"error"|"warn"} level - Console severity to use.
+ * @param {{phase: string, observedVersion: string|null, supportedVersions: string[]}} payload - Mismatch details.
+ * @returns {void}
+ */
 function logCatalogCompatibility(level, payload) {
   const signature = `${payload.phase}:${payload.observedVersion}:${payload.supportedVersions.join(",")}`;
   if (catalogCompatibilityLogs.has(signature)) {
@@ -52,24 +76,49 @@ function logCatalogCompatibility(level, payload) {
   console.warn(message, payload);
 }
 
+/**
+ * Renders a user-visible degraded scoreboard state for incompatible catalogs.
+ *
+ * @pseudocode
+ * 1. Clear any stale round counter data.
+ * 2. Render a fallback message explaining scoreboard unavailability.
+ * @returns {void}
+ */
 function renderDegradedCatalogState() {
   clearRoundCounter();
   showMessage("Scoreboard unavailable: incompatible event catalog version.");
 }
 
+/**
+ * Evaluates event catalog compatibility for bootstrap/runtime phases.
+ *
+ * @pseudocode
+ * 1. Normalize the incoming catalog version to a trimmed string.
+ * 2. If missing, use the known-safe default version and mark it as assumed.
+ * 3. Return compatible=true when the version is supported.
+ * 4. Otherwise return compatible=false with a mismatch payload for logging.
+ * @param {unknown} version - Catalog version from adapter input or event detail.
+ * @param {"bootstrap"|"runtime"} [phase="runtime"] - Validation phase name.
+ * @returns {{compatible: true, version: string, assumedVersion?: boolean} | {compatible: false, version: string, payload: {phase: string, observedVersion: string, supportedVersions: string[]}}}
+ */
 function evaluateCatalogVersion(version, phase = "runtime") {
-  if (typeof version !== "string" || version.length === 0) {
-    return { compatible: true, version: null };
+  const normalizedVersion = typeof version === "string" ? version.trim() : "";
+  if (normalizedVersion.length === 0) {
+    return {
+      compatible: true,
+      version: DEFAULT_EVENT_CATALOG_VERSION,
+      assumedVersion: true
+    };
   }
-  if (isSupportedCatalogVersion(version)) {
-    return { compatible: true, version };
+  if (isSupportedCatalogVersion(normalizedVersion)) {
+    return { compatible: true, version: normalizedVersion };
   }
   return {
     compatible: false,
-    version,
+    version: normalizedVersion,
     payload: {
       phase,
-      observedVersion: version,
+      observedVersion: normalizedVersion,
       supportedVersions: [...SUPPORTED_EVENT_CATALOG_VERSIONS]
     }
   };
@@ -603,6 +652,7 @@ export function disposeBattleScoreboardAdapter() {
   _bound = false;
   _viewModel = null;
   _adapterScheduler = realScheduler;
+  catalogCompatibilityLogs.clear();
   unregisterResetUiListener();
 }
 

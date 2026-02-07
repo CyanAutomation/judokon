@@ -101,6 +101,25 @@ describe("battleScoreboard PRD adapter", () => {
     expect(roundMessage).toContain("Scoreboard unavailable");
   });
 
+  it("treats missing catalog versions as default compatible during runtime", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    emitBattleEvent("round.started", { roundIndex: 4, catalogVersion: "" });
+    emitBattleEvent("round.evaluated", {
+      catalogVersion: "   ",
+      scores: { player: 5, opponent: 3 }
+    });
+
+    const scoreText = document
+      .getElementById("score-display")
+      .textContent.replace(/\s+/g, " ")
+      .trim();
+    expect(document.getElementById("round-counter").textContent).toBe("Round 4");
+    expect(scoreText).toContain("You: 5");
+    expect(scoreText).toContain("Opponent: 3");
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
   it("prevents partial processing when runtime catalog version is incompatible", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
