@@ -1,5 +1,7 @@
 import { ScoreboardModel } from "./ScoreboardModel.js";
 import { ScoreboardView } from "./ScoreboardView.js";
+import { createScoreboardCore } from "./scoreboardCore.js";
+import { createScoreboardDomAdapter } from "./scoreboardDomAdapter.js";
 import {
   showMessage as showRoundMessage,
   clearMessage as clearRoundMessage,
@@ -94,6 +96,9 @@ export class Scoreboard {
   constructor(model = new ScoreboardModel(), view = new ScoreboardView(model)) {
     this.model = model;
     this.view = view;
+    this.adapter = createScoreboardDomAdapter({ model, view });
+    this.core = createScoreboardCore(this.adapter);
+    this.core.start();
   }
 
   /**
@@ -137,8 +142,7 @@ export class Scoreboard {
 
   /** @param {number} player @param {number} opponent */
   updateScore(player, opponent) {
-    this.model.updateScore(player, opponent);
-    this.view.updateScore();
+    this.core.updateScore(player, opponent);
   }
 
   /** @param {string} stat */
@@ -155,14 +159,7 @@ export class Scoreboard {
    * @param {object} patch - Partial state updates.
    */
   render(patch = {}) {
-    if (patch.score) {
-      const { player, opponent } = patch.score;
-      const playerIsNumber = typeof player === "number";
-      const opponentIsNumber = typeof opponent === "number";
-      if (playerIsNumber && opponentIsNumber) {
-        this.updateScore(player, opponent);
-      }
-    }
+    this.core.render(patch);
   }
 
   /**
@@ -173,13 +170,11 @@ export class Scoreboard {
    * @returns {{score:{player:number,opponent:number}}}
    */
   getState() {
-    return this.model.getState();
+    return this.core.getState();
   }
 
   destroy() {
-    if (this.view && typeof this.view.destroy === "function") {
-      this.view.destroy();
-    }
+    this.core.dispose();
     try {
       import("../helpers/battleScoreboard.js")
         .then((m) => {
