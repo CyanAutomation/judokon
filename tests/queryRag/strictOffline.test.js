@@ -21,7 +21,7 @@ describe("getExtractor strict offline mode", () => {
     pipelineMock.mockClear();
     process.env.RAG_STRICT_OFFLINE = "1";
     vi.resetModules();
-    const { getExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
+    const { getExtractor } = await import("../../src/helpers/api/ragExtractor.js");
 
     await withMutedConsole(async () => {
       await expect(getExtractor()).rejects.toThrow(/Strict offline mode: local model missing/i);

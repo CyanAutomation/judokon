@@ -647,8 +647,7 @@ function createLinksCard() {
     { id: "changelog-link", text: "View Change Log" },
     { id: "prdviewer-link", text: "View PRD Documents" },
     { id: "mockupviewer-link", text: "View Design Mockups" },
-    { id: "tooltipviewer-link", text: "View Tooltip Descriptions" },
-    { id: "vectorSearch-link", text: "Vector Search for RAG" }
+    { id: "tooltipviewer-link", text: "View Tooltip Descriptions" }
   ].forEach(({ id, text }) => {
     const item = document.createElement("li");
     item.className = "settings-item";

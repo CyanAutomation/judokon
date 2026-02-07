@@ -23,7 +23,7 @@ describe("queryRag offline mode with local MiniLM model", () => {
     delete process.env.RAG_ALLOW_LEXICAL_FALLBACK;
     vi.clearAllMocks();
     vi.restoreAllMocks();
-    vi.doUnmock("../../src/helpers/api/vectorSearchPage.js");
+    vi.doUnmock("../../src/helpers/api/ragExtractor.js");
     vi.doUnmock("../../src/helpers/vectorSearch/index.js");
     vi.doUnmock("../../src/helpers/queryRag.js");
     vi.doUnmock("fs/promises");
@@ -81,7 +81,7 @@ describe("queryRag offline mode with local MiniLM model", () => {
     }));
 
     // Import after mocks are set
-    const { getExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
+    const { getExtractor } = await import("../../src/helpers/api/ragExtractor.js");
     const extractor = await getExtractor();
 
     // Verify extractor was created
@@ -107,7 +107,7 @@ describe("queryRag offline mode with local MiniLM model", () => {
       { id: "2", text: "tooltip validation rules", score: 0.87, source: "code" }
     ];
 
-    vi.doMock("../../src/helpers/api/vectorSearchPage.js", () => ({
+    vi.doMock("../../src/helpers/api/ragExtractor.js", () => ({
       getExtractor: vi.fn(async () => {
         // Mock extractor that returns test embeddings
         return vi.fn(async () => ({
@@ -174,7 +174,7 @@ describe("queryRag offline mode with local MiniLM model", () => {
       }
     }));
 
-    const { getExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
+    const { getExtractor } = await import("../../src/helpers/api/ragExtractor.js");
 
     await withMutedConsole(async () => {
       await expect(getExtractor()).rejects.toThrow(/strict offline|local model/i);
@@ -214,7 +214,7 @@ describe("queryRag offline mode with local MiniLM model", () => {
       }
     }));
 
-    const { getExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
+    const { getExtractor } = await import("../../src/helpers/api/ragExtractor.js");
 
     // Should succeed without network
     const extractor = await getExtractor();
@@ -252,7 +252,7 @@ describe("queryRag offline mode with local MiniLM model", () => {
       }
     }));
 
-    const { getExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
+    const { getExtractor } = await import("../../src/helpers/api/ragExtractor.js");
 
     const error = await getExtractor().catch((err) => err);
 
@@ -284,7 +284,7 @@ describe("queryRag offline mode with local MiniLM model", () => {
     });
 
     // Mock offline corpus for lexical search
-    const vectorSearchPath = "../../src/helpers/api/vectorSearchPage.js";
+    const vectorSearchPath = "../../src/helpers/api/ragExtractor.js";
     const vectorSearchIndexPath = "../../src/helpers/vectorSearch/index.js";
     const lexicalEntries = [
       {
@@ -357,7 +357,7 @@ describe("queryRag offline mode with local MiniLM model", () => {
       }
     }));
 
-    const { getExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
+    const { getExtractor } = await import("../../src/helpers/api/ragExtractor.js");
 
     // Trigger the configuration
     try {
@@ -382,7 +382,7 @@ describe("queryRag offline mode with local MiniLM model", () => {
       data: new Float32Array([0.1, 0.2, 0.3])
     }));
 
-    vi.doMock("../../src/helpers/api/vectorSearchPage.js", () => ({
+    vi.doMock("../../src/helpers/api/ragExtractor.js", () => ({
       getExtractor: vi.fn(async () => extractorFn),
       searchVectorDatabase: vi.fn(async () => mockResults)
     }));

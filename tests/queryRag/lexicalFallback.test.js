@@ -34,7 +34,7 @@ describe("queryRag lexical fallback", () => {
     await setupMockDataset(dataset);
 
     // Force getExtractor to fail so fallback path triggers
-    vi.doMock("../../src/helpers/api/vectorSearchPage.js", () => ({
+    vi.doMock("../../src/helpers/api/ragExtractor.js", () => ({
       getExtractor: vi.fn(async () => {
         throw new Error("model failed to load");
       })
