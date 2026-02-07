@@ -1,7 +1,7 @@
 /**
- * Re-exports the internal test helper object for the Battle CLI module.
+ * Compatibility surface: re-exports Battle CLI internals used by existing tests and external tooling.
  *
- * @summary This export provides automated tests with direct access to internal
+ * @summary Compatibility surface export used by automated tests for direct access to internal
  * functions and state of the Battle CLI for more granular control and assertions.
  *
  * @pseudocode

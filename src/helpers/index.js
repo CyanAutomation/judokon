@@ -1,7 +1,7 @@
 /**
- * Re-exports core battle engine functionalities for convenient access.
+ * Compatibility surface: re-exports core battle engine functionalities for legacy and test imports.
  *
- * @summary This module provides a centralized point of access to key functions
+ * @summary Compatibility surface that preserves a centralized import path for key functions
  * and classes from the `BattleEngine` module, simplifying imports for consumers.
  *
  * @pseudocode
