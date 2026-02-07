@@ -52,8 +52,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 const nodeRequire = createRequire(import.meta.url);
 
-const CHUNK_SIZE = 1200;
-const OVERLAP_RATIO = 0.25;
+const CHUNK_SIZE = 1400;
+const OVERLAP_RATIO = 0.15;
 const CURRENT_EMBEDDING_VERSION = 1;
 const STOP_WORDS = new Set([
   "a",
