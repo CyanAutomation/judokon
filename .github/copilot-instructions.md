@@ -11,8 +11,8 @@
 ### 🔍 Context Acquisition
 
 ```bash
-# Start with RAG for any question
-queryRag("How does the battle engine work?")
+# Start with targeted lookup for any question
+rg -n "battle engine" src tests docs -g "!client_embeddings.json"
 
 # Key files to check
 src/data/tooltips.json        # Tooltip content
@@ -47,454 +47,6 @@ src/config/settingsDefaults.js # Settings source of truth
 
 ---
 
-## 🔌 MCP Server Integration Guide
-
-### Overview
-
-The JU-DO-KON! project includes a Model Context Protocol (MCP) server that exposes powerful judoka search and data retrieval tools. This enables MCP-aware agents (Claude Desktop, GitHub Copilot, custom clients) to query the judoka database with semantic search and filtering capabilities.
-
-**Server Location**: `scripts/mcp-rag-server.mjs`  
-**Start Command**: `npm run rag:mcp`
-
-### Available Tools
-
-#### 1. `query_rag` — Documentation & Code Pattern Search
-
-Semantic search over the entire JU-DO-KON! vector database including game rules, development standards, and code patterns.
-
-**Usage**:
-
-```javascript
-// Search for documentation on battle mechanics
-const result = await mcp.call("query_rag", {
-  query: "classic battle countdown timer implementation"
-});
-// Returns: [{ id, text, score, source, tags, ... }, ...]
-```
-
-**When to use**: Questions about project architecture, development patterns, game rules, or implementation details.
-
-#### 2. `judokon.search` — Judoka Semantic Search
-
-Search for judoka with optional filtering by country, rarity, or weight class.
-
-**Input Schema**:
-
-```json
-{
-  "query": "string (required)", // Search query
-  "topK": "integer (1-50, default 8)", // Max results
-  "filters": {
-    "country": "string (optional)", // Filter by country
-    "rarity": "enum (Common|Epic|Legendary)",
-    "weightClass": "string (optional)" // e.g., '+100', '-60'
-  }
-}
-```
-
-**Examples**:
-
-```javascript
-// Find the most powerful judoka
-const result1 = await mcp.call("judokon.search", {
-  query: "strongest fighter",
-  topK: 5
-});
-
-// Find legendary judoka from Japan
-const result2 = await mcp.call("judokon.search", {
-  query: "powerful judoka",
-  topK: 10,
-  filters: {
-    country: "Japan",
-    rarity: "Legendary"
-  }
-});
-
-// Find lightweight specialists
-const result3 = await mcp.call("judokon.search", {
-  query: "agile speed specialist",
-  filters: {
-    weightClass: "-60"
-  }
-});
-```
-
-**Response Format**:
-
-```json
-{
-  "results": [
-    {
-      "id": 0,
-      "name": "Tatsuuma Ushiyama",
-      "country": "Vanuatu",
-      "countryCode": "vu",
-      "rarity": "Legendary",
-      "weightClass": "+100",
-      "stats": {
-        "power": 9,
-        "speed": 9,
-        "technique": 9,
-        "kumikata": 9,
-        "newaza": 9
-      },
-      "bio": "...",
-      "score": 0.95
-    }
-  ],
-  "query": "strongest fighter",
-  "topK": 5,
-  "count": 1
-}
-```
-
-#### 3. `judokon.getById` — Fetch Judoka Record
-
-Retrieve the complete judoka record by ID.
-
-**Input Schema**:
-
-```json
-{
-  "id": "string | number (required)" // Judoka ID (numeric or string)
-}
-```
-
-**Examples**:
-
-```javascript
-// Fetch by numeric ID
-const result1 = await mcp.call("judokon.getById", {
-  id: 42
-});
-
-// Fetch by string ID
-const result2 = await mcp.call("judokon.getById", {
-  id: "42"
-});
-```
-
-**Response Format (Found)**:
-
-```json
-{
-  "found": true,
-  "id": 42,
-  "firstname": "Tatsuuma",
-  "surname": "Ushiyama",
-  "name": "Tatsuuma Ushiyama",
-  "country": "Vanuatu",
-  "countryCode": "vu",
-  "rarity": "Legendary",
-  "weightClass": "+100",
-  "gender": "male",
-  "category": "...",
-  "stats": {
-    "power": 9,
-    "speed": 9,
-    "technique": 9,
-    "kumikata": 9,
-    "newaza": 9
-  },
-  "bio": "...",
-  "cardCode": "..."
-}
-```
-
-**Response Format (Not Found)**:
-
-```json
-{
-  "found": false,
-  "id": "999999",
-  "message": "Judoka not found"
-}
-```
-
-#### 4. `judokon.random` — Select Random Judoka
-
-Selects a random judoka (or multiple) with optional filtering by country, rarity, or weight class.
-
-**Input Schema**:
-
-```json
-{
-  "count": "integer (1-50, default 1)", // Number of random judoka to select
-  "filters": {
-    "country": "string (optional)", // Filter by country
-    "rarity": "enum (Common|Epic|Legendary)",
-    "weightClass": "string (optional)" // e.g., '+100', '-60'
-  }
-}
-```
-
-**Examples**:
-
-```javascript
-// Select a single random judoka
-const result1 = await mcp.call("judokon.random", {});
-
-// Select 3 random legendary judoka from Japan
-const result2 = await mcp.call("judokon.random", {
-  count: 3,
-  filters: {
-    country: "Japan",
-    rarity: "Legendary"
-  }
-});
-```
-
-**Response Format**: (Same as `judokon.search` for each judoka in an array)
-
-```json
-{
-  "results": [
-    {
-      "id": 0,
-      "name": "Tatsuuma Ushiyama",
-      "country": "Vanuatu",
-      "countryCode": "vu",
-      "rarity": "Legendary",
-      "weightClass": "+100",
-      "stats": {
-        "power": 9,
-        "speed": 9,
-        "technique": 9,
-        "kumikata": 9,
-        "newaza": 9
-      },
-      "bio": "...",
-      "score": 0.95 // Score is not relevant for random, but kept for consistency
-    }
-  ],
-  "count": 1 // Number of random judoka returned
-}
-```
-
-#### 5. `judokon.compare` — Compare Judoka Stats
-
-Compares the stats between two specified judoka by their IDs.
-
-**Input Schema**:
-
-```json
-{
-  "judoka1_id": "string | number (required)", // ID of the first judoka
-  "judoka2_id": "string | number (required)" // ID of the second judoka
-}
-```
-
-**Examples**:
-
-```javascript
-// Compare judoka with ID 0 and ID 1
-const result = await mcp.call("judokon.compare", {
-  judoka1_id: 0,
-  judoka2_id: 1
-});
-```
-
-**Response Format**: (Detailed comparison of stats)
-
-```json
-{
-  "judoka1": {
-    "id": 0,
-    "name": "Tatsuuma Ushiyama",
-    "stats": { "power": 9, "speed": 9, "technique": 9, "kumikata": 9, "newaza": 9 }
-  },
-  "judoka2": {
-    "id": 1,
-    "name": "Rina Kobayashi",
-    "stats": { "power": 7, "speed": 8, "technique": 6, "kumikata": 7, "newaza": 8 }
-  },
-  "comparison": {
-    "power_diff": 2, // judoka1.power - judoka2.power
-    "speed_diff": 1,
-    "technique_diff": 3,
-    "kumikata_diff": 2,
-    "newaza_diff": 1,
-    "summary": "Tatsuuma Ushiyama has higher Power, Technique, Kumikata, and Newaza. Rina Kobayashi has higher Speed."
-  }
-}
-```
-
-### Setup Instructions
-
-#### 1. Claude Desktop Integration
-
-Add to your `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "judokon-rag": {
-      "command": "npm",
-      "args": ["run", "rag:mcp"],
-      "cwd": "/absolute/path/to/judokon"
-    }
-  }
-}
-```
-
-Then restart Claude Desktop. The tools will be available in the MCP menu.
-
-#### 2. Custom MCP Client
-
-```javascript
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import { spawn } from "child_process";
-
-// Start the MCP server
-const process = spawn("npm", ["run", "rag:mcp"], {
-  cwd: "/path/to/judokon"
-});
-
-// Connect via stdio
-const transport = new StdioClientTransport({
-  command: process
-});
-
-const client = new Client(
-  {
-    name: "my-judokon-app",
-    version: "1.0.0"
-  },
-  {
-    capabilities: {}
-  },
-  transport
-);
-
-await client.connect();
-
-// Use the tools
-const results = await client.callTool("judokon.search", {
-  query: "strongest judoka",
-  topK: 5
-});
-```
-
-### Query Patterns & Best Practices
-
-#### Pattern 1: Multi-Step Search + Detail Lookup
-
-```javascript
-// First: Search for candidates
-const candidates = await mcp.call("judokon.search", {
-  query: "fast agile fighter",
-  filters: { rarity: "Legendary" },
-  topK: 3
-});
-
-// Then: Get full details for top result
-if (candidates.results.length > 0) {
-  const fullRecord = await mcp.call("judokon.getById", {
-    id: candidates.results[0].id
-  });
-  console.log(fullRecord.bio); // Display full biography
-}
-```
-
-#### Pattern 2: Filtered Search by Criteria
-
-```javascript
-// Search with specific filters
-const japaneseEpicFighters = await mcp.call("judokon.search", {
-  query: "balanced judoka",
-  filters: {
-    country: "Japan",
-    rarity: "Epic"
-  },
-  topK: 10
-});
-```
-
-#### Pattern 3: Narrow Search with Weight Class
-
-```javascript
-// Find heavy specialists
-const heavyweights = await mcp.call("judokon.search", {
-  query: "powerful strong judoka",
-  filters: {
-    weightClass: "+100"
-  },
-  topK: 8
-});
-
-// Compare stats
-heavyweights.results.forEach((j) => {
-  console.log(`${j.name}: Power=${j.stats.power}, Speed=${j.stats.speed}`);
-});
-```
-
-### Error Handling
-
-```javascript
-try {
-  const result = await mcp.call("judokon.search", {
-    query: "xyz___invalid",
-    topK: 5
-  });
-
-  if (result.results.length === 0) {
-    console.log("No matches found. Try different keywords or remove filters.");
-  }
-} catch (error) {
-  console.error("MCP Error:", error.message);
-  // Gracefully handle connection or parsing errors
-}
-```
-
-### Performance Considerations
-
-- **Search Latency**: ~100-200ms per query (including RAG encoding)
-- **Result Limit**: Maximum 50 results per query (topK parameter)
-- **Filter Efficiency**: Filters are applied post-search; use specific keywords for faster results
-- **Data Size**: ~5,900 embeddings indexed; in-memory search is O(n) complexity (acceptable for current dataset)
-
-### Debugging
-
-#### Check MCP Server Health
-
-```bash
-# Verify the server starts
-npm run rag:mcp
-
-# Check for errors in stderr; look for:
-# "Loaded X judoka records"
-# "Loaded Y embeddings"
-```
-
-#### Validate Tool Availability
-
-Once connected, list available tools:
-
-```javascript
-const tools = await mcp.listTools();
-console.log(tools); // Should show query_rag, judokon.search, judokon.getById
-```
-
-#### Test Query
-
-```javascript
-// Simple test query
-const test = await mcp.call("judokon.getById", { id: 0 });
-console.log(test); // Should return first judoka record
-```
-
-### Extensibility
-
-Potential future tools that could be added:
-
-- **`judokon.resolveCode`** — Map card codes to judoka records
-- **`judokon.listCountries`** — Get list of countries in database
-- **`judokon.statsByRarity`** — Analyze stat distributions by rarity level
-
----
-
 ## ✅ Essential Validation
 
 ```bash
@@ -515,67 +67,6 @@ grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFac
 
 ---
 
-## 🚨 RAG-First Policy (MANDATORY)
-
-**Before using `grep_search`, `file_search`, or `semantic_search`, ALWAYS ask yourself:**
-
-1. **Is this a How/Why/What/Where/Which question?** → Use `queryRag()` FIRST
-2. **Did RAG return weak results?** → Then use grep/ripgrep as fallback
-3. **Document your reasoning** → Cite RAG sources in commits/PRs
-
-### ⚡ When to Use RAG (Examples)
-
-✅ **"How should I add a new tooltip?"**
-→ RAG query: `"tooltip implementation data structure JSON format"`
-→ Expected result: PRD with exact structure + examples
-
-✅ **"Where is the battle timer implemented?"**
-→ RAG query: `"classic battle mode countdown timer phases implementation"`
-→ Expected result: File locations + code patterns
-
-✅ **"What is the structure of judoka.json?"**
-→ RAG query: `"judoka data structure schema format fields"`
-→ Expected result: Exact JSON format + validation rules
-
-✅ **"Why does stat selection timeout after 5 seconds?"**
-→ RAG query: `"stat selection timer cooldown timeout configuration"`
-→ Expected result: Design rationale + related code
-
-✅ **"How do I handle keyboard shortcuts in components?"**
-→ RAG query: `"keyboard event handling shortcuts component patterns"`
-→ Expected result: Established patterns + examples
-
-### 🔍 When grep/ripgrep is Appropriate (After RAG Fails)
-
-- Searching for specific variable/function names across codebase
-- Finding all usages of a deprecated API before removing it
-- Locating files that import a specific module
-- When RAG returns insufficient or zero results
-
-### 📊 Performance & Accuracy Baseline
-
-- **RAG speed**: ~2 seconds with 62.5% accuracy for implementation queries
-- **Manual grep speed**: 30+ seconds of exploration
-- **Recommended workflow**: Try RAG first (2 sec) → If weak, grep (30+ sec) = optimal speed
-
-### 🛠 RAG Query Tips
-
-```javascript
-// Good: Technical context + file types
-await queryRag("tooltip content validation requirements JSON format");
-
-// Good: Multi-intent queries (automatically split and re-ranked)
-await queryRag("navigation bar button transition duration styling");
-
-// With provenance tracking (recommended)
-const results = await queryRag("classic battle scoreboard rendering", {
-  withProvenance: true
-});
-// Include contextPath and rationale in PR descriptions
-```
-
----
-
 ## 🗂️ Workflow Order
 
 Deterministic rules, workflows, and safety requirements for AI Agents operating in the JU-DO-KON! repository.
@@ -584,7 +75,7 @@ Deterministic rules, workflows, and safety requirements for AI Agents operating 
 
 **Content Ownership**: This file is the authoritative source for agent-specific rules, validation commands, and quality standards. Other documentation files reference this for agent-specific details.
 
-**Quick Reference**: [Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) | [Test Quality Verification](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference) | [Vector Database RAG Operations](./design/productRequirementsDocuments/prdVectorDatabaseRAG.md#operations--tooling)
+**Quick Reference**: [Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) | [Test Quality Verification](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference) | [Navigation Checklist](#-code-navigation-policy)
 
 ---
 
@@ -592,7 +83,7 @@ Deterministic rules, workflows, and safety requirements for AI Agents operating 
 
 **Quick Orientation for AI Agents (30-second read):**
 
-1. **Default to RAG first** - Query `queryRag("your question")` for any "How/Why/What/Where" questions (15x faster than manual exploration)
+1. **Default to targeted code navigation** - Start with `rg`/file-path lookup, then inspect the nearest source, tests, and docs before editing
 2. **Follow 5-step workflow** - Context → Task Contract → Implementation → Validation → Delivery
 3. **Run targeted tests** - Avoid the full suite. Run tests relevant to your changes. See the [Targeted Testing](#-targeted-testing) section for how.
 4. **Core validation suite** - `npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run <tests>` (always run targeted tests)
@@ -604,7 +95,7 @@ Deterministic rules, workflows, and safety requirements for AI Agents operating 
 10. **Task contracts required** - Declare inputs/outputs/success/error before execution
 11. **Complete validation reference** - [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) aggregates workflow commands; pair with [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference) for test-specific policies
 
-**JSON Ruleset Location**: [Line 545+](#machine-readable-ruleset) | **RAG Guide**: [Vector Database RAG Operations](./design/productRequirementsDocuments/prdVectorDatabaseRAG.md#operations--tooling)
+**JSON Ruleset Location**: [Line 545+](#machine-readable-ruleset) | **Navigation Guide**: [Code Navigation Policy](#-code-navigation-policy)
 
 ---
 
@@ -613,7 +104,7 @@ Deterministic rules, workflows, and safety requirements for AI Agents operating 
 - [⚡ Executive Summary](#-executive-summary)
 - [🗂️ Workflow Order](#️-workflow-order)
 - [🎯 Core Principles](#-core-principles)
-- [🧠 RAG Policy](#-rag-retrieval-augmented-generation-policy)
+- [🧭 Code Navigation Policy](#-code-navigation-policy)
 - [📚 Key Repository Targets](#-key-repository-targets)
 - [🧪 Task Contract](#-task-contract)
 - [✅ Evaluation Criteria](#-evaluation-criteria)
@@ -633,7 +124,7 @@ Deterministic rules, workflows, and safety requirements for AI Agents operating 
 
 ## �🗂️ Workflow Order
 
-1. Context acquisition (queryRag, key file references)
+1. Context acquisition (targeted `rg` lookups, key file references)
 2. Task contract definition (inputs/outputs/success/error)
 3. Implementation (import policy, coding rules)
 4. Validation (lint, format, targeted tests, contrast, logs)
@@ -651,8 +142,6 @@ grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js"
 # JSON validation
 npm run validate:data
 
-# RAG validation
-npm run rag:validate
 ```
 
 **For complete validation commands, quality verification, and troubleshooting, see [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) and [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference).**
@@ -677,161 +166,28 @@ npm run rag:validate
 
 ---
 
-## 🧠 RAG (Retrieval-Augmented Generation) Policy
+## 🧭 Code Navigation Policy
 
-This project contains a high-performance vector database with over 2,300 indexed chunks (2,328 currently) covering documentation, code standards, and game rules. RAG queries return results in ~2 seconds with 62.5% accuracy for finding correct sources.
+Use deterministic local navigation before editing code:
 
-**See also**: [Quick Reference Cards](#-quick-reference-cards) | [Vector Database RAG Operations](./design/productRequirementsDocuments/prdVectorDatabaseRAG.md#operations--tooling) for complete usage guide
+1. Start with `rg -n "<term>" <paths> -g "!client_embeddings.json"` to find exact symbols and entry points.
+2. Narrow by domain folders (`src/components`, `src/helpers`, `tests`, `playwright`) instead of broad repository scans.
+3. Open the closest implementation + corresponding test file before making changes.
+4. Prefer targeted lookups (`rg --files | rg <name>`) over exhaustive directory walks.
+5. Record the files consulted in your PR summary for traceability.
 
-### 🚀 Performance Benefits
-
-- **⚡ 15x Speed Boost:** 2-second RAG queries vs 30+ seconds of manual exploration
-- **🎯 High Accuracy:** 62.5% success rate for implementation queries, 95% for design docs
-- **🧠 Comprehensive Coverage:** PRDs, design guidelines, code patterns, and test examples
-- **📊 Proven Success:** Currently serving production-level results for architectural queries
-
-### ⚡ Simple Usage Rule
-
-**Default to RAG for ANY question containing:** "How", "Why", "What", "Where", "Which", or when requesting examples/references.
-
-**When in doubt → Query RAG first.**
-
-### 🎯 Optimized Query Patterns
-
-**High-Success Examples:**
-
-```text
-✅ "tooltip implementation data structure JSON format"
-✅ "navigation bar button transition duration styling"
-✅ "classic battle mode game timer phases scoreboard"
-✅ "judoka bio tone guidelines character design"
-```
-
-**Pattern Guide:**
-
-- Include **file types**: "JSON structure", "CSS styling", "JavaScript function"
-- Add **context**: "configuration", "data format", "UI component"
-- Use **technical terms**: "implementation", "validation", "guidelines"
-
-### 🔄 Smart Workflow
-
-1. **Primary RAG Query** → Use user's terms with optimization
-2. **If results are weak** → Rephrase with technical/synonym terms
-3. **If still weak** → Use broader category approach
-4. **Final step** → Combine RAG context with targeted file search
-
-### 💡 Success Examples from Production
-
-**Query:** `"tooltip content validation requirements"`
-**Result:** Found PRD with validation rules (25 seconds saved)
-**Outcome:** Accurate implementation matching established patterns
-
-**Query:** `"weight category definitions data structure"`
-**Result:** Found exact JSON structure (15 seconds saved)
-**Outcome:** Correct implementation on first attempt
-
-### 📋 Quick Reference
-
-- **Strong Categories:** Design docs (95%), PRDs (90%), Architecture (85%)
-- **Improving Categories:** Implementation files (35% → targeting 60%)
-- **Detailed Guide:** See [RAG Decision Workflow](design/productRequirementsDocuments/prdAIAgentWorkflows.md#1-rag-query-decision-tree-p1) and [High-Success Query Patterns](design/productRequirementsDocuments/prdVectorDatabaseRAG.md#high-success-query-patterns)
-
-You **MUST** use RAG as your first step for questions related to:
-
-1. **"How-to" or "Why"** questions
-2. **Definitions** and terminology
-3. **Conventions and Standards**
-4. **Existing Implementations** and examples
-
-### Workflow
-
-1. **Receive user prompt.**
-2. **Analyze the prompt.** If it matches any of the categories above, you **MUST** form a search query and call the RAG tool.
-3. **Incorporate RAG results.** Directly use the retrieved context in your answer or plan.
-4. **Cite your sources.** Reference the source documents from the RAG results (e.g., "According to `prdVectorDatabaseRAG.md`...").
-5. **Fallback.** If the RAG search returns no relevant results, you may then proceed with other tools like `glob` or `search_file_content`.
-
-### Offline Usage (Agents)
-
-- Strict offline (no network): set `RAG_STRICT_OFFLINE=1` so model/CDN downloads are not attempted. Ensure `models/minilm` exists; hydrate via `npm run rag:prepare:models` (or `--from-dir <path>` if you already have the files).
-- Lexical fallback (optional, degraded): if the model is unavailable, set `RAG_ALLOW_LEXICAL_FALLBACK=1` or pass `{ allowLexicalFallback: true }` to `queryRag(...)` to use sparse lexical scoring against the offline corpus. Keep this feature-gated to avoid silent regressions.
-- Provenance: prefer `withProvenance: true` and include the provided `contextPath` and `rationale` in your outputs.
-
-### 🛠 RAG Model Setup & Troubleshooting
-
-To ensure the RAG system functions correctly, the local MiniLM model must be present and correctly configured.
-
-**1. Prepare the Local Model:**
-If you encounter errors related to model loading or "Local model not found", you need to download and prepare the local RAG model files.
+### Recommended Navigation Commands
 
 ```bash
-npm run rag:prepare:models
+# Find implementation + test references
+rg -n "setupScoreboard|classicBattle|featureFlags" src tests playwright -g "!client_embeddings.json"
+
+# Locate files by name quickly
+rg --files src tests docs | rg "settings|tooltips|battle"
+
+# Validate no hot-path dynamic imports
+grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle 2>/dev/null
 ```
-
-This command will download the necessary model files into `models/minilm`.
-
-**2. Verify Model Files:**
-You can manually check if the RAG model files are present and accounted for using the following command:
-
-```bash
-npm run check:rag
-```
-
-This script verifies the existence of all required model files. It is also integrated into the pre-commit hook to provide a warning if files are missing.
-
-**3. Troubleshooting Model Loading Issues:**
-
-- **"Failed to load model because protobuf parsing failed."**: This often indicates corrupted or incomplete model files. Run `npm run rag:prepare:models` to re-download them.
-- **"Local model not found; falling back..."**: While this message might appear even if the local model is eventually used, ensure `npm run rag:prepare:models` has been run. Check the console logs for "RAG: Successfully loaded local MiniLM model." for confirmation of local model usage.
-- **Network Issues**: If falling back to CDN fails due to network connectivity, ensure your network is stable or use `npm run rag:prepare:models` to set up the local model for offline use.
-
-### Agent Usage Tips (RAG)
-
-- Prefer `queryRag({ withProvenance: true })` for “How/Why/What/Where/Which” questions to include `contextPath` and a short `rationale` explaining ranking.
-- During development, you may pass `withDiagnostics: true` to receive `{ expandedQuery, multiIntentApplied, timingMs }` for debugging. Do not enable diagnostics in hot paths.
-- For compound queries, RAG automatically splits simple conjunctions and re-ranks the union; still keep queries concise and specific.
-
-Example:
-
-```js
-import queryRag from "./src/helpers/queryRag.js";
-const results = await queryRag("classic battle countdown snackbar", {
-  withProvenance: true,
-  withDiagnostics: true
-});
-// results[0] → { id, text, score, source, tags, contextPath, rationale }
-// results.diagnostics → { expandedQuery: "...", multiIntentApplied: true|false, timingMs }
-```
-
-### Example Agent Thought Process
-
-> **User:** "How should I add a new tooltip?"
->
-> **Agent's internal monologue:**
->
-> 1. The user is asking "How should I...", which falls under the "How-to" category in the RAG policy.
-> 2. I must use the RAG tool first. I will form a query.
-> 3. **Tool Call:** `query_rag_database(query="adding a new tooltip")`
-> 4. **Tool Output:** `[{ "source": "src/data/tooltips.json", "text": "Tooltips are defined in`tooltips.json`with an id and content.", "score": 0.91 }, ...]`
-> 5. Now I can form my answer based on this high-confidence information. I will explain that tooltips are added to `src/data/tooltips.json` and describe the required format.
-
-### Provenance
-
-When using information from the RAG tool, include provenance for the facts:
-
-- `Source: <doc>` — `Confidence: high|medium|low` — `Quote: "..."`.
-
-RAG Provenance JSON schema:
-
-```json
-{
-  "source": "design/productRequirementsDocuments/prdVectorDatabaseRAG.md#high-success-query-patterns",
-  "confidence": "high",
-  "quote": "Use queryRag for architectural questions."
-}
-```
-
----
 
 ## 📚 Key Repository Targets
 
@@ -1863,9 +1219,8 @@ Complete plan and guidelines available in:
 **Essential validation (run before commit):**
 
 ```bash
-# Step 1: Data & RAG integrity
+# Step 1: Data integrity
 npm run validate:data
-npm run rag:validate
 
 # Step 2: Code quality
 npx prettier . --check
@@ -1901,8 +1256,6 @@ grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js" \
 # JSON validation
 npm run validate:data
 
-# RAG validation
-npm run rag:validate
 ```
 
 ---
@@ -1991,8 +1344,8 @@ This JSON ruleset can be programmatically parsed for:
     "verification_required"
   ],
   "contextRules": {
-    "queryRag": true,
-    "provenanceRequired": true,
+    "targetedSearch": true,
+    "provenanceRequired": false,
     "confirmationAgainstSource": true
   },
   "keyFiles": {
@@ -2123,7 +1476,6 @@ This JSON ruleset can be programmatically parsed for:
       "npm run check:contrast"
     ],
     "agentSpecific": [
-      "npm run rag:validate",
       "npm run validate:data",
       "grep -RIn \"await import\\(\" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle",
       "grep -RInE \"console\\.(warn|error)\\(\" tests | grep -v \"tests/utils/console.js\""

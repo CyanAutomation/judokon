@@ -198,24 +198,16 @@ The battle engine exposes a lightweight event emitter. Subscribe via
 - `matchEnded` → same payload as `roundEnded`
 - `error` → `{ message }`
 
-## 🔎 Using the Vector RAG System
+## 🔎 Code Navigation
 
-The project includes a high-performance vector RAG system with 16,000+ indexed chunks covering documentation, code standards, and game rules. Before scanning the repo for answers, use the [`queryRag`](./src/helpers/queryRag.js) helper:
-
-```javascript
-import queryRag from "./src/helpers/queryRag.js";
-const matches = await queryRag("How does the battle engine work?");
-```
-
-**Command line usage:**
+Prefer targeted local search to understand existing behavior before editing:
 
 ```bash
-npm run rag:query "How does the battle engine work?"
+rg -n "battle engine|scoreboard|featureFlags" src tests docs -g "!client_embeddings.json"
+rg --files src tests docs | rg "classicBattle|settings|tooltips"
 ```
 
-**Performance:** 15x faster than manual exploration (2-second queries), with 62.5% accuracy for implementation queries and 95% for design docs.
-
-For complete RAG system documentation, offline usage, evaluation tools, and workflow diagrams, see **[Operations & Tooling](./design/productRequirementsDocuments/prdVectorDatabaseRAG.md#operations--tooling)** and **[UI Workflow](./design/productRequirementsDocuments/prdVectorDatabaseRAG.md#ui-workflow)** in the Vector Database PRD.
+Then open the nearest implementation, related tests, and relevant docs to confirm expected behavior.
 
 ## ⚡ Module Loading Policy
 
@@ -247,12 +239,6 @@ npx playwright test
 ```
 
 CLI-specific tests live in `playwright/battle-cli.spec.js` and verify the state badge, verbose log behavior, and keyboard selection flow.
-
-The MCP RAG server smoke test is kept out of the default UI run. To run it explicitly:
-
-```bash
-RUN_MCP_SMOKE=live npm run test:playwright:integration
-```
 
 ### Stable readiness waits in Playwright
 

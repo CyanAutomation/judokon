@@ -11,6 +11,17 @@ The project ships directly as static ES modules without a build step.
 
 When running terminal searches like `grep` or `find`, exclude `client_embeddings.json` and `offline_rag_metadata.json` to prevent output overflow. See [AGENTS.md](./AGENTS.md#terminal-safety) for details.
 
+### Code Navigation Workflow
+
+Use targeted lookups before edits:
+
+```bash
+rg -n "<symbol-or-topic>" src tests docs -g "!client_embeddings.json"
+rg --files src tests docs | rg "<feature-or-file-name>"
+```
+
+Open the nearest implementation + test pair and expand scope only if needed.
+
 ### Data Test IDs
 
 - Include a `data-testid` on interactive elements needed for automation.
@@ -33,12 +44,6 @@ npx vitest run # run unit tests
 npx playwright test # run Playwright UI tests
 npm run check:jsdoc # ensure exported helpers have JSDoc + @pseudocode
 npm run check:contrast # verify accessibility compliance
-```
-
-The MCP RAG server smoke test is separated from the user-facing UI suite. Run it only when needed:
-
-```bash
-RUN_MCP_SMOKE=live npm run test:playwright:integration
 ```
 
 **Style tests (run on demand):**
@@ -75,7 +80,7 @@ grep -r "waitForTimeout\|setTimeout" playwright/ && echo "❌ Found hardcoded wa
 
 ### Branch Protection Required Checks
 
-The default branch protection should only require active CI workflows. Remove any required checks tied to deleted RAG workflows (for example, `RAG Validation` and embedding update jobs) so PRs are not blocked waiting for non-existent jobs.
+The default branch protection should only require active CI workflows. Remove any required checks tied to deleted or retired workflows so PRs are not blocked waiting for non-existent jobs.
 
 Recommended required checks:
 
@@ -114,11 +119,7 @@ Please follow these practices:
 
 AI contributors should follow a structured and predictable format when submitting contributions. These rules help humans and other agents review and trace AI-generated changes.
 
-Before scanning files for any question‑style prompt (for example, beginning with
-"Explain" or "How does"), run [`queryRag`](./src/helpers/queryRag.js) to collect
-relevant context from the embeddings. See
-[example vector queries](design/productRequirementsDocuments/prdVectorDatabaseRAG.md#high-success-query-patterns)
-for deeper patterns.
+Before scanning broadly for any question-style prompt, start with targeted file lookup (`rg`) to identify the closest implementation and test coverage first.
 
 ### 🎯 Scope of Work
 
