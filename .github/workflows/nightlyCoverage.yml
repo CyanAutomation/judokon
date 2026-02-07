@@ -30,7 +30,7 @@ permissions:
 
 on:
   schedule:
-    # Run daily at 05:00 UTC (after rag_validation and playwrightBaseline)
+    # Run daily at 05:00 UTC (after other nightly workflows)
     - cron: "0 5 * * *"
   workflow_dispatch: {} # Allow manual triggering
 

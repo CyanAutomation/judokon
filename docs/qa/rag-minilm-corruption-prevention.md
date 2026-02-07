@@ -173,14 +173,13 @@ RAG_ALLOW_LEXICAL_FALLBACK=1 npm run rag:prepare:models
 
 ## CI/CD Integration
 
-The GitHub Actions workflow `rag_validation.yml` runs daily and:
+RAG validation is no longer a required GitHub Actions check in this repository.
 
-1. Checks out the repository
-2. Installs dependencies
-3. **Runs `npm run rag:prepare:models`** - Downloads fresh model
-4. **Runs `npm run rag:validate`** - Tests RAG functionality
+If you need to troubleshoot RAG model corruption locally, run the verification commands manually:
 
-This ensures the RAG system is working and model files are valid.
+1. `npm run rag:prepare:models`
+2. `npm run check:rag`
+3. `npm run rag:health`
 
 ## Monitoring for Recurrence
 
