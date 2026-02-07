@@ -15,6 +15,14 @@ Use this skill when prompts include or imply:
 - **"apply fix"**
 - **"refactor module"**
 
+## Key files
+
+- `AGENTS.md`
+- `src/helpers/battleEngineFacade.js`
+- `src/helpers/classicBattle.js`
+- `tests/`
+- `playwright/`
+
 ## Required sequence (must follow in order)
 
 1. **Context acquisition**
@@ -56,6 +64,24 @@ Use this skill when prompts include or imply:
 - Split mixed-responsibility functions into focused helpers.
 - Add or update JSDoc (`@pseudocode`) for public/complex functions.
 - Prefer composable pure helpers for logic-heavy paths.
+
+## Operational Guardrails
+
+- **Task Contract (required before implementation):**
+  - `inputs`: exact files/data/commands you will use.
+  - `outputs`: exact files/tests/docs you will change.
+  - `success`: required outcomes (checks/tests/log discipline).
+  - `errorMode`: explicit stop condition (for example: ask on public API change).
+- **RAG-first policy:**
+  1. Use `queryRag(...)` first for How/Why/What/Where/Which questions and implementation lookups.
+  2. If results are weak, rephrase and run a second RAG query.
+  3. If still weak, fall back to targeted `rg`/file search and cite what was checked.
+- **Required validation + targeted testing:**
+  - Run core checks: `npm run check:jsdoc && npx prettier . --check && npx eslint . && npm run check:contrast`.
+  - Run only targeted tests for changed files (`npx vitest run <path>` / focused Playwright spec). Run full suite only for cross-cutting changes.
+- **Critical prohibitions (must not violate):**
+  - No dynamic imports in hot paths: `src/helpers/classicBattle*`, `src/helpers/battleEngineFacade.js`, `src/helpers/battle/*`.
+  - No unsilenced `console.warn/error` in tests (use `tests/utils/console.js` helpers).
 
 ## Output template
 
