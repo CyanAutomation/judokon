@@ -400,6 +400,17 @@ function _cancelWaiting() {
  *
  * @returns {void}
  */
+/**
+ * Cancel any in-progress scoreboard outcome animation.
+ *
+ * @pseudocode
+ * 1. Return early if no animation is active.
+ * 2. Store reference and clear global tracker.
+ * 3. Return early if animation already marked as cancelled.
+ * 4. Mark animation as cancelled.
+ * 5. Invoke cancel callback with handle if available, ignore errors.
+ * @returns {void}
+ */
 function cancelActiveOutcomeAnimation() {
   if (!_activeOutcomeAnimation) {
     return;
