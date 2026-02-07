@@ -14,7 +14,14 @@
 const FALLBACK_SELECTION_READY_DELAY_MS = 50;
 const FALLBACK_OPPONENT_MESSAGE_BUFFER_MS = 100;
 const DEFAULT_POST_SELECTION_READY_DELAY_MS = 48;
-const DEFAULT_OPPONENT_MESSAGE_BUFFER_MS = 150;
+
+/**
+ * Default buffer (in milliseconds) appended after opponent delay messaging
+ * when calculating stat-selection readiness timing.
+ *
+ * @type {number}
+ */
+export const DEFAULT_OPPONENT_MESSAGE_BUFFER_MS = 150;
 
 /**
  * Get the base selection-ready delay constant.

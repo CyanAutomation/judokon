@@ -106,6 +106,11 @@ import {
   LOAD_ERROR_EXIT_EVENT,
   JudokaDataLoadError
 } from "../helpers/classicBattle/cardSelection.js";
+import {
+  getBaseSelectionReadyDelay,
+  computeDelayWithOpponentBuffer,
+  DEFAULT_OPPONENT_MESSAGE_BUFFER_MS
+} from "../helpers/classicBattle/selectionDelayCalculator.js";
 import { isDevelopmentEnvironment } from "../helpers/environment.js";
 
 // =============================================================================
@@ -113,8 +118,6 @@ import { isDevelopmentEnvironment } from "../helpers/environment.js";
 // =============================================================================
 
 const CONFIG = Object.freeze({
-  POST_SELECTION_READY_DELAY_MS: 48,
-  OPPONENT_MESSAGE_BUFFER_MS: 150,
   READY_SUPPRESSION_WINDOW_MS:
     typeof window !== "undefined"
       ? typeof window.__READY_SUPPRESSION_WINDOW_MS === "number"
@@ -127,11 +130,6 @@ const CONFIG = Object.freeze({
     COMPLETE: "true"
   })
 });
-
-const BASE_SELECTION_READY_DELAY_MS = Math.max(
-  CONFIG.POST_SELECTION_READY_DELAY_MS,
-  CONFIG.OPPONENT_MESSAGE_BUFFER_MS
-);
 
 // =============================================================================
 // Global State Management
@@ -270,12 +268,16 @@ function calculateRemainingOpponentMessageTime() {
 }
 
 function computeSelectionReadyDelay() {
-  let delayForReady = BASE_SELECTION_READY_DELAY_MS;
+  let delayForReady = getBaseSelectionReadyDelay();
   try {
     if (isEnabled("opponentDelayMessage")) {
       const opponentDelay = getOpponentDelay?.();
       if (Number.isFinite(opponentDelay) && opponentDelay >= 0) {
-        delayForReady = Math.max(delayForReady, opponentDelay + CONFIG.OPPONENT_MESSAGE_BUFFER_MS);
+        const delayWithBuffer = computeDelayWithOpponentBuffer(
+          opponentDelay,
+          DEFAULT_OPPONENT_MESSAGE_BUFFER_MS
+        );
+        delayForReady = Math.max(delayForReady, delayWithBuffer);
       }
     }
   } catch {}
