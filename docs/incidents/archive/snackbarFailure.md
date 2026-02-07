@@ -1,3 +1,7 @@
+Status: archived  
+Canonical record: docs/incidents/snackbar-opponent-delay-incident.md  
+Reason archived: superseded
+
 # Snackbar Failure Analysis: "Opponent is choosing" Message Regression
 
 **Date**: January 5, 2026  
@@ -125,70 +129,18 @@ This bug highlights several architectural weaknesses. The following improvements
   | **Stateful Tracking** | Explicitly tracks which handlers are bound to which targets.                    |
   | **Debuggability**     | A `registry.getDiagnostics()` method can report on the current state.           |
   | **Clear Reset**       | A `registry.clear()` method provides a formal API for test environment cleanup. |
-  | **Warnings**          | Can warn on double-registration instead of failing silently.                    |
+  | **Warnings**          | Can warn on double-registration attempts or missing handlers.                   |
 
-- **Benefit**: Greatly improves debugging and test setup reliability.
+### Improvement 2: Shift to Event-Driven UI State Machine
 
-### Improvement 2: Event Flow Tracing
-
-- **Problem**: When an event is fired, there is no visibility into its journey to the handler. This makes it difficult to debug issues where handlers don't fire.
-- **Proposal**: Implement a lightweight, diagnostics-only `eventTracer` that logs the lifecycle of an event.
-
-  ```mermaid
-  graph TD
-      A[Event Emission] -- traceId --> B(Tracer Captures);
-      B -- traceId --> C{Handler 1};
-      B -- traceId --> D{Handler 2};
-      C -- Records Start/End --> E[Tracer Records Timings];
-      D -- Records Start/End --> E;
-  ```
-
-- **Benefit**: Provides an end-to-end view of event flow, instantly revealing timing issues or handler execution failures.
-
-### Improvement 3: True Test Environment Isolation
-
-- **Problem**: Global state (`globalThis`, shared `EventTarget`) leaks between tests, causing failures like this one.
-- **Proposal**: Create a centralized test utility for state management, exposed via `window.__testUtils`.
-
-  ```javascript
-  // In a new file, e.g., tests/utils/battleTestUtils.js
-  export const testUtils = {
-    resetBattleState() {
-      // 1. Clear handler registration
-      handlerRegistry.clear();
-      // 2. Reset the event target instance
-      resetBattleEventTarget();
-      // 3. Clear any active snackbars
-      snackbarManager.clearAll();
-    }
-  };
-
-  // In Playwright test setup
-  beforeEach(async () => {
-    await page.evaluate(() => window.__testUtils.resetBattleState());
-  });
-  ```
-
-- **Benefit**: Enforces strict test isolation, eliminating a major class of flaky tests and ensuring reliable CI runs.
-
-### Improvement 4: Decouple UI with an Orchestration Layer
-
-- **Problem**: Handlers currently contain direct calls to the `SnackbarManager`, mixing business logic with UI implementation. This makes them hard to unit test.
-- **Proposal**: Introduce a `SnackbarOrchestrator` that subscribes to state changes or events and translates them into UI commands.
-
-  | Old Way (Coupled)                              | New Way (Decoupled)                                       |
-  | ---------------------------------------------- | --------------------------------------------------------- |
-  | `onEvent("statSelected", () => {`              | `onEvent("statSelected", () => {`                         |
-  | `  snackbarManager.show("Opponent choosing");` | `  state.set("AWAITING_OPPONENT");`                       |
-  | `});`                                          | `});`                                                     |
-  |                                                | `orchestrator.onStateChange("AWAITING_OPPONENT", () => {` |
-  |                                                | `  snackbarManager.show("Opponent choosing");`            |
-  |                                                | `});`                                                     |
-
-- **Benefit**: Allows for pure, fast unit tests on the event handlers (by just checking state changes) and centralizes UI logic in one place.
+- **Problem**: Snackbar logic is currently tied directly to individual event handlers, making timing dependencies implicit and fragile.
+- **Proposal**: Introduce an explicit UI state machine for selection/reveal phases so the snackbar behavior becomes deterministic and testable.
 
 ---
 
-## 6. Summary
+## 6. Status & Next Actions
 
-The `statSelected` handler failure is a classic example of a test isolation problem. The immediate fix is to ensure the `WeakSet` guard is reset for each test. The long-term solution is to invest in a more robust and transparent event handling and test setup architecture to prevent future regressions.
+- [ ] Apply guard-reset fix in test initialization.
+- [ ] Verify with targeted Playwright tests.
+- [ ] Remove temporary diagnostics.
+- [ ] Document long-term handler registry proposal.

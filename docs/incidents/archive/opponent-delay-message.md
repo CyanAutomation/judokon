@@ -1,3 +1,7 @@
+Status: archived  
+Canonical record: docs/incidents/snackbar-opponent-delay-incident.md  
+Reason archived: partial
+
 # Opponent Delay Message QA Guide
 
 The `opponentDelayMessage` flag controls when the “Opponent is choosing…” snackbar appears during Classic Battle. When enabled, the snackbar is deferred by the configured delay so testers can confirm pacing; when disabled, it fires immediately.
