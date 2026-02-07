@@ -47,6 +47,13 @@ function matchesModuleSpecifier(specifier, modulePath) {
 /**
  * Extract static and dynamic module specifiers from file text.
  *
+ * @pseudocode
+ * 1. Initialize an empty array to collect specifiers.
+ * 2. Define regex pattern to match both static imports (from "...") and dynamic imports (import("...")).
+ * 3. Iterate through all regex matches in the content.
+ * 4. Extract the specifier from either capture group and add to array.
+ * 5. Return the array of all found import/export specifiers.
+ *
  * @param {string} content file text
  * @returns {string[]} import/export specifiers
  */
