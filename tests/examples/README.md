@@ -1,5 +1,12 @@
 # Test Examples: Pattern Reference Guide
 
+## Testing Architecture Guides
+
+Read these first before copying patterns:
+
+1. **Canonical architecture guide**: [`docs/TESTING_ARCHITECTURE.md`](../../docs/TESTING_ARCHITECTURE.md)
+2. **Quickstart / local conventions**: [`tests/TESTING_ARCHITECTURE.md`](../TESTING_ARCHITECTURE.md)
+
 This directory contains canonical example test files demonstrating the modern testing patterns for the JU-DO-KON! project.
 
 ## Overview
