@@ -457,9 +457,11 @@ export async function handleRoundStartedEvent(event, deps = {}) {
  */
 export function handleStatSelectedEvent(event) {
   battleLog.trace(`event:statSelected t=${Date.now()}`);
+  battleLog.trace(`event:statSelected t=${Date.now()}`);
   const validated = validateStatSelectedEvent(event);
   if (!validated) return;
   const { stat, store } = validated;
+  if (!store) return;
   hydrateStatButtons(store);
   if (!store.statButtonEls) return;
   const btn = store.statButtonEls[stat];
