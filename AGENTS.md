@@ -53,9 +53,6 @@ src/config/settingsDefaults.js # Settings source of truth
 
 The JU-DO-KON! project includes a Model Context Protocol (MCP) server that exposes powerful judoka search and data retrieval tools. This enables MCP-aware agents (Claude Desktop, GitHub Copilot, custom clients) to query the judoka database with semantic search and filtering capabilities.
 
-**Server Location**: `scripts/mcp-rag-server.mjs`  
-**Start Command**: `npm run rag:mcp`
-
 ### Available Tools
 
 #### 1. `query_rag` — Documentation & Code Pattern Search
@@ -322,61 +319,6 @@ const result = await mcp.call("judokon.compare", {
 
 ### Setup Instructions
 
-#### 1. Claude Desktop Integration
-
-Add to your `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "judokon-rag": {
-      "command": "npm",
-      "args": ["run", "rag:mcp"],
-      "cwd": "/absolute/path/to/judokon"
-    }
-  }
-}
-```
-
-Then restart Claude Desktop. The tools will be available in the MCP menu.
-
-#### 2. Custom MCP Client
-
-```javascript
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import { spawn } from "child_process";
-
-// Start the MCP server
-const process = spawn("npm", ["run", "rag:mcp"], {
-  cwd: "/path/to/judokon"
-});
-
-// Connect via stdio
-const transport = new StdioClientTransport({
-  command: process
-});
-
-const client = new Client(
-  {
-    name: "my-judokon-app",
-    version: "1.0.0"
-  },
-  {
-    capabilities: {}
-  },
-  transport
-);
-
-await client.connect();
-
-// Use the tools
-const results = await client.callTool("judokon.search", {
-  query: "strongest judoka",
-  topK: 5
-});
-```
-
 ### Query Patterns & Best Practices
 
 #### Pattern 1: Multi-Step Search + Detail Lookup
@@ -456,17 +398,6 @@ try {
 - **Data Size**: ~5,900 embeddings indexed; in-memory search is O(n) complexity (acceptable for current dataset)
 
 ### Debugging
-
-#### Check MCP Server Health
-
-```bash
-# Verify the server starts
-npm run rag:mcp
-
-# Check for errors in stderr; look for:
-# "Loaded X judoka records"
-# "Loaded Y embeddings"
-```
 
 #### Validate Tool Availability
 
