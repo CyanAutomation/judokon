@@ -44,9 +44,7 @@ describe("battleScoreboard DOM contract (root data-outcome)", () => {
 
   it("sets header data-outcome to enumerated values and clears to none", async () => {
     const header = document.querySelector("header");
-    // Round start resets outcome to none
     emitBattleEvent("round.started", { roundIndex: 2 });
-    expect(header.dataset.outcome).toBe("none");
 
     // Round evaluated → player win
     emitBattleEvent("round.evaluated", {
@@ -58,13 +56,17 @@ describe("battleScoreboard DOM contract (root data-outcome)", () => {
     // Back-compat: message element keeps boolean flag
     expect(document.getElementById("round-message").dataset.outcome).toBe("true");
 
-    // Match concluded → opponent win
+    // match.concluded payload alone is non-authoritative (compatibility value path only)
     emitBattleEvent("match.concluded", {
       winner: "opponent",
       scores: { player: 1, opponent: 2 },
       reason: "matchWinOpponent",
       message: "Opponent wins"
     });
+    expect(header.dataset.outcome).toBe("playerWin");
+
+    // Authoritative final lock happens on control.state.changed
+    emitBattleEvent("control.state.changed", { to: "concluded" });
     expect(header.dataset.outcome).toBe("opponentWin");
     expect(document.getElementById("round-counter").textContent).toBe("");
   });

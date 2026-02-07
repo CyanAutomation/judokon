@@ -1,4 +1,5 @@
 import { onBattleEvent, offBattleEvent, emitBattleEvent } from "./classicBattle/battleEvents.js";
+import { bindMatchConcludedCompatibilityAdapter } from "./classicBattle/matchConcludedCompatibilityAdapter.js";
 import { updateScore, getState as _getState } from "../components/Scoreboard.js";
 import {
   showMessage,
@@ -16,7 +17,6 @@ const EVENTS = {
   COOLDOWN_TIMER_TICK: "cooldown.timer.tick",
   DISPLAY_TIMER_TICK: "display.timer.tick",
   ROUND_EVALUATED: "round.evaluated",
-  MATCH_CONCLUDED: "match.concluded",
   CONTROL_STATE_CHANGED: "control.state.changed"
 };
 
@@ -28,6 +28,7 @@ let _handlers = [];
 let _waitingTimer = null;
 let _waitingClearer = null;
 let _onResetUi = null;
+let _compatibilityDisposers = [];
 let _adapterScheduler = realScheduler;
 const WAITING_FALLBACK_DELAY_MS = 500;
 
@@ -127,6 +128,27 @@ function shouldRenderEvaluation(controlState) {
   return controlState === "roundDisplay" || controlState === "evaluation";
 }
 
+function isFinalControlState(controlState) {
+  return controlState === "matchOver" || controlState === "concluded";
+}
+
+function renderFinalOutcome() {
+  if (!_viewModel) {
+    return;
+  }
+  const conclusion = _viewModel.lastValues.matchConclusion;
+  const fallbackEvaluation = _viewModel.lastValues.evaluation;
+  clearRoundCounter();
+  if (conclusion) {
+    displayOutcome(conclusion.outcome, conclusion.message);
+    return;
+  }
+  if (fallbackEvaluation) {
+    displayOutcome(fallbackEvaluation.outcome, fallbackEvaluation.message);
+    return;
+  }
+  displayOutcome("none");
+}
 /**
  * Detects if the application is running in CLI mode.
  *
@@ -433,19 +455,22 @@ export function initBattleScoreboardAdapter(deps = {}) {
     } catch {}
   });
 
-  // match.concluded carries values only; state transitions remain authoritative.
-  on(EVENTS.MATCH_CONCLUDED, (e) => {
+  // Legacy domain compatibility path: value-only payload updates (non-authoritative).
+  const disposeMatchConcludedCompatibility = bindMatchConcludedCompatibilityAdapter((d) => {
     _cancelWaiting();
     try {
-      const d = getEventDetail(e);
       const { player, opponent } = extractScores(d);
       applyScoreUpdate({ player, opponent });
       _viewModel.lastValues.matchConclusion = {
         outcome: d?.winner || d?.reason,
         message: d?.message
       };
+      if (_viewModel && isFinalControlState(_viewModel.controlState)) {
+        renderFinalOutcome();
+      }
     } catch {}
   });
+  _compatibilityDisposers.push(disposeMatchConcludedCompatibility);
 
   // control.state.changed is the authoritative source for view mode transitions.
   on(EVENTS.CONTROL_STATE_CHANGED, (e) => {
@@ -473,12 +498,8 @@ export function initBattleScoreboardAdapter(deps = {}) {
         return;
       }
 
-      if (to === "matchOver") {
-        const conclusion = _viewModel.lastValues.matchConclusion;
-        clearRoundCounter();
-        if (conclusion) {
-          displayOutcome(conclusion.outcome, conclusion.message);
-        }
+      if (isFinalControlState(to)) {
+        renderFinalOutcome();
         return;
       }
 
@@ -508,6 +529,13 @@ export function disposeBattleScoreboardAdapter() {
     } catch {}
   }
   _handlers = [];
+
+  for (const dispose of _compatibilityDisposers) {
+    try {
+      dispose();
+    } catch {}
+  }
+  _compatibilityDisposers = [];
 
   _bound = false;
   _viewModel = null;

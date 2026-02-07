@@ -99,6 +99,29 @@ describe("battleScoreboard authority + persistence", () => {
     expect(header.dataset.outcome).toBe("none");
   });
 
+  it("locks final UI on authoritative control state and treats match.concluded as value-only", async () => {
+    const header = document.querySelector("header");
+
+    emitBattleEvent("round.evaluated", {
+      outcome: "winPlayer",
+      scores: { player: 2, opponent: 1 },
+      message: "Interim"
+    });
+    expect(header.dataset.outcome).toBe("playerWin");
+
+    emitBattleEvent("control.state.changed", { to: "concluded" });
+    expect(header.dataset.outcome).toBe("playerWin");
+
+    emitBattleEvent("match.concluded", {
+      winner: "opponent",
+      scores: { player: 2, opponent: 3 },
+      reason: "matchWinOpponent",
+      message: "Opponent wins"
+    });
+
+    expect(header.dataset.outcome).toBe("opponentWin");
+    expect(document.getElementById("round-counter").textContent).toBe("");
+  });
   it("ignores events safely after disposal", async () => {
     const { disposeBattleScoreboardAdapter } = await import(
       "../../src/helpers/battleScoreboard.js"
