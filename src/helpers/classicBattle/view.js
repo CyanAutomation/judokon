@@ -16,12 +16,8 @@ import "../setupClassicBattleHomeLink.js";
  * Handles DOM interactions and binds to controller events.
  */
 export class ClassicBattleView {
-  /**
-   * @param {{ waitForOpponentCard?: () => Promise<void> }} [deps]
-   */
-  constructor({ waitForOpponentCard = () => {} } = {}) {
+  constructor() {
     this.statButtonControls = null;
-    this.waitForOpponentCard = waitForOpponentCard;
   }
 
   /**
