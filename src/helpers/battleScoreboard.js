@@ -31,6 +31,49 @@ let _onResetUi = null;
 let _compatibilityDisposers = [];
 let _adapterScheduler = realScheduler;
 const WAITING_FALLBACK_DELAY_MS = 500;
+const SUPPORTED_EVENT_CATALOG_VERSIONS = Object.freeze(["v2"]);
+const catalogCompatibilityLogs = new Set();
+
+function isSupportedCatalogVersion(version) {
+  return SUPPORTED_EVENT_CATALOG_VERSIONS.includes(version);
+}
+
+function logCatalogCompatibility(level, payload) {
+  const signature = `${payload.phase}:${payload.observedVersion}:${payload.supportedVersions.join(",")}`;
+  if (catalogCompatibilityLogs.has(signature)) {
+    return;
+  }
+  catalogCompatibilityLogs.add(signature);
+  const message = "[battleScoreboard] event catalog compatibility mismatch";
+  if (level === "error") {
+    console.error(message, payload);
+    return;
+  }
+  console.warn(message, payload);
+}
+
+function renderDegradedCatalogState() {
+  clearRoundCounter();
+  showMessage("Scoreboard unavailable: incompatible event catalog version.");
+}
+
+function evaluateCatalogVersion(version, phase = "runtime") {
+  if (typeof version !== "string" || version.length === 0) {
+    return { compatible: true, version: null };
+  }
+  if (isSupportedCatalogVersion(version)) {
+    return { compatible: true, version };
+  }
+  return {
+    compatible: false,
+    version,
+    payload: {
+      phase,
+      observedVersion: version,
+      supportedVersions: [...SUPPORTED_EVENT_CATALOG_VERSIONS]
+    }
+  };
+}
 
 function createInitialViewModel() {
   return {
@@ -358,6 +401,16 @@ function unregisterResetUiListener() {
  */
 export function initBattleScoreboardAdapter(deps = {}) {
   if (_bound) return disposeBattleScoreboardAdapter;
+
+  const bootstrapCompatibility = evaluateCatalogVersion(deps.catalogVersion, "bootstrap");
+  if (!bootstrapCompatibility.compatible) {
+    _bound = true;
+    _viewModel = createInitialViewModel();
+    logCatalogCompatibility("error", bootstrapCompatibility.payload);
+    renderDegradedCatalogState();
+    return disposeBattleScoreboardAdapter;
+  }
+
   _bound = true;
   _adapterScheduler = deps.scheduler ?? realScheduler;
   if (typeof _adapterScheduler.clearTimeout !== "function") {
@@ -377,8 +430,18 @@ export function initBattleScoreboardAdapter(deps = {}) {
   } catch {}
 
   const on = (type, fn) => {
-    _handlers.push([type, fn]);
-    onBattleEvent(type, fn);
+    const wrapped = (e) => {
+      const runtimeCompatibility = evaluateCatalogVersion(e?.detail?.catalogVersion, "runtime");
+      if (!runtimeCompatibility.compatible) {
+        logCatalogCompatibility("warn", runtimeCompatibility.payload);
+        renderDegradedCatalogState();
+        disposeBattleScoreboardAdapter();
+        return;
+      }
+      fn(e);
+    };
+    _handlers.push([type, wrapped]);
+    onBattleEvent(type, wrapped);
   };
 
   // round.started → round counter (skip in CLI mode)
@@ -549,7 +612,7 @@ export function disposeBattleScoreboardAdapter() {
  *
  * @type {number}
  */
-export { WAITING_FALLBACK_DELAY_MS };
+export { WAITING_FALLBACK_DELAY_MS, SUPPORTED_EVENT_CATALOG_VERSIONS };
 
 /**
  * Return current scoreboard snapshot (alias for PRD naming).

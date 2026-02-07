@@ -54,6 +54,7 @@ import { exposeTestAPI } from "../../helpers/testApi.js";
 // Phase 2: Shared Scoreboard imports for dual-write
 import { setupScoreboard } from "../../helpers/setupScoreboard.js";
 import { initBattleScoreboardAdapter } from "../../helpers/battleScoreboard.js";
+import { version as stateCatalogVersion } from "../../helpers/classicBattle/stateCatalog.js";
 /**
  * Re-export of syncWinTargetDropdown from winTargetSync.js
  *
@@ -3490,7 +3491,7 @@ export async function init() {
       setupScoreboard(timerControls);
 
       // Initialize PRD battle scoreboard adapter for canonical events
-      initBattleScoreboardAdapter();
+      initBattleScoreboardAdapter({ catalogVersion: stateCatalogVersion });
     } catch (error) {
       console.warn("Failed to initialize shared Scoreboard in CLI:", error);
     }
