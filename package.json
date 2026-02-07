@@ -34,7 +34,6 @@
     "test:helpers": "vitest run tests/helpers --exclude tests/helpers/battle* --exclude tests/helpers/card* --exclude tests/helpers/*scoreboard* --exclude tests/helpers/settings* --exclude tests/helpers/randomJudokaPage*",
     "test:helpers:timers": "vitest run tests/helpers/*imer* tests/helpers/timers",
     "test:data": "vitest run tests/data tests/config",
-    "test:rag": "vitest run tests/queryRag tests/helpers/vectorSearch* tests/helpers/queryRag*",
     "test:integration": "vitest run tests/integration",
     "test:accessibility": "vitest run tests/accessibility tests/styles tests/card/*a11y* tests/helpers/*a11y*",
     "test:utils": "vitest run tests/utils tests/helpers/testApi.test.js tests/helpers/integrationHarness.test.js",

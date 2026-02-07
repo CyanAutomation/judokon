@@ -17,7 +17,6 @@ npm run test:battles          # Battle system tests (Classic + CLI modes)
 npm run test:components       # UI component tests (cards, scoreboard, modal)
 npm run test:pages            # Page initialization tests (settings, random, etc.)
 npm run test:helpers          # Core utility tests (excludes domain-specific)
-npm run test:rag              # Vector search & RAG system tests
 npm run test:data             # Data validation & configuration tests
 npm run test:integration      # Cross-module integration tests
 npm run test:accessibility    # Accessibility & contrast tests
@@ -84,7 +83,6 @@ npm run test:style            # Style-related tests (separate config)
 ### 4. Modified a Helper Utility?
 
 - **`src/helpers/TimerController.js`** or timer-related → Run `npm run test:helpers:timers`
-- **`src/helpers/queryRag.js`** or vector search → Run `npm run test:rag`
 - **Any other helper** → Run `npm run test:helpers`
 
 ### 5. Modified Data or Config?
@@ -113,7 +111,6 @@ Quick reference for common file modifications:
 | `src/helpers/cardRender.js`      | Components: Cards      | `npm run test:components:cards`      |
 | `src/pages/settings.html`        | Pages: Settings        | `npm run test:pages:settings`        |
 | `src/helpers/TimerController.js` | Helpers: Timers        | `npm run test:helpers:timers`        |
-| `src/helpers/queryRag.js`        | RAG System             | `npm run test:rag`                   |
 | `src/pages/battleClassic.html`   | Battles: Classic       | `npm run test:battles:classic`       |
 | `src/pages/battleCLI.html`       | Battles: CLI           | `npm run test:battles:cli`           |
 | `src/helpers/BattleEngine.js`    | Battles: All           | `npm run test:battles`               |
