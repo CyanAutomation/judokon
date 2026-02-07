@@ -457,7 +457,6 @@ export async function handleRoundStartedEvent(event, deps = {}) {
  */
 export function handleStatSelectedEvent(event) {
   battleLog.trace(`event:statSelected t=${Date.now()}`);
-  battleLog.trace(`event:statSelected t=${Date.now()}`);
   const validated = validateStatSelectedEvent(event);
   if (!validated) return;
   const { stat, store } = validated;
@@ -531,17 +530,32 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
           }
         })();
   const detail = event?.detail || {};
-  if (!detail?.result && !validateRoundEvaluatedEvent(event)) {
+  const validated = validateRoundEvaluatedEvent(event);
+  const resultCandidate = detail?.result;
+  const resultCandidate = detail?.result;
+  const hasValidResultCandidate =
+    !!resultCandidate &&
+    typeof resultCandidate === "object" &&
+    (typeof resultCandidate.matchEnded === "boolean" ||
+      typeof resultCandidate.outcome === "boolean" ||
+      (typeof resultCandidate.message === "string" && resultCandidate.message.length > 0) ||
+      typeof resultCandidate.playerScore === "number" ||
+      typeof resultCandidate.opponentScore === "number");
+  if (!validated && !hasValidResultCandidate) {
+    return;
+  }
     return;
   }
   const store = detail.store;
-  const result = detail.result || {
-    outcome: detail.outcome,
-    matchEnded: detail.matchEnded,
-    playerScore: detail?.scores?.player ?? detail.playerScore,
-    opponentScore: detail?.scores?.opponent ?? detail.opponentScore,
-    message: detail.message
-  };
+  const result = hasValidResultCandidate
+    ? resultCandidate
+    : {
+        outcome: detail.outcome,
+        matchEnded: detail.matchEnded,
+        playerScore: detail?.scores?.player ?? detail.playerScore,
+        opponentScore: detail?.scores?.opponent ?? detail.opponentScore,
+        message: detail.message
+      };
   if (!result) return;
   if (store && typeof store === "object") {
     store.roundReadyForInput = false;

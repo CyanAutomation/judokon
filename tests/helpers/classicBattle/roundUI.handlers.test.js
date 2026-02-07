@@ -259,6 +259,63 @@ describe("round UI handlers", () => {
     expect(scoreboard.showMessage).toHaveBeenCalledWith("Win", { outcome: true });
   });
 
+  it("ignores round.evaluated events with malformed result payloads", async () => {
+    vi.resetModules();
+    const createRoundTimer = vi.fn(() => ({
+      on: vi.fn(),
+      off: vi.fn(),
+      start: vi.fn(async () => {})
+    }));
+    const roundUI = await import("../../../src/helpers/classicBattle/roundUI.js");
+
+    await roundUI.handleRoundResolvedEvent(
+      {
+        detail: {
+          store: {},
+          result: {}
+        }
+      },
+      {
+        createRoundTimer
+      }
+    );
+
+    const scoreboard = await import("../../../src/helpers/setupScoreboard.js");
+    expect(scoreboard.updateScore).not.toHaveBeenCalled();
+    expect(createRoundTimer).not.toHaveBeenCalled();
+  });
+
+  it("accepts result payloads that include score fields", async () => {
+    vi.resetModules();
+    const createRoundTimer = vi.fn(() => ({
+      on: vi.fn(),
+      off: vi.fn(),
+      start: vi.fn(async () => {})
+    }));
+    const roundUI = await import("../../../src/helpers/classicBattle/roundUI.js");
+
+    await roundUI.handleRoundResolvedEvent(
+      {
+        detail: {
+          store: {},
+          result: {
+            playerScore: 2,
+            opponentScore: 1,
+            matchEnded: false,
+            message: "Round won"
+          }
+        }
+      },
+      {
+        createRoundTimer
+      }
+    );
+
+    const scoreboard = await import("../../../src/helpers/setupScoreboard.js");
+    expect(scoreboard.updateScore).toHaveBeenCalledWith(2, 1);
+    expect(createRoundTimer).toHaveBeenCalledTimes(1);
+  });
+
   it.each([
     ["undefined", undefined],
     ["NaN", { seconds: NaN }]
