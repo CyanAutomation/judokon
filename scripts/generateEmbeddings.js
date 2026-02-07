@@ -1433,7 +1433,9 @@ async function generate() {
     count: entryCount,
     avgVectorLength: avgLength,
     fileSizeKB: Number((stats.size / 1024).toFixed(2)),
-    version: CURRENT_EMBEDDING_VERSION
+    version: CURRENT_EMBEDDING_VERSION,
+    chunkSize: CHUNK_SIZE,
+    overlapRatio: OVERLAP_RATIO
   };
   await writeFile(
     path.join(rootDir, "src/data/client_embeddings.meta.json"),
@@ -1471,6 +1473,8 @@ export {
   normalizeAndFilter,
   extractAllowedValues,
   createSparseVector,
+  CHUNK_SIZE,
+  OVERLAP_RATIO,
   determineTags,
   /** @internal */ __jsonTestHelpers,
   /** @internal */ __codeTestHelpers
