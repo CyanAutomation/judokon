@@ -35,7 +35,7 @@ import { waitForFeatureFlagOverrides } from "./helpers/featureFlagHelper.js";
  * - `playwright/helpers/featureFlagHelper.js` - waitForFeatureFlagOverrides implementation
  */
 const test = base;
-const FLAG_SPEC_PATH = "docs/qa/opponent-delay-message.md";
+const FLAG_SPEC_PATH = "docs/incidents/snackbar-opponent-delay-incident.md";
 
 test.describe("Classic Battle – opponent choosing snackbar", () => {
   async function launchClassicBattle(page, featureFlags) {
