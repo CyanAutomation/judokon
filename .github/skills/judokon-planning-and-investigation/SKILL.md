@@ -13,6 +13,13 @@ This skill is for thinking before coding.
 - Outputs: investigation summary, sources, unknowns, recommended next steps.
 - Non-goals: implementation changes without a follow-up task.
 
+## Key files
+
+- `AGENTS.md`
+- `design/productRequirementsDocuments/prdAIAgentWorkflows.md`
+- `design/productRequirementsDocuments/prdVectorDatabaseRAG.md`
+- `src/helpers/queryRag.js`
+
 ## What this skill helps accomplish
 
 - Avoid reinventing solutions
@@ -48,6 +55,13 @@ This skill is for thinking before coding.
 ## Stop conditions
 
 - If RAG results are weak twice, fallback to targeted file search.
+
+## Operational Guardrails
+
+- **Task Contract**: declare `inputs`, `outputs`, `success`, and `errorMode` before implementation.
+- **RAG-first**: run `queryRag(...)` for How/Why/What/Where/Which work; if results are weak twice, fallback to targeted `rg`/file search.
+- **Validation + targeted tests**: run `npm run check:jsdoc && npx prettier . --check && npx eslint .` plus `npm run check:contrast` when UI changes and only targeted `vitest`/Playwright tests related to changed files.
+- **Critical prohibitions**: no dynamic imports in hot paths (`src/helpers/classicBattle*`, `src/helpers/battleEngineFacade.js`), and no unsilenced `console.warn/error` in tests.
 
 ## Expected output
 

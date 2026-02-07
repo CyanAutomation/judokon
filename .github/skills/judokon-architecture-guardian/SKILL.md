@@ -13,6 +13,13 @@ This skill ensures that all changes respect the established JU-DO-KON! architect
 - Outputs: boundary-compliant change guidance, module placement advice, risk callouts.
 - Non-goals: redesigning architecture or altering public APIs without approval.
 
+## Key files
+
+- `src/helpers/classicBattle.js`
+- `src/helpers/battleEngineFacade.js`
+- `src/components/Scoreboard.js`
+- `design/productRequirementsDocuments/prdDevelopmentStandards.md`
+
 ## What this skill helps accomplish
 
 - Prevent architectural drift
@@ -51,6 +58,13 @@ This skill ensures that all changes respect the established JU-DO-KON! architect
 - Business logic inside rendering functions
 - Implicit coupling between UI and engine internals
 - Duplicated rule definitions across files
+
+## Operational Guardrails
+
+- **Task Contract**: declare `inputs`, `outputs`, `success`, and `errorMode` before implementation.
+- **RAG-first**: run `queryRag(...)` for How/Why/What/Where/Which work; if results are weak twice, fallback to targeted `rg`/file search.
+- **Validation + targeted tests**: run `npm run check:jsdoc && npx prettier . --check && npx eslint .` plus `npm run check:contrast` when UI changes and only targeted `vitest`/Playwright tests related to changed files.
+- **Critical prohibitions**: no dynamic imports in hot paths (`src/helpers/classicBattle*`, `src/helpers/battleEngineFacade.js`), and no unsilenced `console.warn/error` in tests.
 
 ## Check yourself
 

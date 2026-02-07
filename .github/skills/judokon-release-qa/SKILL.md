@@ -13,6 +13,13 @@ This skill thinks like a release manager.
 - Outputs: Go/No-Go assessment, risk list, next actions.
 - Non-goals: rewriting code or skipping required checks.
 
+## Key files
+
+- `AGENTS.md`
+- `design/productRequirementsDocuments/prdDevelopmentStandards.md`
+- `design/productRequirementsDocuments/prdTestingStandards.md`
+- `tests/` and `playwright/`
+
 ## What this skill helps accomplish
 
 - Catch issues before merge
@@ -41,6 +48,13 @@ This skill thinks like a release manager.
 
 - `npm run check:jsdoc`, `npx prettier . --check`, `npx eslint .`
 - `npm run check:contrast` when UI changes exist
+
+## Operational Guardrails
+
+- **Task Contract**: declare `inputs`, `outputs`, `success`, and `errorMode` before implementation.
+- **RAG-first**: run `queryRag(...)` for How/Why/What/Where/Which work; if results are weak twice, fallback to targeted `rg`/file search.
+- **Validation + targeted tests**: run `npm run check:jsdoc && npx prettier . --check && npx eslint .` plus `npm run check:contrast` when UI changes and only targeted `vitest`/Playwright tests related to changed files.
+- **Critical prohibitions**: no dynamic imports in hot paths (`src/helpers/classicBattle*`, `src/helpers/battleEngineFacade.js`), and no unsilenced `console.warn/error` in tests.
 
 ## Expected output
 

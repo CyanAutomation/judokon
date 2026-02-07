@@ -13,6 +13,13 @@ This skill makes verification mandatory.
 - Outputs: updated tests, coverage notes, targeted test commands.
 - Non-goals: full suite runs without need or DOM-mutation tests.
 
+## Key files
+
+- `tests/**/*.test.js`
+- `playwright/*.spec.js`
+- `tests/utils/console.js`
+- `src/helpers/classicBattle.js`
+
 ## What this skill helps accomplish
 
 - Protect game logic from regressions
@@ -48,6 +55,13 @@ This skill makes verification mandatory.
 - Rule evaluation tests
 - Feature flag toggle tests
 - Smoke tests for entry wiring
+
+## Operational Guardrails
+
+- **Task Contract**: declare `inputs`, `outputs`, `success`, and `errorMode` before implementation.
+- **RAG-first**: run `queryRag(...)` for How/Why/What/Where/Which work; if results are weak twice, fallback to targeted `rg`/file search.
+- **Validation + targeted tests**: run `npm run check:jsdoc && npx prettier . --check && npx eslint .` plus `npm run check:contrast` when UI changes and only targeted `vitest`/Playwright tests related to changed files.
+- **Critical prohibitions**: no dynamic imports in hot paths (`src/helpers/classicBattle*`, `src/helpers/battleEngineFacade.js`), and no unsilenced `console.warn/error` in tests.
 
 ## Expected output
 

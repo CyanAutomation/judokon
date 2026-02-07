@@ -13,6 +13,13 @@ This skill turns intent into execution.
 - Outputs: implementation checklist, file targets, test mapping.
 - Non-goals: coding without confirmed requirements.
 
+## Key files
+
+- `design/productRequirementsDocuments/*.md`
+- `src/`
+- `tests/`
+- `playwright/`
+
 ## What this skill helps accomplish
 
 - Faithful PRD implementation
@@ -35,6 +42,13 @@ This skill turns intent into execution.
 
 - Requirement → File(s) → Test(s)
 - Call out missing or ambiguous PRD items explicitly.
+
+## Operational Guardrails
+
+- **Task Contract**: declare `inputs`, `outputs`, `success`, and `errorMode` before implementation.
+- **RAG-first**: run `queryRag(...)` for How/Why/What/Where/Which work; if results are weak twice, fallback to targeted `rg`/file search.
+- **Validation + targeted tests**: run `npm run check:jsdoc && npx prettier . --check && npx eslint .` plus `npm run check:contrast` when UI changes and only targeted `vitest`/Playwright tests related to changed files.
+- **Critical prohibitions**: no dynamic imports in hot paths (`src/helpers/classicBattle*`, `src/helpers/battleEngineFacade.js`), and no unsilenced `console.warn/error` in tests.
 
 ## Expected output
 
