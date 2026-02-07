@@ -5,89 +5,43 @@ description: Enforces JU-DO-KON! architectural boundaries, module responsibiliti
 
 # Skill Instructions
 
-This skill ensures that all changes respect the established JU-DO-KON! architecture.
-
 ## Inputs / Outputs / Non-goals
 
 - Inputs: PRD sections, architecture docs, core engine/UI modules, refactor diffs.
 - Outputs: boundary-compliant change guidance, module placement advice, risk callouts.
 - Non-goals: redesigning architecture or altering public APIs without approval.
 
-## Key files
+## Trigger conditions
 
-- `src/helpers/classicBattle.js`
-- `src/helpers/BattleEngine.js`
-- `src/components/Scoreboard.js`
-- `design/productRequirementsDocuments/prdDevelopmentStandards.md`
+Use this skill when prompts include or imply:
 
-## What this skill helps accomplish
+- Adding new game modes.
+- Refactoring battle logic or state machines.
+- Reviewing AI-generated code for architectural correctness.
 
-- Prevent architectural drift
-- Maintain separation of concerns
-- Preserve the Battle Engine mental model
-- Ensure UI, engine, and data layers remain decoupled
+## Mandatory rules
 
-## When to use this skill
+- Battle Engine owns rules and outcomes; UI does not own gameplay rules.
+- Engine logic must not access DOM APIs.
+- UI is reactive and reads state via facades instead of mutating engine state directly.
+- JSON remains the source of truth for battle states, judoka data, and configuration.
+- Experimental behavior must be feature-flagged.
+- Avoid anti-patterns: business logic in rendering functions, implicit UI/engine coupling, duplicated rule definitions.
 
-- Adding new game modes
-- Refactoring battle logic
-- Modifying state machines
-- Reviewing AI-generated code for correctness
+## Validation checklist
 
-## Core architectural rules (must follow)
+- [ ] Validate no dynamic imports in hot paths: `grep -RIn "await import\(" src/helpers/classicBattle src/helpers/BattleEngine.js src/helpers/battle 2>/dev/null`.
+- [ ] Validate no unsilenced `console.warn/error` in tests: `grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js"`.
+- [ ] Run core checks: `npm run check:jsdoc && npx prettier . --check && npx eslint . && npm run check:contrast`.
+- [ ] Run targeted tests for changed files.
 
-1. **Battle Engine owns rules and outcomes**
-   - No game rules in UI components
-   - No DOM access inside engine logic
-2. **UI is reactive, not authoritative**
-   - UI reads state, never mutates it directly
-3. **JSON is the source of truth**
-   - Battle states, judoka data, and configuration live in JSON
-4. **Facades define boundaries**
-   - External callers interact through facades, not internals
-5. **Feature flags gate behaviour**
-   - Experimental logic must be flag-protected
+## Expected output format
 
-## Boundary examples
+- Boundary assessment with exact module placement guidance.
+- Violations list (if any) with remediation suggestions.
+- Risk notes for coupling, API, and feature-flag exposure.
 
-- UI can render a timer display; engine computes timer state and transitions.
-- UI reads state from facades; engine never imports or touches DOM helpers.
+## Failure/stop conditions
 
-## Anti-patterns (must avoid)
-
-- Business logic inside rendering functions
-- Implicit coupling between UI and engine internals
-- Duplicated rule definitions across files
-
-## Operational Guardrails
-
-- **Task Contract (required before implementation):**
-  - `inputs`: exact files/data/commands you will use.
-  - `outputs`: exact files/tests/docs you will change.
-  - `success`: required outcomes (checks/tests/log discipline).
-  - `errorMode`: explicit stop condition (for example: ask on public API change).
-- **RAG-first rule + fallback process:**
-  1. Use `queryRag(...)` first for How/Why/What/Where/Which questions and implementation lookups.
-  2. If results are weak, rephrase and run a second RAG query.
-  3. If still weak, fall back to targeted `rg`/file search and cite what was checked.
-- **Required validation commands + targeted-test policy:**
-  - Run core checks: `npm run check:jsdoc && npx prettier . --check && npx eslint . && npm run check:contrast`.
-  - Run only targeted tests for changed files (`npx vitest run <path>` / focused Playwright spec). Run full suite only for cross-cutting changes.
-- **Critical prohibitions (must not violate):**
-  - No dynamic imports in hot paths: `src/helpers/classicBattle*`, `src/helpers/BattleEngine.js`, `src/helpers/battle/*`.
-  - No unsilenced `console.warn/error` in tests (use `tests/utils/console.js` helpers).
-  - Validate prohibitions with:
-    - `grep -RIn "await import\(" src/helpers/classicBattle src/helpers/BattleEngine.js src/helpers/battle 2>/dev/null`
-    - `grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js"`
-
-## Check yourself
-
-- No dynamic imports in hot paths (`src/helpers/classicBattle*`, `src/helpers/BattleEngine.js`).
-- Engine logic has no DOM access; UI does not own rules.
-- New logic behind flags when experimental.
-
-## Expected output
-
-- Clear explanation of where changes belong
-- Suggested module placement
-- Warnings when boundaries are crossed
+- Stop when a requested change requires unapproved public API or architectural boundary breaks.
+- Stop when required validations cannot be executed and provide blocker details.
