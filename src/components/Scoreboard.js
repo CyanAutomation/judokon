@@ -98,6 +98,7 @@ export class Scoreboard {
     this.view = view;
     this.adapter = createScoreboardDomAdapter({ model, view });
     this.core = createScoreboardCore(this.adapter);
+    this.core.start();
   }
 
   /**
