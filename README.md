@@ -15,6 +15,17 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 
 ---
 
+## 📚 Doc Ownership Matrix
+
+### Summary
+
+- Contributor workflow and collaboration expectations are maintained in [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+- Agent workflow, policy guardrails, and delivery rules are maintained in [`AGENTS.md`](./AGENTS.md).
+- Full validation command catalog is canonical in [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks).
+- Test quality command catalog is canonical in [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference).
+
+---
+
 ## 📖 About the Game
 
 JU-DO-KON! is a strategic digital card game inspired by Top Trumps, featuring judo athletes from around the world. Each card is assigned attributes like **Power**, **Technique**, **Speed**, and more—allowing players to battle judoka in quick, decisive rounds. The game is built using modern **HTML/CSS/JavaScript** and runs as a static site on GitHub Pages without any bundler.
@@ -128,15 +139,14 @@ AI agents should begin by reading:
 - ✅ Validate stat blocks against rarity rules
 - ✅ Generate or evaluate PRDs for new features
 
-Before committing code changes, run the full validation suite to verify docs, formatting, lint, tests, and contrast.
-For the complete command reference and troubleshooting, see [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) and the test-focused playbooks in [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference).
-For contributor-specific guidance, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+### ✅ Validation Summary
 
-**Quick validation (essential checks):**
+- Run the checks that match your scope first (formatting, lint, JSDoc, targeted Vitest, targeted Playwright, and contrast when UI changes are involved).
+- Keep validation deterministic: fix failures before widening scope to additional checks.
+- Use contributor workflow guidance in [CONTRIBUTING.md](./CONTRIBUTING.md) for day-to-day contribution flow.
+- Use the canonical command catalogs for exact command variants and troubleshooting.
 
-```bash
-npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast
-```
+Canonical links: [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) · [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference).
 
 This suite includes a DOM regression test (`tests/pages/battleJudoka.dom.test.js`) that loads `battleJudoka.html` and fails if required IDs (`next-button`, `stat-help`, `quit-match-button`, `stat-buttons`) are missing.
 
