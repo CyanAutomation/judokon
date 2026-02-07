@@ -221,7 +221,7 @@ function formatReport(report) {
     if (!config.valid) {
       console.log("  1. Check configuration: npm run validate:rag:config");
       console.log(
-        "  2. Review scripts/prepareLocalModel.mjs and src/helpers/api/vectorSearchPage.js"
+        "  2. Review scripts/prepareLocalModel.mjs and src/helpers/api/ragExtractor.js"
       );
     }
     if (!query.working) {
