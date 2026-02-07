@@ -3,12 +3,12 @@ import { isNodeEnvironment } from "../env.js";
 const HYDRATION_GUIDANCE_MESSAGE =
   "Network unreachable while loading remote MiniLM model. " +
   "Fix: hydrate a local model at models/minilm via `npm run rag:prepare:models -- --from-dir <path>` " +
-  "or run with RAG_STRICT_OFFLINE=1 to avoid CDN attempts. " +
-  "Optionally enable degraded search with RAG_ALLOW_LEXICAL_FALLBACK=1.";
+  "or run with SEARCH_STRICT_OFFLINE=1 to avoid CDN attempts. " +
+  "Optionally enable degraded search with SEARCH_ALLOW_LEXICAL_FALLBACK=1.";
 
 const STRICT_OFFLINE_MESSAGE =
   "Strict offline mode: local model missing at models/minilm. " +
-  "Provide a local MiniLM (quantized) or unset RAG_STRICT_OFFLINE.";
+  "Provide a local MiniLM (quantized) or unset SEARCH_STRICT_OFFLINE.";
 
 function createHydrationGuidanceError(cause) {
   const wrapped = new Error(HYDRATION_GUIDANCE_MESSAGE);
@@ -123,7 +123,7 @@ export async function getExtractor() {
         env.backends.onnx.wasm.proxy = false;
         const modelDir = "models/minilm";
         const modelDirAbs = resolve(rootDir, modelDir);
-        const strictOffline = process?.env?.RAG_STRICT_OFFLINE === "1";
+        const strictOffline = process?.env?.SEARCH_STRICT_OFFLINE === "1";
         console.debug(
           `[RAG] Checking for local model at: ${modelDirAbs} (strict offline: ${strictOffline})`
         );
@@ -199,7 +199,7 @@ export async function getExtractor() {
           console.log("RAG: Successfully loaded local MiniLM model.");
         }
       } else {
-        if (typeof process !== "undefined" && process?.env?.RAG_STRICT_OFFLINE === "1") {
+        if (typeof process !== "undefined" && process?.env?.SEARCH_STRICT_OFFLINE === "1") {
           throw new Error(
             "Strict offline mode: browser CDN path disabled. Provide local model in Node."
           );

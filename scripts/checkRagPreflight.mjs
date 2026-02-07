@@ -2,7 +2,7 @@
  * RAG preflight checks for CI and local validation.
  *
  * Checks:
- * - Strict offline model presence when RAG_STRICT_OFFLINE=1
+ * - Strict offline model presence when SEARCH_STRICT_OFFLINE=1
  * - Offline artifacts consistency: metadata vs binary vector file
  */
 import path from "node:path";
@@ -15,16 +15,16 @@ const srcDir = path.join(rootDir, "src");
 const minilmDir = path.join(rootDir, "models", "minilm");
 
 const MODEL_THRESHOLD_CONFIG = [
-  { relPath: "config.json", envKey: "RAG_CONFIG_MIN_BYTES", defaultBytes: 400 },
-  { relPath: "tokenizer.json", envKey: "RAG_TOKENIZER_MIN_BYTES", defaultBytes: 1_000 },
+  { relPath: "config.json", envKey: "SEARCH_CONFIG_MIN_BYTES", defaultBytes: 400 },
+  { relPath: "tokenizer.json", envKey: "SEARCH_TOKENIZER_MIN_BYTES", defaultBytes: 1_000 },
   {
     relPath: "tokenizer_config.json",
-    envKey: "RAG_TOKENIZER_CONFIG_MIN_BYTES",
+    envKey: "SEARCH_TOKENIZER_CONFIG_MIN_BYTES",
     defaultBytes: 300
   },
   {
     relPath: path.join("onnx", "model_quantized.onnx"),
-    envKey: "RAG_MODEL_MIN_BYTES",
+    envKey: "SEARCH_MODEL_MIN_BYTES",
     defaultBytes: 300 * 1024
   }
 ];
@@ -54,7 +54,7 @@ function formatBytes(bytes) {
 }
 
 export async function checkStrictOfflineModel(env = process.env) {
-  const strict = env?.RAG_STRICT_OFFLINE === "1";
+  const strict = env?.SEARCH_STRICT_OFFLINE === "1";
   const modelDir = minilmDir;
   const missing = [];
   const undersized = [];
@@ -121,7 +121,7 @@ export async function checkStrictOfflineModel(env = process.env) {
 
   console.warn(
     `Offline model files missing in models/minilm (${missing.join(", ")}). ` +
-      `Run "${MODEL_PREP_COMMAND}" or enable RAG_STRICT_OFFLINE=1 to skip offline validation.`
+      `Run "${MODEL_PREP_COMMAND}" or enable SEARCH_STRICT_OFFLINE=1 to skip offline validation.`
   );
 
   return { ok: true, errors: [] };

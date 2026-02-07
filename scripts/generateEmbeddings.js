@@ -46,14 +46,15 @@ import { createRequire } from "node:module";
 import { glob } from "glob";
 import * as acorn from "acorn";
 import { walk } from "estree-walker";
-import { CHUNK_SIZE, OVERLAP_RATIO } from "../src/helpers/vectorSearch/chunkConfig.js";
-import { CURRENT_EMBEDDING_VERSION } from "../src/helpers/vectorSearch/loader.js";
 import { deriveContextPath } from "./generation/contextPathHelper.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 const nodeRequire = createRequire(import.meta.url);
 
+const CHUNK_SIZE = 1200;
+const OVERLAP_RATIO = 0.25;
+const CURRENT_EMBEDDING_VERSION = 1;
 const STOP_WORDS = new Set([
   "a",
   "an",

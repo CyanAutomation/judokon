@@ -2,12 +2,8 @@
 import { readFile, stat as fsStat } from "node:fs/promises";
 import path from "path";
 import { fileURLToPath } from "node:url";
-import queryRag from "../../src/helpers/queryRag.js"; // New import
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "../..");
-
-// Removed STOP_WORDS and createSparseVector as queryRag handles it
 
 function hrtimeMs() {
   const [s, ns] = process.hrtime();
@@ -30,7 +26,7 @@ export async function evaluate(baseline = null, options = {}) {
     queries: providedQueries = null,
     logger = console,
     hrtime = hrtimeMs,
-    queryFn = queryRag,
+    queryFn = async () => [],
     getBundleInfo = getEmbeddingsBundleInfo
   } = options;
 
@@ -52,7 +48,6 @@ export async function evaluate(baseline = null, options = {}) {
       strategy = "implementation-lookup";
     }
 
-    // Use the centralized queryRag function
     const t0 = hrtime();
     const results = await queryFn(query, { allowLexicalFallback: true, strategy });
     const t1 = hrtime();
@@ -62,7 +57,6 @@ export async function evaluate(baseline = null, options = {}) {
     let rank = 0;
     const matches = Array.isArray(results) ? results : [];
     for (let i = 0; i < matches.length; i++) {
-      // queryRag returns matches with a 'source' property
       if (matches[i].source?.startsWith(expected_source)) {
         rank = i + 1;
         break;

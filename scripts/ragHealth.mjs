@@ -22,7 +22,7 @@ import { stat } from "node:fs/promises";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 
-const RAG_CONFIG = {
+const HEALTH_CONFIG = {
   minilmDir: path.join(rootDir, "models/minilm"),
   files: [
     { name: "config.json", minBytes: 400 },
@@ -40,8 +40,8 @@ async function checkLocalModel() {
   const files = [];
   let totalSize = 0;
 
-  for (const file of RAG_CONFIG.files) {
-    const filePath = path.join(RAG_CONFIG.minilmDir, file.name);
+  for (const file of HEALTH_CONFIG.files) {
+    const filePath = path.join(HEALTH_CONFIG.minilmDir, file.name);
     try {
       const stats = await stat(filePath);
       const isValid = stats.size >= file.minBytes;
@@ -106,35 +106,13 @@ async function checkConfiguration() {
  * @returns {Promise<{working: boolean, modelSource: string, timing: number}>}
  */
 async function testRagQuery() {
-  try {
-    const start = performance.now();
-    const { default: queryRag } = await import("../src/helpers/queryRag.js");
-
-    // Test query with diagnostics
-    const results = await queryRag("test query", {
-      withDiagnostics: true,
-      withProvenance: true
-    });
-
-    const timing = performance.now() - start;
-    const modelSource = process.env.RAG_MODEL_SOURCE || "unknown";
-
-    return {
-      working: results && results.length > 0,
-      results: results ? results.length : 0,
-      modelSource,
-      timing: Math.round(timing),
-      error: null
-    };
-  } catch (err) {
-    return {
-      working: false,
-      results: 0,
-      modelSource: "error",
-      timing: 0,
-      error: err.message
-    };
-  }
+  return {
+    working: false,
+    results: 0,
+    modelSource: "removed",
+    timing: 0,
+    error: "RAG query runtime removed"
+  };
 }
 
 /**
@@ -142,7 +120,7 @@ async function testRagQuery() {
  * @param {Object} report - The complete health check report
  */
 function formatReport(report) {
-  const { localModel, config, query, offlineMode } = report;
+  const { localModel, config, query } = report;
 
   console.log("\n═══════════════════════════════════════════════════════════════");
   console.log("                    RAG SYSTEM HEALTH CHECK");
@@ -195,11 +173,7 @@ function formatReport(report) {
 
   // Offline Mode Status
   console.log("\n🔌 OFFLINE MODE:");
-  if (offlineMode.enabled) {
-    console.log("  ✅ RAG_STRICT_OFFLINE=1 enabled");
-  } else {
-    console.log("  ℹ️  RAG_STRICT_OFFLINE not enabled (network fallback available)");
-  }
+  console.log("  ℹ️  RAG env flag checks removed");
 
   // Overall Status
   console.log("\n═══════════════════════════════════════════════════════════════");
@@ -248,7 +222,7 @@ async function runHealthCheck() {
       localModel,
       config,
       query,
-      offlineMode: { enabled: process.env.RAG_STRICT_OFFLINE === "1" }
+      offlineMode: { enabled: false }
     };
 
     formatReport(report);
