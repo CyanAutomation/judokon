@@ -458,16 +458,20 @@ function runHelper(name, helper, args) {
  *
  * @pseudocode
  * 1. Locate the `<header>` element.
- * 2. Attach the scheduler to `controls` and pass both to `initScoreboard()` so
- *    the module can query its children.
+ * 2. Resolve the scheduler dependency from direct arg or options object.
+ * 3. Attach the scheduler to `controls` and pass both to `initScoreboard()`.
  *
  * @param {object} controls - Timer control callbacks.
- * @param {object} [scheduler=realScheduler] - Timer scheduler.
+ * @param {object} [schedulerOrOptions=realScheduler] - Timer scheduler or options with `scheduler`.
  * @returns {void}
  */
-export function setupScoreboard(controls, scheduler = realScheduler) {
+export function setupScoreboard(controls, schedulerOrOptions = realScheduler) {
   const safeControls = controls ?? {};
-  safeControls.scheduler = scheduler;
+  const resolvedScheduler =
+    schedulerOrOptions && typeof schedulerOrOptions.setTimeout === "function"
+      ? schedulerOrOptions
+      : (schedulerOrOptions?.scheduler ?? realScheduler);
+  safeControls.scheduler = resolvedScheduler;
   const headerTarget = domAvailable ? document.querySelector("header") : null;
   runHelper("initScoreboard", getScoreboardMethod("initScoreboard"), [headerTarget, safeControls]);
   scoreboardInitialized = true;
