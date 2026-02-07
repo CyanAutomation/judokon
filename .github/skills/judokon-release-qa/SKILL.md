@@ -74,6 +74,10 @@ This skill thinks like a release manager.
 
 - For coding execution, hand off to `judokon-implementation-engineer` at `.github/skills/judokon-implementation-engineer/SKILL.md`.
 
+## Delivery-time handoff target
+
+- For PR title/body assembly and required delivery sections, hand off to `judokon-pr-delivery` at `.github/skills/judokon-pr-delivery/SKILL.md`.
+
 ## Expected output
 
 - Go / No-Go assessment
