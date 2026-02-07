@@ -541,7 +541,7 @@ if (!["cooldown", "roundStart"].includes(machine.getState())) return;
 
 ### References
 
-- [TEST_INVESTIGATION_SUMMARY.md](../../TEST_INVESTIGATION_SUMMARY.md) - Race condition fixes (Dec 2025 - Jan 2026)
+- [TEST_INVESTIGATION_SUMMARY.md](../../docs/status/archive/TEST_INVESTIGATION_SUMMARY.md) - Race condition fixes (Dec 2025 - Jan 2026)
 - [docs/state-flags-lifecycle.md](../../docs/state-flags-lifecycle.md) - Flag lifecycle documentation
 - [src/helpers/classicBattle/stateGuards.js](../../src/helpers/classicBattle/stateGuards.js) - Guard utilities
 - [src/helpers/classicBattle/selectionState.js](../../src/helpers/classicBattle/selectionState.js) - Unified selection state management

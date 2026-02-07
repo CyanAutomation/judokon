@@ -57,7 +57,7 @@ The classic battle system uses multiple boolean flags to track selection state, 
 
 ⚠️ **Race Condition Risk**: Setting `selectionMade` to `true` after a state transition can cause the flag to persist into the next round if not properly reset.
 
-**Solution**: Always reset on `roundSelect` entry (see [opponent-reveal.spec.js fix](../TEST_INVESTIGATION_SUMMARY.md#6-opponent-revealspecjs---resets-stat-selection-after-advancing-to-the-next-round-)).
+**Solution**: Always reset on `roundSelect` entry (see [opponent-reveal.spec.js fix](./status/archive/TEST_INVESTIGATION_SUMMARY.md#6-opponent-revealspecjs---resets-stat-selection-after-advancing-to-the-next-round-)).
 
 ---
 
@@ -264,7 +264,7 @@ console.log("selectionFinalized:", snapshot.selectionFinalized);
 
 ## Related Documentation
 
-- [TEST_INVESTIGATION_SUMMARY.md](../TEST_INVESTIGATION_SUMMARY.md) - Recent race condition fixes
+- [TEST_INVESTIGATION_SUMMARY.md](./status/archive/TEST_INVESTIGATION_SUMMARY.md) - Recent race condition fixes
 - [initialization-sequence.md](initialization-sequence.md) - Battle initialization phases
 - [AGENTS.md](../AGENTS.md) - Agent development guidelines
 - [prdStateHandler.md](../design/productRequirementsDocuments/prdStateHandler.md) - State handler specifications

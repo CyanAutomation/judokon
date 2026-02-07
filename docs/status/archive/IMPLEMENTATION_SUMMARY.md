@@ -2,7 +2,7 @@
 
 **Date**: January 2, 2026  
 **Status**: ✅ COMPLETED  
-**Related**: [TEST_INVESTIGATION_SUMMARY.md](TEST_INVESTIGATION_SUMMARY.md), [AGENTS.md](AGENTS.md)
+**Related**: [TEST_INVESTIGATION_SUMMARY.md](TEST_INVESTIGATION_SUMMARY.md), [AGENTS.md](../../../AGENTS.md)
 
 ---
 
@@ -508,7 +508,7 @@ npx playwright test playwright/battle-classic/opponent-reveal.spec.js
 ## Related Documentation
 
 - **Investigation**: [TEST_INVESTIGATION_SUMMARY.md](TEST_INVESTIGATION_SUMMARY.md) - Original race condition analysis
-- **Agent Guide**: [AGENTS.md](AGENTS.md) - Development guidelines
+- **Agent Guide**: [AGENTS.md](../../../AGENTS.md) - Development guidelines
 - **Flag Lifecycle**: [docs/state-flags-lifecycle.md](docs/state-flags-lifecycle.md) - Flag documentation
 - **State Handler PRD**: [design/productRequirementsDocuments/prdStateHandler.md](design/productRequirementsDocuments/prdStateHandler.md) - Async safety patterns
 - **Testing Standards**: [design/productRequirementsDocuments/prdTestingStandards.md](design/productRequirementsDocuments/prdTestingStandards.md) - Test quality standards
