@@ -82,9 +82,9 @@ describe("battleCLI visibility change handling", () => {
 
 
   it("keeps lifecycle listeners idempotent when wireEvents is called multiple times", async () => {
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-    const mod = await loadBattleCLI();
-    await mod.init();
+  it("keeps lifecycle listeners idempotent when wireEvents is called multiple times", async () => {
+    await withMutedConsole(async () => {
+      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     mod.wireEvents();
     mod.wireEvents();
