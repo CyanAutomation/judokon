@@ -1,11 +1,15 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import "./commonMocks.js";
 import createClassicBattleDebugAPI from "../../../src/helpers/classicBattle/setupTestHelpers.js";
 import setupScheduler, {
   shouldStartScheduler
 } from "../../../src/helpers/classicBattle/setupScheduler.js";
-import setupUIBindings from "../../../src/helpers/classicBattle/setupUIBindings.js";
+import {
+  setupUIBindings,
+  unbindReplayClickListener
+} from "../../../src/helpers/classicBattle/setupUIBindings.js";
 import setupDebugHooks from "../../../src/helpers/classicBattle/setupDebugHooks.js";
+import { naturalClick } from "../../utils/componentTestUtils.js";
 
 vi.mock("../../../src/helpers/classicBattle/statButtons.js", () => ({
   resetStatButtons: vi.fn()
@@ -66,6 +70,10 @@ const debugPanel = await import("../../../src/helpers/classicBattle/debugPanel.j
 const events = await import("../../../src/helpers/classicBattle/battleEvents.js");
 const roundManager = await import("../../../src/helpers/classicBattle/roundManager.js");
 const testModeUtils = await import("../../../src/helpers/testModeUtils.js");
+
+afterEach(() => {
+  unbindReplayClickListener();
+});
 
 function makeView() {
   return {
@@ -257,6 +265,8 @@ describe("setupUIBindings", () => {
   });
 
   it("does not register duplicate replay listeners when setup runs twice", async () => {
+    // This test validates delegated document click behavior end-to-end.
+    // A real button is required so `closest(...)` resolution matches production flow.
     const view = makeView();
     const replayButton = document.createElement("button");
     replayButton.setAttribute("data-testid", "replay-button");
@@ -266,11 +276,29 @@ describe("setupUIBindings", () => {
     await setupUIBindings(view);
     await setupUIBindings(view);
 
-    replayButton.click();
+    naturalClick(replayButton);
     await Promise.resolve();
 
     expect(roundManager.handleReplay).toHaveBeenCalledTimes(1);
     expect(roundManager.handleReplay).toHaveBeenCalledWith(view.controller.battleStore);
+
+    replayButton.remove();
+  });
+
+  it("unbindReplayClickListener removes replay delegation and clears state", async () => {
+    const view = makeView();
+    const replayButton = document.createElement("button");
+    replayButton.setAttribute("data-testid", "replay-button");
+    document.body.append(replayButton);
+
+    roundManager.handleReplay.mockClear();
+    await setupUIBindings(view);
+    unbindReplayClickListener();
+
+    naturalClick(replayButton);
+    await Promise.resolve();
+
+    expect(roundManager.handleReplay).not.toHaveBeenCalled();
 
     replayButton.remove();
   });
