@@ -79,6 +79,53 @@ describe("battleCLI visibility change handling", () => {
     delete window.battleStore;
   });
 
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
+import { withMutedConsole } from "../utils/console.js";
+
+  it("keeps lifecycle listeners idempotent when wireEvents is called multiple times", async () => {
+    await withMutedConsole(async () => {
+      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+      const mod = await loadBattleCLI();
+      await mod.init();
+
+      mod.wireEvents();
+      mod.wireEvents();
+
+      const countLogs = (message) =>
+        consoleSpy.mock.calls.filter(([logged]) => logged === message).length;
+
+      const pauseBefore = countLogs("[TIMER] pauseTimers called");
+      const resumeBefore = countLogs("[TIMER] resumeTimers called");
+
+      Object.defineProperty(document, "hidden", { value: true, configurable: true });
+      document.dispatchEvent(new Event("visibilitychange"));
+
+      const pauseAfterVisibilityHidden = countLogs("[TIMER] pauseTimers called");
+      expect(pauseAfterVisibilityHidden - pauseBefore).toBe(1);
+
+      Object.defineProperty(document, "hidden", { value: false, configurable: true });
+      document.dispatchEvent(new Event("visibilitychange"));
+
+      const resumeAfterVisibilityVisible = countLogs("[TIMER] resumeTimers called");
+      expect(resumeAfterVisibilityVisible - resumeBefore).toBe(1);
+
+      const pauseBeforePageHide = countLogs("[TIMER] pauseTimers called");
+      window.dispatchEvent(new Event("pagehide"));
+      const pauseAfterPageHide = countLogs("[TIMER] pauseTimers called");
+      expect(pauseAfterPageHide - pauseBeforePageHide).toBe(1);
+
+      const resumeBeforePageShow = countLogs("[TIMER] resumeTimers called");
+      const pageShow = new Event("pageshow");
+      Object.defineProperty(pageShow, "persisted", { value: true, configurable: true });
+      window.dispatchEvent(pageShow);
+      const resumeAfterPageShow = countLogs("[TIMER] resumeTimers called");
+      expect(resumeAfterPageShow - resumeBeforePageShow).toBe(1);
+
+      consoleSpy.mockRestore();
+    });
+  });
+
   it("calls engine handleTabActive when tab becomes visible", async () => {
     const mod = await loadBattleCLI();
     await mod.init();

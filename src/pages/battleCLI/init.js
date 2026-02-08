@@ -15,6 +15,7 @@ import {
 import * as battleOrchestrator from "../../helpers/classicBattle/orchestrator.js";
 import {
   onBattleEvent,
+  offBattleEvent,
   emitBattleEvent,
   resetBattleEventDedupeState
 } from "../../helpers/classicBattle/battleEvents.js";
@@ -345,6 +346,7 @@ let pausedCooldownRemaining = null;
 let commandHistory = [];
 let historyIndex = -1;
 let historyAnchorStat = null;
+let eventsWired = false;
 const SHORTCUT_HINT_MESSAGES = {
   default:
     "Use keys 1 through 5 to choose a stat, Enter or Space to continue, H to toggle help, and Q to quit.",
@@ -389,6 +391,9 @@ try {
      * @returns {void}
      */
     __resetModuleState() {
+      // Remove listeners first so test resets do not retain duplicate handlers.
+      unwireEvents();
+
       // Clear any active timers so state resets don't leave async handlers running.
       stopSelectionCountdown();
       clearCooldownTimers();
@@ -425,6 +430,9 @@ try {
       commandHistory = [];
       historyIndex = -1;
       historyAnchorStat = null;
+
+      // Listener state
+      eventsWired = false;
 
       // Cache state
       cachedStatDefs = null;
@@ -680,6 +688,8 @@ export const __test = {
   showShortcutsPanel: showCliShortcuts,
   hideShortcutsPanel: hideCliShortcuts,
   updateCliShortcutsVisibility,
+  wireEvents,
+  unwireEvents,
   // Expose init for tests to manually initialize without DOMContentLoaded
   init,
   // Phase 4: Removed handleScoreboardShowMessage and handleScoreboardClearMessage exports
@@ -3313,6 +3323,89 @@ function handleBattleStateChange({ from, to }) {
 }
 
 /**
+ * Pause timers and engine countdown when the document is hidden.
+ *
+ * @returns {void}
+ */
+function handleVisibilityChange() {
+  if (typeof document === "undefined") {
+    return;
+  }
+  if (document.hidden) {
+    pauseTimers();
+    try {
+      if (store?.engine?.handleTabInactive) {
+        store.engine.handleTabInactive();
+      }
+    } catch (err) {
+      console.log("[TIMER] Engine pause failed:", err.message);
+    }
+    return;
+  }
+  resumeTimers();
+  try {
+    if (store?.engine?.handleTabActive) {
+      store.engine.handleTabActive();
+    }
+  } catch (err) {
+    console.log("[TIMER] Engine resume failed:", err.message);
+  }
+}
+
+/**
+ * Resume timers when a page is restored from bfcache.
+ *
+ * @param {PageTransitionEvent} event - The `pageshow` event payload.
+ * @returns {void}
+ */
+function handlePageShow(event) {
+  try {
+    if (event?.persisted) {
+      resumeTimers();
+    }
+  } catch {}
+}
+
+/**
+ * Pause timers before the page is hidden or unloaded.
+ *
+ * @returns {void}
+ */
+function handlePageHide() {
+  try {
+    pauseTimers();
+  } catch {}
+}
+
+/**
+ * Remove CLI lifecycle and interaction listeners previously wired by `wireEvents`.
+ *
+ * @returns {void}
+ * @pseudocode
+ * if not currently wired → return
+ * remove battle state listener from battle event bus
+ * remove keydown/pageshow/pagehide listeners from window
+ * remove click/visibility listeners from document
+ * mark listeners as unwired
+ */
+export function unwireEvents() {
+  if (!eventsWired) {
+    return;
+  }
+  offBattleEvent("battleStateChange", handleBattleStateChange);
+  if (typeof window !== "undefined") {
+    window.removeEventListener("keydown", onKeyDown);
+    window.removeEventListener("pageshow", handlePageShow);
+    window.removeEventListener("pagehide", handlePageHide);
+  }
+  if (typeof document !== "undefined") {
+    document.removeEventListener("click", onClickAdvance);
+    document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }
+  eventsWired = false;
+}
+
+/**
  * Bind classic battle CLI interactions and lifecycle hooks to the page.
  *
  * @summary Install CLI-specific DOM bindings and lifecycle listeners so the
@@ -3334,50 +3427,20 @@ export function wireEvents() {
   // Bug: If this call is missing, snackbars (like "You Picked: X") persist across rounds.
   bindRoundFlowControllerOnce();
   bindRoundUIEventHandlersDynamic();
+  if (eventsWired) {
+    return;
+  }
   onBattleEvent("battleStateChange", handleBattleStateChange);
   if (typeof window !== "undefined") {
     window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("pageshow", handlePageShow);
+    window.addEventListener("pagehide", handlePageHide);
   }
   if (typeof document !== "undefined") {
     document.addEventListener("click", onClickAdvance);
-    try {
-      document.addEventListener("visibilitychange", () => {
-        if (document.hidden) {
-          pauseTimers();
-          // Also pause engine timer if available
-          try {
-            if (store?.engine?.handleTabInactive) {
-              store.engine.handleTabInactive();
-            }
-          } catch (err) {
-            console.log("[TIMER] Engine pause failed:", err.message);
-          }
-        } else {
-          resumeTimers();
-          // Also resume engine timer if available
-          try {
-            if (store?.engine?.handleTabActive) {
-              store.engine.handleTabActive();
-            }
-          } catch (err) {
-            console.log("[TIMER] Engine resume failed:", err.message);
-          }
-        }
-      });
-      if (typeof window !== "undefined") {
-        window.addEventListener("pageshow", (ev) => {
-          try {
-            if (ev && ev.persisted) resumeTimers();
-          } catch {}
-        });
-        window.addEventListener("pagehide", () => {
-          try {
-            pauseTimers();
-          } catch {}
-        });
-      }
-    } catch {}
+    document.addEventListener("visibilitychange", handleVisibilityChange);
   }
+  eventsWired = true;
 }
 
 /**
