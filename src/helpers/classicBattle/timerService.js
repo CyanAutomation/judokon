@@ -207,6 +207,28 @@ export function bindCountdownEventHandlersOnce() {
 }
 
 /**
+ * Resolve the active battle store for Next-button processing.
+ *
+ * @param {{selectionMade?: boolean}|null} [store=null] - Candidate store provided by caller.
+ * @returns {{selectionMade?: boolean}|null} Active battle store when available.
+ * @pseudocode
+ * 1. Return the caller-provided store when it looks like an object.
+ * 2. Otherwise fall back to `window.battleStore` when present.
+ * 3. Return null when no store can be resolved.
+ */
+function resolveActiveBattleStore(store = null) {
+  if (store && typeof store === "object") {
+    return store;
+  }
+
+  if (typeof window !== "undefined" && window?.battleStore) {
+    return window.battleStore;
+  }
+
+  return null;
+}
+
+/**
  * Click handler for the Next button.
  *
  * Emits a single `skipCooldown` intent to let the engine decide when to
@@ -215,14 +237,17 @@ export function bindCountdownEventHandlersOnce() {
  * @pseudocode
  * 1. Ignore clicks when the button is disabled or another click is in-flight.
  * 2. If cooldown controls are available, emit `skipCooldown` on the battle event bus.
- * 3. Always reset selection finalization state on exit.
+ * 3. Resolve the active battle store from parameters or global battle context.
+ * 4. Always reset selection finalization state on exit.
  *
  * @param {MouseEvent} _evt - Click event.
  * @param {{timer: {stop: () => void} | null, resolveReady: (() => void) | null}} [controls=getNextRoundControls()]
  * - Timer controls returned from `startCooldown`.
+ * @param {{selectionMade?: boolean}|null} [store=null] - Optional battle store reference for selection reset state.
  * @returns {Promise<void>}
  */
-export async function onNextButtonClick(_evt, controls = getNextRoundControls()) {
+export async function onNextButtonClick(_evt, controls = getNextRoundControls(), store = null) {
+  const activeStore = resolveActiveBattleStore(store);
   const btn =
     _evt?.target ||
     document.getElementById("next-button") ||
@@ -257,7 +282,7 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls())
     nextClickInFlight = false;
     try {
       // Use unified selection state API (store.selectionMade is source of truth)
-      resetSelectionFinalized(null);
+      resetSelectionFinalized(activeStore);
     } catch {}
   }
 }
