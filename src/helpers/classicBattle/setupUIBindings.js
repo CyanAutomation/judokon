@@ -74,7 +74,9 @@ function bindReplayClickListener(store) {
 
   replayStoreRef = store;
   document.addEventListener("click", onDocumentReplayClick, { capture: true });
-  window.addEventListener("pagehide", unbindReplayClickListener, { once: true });
+  if (!isReplayClickBound) {
+    window.addEventListener("pagehide", unbindReplayClickListener, { once: true });
+  }
   isReplayClickBound = true;
 }
 
