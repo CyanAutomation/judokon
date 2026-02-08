@@ -88,9 +88,11 @@ This section outlines how each round broadcasts state changes to keep the UI, Sc
 
 Classic Battle emits three deterministic UI events per round that coordinate the stat buttons, Scoreboard, and cooldown timers:
 
-1. **`roundStarted`** — resets button states, preps the countdown timers, and synchronises the Scoreboard (see [Functional Requirements](#functional-requirements)).
-2. **`statSelected`** — highlights the chosen stat button, locks out further picks, and optionally surfaces the "You picked" snackbar referenced in [Technical Considerations](#technical-considerations).
-3. **`roundResolved`** — pushes the outcome to the Scoreboard, updates scores, schedules the inter-round countdown, and clears any stat highlight before the next `roundStarted` event.
+1. **`round.started`** — resets button states, preps the countdown timers, and synchronises the Scoreboard (see [Functional Requirements](#functional-requirements)).
+2. **`round.selection.locked`** — highlights the chosen stat button, locks out further picks, and optionally surfaces the "You picked" snackbar referenced in [Technical Considerations](#technical-considerations).
+3. **`round.evaluated`** — pushes the outcome to the Scoreboard, updates scores, schedules the inter-round countdown, and clears any stat highlight before the next `round.started` event.
+
+> Legacy compatibility: the UI input event `statSelected` and compatibility alias `roundResolved` may still appear in existing listeners; diagrams below prioritize canonical dotted event names.
 
 Round resolution is implemented as a helper chain for clarity and testing hooks. `evaluateOutcome` compares the selected stats, `dispatchOutcomeEvents` moves the battle state forward, `updateScoreboard` keeps UI counters aligned with engine data, and `emitRoundResolved` broadcasts the final result for downstream listeners (e.g., [Feature Flags](#feature-flags)).
 
@@ -111,15 +113,18 @@ sequenceDiagram
   participant Timer as Cooldown Timer
 
   Note over Player,Timer: Round Initialization
-  Engine->>Scoreboard: emit roundStarted
+  Engine->>Scoreboard: emit round.started
+  Engine->>UI: emit control.state.changed(to="selection")
   Scoreboard->>UI: reset buttons (enabled)
   Scoreboard->>Snackbar: show "Choose a stat"
   Engine->>Engine: start selection timer (30s)
+  Engine->>UI: emit round.timer.tick(remainingMs)
 
   Note over Player,Timer: Player Action (Manual Selection)
   Player->>UI: click stat button
-  UI->>Orch: fire statSelected event
+  UI->>Orch: fire statSelected (legacy compatibility input)
   Orch->>Engine: relay to engine
+  Orch->>UI: emit round.selection.locked(statKey)
   Engine->>UI: disable all buttons
   Snackbar->>Snackbar: show "You picked: [Stat]"
 
@@ -134,18 +139,20 @@ sequenceDiagram
 
   Note over Player,Timer: Opponent Reveal & Round Resolution
   Engine->>Engine: evaluate outcome (compare stats)
-  Engine->>Scoreboard: emit roundResolved
+  Engine->>Scoreboard: emit round.evaluated
+  Engine->>UI: emit control.state.changed(to="evaluation")
   Scoreboard->>Snackbar: clear "Opponent is choosing…"
   Scoreboard->>Snackbar: show result ("You Won!", "You Lost", or "Draw")
   Scoreboard->>Scoreboard: update score display
 
   Note over Player,Timer: Inter-Round Cooldown (3s default)
-  Engine->>Timer: emit countdownStart (duration)
+  Engine->>Timer: emit control.countdown.started(duration)
   Timer->>Snackbar: show "Next round in: 3"
   loop Every 1 second
     Timer->>Snackbar: update "Next round in: [X]"
+    Timer->>Engine: emit cooldown.timer.tick(remainingMs)
   end
-  Timer->>Engine: emit countdownFinished
+  Timer->>Engine: emit cooldown.timer.expired
   alt Player skips cooldown
     Player->>UI: click Next button
     Snackbar->>Snackbar: clear countdown
@@ -153,14 +160,24 @@ sequenceDiagram
     Orch->>Engine: advance state
   else Cooldown expires naturally
     Snackbar->>Snackbar: clear countdown
-    Engine->>Engine: auto-advance to next roundStarted
+    Engine->>Engine: auto-advance to next round.started
   end
 
   Note over Player,Timer: Next Round Begins
-  Engine->>Scoreboard: emit roundStarted
+  Engine->>Scoreboard: emit round.started
+  Engine->>UI: emit control.state.changed(to="selection")
   Scoreboard->>UI: reset buttons (enabled)
   Scoreboard->>Snackbar: show "Choose a stat"
+
+  Note over UI: UI state progression is authoritative<br/>only on control.state.changed
 ```
+
+#### Event naming legend
+
+- **Authoritative UI transition event:** `control.state.changed`
+- **Canonical round lifecycle events:** `round.started`, `round.selection.locked`, `round.evaluated`
+- **Canonical timer/control namespace events:** `round.timer.tick`, `cooldown.timer.tick`, `cooldown.timer.expired`, `control.countdown.started`
+- **Legacy compatibility aliases shown intentionally:** `statSelected`, `roundResolved`
 
 > **Note**: The Orchestrator acts as the authority broker between the UI and Engine. All stat selection events and control commands flow through the Orchestrator to maintain separation of concerns. See [Event Authority Sequence Diagram](prdBattleEngine.md#event-authority-sequence-diagram) for more details on the 3-hop event propagation pattern.
 

@@ -147,6 +147,13 @@ flowchart TD
 
 **Rationale**: This flowchart encodes the intended versioning policy, enabling test authors and implementers to classify changes algorithmically. The 1-cycle compatibility layer is planned but not yet implemented.
 
+### Event naming legend
+
+- **Authoritative UI transition signal:** `control.state.changed` (state progression source of truth).
+- **Canonical dotted round events:** `round.started`, `round.selection.locked`, `round.evaluated`.
+- **Canonical timer/control namespaces:** `round.timer.*`, `cooldown.timer.*`, `control.countdown.*`, `control.state.*`.
+- **Legacy compatibility names:** `roundStarted`, `roundResolved`, `roundEnded`, `statSelected`, `countdownStart`, `countdownFinished`, `timerTick`.
+
 ### Legacy Event Notes
 
 - `roundEnded` is now an engine-internal legacy event. Consumers must prefer the domain event `round.evaluated`.
@@ -256,13 +263,13 @@ flowchart LR
     end
 
     subgraph Categories["Event Categories (40+ Total)"]
-        TimerCat["⏱️ Timer Events (6)<br/>timer.*, roundTimeout, etc."]
+        TimerCat["⏱️ Timer Events (6)<br/>round.timer.*, cooldown.timer.*, control.countdown.*"]
         ControlCat["🎮 Control Events (6)<br/>control.state.*, control.countdown.*"]
-        StateCat["🔗 State Events (8)<br/>debug.*, battleStateChange"]
-        UICat["🎨 UI Events (4)<br/>statButtons:*, display.*"]
-        PlayerCat["👤 Player Events (5)<br/>statSelected, opponentReveal, etc."]
-        ScoreCat["📊 Score Events (3)<br/>scoreboardShowMessage, etc."]
-        RoundCat["🎲 Round Events (8)<br/>round.*, roundStarted, etc."]
+        StateCat["🔗 State Events (8)<br/>debug.* + legacy compatibility state aliases (battleStateChange)"]
+        UICat["🎨 UI Events (4)<br/>display.* + legacy compatibility UI aliases (statButtons:*)"]
+        PlayerCat["👤 Player Events (5)<br/>round.selection.locked + legacy compatibility inputs (statSelected), opponentReveal, etc."]
+        ScoreCat["📊 Score Events (3)<br/>display.score.* + legacy compatibility aliases (scoreboardShowMessage)"]
+        RoundCat["🎲 Round Events (8)<br/>round.* canonical + legacy compatibility aliases (roundStarted, roundResolved)"]
     end
 
     subgraph Consumers["Consumer Modules"]
@@ -272,6 +279,9 @@ flowchart LR
         Score["Scoreboard"]
         Orch2["Orchestrator"]
     end
+
+    Auth["UI transition authority:
+control.state.changed only"]
 
     ORC --> ControlCat
     ORC --> StateCat
@@ -306,7 +316,10 @@ flowchart LR
     RoundCat --> Tests
     RoundCat --> Engine
     RoundCat --> Score
+    ControlCat --> Auth
+    Auth --> UI
 
+    style Auth fill:#ffecb3,stroke:#f57f17,stroke-width:2px
     style ORC fill:#e3f2fd
     style RM fill:#e3f2fd
     style TS fill:#e3f2fd
@@ -502,20 +515,20 @@ graph TD
     A --> F["scoreboard.*"]
     A --> G["debug.*"]
 
-    B --> B1["timer.roundExpired"]
-    B --> B2["timer.countdownStarted"]
-    B --> B3["timer.statSelectionExpired"]
-    B --> B4["timer.cooldownFinished"]
+    B --> B1["round.timer.expired"]
+    B --> B2["control.countdown.started"]
+    B --> B3["round.timer.expired"]
+    B --> B4["cooldown.timer.expired"]
 
     C --> C1["ui.statButtonsEnabled"]
     C --> C2["ui.statButtonsDisabled"]
     C --> C3["ui.cardsRevealed"]
 
-    D --> D1["state.matchStarted"]
-    D --> D2["state.roundStarted"]
-    D --> D3["state.matchOver"]
+    D --> D1["control.state.changed (to=prestart)"]
+    D --> D2["round.started"]
+    D --> D3["match.concluded"]
 
-    E --> E1["player.statSelected"]
+    E --> E1["round.selection.locked"]
     E --> E2["player.interrupted"]
     E --> E3["player.actionTimeout"]
 

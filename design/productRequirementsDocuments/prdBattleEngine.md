@@ -99,7 +99,7 @@ sequenceDiagram
   Note over Orch,Player: Round Start Phase
   Orch->>Engine: startRound()
   Engine->>Engine: initialize timer (30s)
-  Engine-->>Orch: emit roundStarted
+  Engine-->>Orch: emit roundStarted (legacy compatibility)
   Orch->>Orch: bridge event
   Orch-->>UI: emit round.started
   Orch-->>UI: emit control.state.changed(to="selection")
@@ -109,7 +109,7 @@ sequenceDiagram
   Player->>UI: click stat button
   UI->>Orch: dispatchBattleEvent("statSelected")
   Orch->>Engine: lockSelection(statKey)
-  Engine-->>Orch: emit roundEnded
+  Engine-->>Orch: emit roundEnded (legacy compatibility)
   Orch->>Orch: bridge event
   Orch-->>UI: emit round.selection.locked
   Orch-->>UI: emit round.evaluated(outcome)
@@ -120,11 +120,11 @@ sequenceDiagram
     Note over Orch,Engine: Selection locked immediately
   else Timer Expiry (30s Auto-Select)
     Note over Engine,UI: 30s Selection Timer Expires
-    Engine->>Engine: emit timerTick(remainingMs=0)
-    Engine-->>Orch: emit timerTick
+    Engine->>Engine: emit round.timer.tick(remainingMs=0)
+    Engine-->>Orch: emit timerTick (legacy compatibility alias for round.timer.tick)
     Orch->>Orch: detect timeout
     Orch->>Engine: autoSelectStat()
-    Engine-->>Orch: emit roundEnded
+    Engine-->>Orch: emit roundEnded (legacy compatibility)
     Orch-->>UI: emit round.evaluated(outcome)
     Orch-->>UI: emit control.state.changed(to="evaluation")
     UI->>UI: show "Auto-selected: [stat]"
@@ -142,7 +142,7 @@ sequenceDiagram
 
   Note over Orch,Player: Authority Boundary Enforcement
   Note over UI: ⚠️ UI listens to domain events<br/>(round.started, round.evaluated)<br/>for VALUE updates only
-  Note over UI: ⭐ UI MUST wait for<br/>control.state.changed<br/>to advance UI state
+  Note over UI: ⭐ ONLY control.state.changed<br/>advances UI state
 ```
 
 **Critical Authority Rules (enforced by event taxonomy):**
@@ -154,9 +154,16 @@ sequenceDiagram
 
 **Event Propagation Chain (3-hop):**
 
-1. **Engine Core emits:** `roundStarted`, `roundEnded`, `timerTick` (domain/timer events)
+1. **Engine Core emits:** `roundStarted`, `roundEnded`, `timerTick` (legacy compatibility internals)
 2. **Orchestrator bridges:** Subscribes to Engine.on(), maps to canonical names, emits `round.started`, `control.state.changed` (with FSM authority)
 3. **UI listeners:** Consume events via `dispatchBattleEvent` subscriptions; render based on **`control.state.changed` only** for transitions
+
+### Event naming legend
+
+- **Authoritative transition signal:** `control.state.changed` (UI progression must follow this event only).
+- **Canonical dotted round events:** `round.started`, `round.selection.locked`, `round.evaluated`.
+- **Canonical timer/control namespaces:** `round.timer.*`, `cooldown.timer.*`, `control.countdown.*`.
+- **Legacy compatibility names in this PRD:** `roundStarted`, `roundEnded`, `timerTick`, `statSelected` (implementation bridge/internal).
 
 **Design Rationale:**
 
@@ -218,13 +225,13 @@ stateDiagram-v2
   [*] --> init
 
   init --> prestart: startMatch()
-  prestart --> selection: control.countdown.completed\nround.started(roundIndex=1)
+  prestart --> selection: control.countdown.completed\ncontrol.state.changed(to=selection) + round.started(roundIndex=1)
 
-  selection --> evaluation: round.selection.locked(statKey)\nOR round.timer.expired(auto-pick)
+  selection --> evaluation: control.state.changed(to=evaluation)\nafter round.selection.locked OR round.timer.expired
   evaluation --> end: match.concluded(scores) [win guard]
-  evaluation --> cooldown: round.evaluated(outcome,scores) [!win guard]
+  evaluation --> cooldown: control.state.changed(to=cooldown)\nafter round.evaluated [!win guard]
 
-  cooldown --> selection: cooldown.timer.expired\nround.started(roundIndex+1)
+  cooldown --> selection: cooldown.timer.expired\ncontrol.state.changed(to=selection) + round.started(roundIndex+1)
   selection --> end: match.concluded(scores) [win guard]
 
   state interrupted <<choice>>
