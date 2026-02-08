@@ -56,6 +56,19 @@ function teardownScheduler() {
 }
 
 /**
+ * @summary Reset scheduler lifecycle state for teardown and re-initialization.
+ *
+ * @pseudocode
+ * 1. Trigger scheduler teardown to remove listeners and stop active scheduling.
+ * 2. Reset module-level wiring state to ensure future setup can re-initialize.
+ * @returns {void}
+ */
+export function resetSchedulerState() {
+  teardownScheduler();
+  isSchedulerWired = false;
+}
+
+/**
  * @summary Decide whether the animation scheduler should start.
  *
  * @pseudocode
