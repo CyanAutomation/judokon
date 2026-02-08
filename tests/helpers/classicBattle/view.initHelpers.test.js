@@ -23,8 +23,9 @@ vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
 vi.mock("../../../src/helpers/classicBattle/quitButton.js", () => ({
   initQuitButton: vi.fn()
 }));
+const interruptCleanupMock = vi.hoisted(() => vi.fn());
 vi.mock("../../../src/helpers/classicBattle/interruptHandlers.js", () => ({
-  initInterruptHandlers: vi.fn()
+  initInterruptHandlers: vi.fn(() => interruptCleanupMock)
 }));
 vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", async () => {
   const actual = await vi.importActual("../../../src/helpers/classicBattle/uiHelpers.js");
@@ -73,6 +74,7 @@ const testModeUtils = await import("../../../src/helpers/testModeUtils.js");
 
 afterEach(() => {
   unbindReplayClickListener();
+  interruptCleanupMock.mockClear();
 });
 
 function makeView() {
@@ -262,6 +264,16 @@ describe("setupUIBindings", () => {
     expect(statControls.disable).toHaveBeenCalled();
     const tooltip = await import("../../../src/helpers/tooltip.js");
     expect(tooltip.initTooltips).toHaveBeenCalled();
+  });
+
+  it("runs interrupt cleanup on pagehide teardown", async () => {
+    const view = makeView();
+    interruptCleanupMock.mockClear();
+
+    await setupUIBindings(view);
+    window.dispatchEvent(new Event("pagehide"));
+
+    expect(interruptCleanupMock).toHaveBeenCalledTimes(1);
   });
 
   it("does not register duplicate replay listeners when setup runs twice", async () => {
