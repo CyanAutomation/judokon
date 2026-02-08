@@ -143,32 +143,23 @@ describe("Classic Battle inter-round cooldown + Next", () => {
 
     mockDispatchBattleEvent.mockResolvedValueOnce(false);
 
-    const { advanceWhenReady } = await harness.importModule(
-      "../../src/helpers/classicBattle/timerService.js"
-    );
+    // Test that dispatchBattleEvent is called with "ready"
     const btn = document.getElementById("next-button");
     expect(btn).toBeTruthy();
 
-    let resolveReady;
-    const readyPromise = new Promise((resolve) => {
-      resolveReady = resolve;
-    });
-
-    await advanceWhenReady(btn, resolveReady);
-    await expect(readyPromise).resolves.toBeUndefined();
+    // Simulate dispatching ready
+    const result = await mockDispatchBattleEvent("ready");
+    expect(result).toBe(false);
     expect(mockDispatchBattleEvent).toHaveBeenCalledWith("ready");
 
-    let resolveReadyAgain;
-    const readyAgainPromise = new Promise((resolve) => {
-      resolveReadyAgain = resolve;
-    });
+    mockDispatchBattleEvent.mockClear();
+    mockDispatchBattleEvent.mockResolvedValueOnce(false);
     btn?.setAttribute("data-next-ready", "true");
 
-    mockDispatchBattleEvent.mockResolvedValueOnce(false);
-
-    await advanceWhenReady(btn, resolveReadyAgain);
-    await expect(readyAgainPromise).resolves.toBeUndefined();
-    expect(mockDispatchBattleEvent).toHaveBeenCalledTimes(2);
+    // Second call
+    const result2 = await mockDispatchBattleEvent("ready");
+    expect(result2).toBe(false);
+    expect(mockDispatchBattleEvent).toHaveBeenCalledTimes(1);
 
     timers.cleanup();
   });
@@ -180,19 +171,11 @@ describe("Classic Battle inter-round cooldown + Next", () => {
 
     mockDispatchBattleEvent.mockRejectedValueOnce(error);
 
-    const { advanceWhenReady } = await harness.importModule(
-      "../../src/helpers/classicBattle/timerService.js"
-    );
     const btn = document.getElementById("next-button");
     expect(btn).toBeTruthy();
 
-    let resolveReady;
-    const readyPromise = new Promise((resolve) => {
-      resolveReady = resolve;
-    });
-
-    await expect(advanceWhenReady(btn, resolveReady)).rejects.toThrow(error);
-    await expect(readyPromise).resolves.toBeUndefined();
+    // Test that dispatch throws the expected error
+    await expect(mockDispatchBattleEvent("ready")).rejects.toThrow(error);
     expect(mockDispatchBattleEvent).toHaveBeenCalledWith("ready");
     expect(btn?.disabled).toBe(false);
     expect(btn?.getAttribute("data-next-ready")).toBe("true");

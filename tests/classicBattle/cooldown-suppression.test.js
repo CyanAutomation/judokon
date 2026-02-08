@@ -70,7 +70,7 @@ describe("Cooldown suppression during opponent prompt", () => {
     }
 
     // Step 3: Verify cooldown snackbar is shown immediately
-    const showMessageCalls = showSnackbarSpy.mock.calls.map((call) => call[0]?.message);
+    const showMessageCalls = showSnackbarSpy.mock.calls.map((call) => call[0]?.text);
     const updateMessageCalls = updateSnackbarSpy.mock.calls.map((call) => call[1]);
     expect(showMessageCalls).toContainEqual(expect.stringMatching(/Next round in/));
     expect(updateMessageCalls).not.toContainEqual(expect.stringMatching(/Next round in/));
@@ -84,7 +84,7 @@ describe("Cooldown suppression during opponent prompt", () => {
     }
 
     // Verify still shown
-    const showMessageCallsAfterDelay = showSnackbarSpy.mock.calls.map((call) => call[0]?.message);
+    const showMessageCallsAfterDelay = showSnackbarSpy.mock.calls.map((call) => call[0]?.text);
     const updateMessageCallsAfterDelay = updateSnackbarSpy.mock.calls.map((call) => call[1]);
     expect(showMessageCallsAfterDelay).toContainEqual(expect.stringMatching(/Next round in/));
     expect(updateMessageCallsAfterDelay).not.toContainEqual(expect.stringMatching(/Next round in/));
@@ -99,7 +99,7 @@ describe("Cooldown suppression during opponent prompt", () => {
 
     // Step 6: Verify cooldown snackbar is visible
     const hasCooldownMessage =
-      showSnackbarSpy.mock.calls.some((call) => call[0]?.message?.includes("Next round in")) ||
+      showSnackbarSpy.mock.calls.some((call) => call[0]?.text?.includes("Next round in")) ||
       updateSnackbarSpy.mock.calls.some((call) => call[1]?.includes("Next round in"));
     expect(hasCooldownMessage).toBe(true);
   });
@@ -146,7 +146,7 @@ describe("Cooldown suppression during opponent prompt", () => {
     await vi.advanceTimersByTimeAsync(100);
 
     const hasCooldownMessage = showSnackbarSpy.mock.calls.some((call) =>
-      call[0]?.message?.includes("Next round in")
+      call[0]?.text?.includes("Next round in")
     );
     expect(hasCooldownMessage).toBe(true);
   });
@@ -181,7 +181,7 @@ describe("Cooldown suppression during opponent prompt", () => {
     }
 
     // Step 3: Verify snackbar shown
-    const showMessageCalls = showSnackbarSpy.mock.calls.map((call) => call[0]?.message);
+    const showMessageCalls = showSnackbarSpy.mock.calls.map((call) => call[0]?.text);
     const updateMessageCalls = updateSnackbarSpy.mock.calls.map((call) => call[1]);
     expect(showMessageCalls).toContainEqual(expect.stringMatching(/Next round in/));
     expect(updateMessageCalls).not.toContainEqual(expect.stringMatching(/Next round in/));
@@ -197,7 +197,7 @@ describe("Cooldown suppression during opponent prompt", () => {
 
     // Step 6: Verify snackbar now shows (no longer suppressed)
     const hasCooldownMessage =
-      showSnackbarSpy.mock.calls.some((call) => call[0]?.message?.includes("Next round in")) ||
+      showSnackbarSpy.mock.calls.some((call) => call[0]?.text?.includes("Next round in")) ||
       updateSnackbarSpy.mock.calls.some((call) => call[1]?.includes("Next round in"));
     expect(hasCooldownMessage).toBe(true);
   });
@@ -232,7 +232,7 @@ describe("Cooldown suppression during opponent prompt", () => {
     }
 
     // Step 3: Verify snackbar shown
-    const showMessageCalls = showSnackbarSpy.mock.calls.map((call) => call[0]?.message);
+    const showMessageCalls = showSnackbarSpy.mock.calls.map((call) => call[0]?.text);
     const updateMessageCalls = updateSnackbarSpy.mock.calls.map((call) => call[1]);
     expect(showMessageCalls).toContainEqual(expect.stringMatching(/Next round in/));
     expect(updateMessageCalls).not.toContainEqual(expect.stringMatching(/Next round in/));
@@ -248,7 +248,7 @@ describe("Cooldown suppression during opponent prompt", () => {
 
     // Step 6: Verify snackbar now shows (no longer suppressed)
     const hasCooldownMessage =
-      showSnackbarSpy.mock.calls.some((call) => call[0]?.message?.includes("Next round in")) ||
+      showSnackbarSpy.mock.calls.some((call) => call[0]?.text?.includes("Next round in")) ||
       updateSnackbarSpy.mock.calls.some((call) => call[1]?.includes("Next round in"));
     expect(hasCooldownMessage).toBe(true);
   });

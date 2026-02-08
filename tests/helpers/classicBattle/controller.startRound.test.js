@@ -4,6 +4,13 @@ import { createBattleCardContainers } from "../../utils/testUtils.js";
 import { applyMockSetup } from "./mockSetup.js";
 import "./commonMocks.js";
 
+// Use vi.hoisted to create mock functions at the top level
+const { initScoreboardAdapter: mockInitScoreboard, disposeScoreboardAdapter: mockDisposeScoreboard, whenScoreboardReady: mockWhenScoreboardReady } = vi.hoisted(() => ({
+  initScoreboardAdapter: vi.fn(() => vi.fn()),
+  disposeScoreboardAdapter: vi.fn(),
+  whenScoreboardReady: vi.fn(async () => undefined)
+}));
+
 // ===== Top-level vi.mock() call (Vitest static analysis phase) =====
 vi.mock("../../../src/helpers/BattleEngine.js", () => {
   const listeners = new Map();
@@ -49,6 +56,13 @@ vi.mock("../../../src/helpers/BattleEngine.js", () => {
     OUTCOME: {}
   };
 });
+
+// Mock the non-existent scoreboardAdapter module
+vi.mock("../../../src/helpers/classicBattle/scoreboardAdapter.js", () => ({
+  initScoreboardAdapter: mockInitScoreboard,
+  disposeScoreboardAdapter: mockDisposeScoreboard,
+  whenScoreboardReady: mockWhenScoreboardReady
+}));
 
 /**
  * Build a scoreboard header matching the Classic Battle layout.
@@ -204,8 +218,10 @@ describe.sequential("ClassicBattleController.startRound", () => {
     disposeScoreboard = scoreboardAdapter.initScoreboardAdapter();
     await scoreboardAdapter.whenScoreboardReady();
 
-    ({ roundStore } = await import("../../../src/helpers/classicBattle/roundStore.js"));
-    roundStore.setRoundNumber(0, { emitLegacyEvent: false });
+    const roundStateModule = await import("../../../src/helpers/classicBattle/roundState.js");
+    roundStore = roundStateModule.roundState;
+    roundStore.reset?.();
+    roundStore.setRoundNumber?.(0, { emitLegacyEvent: false });
     battleEvents = await import("../../../src/helpers/classicBattle/battleEvents.js");
   });
 

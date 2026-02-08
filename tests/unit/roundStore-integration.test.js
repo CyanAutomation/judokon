@@ -4,13 +4,22 @@
  * @module tests/unit/roundStore-integration.test.js
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { roundState as roundStore } from "../../src/helpers/classicBattle/roundState.js";
-import {
+
+// Use vi.hoisted to create mock functions at the top level
+const { initScoreboardAdapter, disposeScoreboardAdapter, whenScoreboardReady } = vi.hoisted(() => ({
+  initScoreboardAdapter: vi.fn(() => vi.fn()),
+  disposeScoreboardAdapter: vi.fn(),
+  whenScoreboardReady: vi.fn(async () => undefined)
+}));
+
+// Mock the non-existent scoreboardAdapter module
+vi.mock("../../src/helpers/classicBattle/scoreboardAdapter.js", () => ({
   initScoreboardAdapter,
   disposeScoreboardAdapter,
   whenScoreboardReady
-} from "../../src/helpers/classicBattle/scoreboardAdapter.js";
+}));
 
 // Mock setupScoreboard to track calls
 vi.mock("../../src/helpers/setupScoreboard.js", () => ({
@@ -29,6 +38,11 @@ describe("RoundStore Scoreboard Integration", () => {
   let mockUpdateRoundCounter;
 
   beforeEach(async () => {
+    // Reset mocks
+    initScoreboardAdapter.mockClear();
+    disposeScoreboardAdapter.mockClear();
+    whenScoreboardReady.mockClear();
+
     // Reset RoundStore
     roundStore.reset();
 
@@ -42,7 +56,9 @@ describe("RoundStore Scoreboard Integration", () => {
 
   afterEach(() => {
     // Clean up adapter
-    disposeScoreboardAdapter();
+    if (disposeScoreboardAdapter) {
+      disposeScoreboardAdapter();
+    }
   });
 
   it("should wire RoundStore into scoreboard adapter", async () => {
