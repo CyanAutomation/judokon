@@ -130,18 +130,20 @@ describe("onNextButtonClick", () => {
   });
 
   it("resets store and global selection finalized state after click handling", async () => {
-    const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
-    const events = await import("../../src/helpers/classicBattle/battleEvents.js");
-    const store = { selectionMade: true };
-    window.__classicBattleSelectionFinalized = true;
+    await runWithFakeTimers(async () => {
+      const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
+      const events = await import("../../src/helpers/classicBattle/battleEvents.js");
+      const store = { selectionMade: true };
+      window.__classicBattleSelectionFinalized = true;
 
-    await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null }, store);
+      await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null }, store);
 
-    expect(events.emitBattleEvent).toHaveBeenCalledWith("skipCooldown", {
-      source: "next-button"
+      expect(events.emitBattleEvent).toHaveBeenCalledWith("skipCooldown", {
+        source: "next-button"
+      });
+      expect(store.selectionMade).toBe(false);
+      expect(window.__classicBattleSelectionFinalized).toBe(false);
     });
-    expect(store.selectionMade).toBe(false);
-    expect(window.__classicBattleSelectionFinalized).toBe(false);
   });
 
   it("ignores clicks when button is disabled", async () => {
