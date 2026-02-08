@@ -113,37 +113,41 @@ sequenceDiagram
   participant Timer as Cooldown Timer
 
   Note over Player,Timer: Round Initialization
-  Engine->>Scoreboard: emit round.started
+  Engine->>Scoreboard: emit round.started (value update)
   Engine->>UI: emit control.state.changed(to="selection")
-  Scoreboard->>UI: reset buttons (enabled)
-  Scoreboard->>Snackbar: show "Choose a stat"
+  Orch->>UI: enable stat buttons for selection
+  Orch->>Snackbar: show "Choose a stat"
   Engine->>Engine: start selection timer (30s)
   Engine->>UI: emit round.timer.tick(remainingMs)
 
-  Note over Player,Timer: Player Action (Manual Selection)
-  Player->>UI: click stat button
-  UI->>Orch: fire statSelected (legacy compatibility input)
-  Orch->>Engine: relay to engine
-  Orch->>UI: emit round.selection.locked(statKey)
-  Engine->>UI: disable all buttons
-  Snackbar->>Snackbar: show "You picked: [Stat]"
+  alt Selection source: manual input
+    Note over Player,Timer: Player Action (Manual Selection)
+    Player->>UI: click stat button
+    UI->>Orch: emit round.selection.locked(statKey)
+    Orch->>Engine: relay round.selection.locked(statKey)
+  else Selection source: autoSelect flag enabled + timer expiry
+    Note over Engine,Orch: Selection timer expires while autoSelect=true
+    Engine->>Orch: emit round.selection.locked(randomStat)
+  end
+  Orch->>UI: emit control.state.changed(to="evaluation")
+  Orch->>UI: disable all stat buttons
+  Orch->>Snackbar: show "You picked: [Stat]"
 
-  alt opponentDelayMessage flag enabled
+  alt Opponent reveal path: opponentDelayMessage enabled
     Note over Engine,Snackbar: Opponent Delay Window (300–700ms)
     Engine->>Engine: schedule opponent delay timer
     Snackbar->>Snackbar: suppress cooldown counter
     Engine->>Engine: after delay, show "Opponent is choosing…"
-  else opponentDelayMessage flag disabled
+  else Opponent reveal path: opponentDelayMessage disabled
     Snackbar->>Snackbar: "Opponent is choosing…" shows immediately
   end
 
   Note over Player,Timer: Opponent Reveal & Round Resolution
   Engine->>Engine: evaluate outcome (compare stats)
-  Engine->>Scoreboard: emit round.evaluated
-  Engine->>UI: emit control.state.changed(to="evaluation")
-  Scoreboard->>Snackbar: clear "Opponent is choosing…"
-  Scoreboard->>Snackbar: show result ("You Won!", "You Lost", or "Draw")
-  Scoreboard->>Scoreboard: update score display
+  Engine->>Scoreboard: emit round.evaluated (value update)
+  Orch->>Snackbar: clear "Opponent is choosing…"
+  Orch->>Snackbar: show result ("You Won!", "You Lost", or "Draw")
+  Scoreboard->>Scoreboard: update score display from round.evaluated
 
   Note over Player,Timer: Inter-Round Cooldown (3s default)
   Engine->>Timer: emit control.countdown.started(duration)
@@ -164,12 +168,12 @@ sequenceDiagram
   end
 
   Note over Player,Timer: Next Round Begins
-  Engine->>Scoreboard: emit round.started
+  Engine->>Scoreboard: emit round.started (value update)
   Engine->>UI: emit control.state.changed(to="selection")
-  Scoreboard->>UI: reset buttons (enabled)
-  Scoreboard->>Snackbar: show "Choose a stat"
+  Orch->>UI: enable stat buttons for selection
+  Orch->>Snackbar: show "Choose a stat"
 
-  Note over UI: UI state progression is authoritative<br/>only on control.state.changed
+  Note over UI,Scoreboard: State transitions are driven by control.state.changed;<br/>domain events are value updates.
 ```
 
 #### Event naming legend
@@ -177,7 +181,7 @@ sequenceDiagram
 - **Authoritative UI transition event:** `control.state.changed`
 - **Canonical round lifecycle events:** `round.started`, `round.selection.locked`, `round.evaluated`
 - **Canonical timer/control namespace events:** `round.timer.tick`, `cooldown.timer.tick`, `cooldown.timer.expired`, `control.countdown.started`
-- **Legacy compatibility aliases shown intentionally:** `statSelected`, `roundResolved`
+- **Legacy compatibility aliases (implementation note only):** `statSelected`, `roundResolved`
 
 > **Note**: The Orchestrator acts as the authority broker between the UI and Engine. All stat selection events and control commands flow through the Orchestrator to maintain separation of concerns. See [Event Authority Sequence Diagram](prdBattleEngine.md#event-authority-sequence-diagram) for more details on the 3-hop event propagation pattern.
 
