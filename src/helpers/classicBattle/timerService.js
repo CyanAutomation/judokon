@@ -713,6 +713,89 @@ export async function startTimer(onExpiredSelect, store = null, dependencies = {
 }
 
 /**
+ * **Test-Only Helper**: Dispatch "ready" event and manage button state.
+ *
+ * Used internally by tests to simulate advancing to the next round when the
+ * ready event is available. Handles dispatch refusal by registering a skip
+ * handler and disabling the button.
+ *
+ * @param {{disabled: boolean, dataset: {nextReady?: string}}} button - Button element state.
+ * @param {() => void} resolveReady - Callback to settle the ready promise.
+ * @returns {Promise<void>}
+ * @pseudocode
+ * 1. Dispatch "ready" event via dispatchBattleEvent().
+ * 2. If dispatch succeeds, keep button enabled and data attribute empty.
+ * 3. If dispatch is refused (returns false):
+ *    a. Register a skip handler
+ *    b. Disable button
+ *    c. Clear nextReady data attribute
+ * 4. Call resolveReady() callback on first attempt
+ * 5. Retry logic is handled by readyState module
+ */
+export async function advanceWhenReady(button, resolveReady) {
+  try {
+    const result = await dispatchBattleEvent("ready");
+
+    if (result === false) {
+      // Ready dispatch was refused - prepare for retry
+      try {
+        setSkipHandler(() => {
+          // Skip handler cleanup
+        });
+      } catch {}
+
+      button.disabled = true;
+      delete button.dataset.nextReady;
+    } else {
+      // Ready dispatch accepted
+      button.disabled = false;
+      button.dataset.nextReady = "";
+    }
+
+    resolveReady?.();
+  } catch (error) {
+    timerLogger.error("[advanceWhenReady] error dispatching ready", error);
+    resolveReady?.();
+    throw error;
+  }
+}
+
+/**
+ * **Test-Only Helper**: Stop timer and immediately dispatch "ready".
+ *
+ * Used internally by tests to simulate canceling the cooldown timer and
+ * immediately advancing to the next round. Stops the provided timer and
+ * dispatches the "ready" event.
+ *
+ * @param {any} _store - Battle state (unused in this implementation, kept for API compatibility).
+ * @param {{stop: () => void}} timer - Timer object to stop.
+ * @param {() => void} resolveReady - Callback to settle the ready promise.
+ * @returns {Promise<void>}
+ * @pseudocode
+ * 1. Stop the provided timer if it has a stop method
+ * 2. Dispatch "ready" event via dispatchBattleEvent()
+ * 3. Call resolveReady() callback
+ * 4. Propagate any errors
+ */
+export async function cancelTimerOrAdvance(_store, timer, resolveReady) {
+  try {
+    if (timer && typeof timer.stop === "function") {
+      try {
+        timer.stop();
+      } catch (error) {
+        timerLogger.error("[cancelTimerOrAdvance] error stopping timer", error);
+      }
+    }
+
+    await dispatchBattleEvent("ready");
+    resolveReady?.();
+  } catch (error) {
+    timerLogger.error("[cancelTimerOrAdvance] error dispatching ready", error);
+    throw error;
+  }
+}
+
+/**
  * Handle stalled stat selection by prompting the player and auto-selecting a
  * random stat.
  *
