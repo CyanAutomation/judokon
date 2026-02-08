@@ -20,9 +20,11 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
 describe("onNextButtonClick", () => {
   let btn;
   let warnSpy;
+  let priorSelectionFinalized;
 
   let rootCleanup;
   beforeEach(() => {
+    priorSelectionFinalized = window.__classicBattleSelectionFinalized;
     warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const { query, cleanup } = mount('<button id="next-button" data-role="next-round"></button>');
     rootCleanup = cleanup;
@@ -31,6 +33,11 @@ describe("onNextButtonClick", () => {
   });
 
   afterEach(() => {
+    if (typeof priorSelectionFinalized === "undefined") {
+      delete window.__classicBattleSelectionFinalized;
+    } else {
+      window.__classicBattleSelectionFinalized = priorSelectionFinalized;
+    }
     warnSpy.mockRestore();
     if (typeof rootCleanup === "function") rootCleanup();
   });
