@@ -19,6 +19,11 @@ let replayStoreRef = null;
 /**
  * Check whether an event target is a replay control.
  *
+ * @pseudocode
+ * 1. Return `false` when the target is not a DOM `Element`.
+ * 2. Resolve the nearest replay control selector via `closest`.
+ * 3. Return `true` when a replay control ancestor is present.
+ *
  * @param {EventTarget | null | undefined} target
  * @returns {boolean}
  */
@@ -35,6 +40,11 @@ function isReplayControlTarget(target) {
 /**
  * Handle document-level replay click delegation.
  *
+ * @pseudocode
+ * 1. Exit when the event target is not a replay control.
+ * 2. Exit when no active replay store reference is available.
+ * 3. Forward replay handling to `handleReplay` with the active store.
+ *
  * @param {MouseEvent} event
  * @returns {Promise<void>}
  */
@@ -49,6 +59,12 @@ async function onDocumentReplayClick(event) {
 /**
  * Bind delegated replay click handling once.
  *
+ * @pseudocode
+ * 1. Exit when the delegated listener is already registered.
+ * 2. Persist the current store reference for delegated replay handling.
+ * 3. Register a capture-phase document click listener once.
+ * 4. Register one-time `pagehide` cleanup to release module references.
+ *
  * @param {unknown} store
  */
 function bindReplayClickListener(store) {
@@ -58,14 +74,30 @@ function bindReplayClickListener(store) {
 
   replayStoreRef = store;
   document.addEventListener("click", onDocumentReplayClick, { capture: true });
+  if (!isReplayClickBound) {
+    window.addEventListener("pagehide", unbindReplayClickListener, { once: true });
+  }
   isReplayClickBound = true;
 }
-  if (isReplayClickBound) {
+
+/**
+ * Remove delegated replay handling and release module state.
+ *
+ * @pseudocode
+ * 1. Exit when there is no bound replay click listener.
+ * 2. Remove the capture-phase replay click listener.
+ * 3. Reset listener/state flags so a new store can bind cleanly.
+ *
+ * @returns {void}
+ */
+export function unbindReplayClickListener() {
+  if (!isReplayClickBound) {
     return;
   }
 
-  document.addEventListener("click", onDocumentReplayClick, { capture: true });
-  isReplayClickBound = true;
+  document.removeEventListener("click", onDocumentReplayClick, { capture: true });
+  replayStoreRef = null;
+  isReplayClickBound = false;
 }
 
 /**
