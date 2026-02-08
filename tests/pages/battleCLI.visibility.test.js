@@ -79,7 +79,9 @@ describe("battleCLI visibility change handling", () => {
     delete window.battleStore;
   });
 
-
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
+import { withMutedConsole } from "../utils/console.js";
 
   it("keeps lifecycle listeners idempotent when wireEvents is called multiple times", async () => {
   it("keeps lifecycle listeners idempotent when wireEvents is called multiple times", async () => {
