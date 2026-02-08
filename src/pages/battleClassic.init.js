@@ -685,6 +685,9 @@ async function applySelectionResult(
   result,
   selectionGeneration = STATE.selectionReadyGeneration
 ) {
+  if (selectionGeneration !== STATE.selectionReadyGeneration) {
+    return false;
+  }
   try {
     console.debug("battleClassic: stat selection result", {
       matchEnded: Boolean(result?.matchEnded),
