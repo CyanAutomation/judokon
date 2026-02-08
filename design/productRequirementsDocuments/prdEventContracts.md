@@ -167,19 +167,41 @@ flowchart TD
 >
 > Future enhancement: Implement ProposedDual state and dual-emission logic to emit both old and new event names simultaneously during 1-cycle transition periods, with error telemetry.
 
+Lifecycle durability definitions used in this diagram:
+
+- **Long-term contract** (`CurrentStable`): an event name/payload contract intended for sustained compatibility and broad consumer adoption. Changes follow the full migration lifecycle.
+- **Provisional/experimental** (`CurrentProvisional`): an event contract intentionally short-horizon, used for trialing semantics and instrumentation before graduation to long-term support.
+
 ```mermaid
 stateDiagram-v2
-    [*] --> Current: Event introduced
-    Current --> ProposedDual: Rename proposed<br/>(breaking change)<br/>⚠️ Planned
+    [*] --> EntryDecision: Event introduced
+    EntryDecision --> CurrentStable: Default branch<br/>(long-term contract)
+    EntryDecision --> CurrentProvisional: Guard: experimental flag<br/>or temporary rollout
+    CurrentStable --> ProposedDual: Rename proposed<br/>(breaking change)<br/>⚠️ Planned
     ProposedDual --> Deprecated: End of 1-cycle<br/>compatibility period<br/>⚠️ Planned
     Deprecated --> Removed: Major version<br/>boundary
-    Current --> DeprecatedNoMigration: Old event<br/>(no migration)
+    CurrentStable --> DeprecatedNoMigration: Old event<br/>(no migration)
+    CurrentProvisional --> CurrentStable: Graduated after validation
+    CurrentProvisional --> DeprecatedNoMigration: Experiment retired
     DeprecatedNoMigration --> Removed: Hard removal
     Removed --> [*]
 
-    note right of Current
-        Stable, emitted once.
-        Consumers rely on this name.
+    note right of EntryDecision
+        Explicit entry branch:
+        choose stable vs provisional
+        durability at introduction.
+    end note
+
+    note right of CurrentStable
+        Long-term contract.
+        Durable event identity for
+        multi-release consumers.
+    end note
+
+    note right of CurrentProvisional
+        Provisional/experimental contract.
+        Expected short-horizon durability.
+        May graduate or retire.
     end note
 
     note right of ProposedDual
@@ -201,7 +223,7 @@ stateDiagram-v2
     end note
 ```
 
-**Rationale**: This state diagram visualizes the intended event evolution process, showing the 1-cycle compatibility window and deprecation phases. The ProposedDual and advanced telemetry tracking are planned enhancements.
+**Rationale**: This state diagram now encodes contract durability at introduction (stable vs provisional), plus the planned 1-cycle compatibility and deprecation path. The ProposedDual and advanced telemetry tracking remain planned enhancements.
 
 ## Consumer Test Guidance
 
