@@ -52,7 +52,14 @@ async function onDocumentReplayClick(event) {
  * @param {unknown} store
  */
 function bindReplayClickListener(store) {
+  if (isReplayClickBound) {
+    return;
+  }
+
   replayStoreRef = store;
+  document.addEventListener("click", onDocumentReplayClick, { capture: true });
+  isReplayClickBound = true;
+}
   if (isReplayClickBound) {
     return;
   }
