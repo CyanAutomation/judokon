@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import "./commonMocks.js";
 import createClassicBattleDebugAPI from "../../../src/helpers/classicBattle/setupTestHelpers.js";
 import setupScheduler, {
+  resetSchedulerState,
   shouldStartScheduler
 } from "../../../src/helpers/classicBattle/setupScheduler.js";
 import {
@@ -74,6 +75,7 @@ const testModeUtils = await import("../../../src/helpers/testModeUtils.js");
 
 afterEach(() => {
   unbindReplayClickListener();
+  resetSchedulerState();
   interruptCleanupMock.mockClear();
 });
 
@@ -255,6 +257,47 @@ describe("setupScheduler", () => {
     vi.unstubAllGlobals();
   });
 
+  it("allows scheduler setup to run again after pagehide teardown", () => {
+    const startSpy = vi.spyOn(scheduler, "start");
+    const addWindowListener = vi.spyOn(window, "addEventListener");
+
+    testModeUtils.isTestModeEnabled.mockReturnValue(false);
+    vi.stubGlobal("requestAnimationFrame", vi.fn());
+
+    const originalVitestEnv = process.env.VITEST;
+    const hasVitestGlobal = Object.prototype.hasOwnProperty.call(globalThis, "__VITEST__");
+    const hasTestGlobal = Object.prototype.hasOwnProperty.call(globalThis, "__TEST__");
+    const originalVitestGlobal = globalThis.__VITEST__;
+    const originalTestGlobal = globalThis.__TEST__;
+    delete process.env.VITEST;
+    delete globalThis.__VITEST__;
+    delete globalThis.__TEST__;
+
+    try {
+      setupScheduler();
+      const firstPagehideCall = addWindowListener.mock.calls.find((call) => call[0] === "pagehide");
+      expect(firstPagehideCall).toBeDefined();
+      firstPagehideCall[1]();
+      setupScheduler();
+    } finally {
+      if (originalVitestEnv !== undefined) {
+        process.env.VITEST = originalVitestEnv;
+      }
+      if (hasVitestGlobal) {
+        globalThis.__VITEST__ = originalVitestGlobal;
+      }
+      if (hasTestGlobal) {
+        globalThis.__TEST__ = originalTestGlobal;
+      }
+    }
+
+    expect(startSpy).toHaveBeenCalledTimes(2);
+
+    startSpy.mockRestore();
+    addWindowListener.mockRestore();
+    vi.unstubAllGlobals();
+  });
+
   it("does not wire scheduler twice when setupScheduler is called repeatedly", () => {
     const startSpy = vi.spyOn(scheduler, "start");
     const addWindowListener = vi.spyOn(window, "addEventListener");
@@ -297,6 +340,7 @@ describe("setupScheduler", () => {
     const pagehideCall = addWindowListener.mock.calls.find((call) => call[0] === "pagehide");
     expect(pagehideCall).toBeDefined();
     pagehideCall[1]();
+    resetSchedulerState();
 
     startSpy.mockRestore();
     addWindowListener.mockRestore();
