@@ -13,6 +13,9 @@ import { emitBattleEventWithAliases as emitBattleEventWithAliasesCore } from "./
 
 const eventLogger = createComponentLogger("BattleEvents");
 const EVENT_TARGET_KEY = "__classicBattleEventTarget";
+const DISPATCH_PATCHED_KEY = "__classicBattleDispatchPatched";
+const DISPATCH_ORIGINAL_KEY = "__classicBattleDispatchOriginal";
+const DISPATCH_WRAPPED_KEY = "__classicBattleDispatchWrapped";
 const lastSeenEventKeys = new Map();
 const VALUE_ONLY_EVENT_TYPES = new Set([
   "round.timer.tick",
@@ -67,8 +70,28 @@ function isVitest() {
 function setupTestDebugInstrumentation() {
   if (!isVitest()) return;
 
-  const _origDispatchEvent = globalThis.dispatchEvent;
-  globalThis.dispatchEvent = function (event) {
+  if (typeof globalThis.dispatchEvent !== "function") {
+    return;
+  }
+
+  if (
+    globalThis[DISPATCH_PATCHED_KEY] &&
+    globalThis.dispatchEvent === globalThis[DISPATCH_WRAPPED_KEY]
+  ) {
+    return;
+  }
+
+  const originalDispatchEvent =
+    typeof globalThis[DISPATCH_ORIGINAL_KEY] === "function"
+      ? globalThis[DISPATCH_ORIGINAL_KEY]
+      : globalThis.dispatchEvent;
+
+  if (globalThis.dispatchEvent === globalThis[DISPATCH_WRAPPED_KEY]) {
+    globalThis[DISPATCH_PATCHED_KEY] = true;
+    return;
+  }
+
+  const wrappedDispatchEvent = function (event) {
     if (
       typeof console !== "undefined" &&
       event &&
@@ -77,8 +100,13 @@ function setupTestDebugInstrumentation() {
     ) {
       console.log("[TEST DEBUG] dispatchEvent:", event.type, event.detail);
     }
-    return _origDispatchEvent.apply(this, arguments);
+    return originalDispatchEvent.apply(this, arguments);
   };
+
+  globalThis[DISPATCH_ORIGINAL_KEY] = originalDispatchEvent;
+  globalThis[DISPATCH_WRAPPED_KEY] = wrappedDispatchEvent;
+  globalThis.dispatchEvent = wrappedDispatchEvent;
+  globalThis[DISPATCH_PATCHED_KEY] = true;
 }
 
 // Initialize test instrumentation if in test environment
