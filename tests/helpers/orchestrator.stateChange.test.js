@@ -16,6 +16,7 @@ const { createStateManager, handlers, resetGame } = vi.hoisted(() => {
       roundSelectEnter: vi.fn(),
       roundResolveEnter: vi.fn(),
       roundDisplayEnter: vi.fn(),
+      matchEvaluateEnter: vi.fn(),
       matchDecisionEnter: vi.fn(),
       matchOverEnter: vi.fn(),
       interruptRoundEnter: vi.fn(),

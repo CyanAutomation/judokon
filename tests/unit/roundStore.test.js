@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { roundStore } from "../../src/helpers/classicBattle/roundStore.js";
+import { roundState as roundStore } from "../../src/helpers/classicBattle/roundState.js";
 
 // Mock battle events to avoid side effects in tests
 vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({

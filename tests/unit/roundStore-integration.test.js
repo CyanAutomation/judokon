@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { roundStore } from "../../src/helpers/classicBattle/roundStore.js";
+import { roundState as roundStore } from "../../src/helpers/classicBattle/roundState.js";
 import {
   initScoreboardAdapter,
   disposeScoreboardAdapter,

@@ -25,7 +25,7 @@ describe("roundReadyState", () => {
       hasReadyBeenDispatchedForCurrentCooldown,
       resetReadyDispatchState
     } = await import("../../../src/helpers/classicBattle/roundReadyState.js"));
-    ({ roundStore } = await import("../../../src/helpers/classicBattle/roundStore.js"));
+    ({ roundState: roundStore } = await import("../../../src/helpers/classicBattle/roundState.js"));
 
     roundStore.reset();
     resetDispatchHistory();

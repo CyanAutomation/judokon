@@ -8,6 +8,7 @@ vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => {
     onBattleEvent: vi.fn((name, cb) => {
       handlers[name] = cb;
     }),
+    emitBattleEvent: vi.fn(),
     handlers
   };
 });

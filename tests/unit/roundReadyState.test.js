@@ -40,8 +40,8 @@ describe("roundReadyState RoundStore Integration", () => {
       roundReadyStateModule.hasReadyBeenDispatchedForCurrentCooldown;
     resetReadyDispatchState = roundReadyStateModule.resetReadyDispatchState;
 
-    const roundStoreModule = await import("../../src/helpers/classicBattle/roundStore.js");
-    roundStore = roundStoreModule.roundStore;
+    const roundStateModule = await import("../../src/helpers/classicBattle/roundState.js");
+    roundStore = roundStateModule.roundState;
 
     // Reset RoundStore
     roundStore.reset();

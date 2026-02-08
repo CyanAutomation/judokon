@@ -3,14 +3,14 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 const {
   emitBattleEvent,
   exposeDebugState,
-  cancelRoundDecisionGuard,
+  cancelRoundResolveGuard,
   debugLog,
   cleanupTimers,
   logSelectionMutation
 } = vi.hoisted(() => ({
   emitBattleEvent: vi.fn(),
   exposeDebugState: vi.fn(),
-  cancelRoundDecisionGuard: vi.fn(),
+  cancelRoundResolveGuard: vi.fn(),
   debugLog: vi.fn(),
   cleanupTimers: vi.fn(),
   logSelectionMutation: vi.fn()
@@ -25,7 +25,7 @@ vi.mock("../../../src/helpers/classicBattle/debugHooks.js", () => ({
 }));
 
 vi.mock("../../../src/helpers/classicBattle/stateHandlers/guardCancellation.js", () => ({
-  cancelRoundDecisionGuard
+  cancelRoundResolveGuard
 }));
 
 vi.mock("../../../src/helpers/classicBattle/debugLog.js", () => ({

@@ -88,10 +88,11 @@ const {
     showSnackbar: vi.fn()
   },
   mockScoreDisplay: {
-    writeScoreDisplay: vi.fn()
+    writeScoreDisplay: vi.fn(),
+    syncScoreDisplay: vi.fn()
   },
   mockRoundStore: {
-    roundStore: { setSelectedStat: vi.fn() }
+    roundState: { setSelectedStat: vi.fn() }
   },
   mockEventBus: {
     getBattleState: vi.fn(() => null)
@@ -130,7 +131,7 @@ vi.mock("../../../../src/helpers/showSnackbar.js", () => mockSnackbar);
 
 vi.mock("../../../../src/helpers/classicBattle/scoreDisplay.js", () => mockScoreDisplay);
 
-vi.mock("../../../../src/helpers/classicBattle/roundStore.js", () => mockRoundStore);
+vi.mock("../../../../src/helpers/classicBattle/roundState.js", () => mockRoundStore);
 
 vi.mock("../../../../src/helpers/classicBattle/eventBus.js", () => mockEventBus);
 
