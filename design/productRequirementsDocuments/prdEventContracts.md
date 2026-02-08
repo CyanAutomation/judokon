@@ -180,7 +180,7 @@ stateDiagram-v2
     CurrentStable --> ProposedDual: Rename proposed<br/>(breaking change)<br/>⚠️ Planned
     ProposedDual --> Deprecated: End of 1-cycle<br/>compatibility period<br/>⚠️ Planned
     Deprecated --> Removed: Major version<br/>boundary
-    CurrentStable --> DeprecatedNoMigration: Old event<br/>(no migration)
+    CurrentStable --> DeprecatedNoMigration: High-risk exception path<br/>(internal-only, no external consumers,<br/>explicit approval required)
     CurrentProvisional --> CurrentStable: Graduated after validation
     CurrentProvisional --> DeprecatedNoMigration: Experiment retired
     DeprecatedNoMigration --> Removed: Hard removal
@@ -216,6 +216,14 @@ stateDiagram-v2
         Old name only (already contract-broken).
         Tests should surface warning noise.
         Continued use is risky; migrate ASAP.
+    end note
+
+    note right of DeprecatedNoMigration
+        🚨 HIGH RISK — RESTRICTED PATH
+        Allowed only with explicit approval,
+        internal-only usage, and confirmed
+        absence of external consumers.
+        Treat as exception, not default.
     end note
 
     note right of Removed
