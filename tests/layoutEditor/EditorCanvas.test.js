@@ -279,67 +279,43 @@ describe("EditorCanvas", () => {
   });
 
   describe("destroy", () => {
-    it("should remove overlay mousedown listener", () => {
+    it("should remove overlay mousedown listener with the bound handler", () => {
       const layout = {
         grid: { cols: 60, rows: 24 },
         regions: [{ id: "arena", rect: { x: 10, y: 5, width: 40, height: 14 } }]
       };
 
       canvas.setLayout(layout);
-      const box = overlay.querySelector("[data-region-id='arena']");
+      const removeListenerSpy = vi.spyOn(overlay, "removeEventListener");
 
       canvas.destroy();
 
-      box.dispatchEvent(
-        new MouseEvent("mousedown", {
-          clientX: 200,
-          clientY: 100,
-          bubbles: true
-        })
-      );
-
-      expect(canvas.dragState).toBeNull();
+      expect(removeListenerSpy).toHaveBeenCalledWith("mousedown", canvas.onMouseDown);
     });
 
-    it("should remove document mousemove and mouseup listeners", () => {
+    it("should remove document mousemove/mouseup listeners and clear dragState", () => {
       const layout = {
         grid: { cols: 60, rows: 24 },
         regions: [{ id: "arena", rect: { x: 10, y: 5, width: 40, height: 14 } }]
       };
 
       canvas.setLayout(layout);
-      const region = canvas.layout.regions[0];
-      const originalX = region.rect.x;
+      const removeDocumentListenerSpy = vi.spyOn(document, "removeEventListener");
 
       canvas.dragState = {
         regionId: "arena",
         startX: 200,
         startY: 100,
-        origX: originalX,
-        origY: region.rect.y,
+        origX: 10,
+        origY: 5,
         type: "drag"
       };
 
       canvas.destroy();
-      canvas.dragState = {
-        regionId: "arena",
-        startX: 200,
-        startY: 100,
-        origX: originalX,
-        origY: region.rect.y,
-        type: "drag"
-      };
 
-      document.dispatchEvent(new MouseEvent("mousemove", { clientX: 240, clientY: 100 }));
-      document.dispatchEvent(new MouseEvent("mouseup"));
-
-      expect(region.rect.x).toBe(originalX);
-      expect(canvas.dragState).toEqual(
-        expect.objectContaining({
-          regionId: "arena",
-          type: "drag"
-        })
-      );
+      expect(removeDocumentListenerSpy).toHaveBeenCalledWith("mousemove", canvas.onMouseMove);
+      expect(removeDocumentListenerSpy).toHaveBeenCalledWith("mouseup", canvas.onMouseUp);
+      expect(canvas.dragState).toBeNull();
     });
   });
 
