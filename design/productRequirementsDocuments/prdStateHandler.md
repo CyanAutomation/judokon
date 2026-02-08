@@ -21,13 +21,13 @@ State logic defines game flow and timing. Tests, CLI, and UI rely on predictable
 
 ## Prioritized Functional Requirements
 
-P1 - State Graph: Publish the full state graph with names (e.g., idle, roundPrompt, countdown, waitingForSelection, resolving, roundResolved).
+P1 - State Graph: Publish the full state graph with names (e.g., `waitingForMatchStart`, `roundPrompt`, `roundWait`, `roundSelect`, `roundResolve`, `roundDisplay`).
 
 Acceptance Criteria:
 
 - A diagram and a machine-readable list of states and transitions are included.
 
-P1 - Timeout Policies: Define timeout durations for selection, countdown, and other time-sensitive states and specify auto-select behavior.
+P1 - Timeout Policies: Define timeout durations for selection, round wait pacing, and other time-sensitive states and specify auto-select behavior.
 
 Acceptance Criteria:
 
@@ -47,64 +47,73 @@ Acceptance Criteria:
 
 ## Canonical State Graph (names)
 
-The canonical state machine for Classic Battle (starter):
+The canonical state machine for Classic Battle uses these states from `CLASSIC_BATTLE_STATES`:
 
-- `idle` — waiting for match start
-- `roundPrompt` — asking for points-to-win / round selection UI
-- `countdown` — UI countdown before selection opens (optional)
-- `waitingForSelection` — players can select stats
-- `selectionLocked` — both selections received or auto-selected
-- `resolving` — engine resolves the round
-- `roundResolved` — results displayed, scoreboard updated
-- `matchEnded` — match completion and cleanup
+- `waitingForMatchStart` — waiting in lobby for the player to start.
+- `matchStart` — initializes match context and selected win target.
+- `roundWait` — short pacing countdown before a round.
+- `roundPrompt` — draws and reveals judoka for the next round.
+- `roundSelect` — waits for stat selection (or timeout branch).
+- `roundResolve` — compares stat and computes outcome.
+- `roundDisplay` — updates score and shows round summary.
+- `matchEvaluate` — checks whether win condition has been met.
+- `matchDecision` — computes final winner.
+- `matchOver` — final state with rematch/home options.
+- `interruptRound` — round-level interrupt handling.
+- `interruptMatch` — match-level interrupt handling.
 
 #### Canonical State Machine Diagram
 
-The state diagram below visualizes the complete state machine including all 13 states, timeout-triggered transitions, feature-flag guarded branches (auto-select decision), and interrupt recovery paths. This is the authoritative reference for state names, valid transitions, and timeout semantics.
+The state diagram below visualizes the complete state machine including timeout-triggered transitions, feature-flag guarded branches (auto-select decision), and interrupt recovery paths.
+
+**Source of truth:** `src/helpers/classicBattle/stateTable.js`.
 
 ```mermaid
 stateDiagram-v2
   [*] --> waitingForMatchStart
 
   waitingForMatchStart --> matchStart: startClicked
-  waitingForMatchStart --> interruptMatch: interrupt
+  waitingForMatchStart --> waitingForMatchStart: interrupt
 
-  matchStart --> cooldown: ready
+  matchStart --> roundWait: ready
   matchStart --> interruptMatch: interrupt
+  matchStart --> interruptMatch: error
 
-  cooldown --> roundStart: ready (after 3s)
-  cooldown --> interruptRound: interrupt
+  roundWait --> roundPrompt: ready
+  roundWait --> interruptRound: interrupt
 
-  roundStart --> waitingForPlayerAction: cardsRevealed
-  roundStart --> interruptRound: interrupt
+  roundPrompt --> roundSelect: cardsRevealed
+  roundPrompt --> interruptRound: interrupt
 
-  waitingForPlayerAction --> roundDecision: statSelected
-  waitingForPlayerAction --> roundDecision: timeout [autoSelectEnabled]
-  waitingForPlayerAction --> interruptRound: timeout [!autoSelectEnabled]
-  waitingForPlayerAction --> interruptRound: interrupt
+  roundSelect --> roundResolve: statSelected
+  roundSelect --> roundResolve: timeout [autoSelectEnabled]
+  roundSelect --> interruptRound: timeout [!autoSelectEnabled]
+  roundSelect --> interruptRound: interrupt
 
-  note right of waitingForPlayerAction
+  note right of roundSelect
     30s selection timer
     Stall detection @ 5s:
     • Show "Still choosing..."
-    • Then 800ms → countdown
+    • Then 800ms → roundWait pacing UI
     • Then 250ms → auto-select
   end note
 
-  roundDecision --> roundOver: outcome resolved
-  roundDecision --> interruptRound: interrupt
+  roundResolve --> roundDisplay: outcome=winPlayer
+  roundResolve --> roundDisplay: outcome=winOpponent
+  roundResolve --> roundDisplay: outcome=draw
+  roundResolve --> roundResolve: evaluate
 
-  roundOver --> cooldown: continue
-  roundOver --> matchDecision: matchPointReached
-  roundOver --> interruptRound: interrupt
+  roundDisplay --> matchEvaluate: continue
+  roundDisplay --> matchEvaluate: matchPointReached
+
+  matchEvaluate --> matchDecision: evaluateMatch [playerScore >= winTarget || opponentScore >= winTarget]
+  matchEvaluate --> roundWait: evaluateMatch
 
   matchDecision --> matchOver: finalize
-  matchDecision --> interruptMatch: interrupt
 
   matchOver --> waitingForMatchStart: rematch | home
-  matchOver --> [*]
 
-  interruptRound --> cooldown: restartRound
+  interruptRound --> roundWait: restartRound
   interruptRound --> waitingForMatchStart: resumeLobby
   interruptRound --> matchOver: abortMatch
 
@@ -116,14 +125,14 @@ stateDiagram-v2
 
 - **Initial state:** `waitingForMatchStart` (P0)
 - **Final state:** `matchOver` (type: final)
-- **Match phases:** Setup (`waitingForMatchStart` → `matchStart` → `cooldown`) → Round Loop (repeats `roundStart` → `waitingForPlayerAction` → `roundDecision` → `roundOver`) → Resolution (`matchDecision` → `matchOver`)
+- **Match phases:** Setup (`waitingForMatchStart` → `matchStart` → `roundWait`) → Round loop (repeats `roundPrompt` → `roundSelect` → `roundResolve` → `roundDisplay` → `matchEvaluate`) → Resolution (`matchDecision` → `matchOver`)
 - **Interrupt states:** `interruptRound`, `interruptMatch`
-- **Opponent reveal pacing:** `roundDecision` entry applies the opponent reveal delay before emitting the opponent reveal event in UI.
+- **Opponent reveal pacing:** `roundResolve` entry applies the opponent reveal delay before emitting the opponent reveal event in UI.
 
 **Critical timeout transitions:**
 
-- **Cooldown (3s):** `cooldown` → `roundStart` on timer expiry; configurable via settings
-- **Selection (30s):** `waitingForPlayerAction` → `roundDecision` [if `autoSelectEnabled`] OR `interruptRound` [if `!autoSelectEnabled`]; triggers stall detection sub-timers (5s → 800ms → 250ms)
+- **Round wait (~3s):** `roundWait` → `roundPrompt` on readiness/short countdown completion; configurable via settings.
+- **Selection (30s):** `roundSelect` → `roundResolve` [if `autoSelectEnabled`] OR `interruptRound` [if `!autoSelectEnabled`]; triggers stall detection sub-timers (5s → 800ms → 250ms).
 
 **Guard conditions:**
 
@@ -135,9 +144,9 @@ stateDiagram-v2
 
 **Interrupt recovery:** Both interrupt states (plus the optional overlay) have explicit exit paths:
 
-- `interruptRound` → `cooldown` (resume), `waitingForMatchStart` (to lobby), or `matchOver` (abort)
+- `interruptRound` → `roundWait` (resume), `waitingForMatchStart` (to lobby), or `matchOver` (abort)
 - `interruptMatch` → `matchStart` (restart) or `waitingForMatchStart` (to lobby)
-- Optional overlay (when enabled): `roundModification` → `roundDecision` (apply) or `interruptRound` (cancel)
+- Optional overlay (when enabled): `roundModification` → `roundResolve` (apply), `interruptRound` (cancel), with optional exits to `roundPrompt` / `roundWait`
 
 ### Round Modification Overlay (Feature-Flagged)
 
@@ -154,29 +163,67 @@ round loop remains readable without admin/test context.
 ```mermaid
 stateDiagram-v2
   interruptRound --> roundModification: roundModifyFlag [FF_ROUND_MODIFY]
-  roundModification --> roundDecision: modifyRoundDecision
+  roundModification --> roundResolve: modifyRoundDecision
   roundModification --> interruptRound: cancelModification
+  roundModification --> roundPrompt: roundPrompt
+  roundModification --> roundWait: roundWait
 ```
 
 ## Transitions (machine-readable table)
 
 ```json
 [
-  { "from": "idle", "to": "roundPrompt", "trigger": "startMatch" },
-  { "from": "roundPrompt", "to": "countdown", "trigger": "confirmRounds" },
-  { "from": "countdown", "to": "waitingForSelection", "trigger": "countdownFinished" },
-  { "from": "waitingForSelection", "to": "selectionLocked", "trigger": "bothSelected|timeout" },
-  { "from": "selectionLocked", "to": "resolving", "trigger": "resolve" },
-  { "from": "resolving", "to": "roundResolved", "trigger": "resolved" },
-  { "from": "roundResolved", "to": "waitingForSelection", "trigger": "nextRound|continue" },
-  { "from": "roundResolved", "to": "matchEnded", "trigger": "matchComplete" }
+  { "from": "waitingForMatchStart", "to": "matchStart", "trigger": "startClicked" },
+  { "from": "waitingForMatchStart", "to": "waitingForMatchStart", "trigger": "interrupt" },
+  { "from": "matchStart", "to": "roundWait", "trigger": "ready" },
+  { "from": "matchStart", "to": "interruptMatch", "trigger": "interrupt" },
+  { "from": "matchStart", "to": "interruptMatch", "trigger": "error" },
+  { "from": "roundWait", "to": "roundPrompt", "trigger": "ready" },
+  { "from": "roundWait", "to": "interruptRound", "trigger": "interrupt" },
+  { "from": "roundPrompt", "to": "roundSelect", "trigger": "cardsRevealed" },
+  { "from": "roundPrompt", "to": "interruptRound", "trigger": "interrupt" },
+  { "from": "roundSelect", "to": "roundResolve", "trigger": "statSelected" },
+  { "from": "roundSelect", "to": "roundResolve", "trigger": "timeout", "guard": "autoSelectEnabled" },
+  { "from": "roundSelect", "to": "interruptRound", "trigger": "timeout", "guard": "!autoSelectEnabled" },
+  { "from": "roundSelect", "to": "interruptRound", "trigger": "interrupt" },
+  { "from": "roundResolve", "to": "roundDisplay", "trigger": "outcome=winPlayer" },
+  { "from": "roundResolve", "to": "roundDisplay", "trigger": "outcome=winOpponent" },
+  { "from": "roundResolve", "to": "roundDisplay", "trigger": "outcome=draw" },
+  { "from": "roundResolve", "to": "roundResolve", "trigger": "evaluate" },
+  { "from": "roundDisplay", "to": "matchEvaluate", "trigger": "matchPointReached" },
+  { "from": "roundDisplay", "to": "matchEvaluate", "trigger": "continue" },
+  {
+    "from": "matchEvaluate",
+    "to": "matchDecision",
+    "trigger": "evaluateMatch",
+    "guard": "playerScore >= winTarget || opponentScore >= winTarget"
+  },
+  { "from": "matchEvaluate", "to": "roundWait", "trigger": "evaluateMatch" },
+  { "from": "matchDecision", "to": "matchOver", "trigger": "finalize" },
+  { "from": "matchOver", "to": "waitingForMatchStart", "trigger": "rematch" },
+  { "from": "matchOver", "to": "waitingForMatchStart", "trigger": "home" },
+  { "from": "interruptRound", "to": "roundWait", "trigger": "restartRound" },
+  { "from": "interruptRound", "to": "waitingForMatchStart", "trigger": "resumeLobby" },
+  { "from": "interruptRound", "to": "matchOver", "trigger": "abortMatch" },
+  { "from": "interruptMatch", "to": "matchStart", "trigger": "restartMatch" },
+  { "from": "interruptMatch", "to": "waitingForMatchStart", "trigger": "toLobby" },
+  {
+    "from": "interruptRound",
+    "to": "roundModification",
+    "trigger": "roundModifyFlag",
+    "guard": "FF_ROUND_MODIFY"
+  },
+  { "from": "roundModification", "to": "roundResolve", "trigger": "modifyRoundDecision" },
+  { "from": "roundModification", "to": "interruptRound", "trigger": "cancelModification" },
+  { "from": "roundModification", "to": "roundPrompt", "trigger": "roundPrompt" },
+  { "from": "roundModification", "to": "roundWait", "trigger": "roundWait" }
 ]
 ```
 
 ## Default Timeout Policies (starter)
 
-- `countdown`: 3s (configurable)
-- `waitingForSelection`: 30s (P1) — if a player does not select within 30s, auto-select behavior applies (see below)
+- `roundWait`: 3s short pacing wait (configurable)
+- `roundSelect`: 30s (P1) — if a player does not select within 30s, auto-select behavior applies (see below)
 - `autoSelectDelay` (after selection stall detection): 100ms
 
 Acceptance Criteria (timeouts):
@@ -270,7 +317,7 @@ roundStore.onRoundStateChange((newState, oldState) => {
   battleDebug.logStateTransition(oldState, newState);
 });
 
-roundStore.setRoundState("cooldown");
+roundStore.setRoundState("roundWait");
 roundStore.setSelectedStat("strength");
 roundStore.setRoundOutcome("win");
 
@@ -296,11 +343,11 @@ This section replaces the legacy compliance report so implementation status stay
 | ------------------------ | ------- | ------------------------------------------------------------------------------------ | ------------------------------ | --------------------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------- |
 | `waitingForMatchStart`   | initial | render:matchLobby<br>reset:scoresAndUI                                               | ✅ Fully compliant (2/2)       | —                                                   | —                                                                                   | `waitingForMatchStartEnter.js`   |
 | `matchStart`             | normal  | init:matchContext<br>store:winTargetSelection<br>reset:scores<br>set:firstPlayerUser | ✅ Fully compliant (4/4)       | —                                                   | —                                                                                   | `matchStartEnter.js`             |
-| `cooldown`               | normal  | timer:startShortCountdown<br>announce:nextRoundInUI                                  | ❌ Missing (0/2)               | timer:startShortCountdown<br>announce:nextRoundInUI | 🚨 Priority 1 (timer:startShortCountdown)<br>⚠️ Priority 2 (announce:nextRoundInUI) | `cooldownEnter.js`               |
-| `roundStart`             | normal  | draw:randomJudokaBothSides<br>reveal:roundCards<br>set:activePlayerUser              | ✅ Fully compliant (3/3)       | —                                                   | —                                                                                   | `roundStartEnter.js`             |
-| `waitingForPlayerAction` | normal  | prompt:chooseStat<br>timer:startStatSelection<br>a11y:exposeTimerStatus              | ✅ Fully compliant (3/3)       | —                                                   | —                                                                                   | `waitingForPlayerActionEnter.js` |
-| `roundDecision`          | normal  | compare:selectedStat<br>compute:roundOutcome<br>announce:roundOutcome                | ⚠️ Partially implemented (1/3) | compare:selectedStat<br>compute:roundOutcome        | 🚨 Priority 1 (compare:selectedStat)<br>ℹ️ Priority 3 (compute:roundOutcome)        | `roundDecisionEnter.js`          |
-| `roundOver`              | normal  | update:score<br>update:UIRoundSummary                                                | ❌ Missing (0/2)               | update:score<br>update:UIRoundSummary               | ⚠️ Priority 2 (both)                                                                | `roundOverEnter.js`              |
+| `roundWait`              | normal  | timer:startShortCountdown<br>announce:nextRoundInUI                                  | ❌ Missing (0/2)               | timer:startShortCountdown<br>announce:nextRoundInUI | 🚨 Priority 1 (timer:startShortCountdown)<br>⚠️ Priority 2 (announce:nextRoundInUI) | `roundWaitEnter.js`              |
+| `roundPrompt`            | normal  | draw:randomJudokaBothSides<br>reveal:roundCards<br>set:activePlayerUser              | ✅ Fully compliant (3/3)       | —                                                   | —                                                                                   | `roundPromptEnter.js`            |
+| `roundSelect`            | normal  | prompt:chooseStat<br>timer:startStatSelection<br>a11y:exposeTimerStatus              | ✅ Fully compliant (3/3)       | —                                                   | —                                                                                   | `roundSelectEnter.js`            |
+| `roundResolve`           | normal  | compare:selectedStat<br>compute:roundOutcome<br>announce:roundOutcome                | ⚠️ Partially implemented (1/3) | compare:selectedStat<br>compute:roundOutcome        | 🚨 Priority 1 (compare:selectedStat)<br>ℹ️ Priority 3 (compute:roundOutcome)        | `roundResolveEnter.js`           |
+| `roundDisplay`           | normal  | update:score<br>update:UIRoundSummary                                                | ❌ Missing (0/2)               | update:score<br>update:UIRoundSummary               | ⚠️ Priority 2 (both)                                                                | `roundDisplayEnter.js`           |
 | `matchDecision`          | normal  | compute:matchOutcome<br>render:matchSummary                                          | ❌ Missing (0/2)               | compute:matchOutcome<br>render:matchSummary         | ⚠️ Priority 2 (render:matchSummary)<br>ℹ️ Priority 3 (compute:matchOutcome)         | `matchDecisionEnter.js`          |
 | `matchOver`              | final   | show:matchResultScreen                                                               | ❌ Missing (0/1)               | show:matchResultScreen                              | ⚠️ Priority 2                                                                       | `matchOverEnter.js`              |
 | `interruptRound`         | normal  | timer:clearIfRunning<br>rollback:roundContextIfNeeded<br>log:analyticsInterruptRound | ✅ Fully compliant (3/3)       | —                                                   | —                                                                                   | `interruptRoundEnter.js`         |
@@ -310,9 +357,9 @@ This section replaces the legacy compliance report so implementation status stay
 ### Missing action follow-ups
 
 - **Critical (Priority 1)**:
-  - Implement `timer:startShortCountdown` (cooldown) — integrate with the shared timer utilities (`timerService`) so the countdown emits tick events that can be consumed by UI handlers.
-  - Implement `compare:selectedStat` (roundDecision) — ensure the handler performs stat comparison, determines the winning side, and sets the payload consumed by `announce:roundOutcome`.
-- **Important (Priority 2)**: Persist score/summary updates after each round, ensure the cooldown UI announces the upcoming round, render the final match result screen, and ensure the match summary view renders on match end.
+  - Implement `timer:startShortCountdown` (`roundWait`) — integrate with the shared timer utilities (`timerService`) so the short pacing timer emits tick events consumed by UI handlers.
+  - Implement `compare:selectedStat` (`roundResolve`) — ensure the handler performs stat comparison, determines the winning side, and sets the payload consumed by `announce:roundOutcome`.
+- **Important (Priority 2)**: Persist score/summary updates after each round, ensure the `roundWait` UI announces the upcoming round, render the final match result screen, and ensure the match summary view renders on match end.
 - **Nice-to-have (Priority 3)**: Complete computed outcome helpers (`compute:roundOutcome`, `compute:matchOutcome`) to align analytics with UI messaging.
 
 ### Recommended next steps
@@ -326,9 +373,9 @@ This section replaces the legacy compliance report so implementation status stay
 The state machine exposes or coordinates the following test hooks (used by Playwright helpers and unit tests):
 
 - `getRoundPromptPromise` — resolves when `roundPrompt` is active.
-- `getCountdownStartedPromise` — resolves when `countdown` begins.
-- `getRoundResolvedPromise` — resolves when `roundResolved` is entered.
-- `getRoundTimeoutPromise` — resolves when `waitingForSelection` times out.
+- `getCountdownStartedPromise` — resolves when `roundWait` begins.
+- `getRoundResolvedPromise` — resolves when `roundDisplay` is entered.
+- `getRoundTimeoutPromise` — resolves when `roundSelect` times out.
 - `getStatSelectionStalledPromise` — resolves when a selection stall is detected (before auto-select).
 
 Acceptance Criteria (test hooks):
@@ -339,7 +386,7 @@ Acceptance Criteria (test hooks):
 ## Recovery Paths and Error Handling
 
 - Event emission failures: if an event cannot be emitted, the state machine retries emission twice with exponential backoff and logs the failure; tests must expect retry attempts.
-- Unrecoverable errors during `resolving` should move the machine to `roundResolved` with `details.error` populated to allow UI to show an error and continue the match if possible.
+- Unrecoverable errors during `roundResolve` should move the machine to `roundDisplay` with `details.error` populated to allow UI to show an error and continue the match if possible.
 
 Acceptance Criteria (recovery):
 
@@ -402,11 +449,11 @@ export async function myStateEnter(machine) {
 
 ✅ **Protected**:
 
-- `roundStartEnter.js` - Checks state before dispatching `cardsRevealed`
-- `cooldownEnter.js` - Verifies state after `startCooldown` (allows cooldown → roundStart)
-- `waitingForPlayerActionEnter.js` - Verifies state after `startTimer` (allows progression to roundDecision)
-- `roundOverEnter.js` - Verifies state after outcome confirmation (allows progression to cooldown/matchDecision)
-- `roundDecisionEnter.js` - Comprehensive guards via `guardSelectionResolution`
+- `roundPromptEnter.js` - Checks state before dispatching `cardsRevealed`
+- `roundWaitEnter.js` - Verifies state after `startCooldown` (allows `roundWait` → `roundPrompt`)
+- `roundSelectEnter.js` - Verifies state after `startTimer` (allows progression to `roundResolve`)
+- `roundDisplayEnter.js` - Verifies state after outcome confirmation (allows progression to `matchEvaluate` / `roundWait`)
+- `roundResolveEnter.js` - Comprehensive guards via `guardSelectionResolution`
 
 ❌ **Unprotected** (acceptable for specific reasons):
 
@@ -420,10 +467,10 @@ When defining valid states for guards, allow normal forward progression:
 
 ```javascript
 // ✅ GOOD: Allow normal progression
-const validStates = ["cooldown", "roundStart"]; // cooldown → roundStart is expected
+const validStates = ["roundWait", "roundPrompt"]; // roundWait → roundPrompt is expected
 
 // ❌ BAD: Too strict, blocks normal flow
-const validStates = ["cooldown"]; // Breaks fast transitions
+const validStates = ["roundWait"]; // Breaks fast transitions
 ```
 
 ### Helper Utilities
@@ -462,7 +509,7 @@ const result = await Promise.race([
 ]);
 ```
 
-Example from `roundDecisionHelpers.js` lines 268+.
+Example from `roundResolveHelpers.js` lines 268+.
 
 ### Guard Cancellation Cleanup
 
@@ -495,7 +542,7 @@ When testing handlers with async operations:
 3. Verify state guards prevent late modifications
 4. Test both fast transitions (0ms) and normal timing
 
-Example from `tests/helpers/classicBattle/cooldownEnter.zeroDuration.test.js`.
+Example from `tests/helpers/classicBattle/cooldownEnter.zeroDuration.test.js` (legacy file name; validates `roundWait` fast-path behavior).
 
 ### Common Pitfalls
 
@@ -520,15 +567,15 @@ if (machine.getState() === "expectedState") {
 ⚠️ **Blocking Fast Transitions**: Too-strict state check
 
 ```javascript
-// ❌ BAD: Blocks cooldown → roundStart
-if (machine.getState() !== "cooldown") return;
+// ❌ BAD: Blocks roundWait → roundPrompt
+if (machine.getState() !== "roundWait") return;
 ```
 
 ✅ **Solution**: Allow progression
 
 ```javascript
 // ✅ GOOD: Allows expected progression
-if (!["cooldown", "roundStart"].includes(machine.getState())) return;
+if (!["roundWait", "roundPrompt"].includes(machine.getState())) return;
 ```
 
 ### Acceptance Criteria
