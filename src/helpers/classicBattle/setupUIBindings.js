@@ -15,6 +15,7 @@ import { handleReplay } from "./roundManager.js";
 
 let isReplayClickBound = false;
 let replayStoreRef = null;
+let replayInFlight = false;
 
 /**
  * Check whether an event target is a replay control.
@@ -43,17 +44,24 @@ function isReplayControlTarget(target) {
  * @pseudocode
  * 1. Exit when the event target is not a replay control.
  * 2. Exit when no active replay store reference is available.
- * 3. Forward replay handling to `handleReplay` with the active store.
+ * 3. Exit when a replay flow is already in progress.
+ * 4. Forward replay handling to `handleReplay` with the active store.
+ * 5. Always clear replay lock state after handling settles.
  *
  * @param {MouseEvent} event
  * @returns {Promise<void>}
  */
 async function onDocumentReplayClick(event) {
-  if (!isReplayControlTarget(event?.target) || !replayStoreRef) {
+  if (!isReplayControlTarget(event?.target) || !replayStoreRef || replayInFlight) {
     return;
   }
 
-  await handleReplay(replayStoreRef);
+  replayInFlight = true;
+  try {
+    await handleReplay(replayStoreRef);
+  } finally {
+    replayInFlight = false;
+  }
 }
 
 /**
@@ -97,6 +105,7 @@ export function unbindReplayClickListener() {
 
   document.removeEventListener("click", onDocumentReplayClick, { capture: true });
   replayStoreRef = null;
+  replayInFlight = false;
   isReplayClickBound = false;
 }
 

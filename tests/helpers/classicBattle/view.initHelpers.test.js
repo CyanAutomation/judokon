@@ -302,6 +302,39 @@ describe("setupUIBindings", () => {
 
     replayButton.remove();
   });
+
+  it("ignores rapid replay double-clicks while replay flow is in flight", async () => {
+    const view = makeView();
+    const replayButton = document.createElement("button");
+    replayButton.setAttribute("data-testid", "replay-button");
+    document.body.append(replayButton);
+
+    let resolveReplay;
+    const replayPromise = new Promise((resolve) => {
+      resolveReplay = resolve;
+    });
+    roundManager.handleReplay.mockClear();
+    roundManager.handleReplay.mockReturnValueOnce(replayPromise);
+    await setupUIBindings(view);
+
+    naturalClick(replayButton);
+    naturalClick(replayButton);
+    await Promise.resolve();
+
+    expect(roundManager.handleReplay).toHaveBeenCalledTimes(1);
+    expect(roundManager.handleReplay).toHaveBeenCalledWith(view.controller.battleStore);
+
+    resolveReplay();
+    await replayPromise;
+    await Promise.resolve();
+
+    naturalClick(replayButton);
+    await Promise.resolve();
+
+    expect(roundManager.handleReplay).toHaveBeenCalledTimes(2);
+
+    replayButton.remove();
+  });
 });
 
 describe("setupDebugHooks", () => {
