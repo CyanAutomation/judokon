@@ -128,22 +128,23 @@ flowchart TD
     A["Player opens Settings"] --> B["Load `settings` from localStorage<br/>merge with DEFAULT_SETTINGS"]
     B --> C{"Storage read<br/>successful?"}
 
-    C -->|YES| D["Display toggle with<br/>current state"]
-    C -->|NO| E["⚠️ Storage read failed<br/>Use DEFAULT_SETTINGS<br/>featureFlags.autoSelect.enabled"]
+    C -->|YES| D["Display toggle with<br/>persisted `featureFlags.autoSelect.enabled` state"]
+    C -->|NO| E["⚠️ Storage read failed<br/>Use DEFAULT_SETTINGS value for<br/>`featureFlags.autoSelect.enabled`"]
 
-    D --> E
-    E --> F["Player toggles feature"]
+    D --> F["Player toggles feature"]
+    E --> F
 
-    F --> G["Persist `featureFlags.autoSelect.enabled`<br/>to `settings` localStorage key"]
+    F --> G["Persist updated `featureFlags.autoSelect.enabled`<br/>to `settings` localStorage key"]
     G --> H{"Persist<br/>successful?"}
 
-    H -->|YES| I["🔊 Announce:<br/>'Setting saved'<br/>Setting is persisted across sessions"]
-    H -->|NO| J["⚠️ Persist failed<br/>Show error toast"]
+    H -->|YES| I["🔊 Announce:<br/>'Setting saved'<br/>Updated value is persisted across sessions"]
+    H -->|NO| J["⚠️ Persist failed<br/>Show error toast<br/>Keep in-memory toggle state only"]
 
-    I --> K["On next settings load<br/>merge persisted state<br/>with defaults + runtime JSON"]
-    J --> K
+    I --> K["On next settings load<br/>merge saved state from `settings`<br/>with defaults + runtime JSON"]
+    J --> M["On next settings load<br/>fallback to previous saved/default value<br/>from merged settings"]
 
-    K --> L["Across sessions<br/>Retrieve saved toggle<br/>state on app load"]
+    K --> L["Across sessions<br/>Retrieve updated toggle<br/>state on app load"]
+    M --> N["Current session can continue;<br/>player may retry save from Settings"]
 
     style A fill:#e3f2fd
     style D fill:#c8e6c9
@@ -152,6 +153,7 @@ flowchart TD
     style I fill:#c8e6c9
     style J fill:#ffcdd2
     style L fill:#e0e0e0
+    style N fill:#e0e0e0
 ```
 
 **Rationale (implemented today)**: Settings are stored under a single `settings` localStorage key and merged with `DEFAULT_SETTINGS`/runtime settings JSON; the toggle key is camelCase (`featureFlags.autoSelect.enabled`).
