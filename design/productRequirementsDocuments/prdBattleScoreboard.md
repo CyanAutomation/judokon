@@ -67,7 +67,7 @@ The scoreboard listens **only** to the canonical events from the Battle Engine/O
 
 - **All visual transitions** are keyed off `control.state.changed`.
 - Domain/timer events update values but **do not** drive transitions.
-- Outcomes persist until the next `control.state.changed` to `selection` or `cooldown`.
+- Outcomes persist until the next `control.state.changed` to `roundSelect` or `roundWait`.
 - Duplicate or out-of-order events are ignored (idempotency guard).
 
 ### 6a. Event Authority & Propagation Flow
@@ -83,6 +83,7 @@ sequenceDiagram
     participant Player as Player/CLI
 
     Note over Engine,UI: ⭐ Authority Boundary: Only control.state.changed drives state transitions
+    Note over Engine,UI: Legend: authoritative = state transition (->>) | value-only = no transition (-->>)
 
     Player->>UI: Mounts scoreboard
     Note right of UI: Fallback: "Waiting…" (500ms timeout)
@@ -91,31 +92,40 @@ sequenceDiagram
     loop Round Lifecycle
         Engine->>Orch: roundStarted({roundIndex})
         Orch->>Orch: Map to FSM state context
-        Orch->>UI: control.state.changed(to: "selection")<br/>⭐ AUTHORITATIVE<br/>—drives state transition
+        Orch->>UI: control.state.changed(to: "roundSelect")<br/>⭐ AUTHORITATIVE<br/>—drives state transition
         UI->>UI: Reset outcome area,<br/>show round index
 
         rect rgb(200, 230, 201)
             Note over Engine,UI: Value-only updates (idempotent, non-driving)
-            Engine->>UI: round.timer.tick({remainingMs})<br/>—dashed arrow (non-driving)
+            Engine-->>UI: round.timer.tick({remainingMs})<br/>—value-only (non-driving)
             UI->>UI: Update timer display<br/>(no state transition)
-            Engine->>UI: round.timer.tick({remainingMs})<br/>—ignored if duplicate
+            Engine-->>UI: round.timer.tick({remainingMs})<br/>—ignored if duplicate
             UI->>UI: (idempotency: same roundIndex)
         end
 
         Player->>Orch: Select stat
         Orch->>Engine: (command)
         Engine->>Orch: roundEnded({outcome, scores})
-        Orch->>UI: control.state.changed(to: "cooldown")<br/>⭐ AUTHORITATIVE
+        Orch->>UI: control.state.changed(to: "roundResolve")<br/>⭐ AUTHORITATIVE
+        Orch->>UI: control.state.changed(to: "roundDisplay")<br/>⭐ AUTHORITATIVE
+        Orch->>UI: control.state.changed(to: "matchEvaluate")<br/>⭐ AUTHORITATIVE
         UI->>UI: Hold previous outcome display
 
-        Engine->>UI: round.evaluated({outcome, scores})<br/>—dashed arrow
+        Engine-->>UI: round.evaluated({outcome, scores})<br/>—value-only
         UI->>UI: Update scores + outcome,<br/>animate display
+
+        alt Continue match
+            Orch->>UI: control.state.changed(to: "roundWait")<br/>⭐ AUTHORITATIVE
+        else Match reaches win target
+            Orch->>UI: control.state.changed(to: "matchDecision")<br/>⭐ AUTHORITATIVE
+            Orch->>UI: control.state.changed(to: "matchOver")<br/>⭐ AUTHORITATIVE
+        end
 
         Note right of UI: Outcome persists until next<br/>control.state.changed
     end
 
     alt Match Concluded
-        Engine->>UI: match.concluded({scores})<br/>—dashed arrow
+        Engine-->>UI: match.concluded({scores})<br/>—value-only
         UI->>UI: Lock scoreboard,<br/>display final scores
     end
 
@@ -284,14 +294,14 @@ Then the scoreboard shows round 3
 And the outcome area is cleared
 
 Scenario: Selection timer ticks
-Given the state is "selection"
+Given the state is "roundSelect"
 When the engine emits "round.timer.tick" with remainingMs 5000
 Then the scoreboard shows "00:05"
 
-Scenario: Outcome persists until next selection
+Scenario: Outcome persists until next roundSelect/roundWait transition
 When the engine emits "round.evaluated" with outcome "playerWin" and scores { player: 4, opponent: 2 }
 Then the scoreboard shows "You win" and 4–2
-And it remains until the next "control.state.changed" to "selection"
+And it remains until the next "control.state.changed" to "roundSelect" or "roundWait"
 
 Scenario: Match concluded freezes scoreboard
 When the engine emits "match.concluded" with scores { player: 10, opponent: 7 }
