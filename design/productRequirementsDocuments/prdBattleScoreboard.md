@@ -123,39 +123,50 @@ sequenceDiagram
     UI->>UI: Destroy, unsubscribe
 ```
 
-**Diagram Rationale:** This sequenceDiagram clarifies the three-hop event propagation (Engine → Orchestrator → Scoreboard) and visually encodes the authority boundary through arrow styles: solid arrows for state-driving events (`control.state.changed`), dashed arrows for value-only events (domain/timer). The diagram shows idempotency enforcement (ignoring duplicate `roundIndex`), fallback timeout behavior, and outcome persistence rules. This eliminates ambiguity around which events trigger state transitions versus which merely update display values.
+**Diagram Rationale:** This sequenceDiagram clarifies the three-hop event propagation (Engine → Orchestrator → Scoreboard) and visually encodes the authority boundary through arrow styles: solid arrows for state-driving events (`control.state.changed`), dashed arrows for value-only events (domain/timer). The diagram shows identity-based stale guarding (`sequence`, `roundIndex`, `matchToken`), fallback timeout behavior, and outcome persistence rules. This eliminates ambiguity around which events trigger state transitions versus which merely update display values.
 
 ### 6b. Idempotency Guard Algorithm
 
-The following flowchart details the decision logic that Scoreboard uses to guard against duplicate and out-of-order events. This is critical for deterministic test execution and AI-driven match simulations.
+The following flowchart details the decision logic that Scoreboard uses to guard against stale and out-of-order events. This is critical for deterministic test execution and AI-driven match simulations.
 
 ```mermaid
 flowchart TD
     Start([Event Received]) --> CheckState{"Is event<br/>control.state.changed?"}
 
-    CheckState -->|Yes| ApplyTransition["✅ Apply state transition<br/>(ui state ← to)<br/>Clear outcome area<br/>Reset timer if needed"]
-    CheckState -->|No| CheckDuplicate{"Is event<br/>roundIndex < current?"}
+    CheckState -->|Yes| ApplyTransition["✅ Apply authoritative transition<br/>(ui state ← to)<br/>updateControlAuthority()<br/>Clear outcome area<br/>Reset timer if needed"]
+    CheckState -->|No| CheckSequence{"Has both incoming + authority<br/>sequence?"}
 
-    CheckDuplicate -->|Yes| IgnoreOldEvent["🔴 Ignore<br/>(out-of-order event)"]
-    CheckDuplicate -->|No| CheckExact{"Same roundIndex<br/>+ statKey<br/>as last event?"}
+    CheckSequence -->|Yes| SequenceOlder{"incoming.sequence<br/>< authority.sequence?"}
+    CheckSequence -->|No| CheckRound{"Has both incoming + authority<br/>roundIndex?"}
 
-    CheckExact -->|Yes| IgnoreDuplicate["🔴 Ignore<br/>(duplicate)"]
-    CheckExact -->|No| UpdateValue["✅ Update value only<br/>(timer, outcome, scores)<br/>Preserve state<br/>No transition"]
+    SequenceOlder -->|Yes| IgnoreOldEvent["🔴 Ignore<br/>(stale by sequence)"]
+    SequenceOlder -->|No| CheckRound
+
+    CheckRound -->|Yes| RoundOlder{"incoming.roundIndex<br/>< authority.roundIndex?"}
+    CheckRound -->|No| CheckToken{"matchToken mismatch<br/>AND no incoming sequence<br/>AND no incoming roundIndex?"}
+
+    RoundOlder -->|Yes| IgnoreOldRound["🔴 Ignore<br/>(stale by roundIndex)"]
+    RoundOlder -->|No| CheckToken
+
+    CheckToken -->|Yes| IgnoreTokenOnly["🔴 Ignore<br/>(token-only stale edge case)"]
+    CheckToken -->|No| UpdateValue["✅ Update value only<br/>(timer, outcome, scores)<br/>Preserve state<br/>No transition"]
 
     ApplyTransition --> End([Render])
     UpdateValue --> End
     IgnoreOldEvent --> End
-    IgnoreDuplicate --> End
+    IgnoreOldRound --> End
+    IgnoreTokenOnly --> End
 
     style ApplyTransition fill:#c8e6c9
     style UpdateValue fill:#c8e6c9
     style IgnoreOldEvent fill:#ffcdd2
-    style IgnoreDuplicate fill:#ffcdd2
+    style IgnoreOldRound fill:#ffcdd2
+    style IgnoreTokenOnly fill:#ffcdd2
     style Start fill:#e3f2fd
     style End fill:#e0e0e0
 ```
 
-**Diagram Rationale:** This flowchart makes explicit the three-tier idempotency guard: (1) Is it a state-driving event? (2) Is the roundIndex newer or equal? (3) Is the (roundIndex, statKey) tuple unique? By visualizing these decision points with color coding (green for updates, red for ignores), the diagram ensures that downstream AI agents, developers, and test frameworks can reliably reason about event processing order and duplicate handling. This directly addresses the "Lifecycle & Idempotency" complexity flagged in the PRD feedback.
+**Diagram Rationale:** This flowchart makes explicit the implemented stale-check ordering from `isStaleAgainstAuthority`: (1) sequence precedence, (2) roundIndex comparison, then (3) the matchToken mismatch edge case when sequence/roundIndex are absent. It also keeps `control.state.changed` as the sole authoritative state-transition source (`updateControlAuthority`). By visualizing these decision points with color coding (green for updates, red for ignores), the diagram ensures that downstream AI agents, developers, and test frameworks can reliably reason about event processing order and identity-based stale rejection. For maintainability, treat `extractRoundIdentity` and `isStaleAgainstAuthority` as the single source of truth for guard semantics.
 
 ---
 
@@ -244,7 +255,7 @@ and persistent state (scoreboard) remain isolated but coordinated.
 - Multiple `create()` calls return the same instance.
 - `destroy()` unsubscribes from all topics and nulls state.
 - Out-of-order events (older `roundIndex`) are ignored.
-- Duplicate events with same `(roundIndex, statKey)` tuple are ignored.
+- Stale events are ignored using authority identity checks (`sequence`, then `roundIndex`, then `matchToken` edge case).
 - **Fallback behaviour:**
   - If no `control.state.changed` event is received within 500 ms of mount, display “Waiting…” until the first state arrives.
 
