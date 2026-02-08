@@ -52,8 +52,11 @@ const elements = {
 
 let canvas, propertyInspector, storageManager, validationOverlay, consolePanel;
 
-async function initializeEditor() {
-  // Initialize subsystems
+function setupCanvas() {
+  if (canvas) {
+    canvas.destroy();
+  }
+
   canvas = new EditorCanvas(
     document.getElementById("editorCanvas"),
     elements.regionOverlay,
@@ -61,6 +64,11 @@ async function initializeEditor() {
     GRID_COLS,
     GRID_ROWS
   );
+}
+
+async function initializeEditor() {
+  // Initialize subsystems
+  setupCanvas();
 
   propertyInspector = new PropertyInspector(elements.propertyPanel);
   storageManager = new StorageManager();

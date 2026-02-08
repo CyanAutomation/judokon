@@ -23,6 +23,9 @@ export class EditorCanvas {
     this.selectedRegionId = null;
     this.listeners = new Map();
     this.dragState = null;
+    this.onMouseMove = this.handleMouseMove.bind(this);
+    this.onMouseUp = this.handleMouseUp.bind(this);
+    this.onMouseDown = this.handleMouseDown.bind(this);
 
     this.resizeCanvas();
     this.setupEventHandlers();
@@ -39,9 +42,16 @@ export class EditorCanvas {
   }
 
   setupEventHandlers() {
-    this.overlay.addEventListener("mousedown", (e) => this.handleMouseDown(e));
-    document.addEventListener("mousemove", (e) => this.handleMouseMove(e));
-    document.addEventListener("mouseup", () => this.handleMouseUp());
+    this.overlay.addEventListener("mousedown", this.onMouseDown);
+    document.addEventListener("mousemove", this.onMouseMove);
+    document.addEventListener("mouseup", this.onMouseUp);
+  }
+
+  destroy() {
+    this.overlay.removeEventListener("mousedown", this.onMouseDown);
+    document.removeEventListener("mousemove", this.onMouseMove);
+    document.removeEventListener("mouseup", this.onMouseUp);
+    this.dragState = null;
   }
 
   setLayout(layout) {
