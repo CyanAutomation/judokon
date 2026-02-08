@@ -347,6 +347,11 @@ let commandHistory = [];
 let historyIndex = -1;
 let historyAnchorStat = null;
 let eventsWired = false;
+let flagsListenersWired = false;
+let flagsListenerCleanupCallbacks = [];
+let toggleVerboseFromFlags = null;
+let applyScanlinesFromFlags = () => {};
+let updateVerboseFromFlags = () => {};
 const SHORTCUT_HINT_MESSAGES = {
   default:
     "Use keys 1 through 5 to choose a stat, Enter or Space to continue, H to toggle help, and Q to quit.",
@@ -375,6 +380,93 @@ function updateShortcutsFallback(shortcutsEnabled) {
   } else {
     fallback.setAttribute("aria-hidden", "true");
   }
+}
+
+function handleShortcutsCloseClick(event) {
+  event?.preventDefault();
+  if (!state.shortcutsReturnFocus) {
+    const details = byId("cli-shortcuts");
+    const summary = details?.querySelector("summary");
+    if (summary instanceof HTMLElement) {
+      state.shortcutsReturnFocus = summary;
+    }
+  }
+  hideCliShortcuts();
+}
+
+async function handleVerboseToggleChange() {
+  const checkbox = byId("verbose-toggle");
+  if (typeof toggleVerboseFromFlags === "function") {
+    await toggleVerboseFromFlags(!!checkbox?.checked);
+  }
+}
+
+function handleFeatureFlagsChange(event) {
+  const flag = event.detail?.flag;
+  if (!flag || flag === "cliVerbose") {
+    try {
+      verboseEnabled = !!isEnabled("cliVerbose");
+    } catch {}
+    const round = Number(byId("cli-root")?.dataset.round || 0);
+    updateRoundHeader(round, engineFacade.getPointsToWin?.());
+    updateVerboseFromFlags();
+  }
+  if (!flag || flag === "battleStateBadge") {
+    updateStateBadgeVisibility();
+  }
+  if (!flag || flag === "cliShortcuts") {
+    updateCliShortcutsVisibility();
+    updateControlsHint();
+  }
+  if (!flag || flag === "statHotkeys") {
+    updateControlsHint();
+  }
+  if (!flag || flag === "scanlines") {
+    applyScanlinesFromFlags();
+  }
+  refreshVerboseScrollIndicators();
+}
+
+function cleanupFlagsListeners() {
+  flagsListenerCleanupCallbacks.forEach((cleanup) => {
+    try {
+      cleanup();
+    } catch {}
+  });
+  flagsListenerCleanupCallbacks = [];
+  flagsListenersWired = false;
+}
+
+function wireFlagsListeners() {
+  if (flagsListenersWired) {
+    return;
+  }
+  const shortcutsDetails = byId("cli-shortcuts");
+  if (shortcutsDetails) {
+    shortcutsDetails.addEventListener("toggle", handleShortcutsToggle);
+    flagsListenerCleanupCallbacks.push(() => {
+      shortcutsDetails.removeEventListener("toggle", handleShortcutsToggle);
+    });
+  }
+  const shortcutsClose = byId("cli-shortcuts-close");
+  if (shortcutsClose) {
+    shortcutsClose.addEventListener("click", handleShortcutsCloseClick);
+    flagsListenerCleanupCallbacks.push(() => {
+      shortcutsClose.removeEventListener("click", handleShortcutsCloseClick);
+    });
+  }
+  const checkbox = byId("verbose-toggle");
+  if (checkbox) {
+    checkbox.addEventListener("change", handleVerboseToggleChange);
+    flagsListenerCleanupCallbacks.push(() => {
+      checkbox.removeEventListener("change", handleVerboseToggleChange);
+    });
+  }
+  featureFlagsEmitter.addEventListener("change", handleFeatureFlagsChange);
+  flagsListenerCleanupCallbacks.push(() => {
+    featureFlagsEmitter.removeEventListener("change", handleFeatureFlagsChange);
+  });
+  flagsListenersWired = true;
 }
 // state managed in state.js
 
@@ -433,6 +525,10 @@ try {
 
       // Listener state
       eventsWired = false;
+      cleanupFlagsListeners();
+      toggleVerboseFromFlags = null;
+      applyScanlinesFromFlags = () => {};
+      updateVerboseFromFlags = () => {};
 
       // Cache state
       cachedStatDefs = null;
@@ -3206,56 +3302,14 @@ export async function setupFlags() {
     }
   } catch {}
   updateVerbose();
+  toggleVerboseFromFlags = toggleVerbose;
+  applyScanlinesFromFlags = applyScanlines;
+  updateVerboseFromFlags = updateVerbose;
   updateStateBadgeVisibility();
   updateBattleStateBadge(getStateSnapshot().state);
-  const shortcutsDetails = byId("cli-shortcuts");
-  if (shortcutsDetails) {
-    shortcutsDetails.addEventListener("toggle", handleShortcutsToggle);
-  }
-  const shortcutsClose = byId("cli-shortcuts-close");
-  if (shortcutsClose) {
-    shortcutsClose.addEventListener("click", (event) => {
-      event?.preventDefault();
-      if (!state.shortcutsReturnFocus) {
-        const details = byId("cli-shortcuts");
-        const summary = details?.querySelector("summary");
-        if (summary instanceof HTMLElement) {
-          state.shortcutsReturnFocus = summary;
-        }
-      }
-      hideCliShortcuts();
-    });
-  }
+  wireFlagsListeners();
   updateCliShortcutsVisibility();
   updateControlsHint();
-  checkbox?.addEventListener("change", async () => {
-    await toggleVerbose(!!checkbox.checked);
-  });
-  featureFlagsEmitter.addEventListener("change", (e) => {
-    const flag = e.detail?.flag;
-    if (!flag || flag === "cliVerbose") {
-      try {
-        verboseEnabled = !!isEnabled("cliVerbose");
-      } catch {}
-      const round = Number(byId("cli-root")?.dataset.round || 0);
-      updateRoundHeader(round, engineFacade.getPointsToWin?.());
-      updateVerbose();
-    }
-    if (!flag || flag === "battleStateBadge") {
-      updateStateBadgeVisibility();
-    }
-    if (!flag || flag === "cliShortcuts") {
-      updateCliShortcutsVisibility();
-      updateControlsHint();
-    }
-    if (!flag || flag === "statHotkeys") {
-      updateControlsHint();
-    }
-    if (!flag || flag === "scanlines") {
-      applyScanlines();
-    }
-    refreshVerboseScrollIndicators();
-  });
   return { toggleVerbose };
 }
 
@@ -3389,20 +3443,23 @@ function handlePageHide() {
  * mark listeners as unwired
  */
 export function unwireEvents() {
-  if (!eventsWired) {
-    return;
+  if (eventsWired) {
+    offBattleEvent("battleStateChange", handleBattleStateChange);
+    if (typeof window !== "undefined") {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("pageshow", handlePageShow);
+      window.removeEventListener("pagehide", handlePageHide);
+    }
+    if (typeof document !== "undefined") {
+      document.removeEventListener("click", onClickAdvance);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    }
+    eventsWired = false;
   }
-  offBattleEvent("battleStateChange", handleBattleStateChange);
-  if (typeof window !== "undefined") {
-    window.removeEventListener("keydown", onKeyDown);
-    window.removeEventListener("pageshow", handlePageShow);
-    window.removeEventListener("pagehide", handlePageHide);
-  }
-  if (typeof document !== "undefined") {
-    document.removeEventListener("click", onClickAdvance);
-    document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }
-  eventsWired = false;
+  cleanupFlagsListeners();
+  toggleVerboseFromFlags = null;
+  applyScanlinesFromFlags = () => {};
+  updateVerboseFromFlags = () => {};
 }
 
 /**
