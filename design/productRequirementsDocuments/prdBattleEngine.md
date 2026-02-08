@@ -96,54 +96,45 @@ sequenceDiagram
   participant UI as UI Layer
   participant Player
 
-  Note over Orch,Player: Round Start Phase
+  Note over Orch,Player: Match/Round Flow (canonical FSM states)
+  Orch-->>UI: emit control.state.changed(to="matchStart")
+  Orch-->>UI: emit control.state.changed(to="roundWait")
+  Orch-->>UI: emit control.state.changed(to="roundPrompt")
   Orch->>Engine: startRound()
-  Engine->>Engine: initialize timer (30s)
-  Engine-->>Orch: emit roundStarted (legacy compatibility)
-  Orch->>Orch: bridge event
-  Orch-->>UI: emit round.started
-  Orch-->>UI: emit control.state.changed(to="selection")
+  Engine-->>Orch: emit round.started({roundIndex})
+  Orch-->>UI: emit control.state.changed(to="roundSelect")
   UI->>UI: enable stat buttons
 
-  Note over Orch,Player: Player Action Phase (Manual Selection)
-  Player->>UI: click stat button
-  UI->>Orch: dispatchBattleEvent("statSelected")
-  Orch->>Engine: lockSelection(statKey)
-  Engine-->>Orch: emit roundEnded (legacy compatibility)
-  Orch->>Orch: bridge event
-  Orch-->>UI: emit round.selection.locked
-  Orch-->>UI: emit round.evaluated(outcome)
-  Orch-->>UI: emit control.state.changed(to="evaluation")
-  UI->>UI: show result (You Won/Lost/Draw)
-
-  alt Manual Selection (Instant)
-    Note over Orch,Engine: Selection locked immediately
-  else Timer Expiry (30s Auto-Select)
-    Note over Engine,UI: 30s Selection Timer Expires
-    Engine->>Engine: emit round.timer.tick(remainingMs=0)
-    Engine-->>Orch: emit timerTick (legacy compatibility alias for round.timer.tick)
-    Orch->>Orch: detect timeout
+  alt Player selects stat
+    Player->>UI: click stat button
+    UI->>Orch: dispatchBattleEvent("statSelected")
+    Orch->>Engine: lockSelection(statKey)
+    Engine-->>Orch: emit round.selection.locked({roundIndex, statKey})
+  else Selection timeout (auto-select enabled)
+    Engine-->>Orch: emit round.timer.expired()
     Orch->>Engine: autoSelectStat()
-    Engine-->>Orch: emit roundEnded (legacy compatibility)
-    Orch-->>UI: emit round.evaluated(outcome)
-    Orch-->>UI: emit control.state.changed(to="evaluation")
-    UI->>UI: show "Auto-selected: [stat]"
+    Engine-->>Orch: emit round.selection.locked({roundIndex, statKey})
   end
 
-  Note over Orch,Player: Cooldown Phase (3s)
-  Orch->>Orch: start cooldown (3s)
-  Orch-->>UI: emit control.countdown.started
-  loop Every 1 second
-    Orch-->>UI: emit cooldown.timer.tick(remainingMs)
-    UI->>UI: update countdown display
-  end
-  Orch-->>UI: emit control.countdown.completed
-  Orch-->>UI: emit control.state.changed(to="selection")
+  Orch-->>UI: emit control.state.changed(to="roundResolve")
+  Engine-->>Orch: emit round.evaluated({outcome, scores})
+  Orch-->>UI: emit control.state.changed(to="roundDisplay")
+  Orch-->>UI: emit control.state.changed(to="matchEvaluate")
 
-  Note over Orch,Player: Authority Boundary Enforcement
-  Note over UI: ⚠️ UI listens to domain events<br/>(round.started, round.evaluated)<br/>for VALUE updates only
-  Note over UI: ⭐ ONLY control.state.changed<br/>advances UI state
+  alt Win condition met
+    Orch-->>UI: emit control.state.changed(to="matchDecision")
+    Orch-->>UI: emit control.state.changed(to="matchOver")
+    Orch-->>UI: emit match.concluded({scores})
+  else Continue match
+    Orch-->>UI: emit control.state.changed(to="roundWait")
+    Orch-->>UI: emit control.state.changed(to="roundPrompt")
+    Orch-->>UI: emit control.state.changed(to="roundSelect")
+  end
+
+  Note over UI: ⭐ ONLY control.state.changed(to="<canonical state>") advances UI state
 ```
+
+> Canonical authority for state names and legal transitions: `src/helpers/classicBattle/stateCatalog.js` and `src/helpers/classicBattle/stateTable.js`.
 
 **Critical Authority Rules (enforced by event taxonomy):**
 
@@ -222,32 +213,39 @@ sequenceDiagram
 
 ```mermaid
 stateDiagram-v2
-  [*] --> init
+  [*] --> waitingForMatchStart
 
-  init --> prestart: startMatch()
-  prestart --> selection: control.countdown.completed\ncontrol.state.changed(to=selection) + round.started(roundIndex=1)
+  waitingForMatchStart --> matchStart: startClicked
+  matchStart --> roundWait: ready
+  roundWait --> roundPrompt: ready
+  roundPrompt --> roundSelect: cardsRevealed
 
-  selection --> evaluation: control.state.changed(to=evaluation)\nafter round.selection.locked OR round.timer.expired
-  evaluation --> end: match.concluded(scores) [win guard]
-  evaluation --> cooldown: control.state.changed(to=cooldown)\nafter round.evaluated [!win guard]
+  roundSelect --> roundResolve: statSelected
+  roundSelect --> roundResolve: timeout [autoSelectEnabled]
+  roundSelect --> interruptRound: timeout [!autoSelectEnabled]
 
-  cooldown --> selection: cooldown.timer.expired\ncontrol.state.changed(to=selection) + round.started(roundIndex+1)
-  selection --> end: match.concluded(scores) [win guard]
+  roundResolve --> roundDisplay: outcome=winPlayer|winOpponent|draw
+  roundDisplay --> matchEvaluate: continue|matchPointReached
+  matchEvaluate --> roundWait: evaluateMatch [!win condition]
+  matchEvaluate --> matchDecision: evaluateMatch [win condition]
+  matchDecision --> matchOver: finalize
 
-  state interrupted <<choice>>
-  init --> interrupted: interrupt.raised
-  prestart --> interrupted: interrupt.raised
-  selection --> interrupted: interrupt.raised
-  evaluation --> interrupted: interrupt.raised
-  cooldown --> interrupted: interrupt.raised
-  interrupted --> [*]: match.concluded (hard stop)
-  interrupted --> (restore): interrupt.resolved
+  matchOver --> waitingForMatchStart: rematch|home
 
-  (restore) --> prestart: if before first selection
-  (restore) --> selection: if in-round
-  (restore) --> evaluation: if evaluation in-flight
-  (restore) --> cooldown: if between rounds
+  matchStart --> interruptMatch: interrupt|error
+  roundWait --> interruptRound: interrupt
+  roundPrompt --> interruptRound: interrupt
+  roundSelect --> interruptRound: interrupt
+
+  interruptRound --> roundWait: restartRound
+  interruptRound --> waitingForMatchStart: resumeLobby
+  interruptRound --> matchOver: abortMatch
+
+  interruptMatch --> matchStart: restartMatch
+  interruptMatch --> waitingForMatchStart: toLobby
 ```
+
+> Canonical authority for state names and legal transitions: `src/helpers/classicBattle/stateCatalog.js` and `src/helpers/classicBattle/stateTable.js`.
 
 ### State table
 
