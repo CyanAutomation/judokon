@@ -122,6 +122,6 @@ describe("computeAndDispatchOutcome", () => {
 
     await mod.computeAndDispatchOutcome(store, machine);
 
-    expect(machine.dispatch).toHaveBeenCalledWith("interrupt", { reason: "guardNoOutcome" });
+    expect(machine.dispatch).toHaveBeenCalledWith("outcome=draw", { reason: "guardNoOutcome" });
   });
 });

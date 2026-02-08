@@ -92,7 +92,7 @@ describe("schedulePostResolveWatchdog", () => {
     };
     mod.schedulePostResolveWatchdog(machine);
     await vi.runAllTimersAsync();
-    expect(machine.dispatch).toHaveBeenCalledWith("interrupt", {
+    expect(machine.dispatch).toHaveBeenCalledWith("outcome=draw", {
       reason: "postResolveWatchdog"
     });
     timers.cleanup();

@@ -67,9 +67,9 @@ describe("roundResolveEnter", () => {
 
     expect(emitBattleEvent).toHaveBeenCalledWith(
       "scoreboardShowMessage",
-      "No selection detected. Interrupting round."
+      "No selection detected. Resolving as draw."
     );
-    expect(machine.dispatch).toHaveBeenCalledWith("interrupt", { reason: "noSelection" });
+    expect(machine.dispatch).toHaveBeenCalledWith("outcome=draw", { reason: "noSelection" });
     timers.cleanup();
   });
 
@@ -134,7 +134,7 @@ describe("roundResolveEnter", () => {
       "scoreboardShowMessage",
       "Round error. Recovering…"
     );
-    expect(machine.dispatch).toHaveBeenCalledWith("interrupt", {
+    expect(machine.dispatch).toHaveBeenCalledWith("outcome=draw", {
       reason: "roundResolutionError",
       error: "boom"
     });

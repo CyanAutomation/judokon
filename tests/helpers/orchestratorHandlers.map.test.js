@@ -150,7 +150,7 @@ describe("stateHandlers map", () => {
       expect(helpers.resolveSelectionIfPresent).toHaveBeenCalledWith(store);
       expect(helpers.awaitPlayerChoice).toHaveBeenCalledWith(store);
       expect(spies.get("scoreboardShowMessage")).toHaveBeenCalledWith(
-        "No selection detected. Interrupting round."
+        "No selection detected. Resolving as draw."
       );
       expect(spies.get("debugPanelUpdate")).toHaveBeenCalled();
       const transitionDetails = transitionSpy.mock.calls.map(([detail]) => detail);

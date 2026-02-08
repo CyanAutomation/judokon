@@ -5,7 +5,11 @@ import { applyMockSetup } from "./mockSetup.js";
 import "./commonMocks.js";
 
 // Use vi.hoisted to create mock functions at the top level
-const { initScoreboardAdapter: mockInitScoreboard, disposeScoreboardAdapter: mockDisposeScoreboard, whenScoreboardReady: mockWhenScoreboardReady } = vi.hoisted(() => ({
+const {
+  initScoreboardAdapter: mockInitScoreboard,
+  disposeScoreboardAdapter: mockDisposeScoreboard,
+  whenScoreboardReady: mockWhenScoreboardReady
+} = vi.hoisted(() => ({
   initScoreboardAdapter: vi.fn(() => vi.fn()),
   disposeScoreboardAdapter: vi.fn(),
   whenScoreboardReady: vi.fn(async () => undefined)
