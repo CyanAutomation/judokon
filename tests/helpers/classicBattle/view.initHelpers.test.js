@@ -42,6 +42,7 @@ vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
   onBattleEvent: vi.fn((name, cb) => {
     eventHandlers[name] = cb;
   }),
+  emitBattleEvent: vi.fn(),
   handlers: eventHandlers
 }));
 vi.mock("../../../src/helpers/battleStateProgress.js", () => ({
@@ -49,6 +50,9 @@ vi.mock("../../../src/helpers/battleStateProgress.js", () => ({
 }));
 vi.mock("../../../src/helpers/tooltip.js", () => ({
   initTooltips: vi.fn().mockResolvedValue()
+}));
+vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
+  handleReplay: vi.fn().mockResolvedValue(undefined)
 }));
 vi.mock("../../../src/helpers/testModeUtils.js", () => ({
   isTestModeEnabled: vi.fn()
@@ -60,6 +64,7 @@ const battle = await import("../../../src/helpers/classicBattle/statButtons.js")
 const uiHelpers = await import("../../../src/helpers/classicBattle/uiHelpers.js");
 const debugPanel = await import("../../../src/helpers/classicBattle/debugPanel.js");
 const events = await import("../../../src/helpers/classicBattle/battleEvents.js");
+const roundManager = await import("../../../src/helpers/classicBattle/roundManager.js");
 const testModeUtils = await import("../../../src/helpers/testModeUtils.js");
 
 function makeView() {
@@ -249,6 +254,25 @@ describe("setupUIBindings", () => {
     expect(statControls.disable).toHaveBeenCalled();
     const tooltip = await import("../../../src/helpers/tooltip.js");
     expect(tooltip.initTooltips).toHaveBeenCalled();
+  });
+
+  it("does not register duplicate replay listeners when setup runs twice", async () => {
+    const view = makeView();
+    const replayButton = document.createElement("button");
+    replayButton.setAttribute("data-testid", "replay-button");
+    document.body.append(replayButton);
+
+    roundManager.handleReplay.mockClear();
+    await setupUIBindings(view);
+    await setupUIBindings(view);
+
+    replayButton.click();
+    await Promise.resolve();
+
+    expect(roundManager.handleReplay).toHaveBeenCalledTimes(1);
+    expect(roundManager.handleReplay).toHaveBeenCalledWith(view.controller.battleStore);
+
+    replayButton.remove();
   });
 });
 
