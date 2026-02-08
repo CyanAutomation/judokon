@@ -72,6 +72,58 @@ Recommended required checks:
 - Use feature flags for experimental features if applicable.
 - Run and validate the Layout Debug Panel if working on visuals.
 
+### Playwright CLI for UI Design Validation
+
+Use the Playwright CLI to record user flows, validate selectors, and generate design baselines:
+
+```bash
+# Start interactive recording session
+npm run test:ui:codegen
+
+# Inspect a saved trace file
+npm run test:ui:trace <path-to-trace-file>
+
+# Install browser dependencies (run once per environment)
+npx playwright install
+```
+
+**When to use:**
+- Recording new user flows for design documentation
+- Validating `data-testid` attributes and semantic selectors
+- Creating screenshot baselines for visual regression testing
+- Debugging layout or interaction issues
+
+**Key principles:**
+- Use semantic selectors (`data-testid`, `role=`) instead of implementation-detail CSS selectors
+- Record interactions naturally (`click()`, `fill()`, `press()`) without synthetic events
+- Always capture contrast and focus indicators for accessibility validation
+- Generate traces with full network/timeline data for debugging context
+
+**Artifacts:** All recordings are saved to `artifacts/` with descriptive flow names and timestamps. See [judokon-playwright-cli skill](.github/skills/judokon-playwright-cli/SKILL.md) for detailed usage.
+
+### Generating Mermaid Diagrams with mermaid-cli
+
+Use mermaid-cli to generate diagrams programmatically from `.mmd` files:
+
+```bash
+# Generate SVG diagram
+npm run diagram:gen -i flowchart.mmd -o flowchart.svg
+
+# Generate PNG with project theme
+node scripts/runMermaid.js -i diagram.mmd -o diagram.png
+
+# Quick preview (saves to /tmp/preview.svg)
+npm run diagram:preview
+```
+
+**When to use:**
+- Exporting PRD diagrams as static assets (PNG, SVG, PDF)
+- Generating diagram families from data structures
+- Creating documentation archives
+- Converting diagram sources to image formats for sharing
+
+**Configuration:** Defaults are set in `mermaid.config.json` (theme, output format, CSS). Override per-command using mermaid-cli flags as needed. See [judokon-mermaid-creator skill](.github/skills/judokon-mermaid-creator/SKILL.md) for full CLI documentation.
+
 ---
 
 ## 👤 Contributing as a Human Collaborator
