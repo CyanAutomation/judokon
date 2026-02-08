@@ -16,6 +16,7 @@ import { handleReplay } from "./roundManager.js";
 let isReplayClickBound = false;
 let replayStoreRef = null;
 let replayInFlight = false;
+let cleanupInterruptHandlers = null;
 
 /**
  * Check whether an event target is a replay control.
@@ -92,13 +93,19 @@ function bindReplayClickListener(store) {
  * Remove delegated replay handling and release module state.
  *
  * @pseudocode
- * 1. Exit when there is no bound replay click listener.
- * 2. Remove the capture-phase replay click listener.
- * 3. Reset listener/state flags so a new store can bind cleanly.
+ * 1. If interrupt cleanup exists, execute it and clear the reference.
+ * 2. Exit when there is no bound replay click listener.
+ * 3. Remove the capture-phase replay click listener.
+ * 4. Reset listener/state flags so a new store can bind cleanly.
  *
  * @returns {void}
  */
 export function unbindReplayClickListener() {
+  if (cleanupInterruptHandlers) {
+    cleanupInterruptHandlers();
+    cleanupInterruptHandlers = null;
+  }
+
   if (!isReplayClickBound) {
     return;
   }
@@ -126,7 +133,7 @@ export async function setupUIBindings(view) {
   const store = view.controller.battleStore;
   setupScoreboard(view.controller.timerControls);
   initQuitButton(store);
-  initInterruptHandlers(store);
+  cleanupInterruptHandlers = initInterruptHandlers(store);
   bindReplayClickListener(store);
   watchBattleOrientation(() => view.applyBattleOrientation());
 

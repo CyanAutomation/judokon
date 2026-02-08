@@ -153,6 +153,34 @@ describe("initInterruptHandlers", () => {
     expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
   });
 
+  it("is idempotent when initialized twice and dispatches once per event", async () => {
+    const { initInterruptHandlers } = await import(
+      "../../../src/helpers/classicBattle/interruptHandlers.js"
+    );
+    const { dispatchBattleEvent } = await import(
+      "../../../src/helpers/classicBattle/eventDispatcher.js"
+    );
+
+    const store = createStore();
+    const cleanupFirst = initInterruptHandlers(store);
+    const cleanupSecond = initInterruptHandlers(store);
+
+    expect(cleanupSecond).toBe(cleanupFirst);
+
+    window.dispatchEvent(new Event("pagehide"));
+
+    expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
+    expect(dispatchBattleEvent).toHaveBeenCalledWith("interrupt", {
+      reason: "navigation"
+    });
+
+    cleanupFirst();
+
+    dispatchBattleEvent.mockClear();
+    window.dispatchEvent(new Event("beforeunload"));
+    expect(dispatchBattleEvent).not.toHaveBeenCalled();
+  });
+
   it("opens error modal and interrupts on error event", async () => {
     const { initInterruptHandlers } = await import(
       "../../../src/helpers/classicBattle/interruptHandlers.js"

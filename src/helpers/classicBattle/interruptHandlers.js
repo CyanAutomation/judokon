@@ -7,6 +7,35 @@ import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 
 let errorModal;
+let activeStore = null;
+let boundNavigationHandler = null;
+let boundErrorHandler = null;
+
+/**
+ * Remove all globally registered interrupt listeners.
+ *
+ * @pseudocode
+ * 1. Exit if interrupt listeners are not currently wired.
+ * 2. Remove pagehide and beforeunload listeners with the same handler reference.
+ * 3. Remove error and unhandledrejection listeners with the same handler reference.
+ * 4. Clear module-scoped store and handler references.
+ *
+ * @returns {void}
+ */
+function removeInterruptHandlers() {
+  if (!boundNavigationHandler || !boundErrorHandler) {
+    return;
+  }
+
+  window.removeEventListener("pagehide", boundNavigationHandler);
+  window.removeEventListener("beforeunload", boundNavigationHandler);
+  window.removeEventListener("error", boundErrorHandler);
+  window.removeEventListener("unhandledrejection", boundErrorHandler);
+
+  activeStore = null;
+  boundNavigationHandler = null;
+  boundErrorHandler = null;
+}
 
 /**
  * Register global interrupt handlers for Classic Battle.
@@ -48,9 +77,14 @@ let errorModal;
  *
  * @param {{statTimeoutId: ReturnType<typeof setTimeout>|null, autoSelectId: ReturnType<typeof setTimeout>|null, compareRaf: number}} store
  *  Shared store for scheduled timers used by the orchestrator.
- * @returns {void}
+ * @returns {() => void} Cleanup function for all registered interrupt listeners.
  */
 export function initInterruptHandlers(store) {
+  if (boundNavigationHandler && boundErrorHandler) {
+    return removeInterruptHandlers;
+  }
+
+  activeStore = store;
   /**
    * Cancel timers and scheduler callbacks to prevent UI drift.
    *
@@ -63,15 +97,20 @@ export function initInterruptHandlers(store) {
    * @returns {void}
    */
   function cleanup() {
+    const currentStore = activeStore;
+    if (!currentStore) {
+      return;
+    }
+
     try {
-      clearTimeout(store.statTimeoutId);
-      clearTimeout(store.autoSelectId);
-      store.statTimeoutId = null;
-      store.autoSelectId = null;
+      clearTimeout(currentStore.statTimeoutId);
+      clearTimeout(currentStore.autoSelectId);
+      currentStore.statTimeoutId = null;
+      currentStore.autoSelectId = null;
     } catch {}
     try {
-      cancelFrame(store.compareRaf);
-      store.compareRaf = 0;
+      cancelFrame(currentStore.compareRaf);
+      currentStore.compareRaf = 0;
     } catch {}
     try {
       resetSkipState();
@@ -130,10 +169,15 @@ export function initInterruptHandlers(store) {
     } catch {}
   }
 
-  window.addEventListener("pagehide", handleNavigation);
-  window.addEventListener("beforeunload", handleNavigation);
-  window.addEventListener("error", handleError);
-  window.addEventListener("unhandledrejection", handleError);
+  boundNavigationHandler = handleNavigation;
+  boundErrorHandler = handleError;
+
+  window.addEventListener("pagehide", boundNavigationHandler);
+  window.addEventListener("beforeunload", boundNavigationHandler);
+  window.addEventListener("error", boundErrorHandler);
+  window.addEventListener("unhandledrejection", boundErrorHandler);
+
+  return removeInterruptHandlers;
 }
 
 /**
