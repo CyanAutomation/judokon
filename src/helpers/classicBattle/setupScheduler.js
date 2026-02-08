@@ -34,6 +34,27 @@ import {
 } from "../../utils/scheduler.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 
+let isSchedulerWired = false;
+
+function visibilityHandler() {
+  if (document.hidden) {
+    pause();
+  } else {
+    resume();
+  }
+}
+
+function teardownScheduler() {
+  if (!isSchedulerWired) {
+    return;
+  }
+
+  document.removeEventListener("visibilitychange", visibilityHandler);
+  window.removeEventListener("pagehide", teardownScheduler);
+  stopScheduler();
+  isSchedulerWired = false;
+}
+
 /**
  * @summary Decide whether the animation scheduler should start.
  *
@@ -86,15 +107,14 @@ export function setupScheduler() {
     return;
   }
 
+  if (isSchedulerWired) {
+    return;
+  }
+
   startScheduler();
-  window.addEventListener("pagehide", stopScheduler, { once: true });
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-      pause();
-    } else {
-      resume();
-    }
-  });
+  isSchedulerWired = true;
+  window.addEventListener("pagehide", teardownScheduler, { once: true });
+  document.addEventListener("visibilitychange", visibilityHandler);
 }
 
 export default setupScheduler;

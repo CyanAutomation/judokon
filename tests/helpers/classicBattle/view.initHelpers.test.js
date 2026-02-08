@@ -190,7 +190,9 @@ describe("setupScheduler", () => {
     const pauseSpy = vi.spyOn(scheduler, "pause");
     const resumeSpy = vi.spyOn(scheduler, "resume");
     const addWindowListener = vi.spyOn(window, "addEventListener");
+    const removeWindowListener = vi.spyOn(window, "removeEventListener");
     const addDocListener = vi.spyOn(document, "addEventListener");
+    const removeDocListener = vi.spyOn(document, "removeEventListener");
 
     testModeUtils.isTestModeEnabled.mockReturnValue(false);
     vi.stubGlobal("requestAnimationFrame", vi.fn());
@@ -226,6 +228,8 @@ describe("setupScheduler", () => {
     expect(pagehideCall).toBeDefined();
     pagehideCall[1]();
     expect(stopSpy).toHaveBeenCalled();
+    expect(removeDocListener).toHaveBeenCalledWith("visibilitychange", expect.any(Function));
+    expect(removeWindowListener).toHaveBeenCalledWith("pagehide", expect.any(Function));
     const visibilityCall = addDocListener.mock.calls.find((call) => call[0] === "visibilitychange");
     expect(visibilityCall).toBeDefined();
 
@@ -241,11 +245,62 @@ describe("setupScheduler", () => {
     hiddenGetter.mockRestore();
 
     addWindowListener.mockRestore();
+    removeWindowListener.mockRestore();
     addDocListener.mockRestore();
+    removeDocListener.mockRestore();
     startSpy.mockRestore();
     stopSpy.mockRestore();
     pauseSpy.mockRestore();
     resumeSpy.mockRestore();
+    vi.unstubAllGlobals();
+  });
+
+  it("does not wire scheduler twice when setupScheduler is called repeatedly", () => {
+    const startSpy = vi.spyOn(scheduler, "start");
+    const addWindowListener = vi.spyOn(window, "addEventListener");
+    const addDocListener = vi.spyOn(document, "addEventListener");
+
+    testModeUtils.isTestModeEnabled.mockReturnValue(false);
+    vi.stubGlobal("requestAnimationFrame", vi.fn());
+
+    const originalVitestEnv = process.env.VITEST;
+    const hasVitestGlobal = Object.prototype.hasOwnProperty.call(globalThis, "__VITEST__");
+    const hasTestGlobal = Object.prototype.hasOwnProperty.call(globalThis, "__TEST__");
+    const originalVitestGlobal = globalThis.__VITEST__;
+    const originalTestGlobal = globalThis.__TEST__;
+    delete process.env.VITEST;
+    delete globalThis.__VITEST__;
+    delete globalThis.__TEST__;
+
+    try {
+      setupScheduler();
+      setupScheduler();
+    } finally {
+      if (originalVitestEnv !== undefined) {
+        process.env.VITEST = originalVitestEnv;
+      }
+      if (hasVitestGlobal) {
+        globalThis.__VITEST__ = originalVitestGlobal;
+      }
+      if (hasTestGlobal) {
+        globalThis.__TEST__ = originalTestGlobal;
+      }
+    }
+
+    const visibilityRegistrations = addDocListener.mock.calls.filter(
+      (call) => call[0] === "visibilitychange"
+    );
+
+    expect(startSpy).toHaveBeenCalledTimes(1);
+    expect(visibilityRegistrations).toHaveLength(1);
+
+    const pagehideCall = addWindowListener.mock.calls.find((call) => call[0] === "pagehide");
+    expect(pagehideCall).toBeDefined();
+    pagehideCall[1]();
+
+    startSpy.mockRestore();
+    addWindowListener.mockRestore();
+    addDocListener.mockRestore();
     vi.unstubAllGlobals();
   });
 });
