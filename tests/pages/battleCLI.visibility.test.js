@@ -119,17 +119,19 @@ describe("battleCLI visibility change handling", () => {
         const pauseBefore = countLogs("[TIMER] pauseTimers called");
         const resumeBefore = countLogs("[TIMER] resumeTimers called");
 
-        vi.spyOn(document, "hidden", "get").mockReturnValue(true);
+        const hiddenSpyTrue = vi.spyOn(document, "hidden", "get").mockReturnValue(true);
         visibilityHandler?.(new Event("visibilitychange"));
 
         const pauseAfterVisibilityHidden = countLogs("[TIMER] pauseTimers called");
         expect(pauseAfterVisibilityHidden - pauseBefore).toBe(1);
 
-        vi.spyOn(document, "hidden", "get").mockReturnValue(false);
+        hiddenSpyTrue.mockRestore();
+        const hiddenSpyFalse = vi.spyOn(document, "hidden", "get").mockReturnValue(false);
         visibilityHandler?.(new Event("visibilitychange"));
 
         const resumeAfterVisibilityVisible = countLogs("[TIMER] resumeTimers called");
         expect(resumeAfterVisibilityVisible - resumeBefore).toBe(1);
+        hiddenSpyFalse.mockRestore();
 
         const pauseBeforePageHide = countLogs("[TIMER] pauseTimers called");
         pageHideHandler?.(new Event("pagehide"));
