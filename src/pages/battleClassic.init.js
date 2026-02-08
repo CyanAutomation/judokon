@@ -138,6 +138,9 @@ const CONFIG = Object.freeze({
 const STATE = {
   activeSelectionTimer: null,
   failSafeTimerId: null,
+  scheduleNextReadyAfterSelectionTimerId: null,
+  finalizeSelectionReadyTimerId: null,
+  selectionReadyGeneration: 0,
   isStartingRoundCycle: false,
   detachStatHotkeys: undefined,
   hasLoggedFinalizeSelectionUpdateFailure: false,
@@ -245,6 +248,7 @@ function bindHomeButton(store) {
     if (!homeBtn.__boundQuit) {
       homeBtn.addEventListener("click", () => {
         try {
+          stopActiveSelectionTimer();
           quitMatch(resolveControlStore(store), homeBtn);
         } catch {}
       });
@@ -482,6 +486,20 @@ function stopActiveSelectionTimer() {
     clearTimeout(STATE.failSafeTimerId);
     STATE.failSafeTimerId = null;
   }
+  invalidateSelectionReadyCallbacks();
+}
+
+function clearSelectionReadyTimer(timerField) {
+  const timerId = STATE[timerField];
+  if (!timerId) return;
+  clearTimeout(timerId);
+  STATE[timerField] = null;
+}
+
+function invalidateSelectionReadyCallbacks() {
+  STATE.selectionReadyGeneration += 1;
+  clearSelectionReadyTimer("scheduleNextReadyAfterSelectionTimerId");
+  clearSelectionReadyTimer("finalizeSelectionReadyTimerId");
 }
 
 function clearOpponentPromptFallbackTimer() {
@@ -646,13 +664,14 @@ function handleStatSelectionError(store, err) {
   logNextButtonRecovery("selection failure", btn, { cooldownStarted });
 }
 
-async function applyRoundDecisionResult(store, result) {
+async function applyRoundDecisionResult(store, result, options = {}) {
+  const { selectionGeneration = STATE.selectionReadyGeneration } = options;
   if (!result) {
     return { applied: false, matchEnded: false };
   }
 
   try {
-    const matchEnded = await applySelectionResult(store, result);
+    const matchEnded = await applySelectionResult(store, result, selectionGeneration);
     broadcastBattleState("roundDisplay");
     return { applied: true, matchEnded: Boolean(matchEnded) };
   } catch (err) {
@@ -661,7 +680,11 @@ async function applyRoundDecisionResult(store, result) {
   }
 }
 
-async function applySelectionResult(store, result) {
+async function applySelectionResult(
+  store,
+  result,
+  selectionGeneration = STATE.selectionReadyGeneration
+) {
   try {
     console.debug("battleClassic: stat selection result", {
       matchEnded: Boolean(result?.matchEnded),
@@ -722,7 +745,7 @@ async function applySelectionResult(store, result) {
     }
   }
   if (!matchEnded) {
-    scheduleNextReadyAfterSelection(store);
+    scheduleNextReadyAfterSelection(store, selectionGeneration);
   } else {
     try {
       showSnackbar("");
@@ -733,14 +756,29 @@ async function applySelectionResult(store, result) {
   return matchEnded;
 }
 
-function scheduleNextReadyAfterSelection(store) {
+function scheduleNextReadyAfterSelection(
+  store,
+  selectionGeneration = STATE.selectionReadyGeneration
+) {
+  if (selectionGeneration !== STATE.selectionReadyGeneration) {
+    return;
+  }
+  clearSelectionReadyTimer("scheduleNextReadyAfterSelectionTimerId");
+  const generationAtSchedule = selectionGeneration;
   const scheduleNextReady = () => {
+    STATE.scheduleNextReadyAfterSelectionTimerId = null;
+    if (generationAtSchedule !== STATE.selectionReadyGeneration) {
+      return;
+    }
     const cooldownStarted = triggerCooldownOnce(store, "statSelectionResolved");
     const nextBtn = prepareNextButtonForUse("selection");
     logNextButtonRecovery("selection", nextBtn, { cooldownStarted });
   };
   try {
-    setTimeout(scheduleNextReady, computeSelectionReadyDelay());
+    STATE.scheduleNextReadyAfterSelectionTimerId = setTimeout(
+      scheduleNextReady,
+      computeSelectionReadyDelay()
+    );
   } catch (err) {
     console.debug("battleClassic: scheduling next ready failed", err);
     scheduleNextReady();
@@ -751,9 +789,22 @@ function scheduleNextReadyAfterSelection(store) {
 // Selection Finalization
 // =============================================================================
 
-function finalizeSelectionReady(store, options = {}) {
+function finalizeSelectionReady(
+  store,
+  options = {},
+  selectionGeneration = STATE.selectionReadyGeneration
+) {
+  if (selectionGeneration !== STATE.selectionReadyGeneration) {
+    return;
+  }
+  clearSelectionReadyTimer("finalizeSelectionReadyTimerId");
+  const generationAtSchedule = selectionGeneration;
   const { shouldStartCooldown = true } = options;
   const finalizeRoundReady = () => {
+    STATE.finalizeSelectionReadyTimerId = null;
+    if (generationAtSchedule !== STATE.selectionReadyGeneration) {
+      return;
+    }
     if (shouldStartCooldown) {
       try {
         triggerCooldownOnce(store, "selectionFinalize");
@@ -811,7 +862,10 @@ function finalizeSelectionReady(store, options = {}) {
   const scheduleFinalization = (delayMs) => {
     try {
       if (typeof window !== "undefined" && typeof window.setTimeout === "function") {
-        window.setTimeout(() => finalizeRoundReady(), delayMs);
+        STATE.finalizeSelectionReadyTimerId = window.setTimeout(
+          () => finalizeRoundReady(),
+          delayMs
+        );
         return true;
       }
     } catch (err) {
@@ -819,7 +873,7 @@ function finalizeSelectionReady(store, options = {}) {
     }
     try {
       if (typeof setTimeout === "function") {
-        setTimeout(() => finalizeRoundReady(), delayMs);
+        STATE.finalizeSelectionReadyTimerId = setTimeout(() => finalizeRoundReady(), delayMs);
         return true;
       }
     } catch (err) {
@@ -856,6 +910,7 @@ async function handleStatButtonClick(store, stat, btn) {
   disableStatButtons(targets, container ?? undefined);
 
   const { playerVal, opponentVal } = resolveStatValues(store, stat);
+  const selectionGeneration = STATE.selectionReadyGeneration;
   let result;
   try {
     result = await handleStatSelection(store, String(stat), {
@@ -864,7 +919,7 @@ async function handleStatButtonClick(store, stat, btn) {
     });
   } catch (err) {
     handleStatSelectionError(store, err);
-    finalizeSelectionReady(store, { shouldStartCooldown: false });
+    finalizeSelectionReady(store, { shouldStartCooldown: false }, selectionGeneration);
     return;
   }
 
@@ -879,8 +934,14 @@ async function handleStatButtonClick(store, stat, btn) {
     broadcastBattleState("roundResolve");
   }
 
-  const { applied, matchEnded } = await applyRoundDecisionResult(store, result);
-  finalizeSelectionReady(store, { shouldStartCooldown: applied && !matchEnded });
+  const { applied, matchEnded } = await applyRoundDecisionResult(store, result, {
+    selectionGeneration
+  });
+  finalizeSelectionReady(
+    store,
+    { shouldStartCooldown: applied && !matchEnded },
+    selectionGeneration
+  );
 }
 
 /**
@@ -1510,6 +1571,7 @@ function wireControlButtons(store) {
   const quitBtn = getQuitButton();
   if (quitBtn && !quitBtn.__controlBound) {
     quitBtn.addEventListener("click", () => {
+      stopActiveSelectionTimer();
       quitMatch(resolveControlStore(store), quitBtn);
     });
     quitBtn.__controlBound = true;

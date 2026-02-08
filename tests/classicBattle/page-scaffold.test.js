@@ -1108,6 +1108,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     delete window.__timerButtonListeners;
     delete window.__roundCycleHistory;
     delete window.__lastRoundCycleTrigger;
+    delete window.__OPPONENT_RESOLVE_DELAY_MS;
     delete window.battleStore;
     delete global.localStorage;
     try {
@@ -1277,14 +1278,18 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     statButton?.click();
     await timerSpy.runAllTimersAsync();
 
-    const lastCall = selectionMod.handleStatSelection.mock.calls.at(-1);
-    expect(lastCall).toBeTruthy();
+    const statSelectionCall = [...selectionMod.handleStatSelection.mock.calls]
+      .reverse()
+      .find(
+        (call) => Number.isFinite(call?.[2]?.playerVal) && Number.isFinite(call?.[2]?.opponentVal)
+      );
+    expect(statSelectionCall).toBeTruthy();
     const statKey = statButton?.dataset.stat ?? "";
     expect(statKey).toBeTruthy();
-    expect(lastCall?.[2]?.playerVal).toBe(12);
-    expect(lastCall?.[2]?.opponentVal).toBe(5);
-    expect(lastCall?.[2]?.playerVal).not.toBe(previousPlayerStats[statKey]);
-    expect(lastCall?.[2]?.opponentVal).not.toBe(previousOpponentStats[statKey]);
+    expect(statSelectionCall?.[2]?.playerVal).toBe(12);
+    expect(statSelectionCall?.[2]?.opponentVal).toBe(5);
+    expect(statSelectionCall?.[2]?.playerVal).not.toBe(previousPlayerStats[statKey]);
+    expect(statSelectionCall?.[2]?.opponentVal).not.toBe(previousOpponentStats[statKey]);
   });
 
   test("shows battle state badge when override is enabled", async () => {

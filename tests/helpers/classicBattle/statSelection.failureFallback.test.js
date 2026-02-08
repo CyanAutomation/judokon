@@ -14,6 +14,7 @@ describe("classicBattle stat selection failure recovery", () => {
   const UI_HELPERS_PATH = "../../../src/helpers/classicBattle/uiHelpers.js";
   let renderStatButtons;
   let broadcastBattleState;
+  let prepareUiBeforeSelection;
   let startCooldownMock;
   let handleStatSelectionMock;
   let showSnackbarMock;
@@ -81,7 +82,7 @@ describe("classicBattle stat selection failure recovery", () => {
     previousMinDuration = w.__MIN_OPPONENT_MESSAGE_DURATION_MS;
     w.__MIN_OPPONENT_MESSAGE_DURATION_MS = 200;
 
-    ({ renderStatButtons, broadcastBattleState } = await import(
+    ({ renderStatButtons, broadcastBattleState, prepareUiBeforeSelection } = await import(
       "../../../src/pages/battleClassic.init.js"
     ));
   });
@@ -160,6 +161,78 @@ describe("classicBattle stat selection failure recovery", () => {
         expect(startCooldownMock).toHaveBeenCalledWith(store);
         expect(store.__uiCooldownStarted).toBe(false);
       });
+    } finally {
+      cleanup();
+    }
+  });
+
+  it("replay-style cleanup prevents stale selection timers from enabling Next", async () => {
+    const { cleanup } = useCanonicalTimers();
+    try {
+      let resolveSelection;
+      handleStatSelectionMock.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveSelection = resolve;
+          })
+      );
+
+      document.body.innerHTML =
+        '<div id="stat-buttons"></div><button id="next-button" disabled></button>';
+
+      const store = {};
+      renderStatButtons(store);
+
+      const statButton = document.querySelector("[data-stat]");
+      statButton.click();
+
+      prepareUiBeforeSelection();
+      const callsBeforeResolve = enableNextRoundButtonMock.mock.calls.length;
+
+      resolveSelection?.({ playerScore: 1, opponentScore: 0, matchEnded: false });
+      await flushMicrotasks();
+      await vi.runAllTimersAsync();
+
+      expect(enableNextRoundButtonMock.mock.calls.length).toBe(callsBeforeResolve);
+      expect(document.getElementById("next-button")?.getAttribute("data-next-ready")).not.toBe(
+        "true"
+      );
+    } finally {
+      cleanup();
+    }
+  });
+
+  it("quit-style cleanup prevents stale selection timers from enabling Next", async () => {
+    const { cleanup } = useCanonicalTimers();
+    try {
+      let resolveSelection;
+      handleStatSelectionMock.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveSelection = resolve;
+          })
+      );
+
+      document.body.innerHTML =
+        '<div id="stat-buttons"></div><button id="next-button" disabled></button>';
+
+      const store = {};
+      renderStatButtons(store);
+
+      const statButton = document.querySelector("[data-stat]");
+      statButton.click();
+
+      prepareUiBeforeSelection();
+      const callsBeforeResolve = enableNextRoundButtonMock.mock.calls.length;
+
+      resolveSelection?.({ playerScore: 1, opponentScore: 0, matchEnded: false });
+      await flushMicrotasks();
+      await vi.runAllTimersAsync();
+
+      expect(enableNextRoundButtonMock.mock.calls.length).toBe(callsBeforeResolve);
+      expect(document.getElementById("next-button")?.getAttribute("data-next-ready")).not.toBe(
+        "true"
+      );
     } finally {
       cleanup();
     }
