@@ -26,6 +26,11 @@ function mergeObject(base, override, defaults, path = []) {
   const result = { ...(base && typeof base === "object" ? base : {}) };
 
   for (const [key, value] of Object.entries(override)) {
+    if (!(key in defaults)) {
+      console.warn(`Unknown setting "${[...path, key].join(".")}" ignored`);
+      continue;
+    }
+
     result[key] = mergeObject(
       base && typeof base === "object" ? base[key] : undefined,
       value,
@@ -54,7 +59,7 @@ function mergeKnown(base, override, defaults, path = []) {
   const result = { ...base };
 
   for (const [key, value] of Object.entries(override)) {
-    if (path.length === 0 && !(key in defaults)) {
+    if (!(key in defaults)) {
       console.warn(`Unknown setting "${[...path, key].join(".")}" ignored`);
       continue;
     }
