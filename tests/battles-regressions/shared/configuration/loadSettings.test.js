@@ -82,7 +82,7 @@ describe("loadSettings", () => {
   });
 
   it("deeply merges nested objects and replaces arrays", async () => {
-    const defaults = { items: [1], nested: { a: 1, arr: [1] } };
+    const defaults = { items: [1], nested: { a: 1, b: 0, arr: [1] } };
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
@@ -96,21 +96,42 @@ describe("loadSettings", () => {
     expect(settings).toEqual({ items: [2, 3], nested: { a: 1, b: 2, arr: [3] } });
   });
 
-  it("allows nested overrides with unknown keys", async () => {
+  it("drops unknown nested keys from fetched settings and localStorage", async () => {
     await withAllowedConsole(async () => {
-      const defaults = { nested: { a: 1 } };
+      const defaults = {
+        audio: { enabled: true, volume: 0.5 },
+        nested: { known: { value: 1 } }
+      };
       vi.stubGlobal(
         "fetch",
         vi.fn().mockResolvedValue({
           ok: true,
-          json: () => Promise.resolve({ nested: { b: 2 } })
+          json: () =>
+            Promise.resolve({
+              audio: { enabled: false, bogus: true },
+              nested: { known: { value: 2, surprise: 99 } }
+            })
         })
       );
+      localStorage.setItem(
+        "settings",
+        JSON.stringify({
+          audio: { volume: 0.9, extra: "ignored" },
+          nested: { unknownBranch: { value: 3 } }
+        })
+      );
+
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
       const { loadSettings } = await import("../../../../src/config/loadSettings.js");
       const settings = await loadSettings({ defaults });
-      expect(settings.nested).toEqual({ a: 1, b: 2 });
-      expect(warnSpy).not.toHaveBeenCalled();
+      expect(settings).toEqual({
+        audio: { enabled: false, volume: 0.9 },
+        nested: { known: { value: 2 } }
+      });
+      expect(warnSpy).toHaveBeenCalledWith('Unknown setting "audio.bogus" ignored');
+      expect(warnSpy).toHaveBeenCalledWith('Unknown setting "nested.known.surprise" ignored');
+      expect(warnSpy).toHaveBeenCalledWith('Unknown setting "audio.extra" ignored');
+      expect(warnSpy).toHaveBeenCalledWith('Unknown setting "nested.unknownBranch" ignored');
       warnSpy.mockRestore();
     }, ["warn"]);
   });
