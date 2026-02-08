@@ -375,6 +375,46 @@ describe("setupUIBindings", () => {
     expect(interruptCleanupMock).toHaveBeenCalledTimes(1);
   });
 
+  it("keeps a single orientation callback path active across repeated setup and cleanup", async () => {
+    const view = makeView();
+    const activeOrientationCallbacks = new Set();
+    const disposerMocks = [];
+    const originalWatchBattleOrientationImpl =
+      uiHelpers.watchBattleOrientation.getMockImplementation();
+
+    try {
+      uiHelpers.watchBattleOrientation.mockImplementation((callback) => {
+        activeOrientationCallbacks.add(callback);
+        const disposer = vi.fn(() => {
+          activeOrientationCallbacks.delete(callback);
+        });
+        disposerMocks.push(disposer);
+        return disposer;
+      });
+
+      await setupUIBindings(view);
+      await setupUIBindings(view);
+
+      expect(uiHelpers.watchBattleOrientation).toHaveBeenCalledTimes(2);
+      expect(disposerMocks[0]).toHaveBeenCalledTimes(1);
+      expect(activeOrientationCallbacks.size).toBe(1);
+
+      const [activeCallback] = activeOrientationCallbacks;
+      activeCallback();
+      expect(view.applyBattleOrientation).toHaveBeenCalledTimes(1);
+
+      window.dispatchEvent(new Event("pagehide"));
+      expect(disposerMocks[1]).toHaveBeenCalledTimes(1);
+      expect(activeOrientationCallbacks.size).toBe(0);
+    } finally {
+      if (originalWatchBattleOrientationImpl) {
+        uiHelpers.watchBattleOrientation.mockImplementation(originalWatchBattleOrientationImpl);
+      } else {
+        uiHelpers.watchBattleOrientation.mockReset();
+      }
+    }
+  });
+
   it("does not register duplicate replay listeners when setup runs twice", async () => {
     // This test validates delegated document click behavior end-to-end.
     // A real button is required so `closest(...)` resolution matches production flow.

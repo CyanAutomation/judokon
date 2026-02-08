@@ -17,6 +17,7 @@ let isReplayClickBound = false;
 let replayStoreRef = null;
 let replayInFlight = false;
 let cleanupInterruptHandlers = null;
+let cleanupBattleOrientationWatcher = null;
 
 /**
  * Check whether an event target is a replay control.
@@ -101,6 +102,11 @@ function bindReplayClickListener(store) {
  * @returns {void}
  */
 export function unbindReplayClickListener() {
+  if (cleanupBattleOrientationWatcher) {
+    cleanupBattleOrientationWatcher();
+    cleanupBattleOrientationWatcher = null;
+  }
+
   if (cleanupInterruptHandlers) {
     cleanupInterruptHandlers();
     cleanupInterruptHandlers = null;
@@ -135,7 +141,8 @@ export async function setupUIBindings(view) {
   initQuitButton(store);
   cleanupInterruptHandlers = initInterruptHandlers(store);
   bindReplayClickListener(store);
-  watchBattleOrientation(() => view.applyBattleOrientation());
+  cleanupBattleOrientationWatcher?.();
+  cleanupBattleOrientationWatcher = watchBattleOrientation(() => view.applyBattleOrientation());
 
   setupNextButton();
   const statButtonControls = initStatButtons(store);

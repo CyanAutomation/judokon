@@ -588,11 +588,11 @@ export function showStatComparison(store, stat, playerVal, compVal) {
  * 2. Register `orientationchange` and `resize` listeners to retry invocation.
  *
  * @param {() => any} callback - Function returning truthy when orientation applied.
- * @returns {void}
+ * @returns {() => void} Cleanup function to remove listeners and cancel scheduled callbacks.
  */
 export function watchBattleOrientation(callback) {
   if (typeof callback !== "function") {
-    return;
+    return () => {};
   }
 
   const invoke = () => Promise.resolve(callback());
@@ -639,6 +639,29 @@ export function watchBattleOrientation(callback) {
 
   window.addEventListener("orientationchange", onChange);
   window.addEventListener("resize", onChange);
+
+  return () => {
+    window.removeEventListener("orientationchange", onChange);
+    window.removeEventListener("resize", onChange);
+
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = 0;
+    }
+
+    if (pollId) {
+      cancelFrame(pollId);
+      pollId = 0;
+    }
+
+    if (window.applyBattleOrientation === invoke) {
+      try {
+        delete window.applyBattleOrientation;
+      } catch {
+        window.applyBattleOrientation = undefined;
+      }
+    }
+  };
 }
 
 /**
