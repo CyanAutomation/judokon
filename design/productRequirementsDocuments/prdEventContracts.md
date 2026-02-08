@@ -212,9 +212,10 @@ stateDiagram-v2
     end note
 
     note right of Deprecated
-        Old name only.
-        Consumers should migrate.
-        Warnings logged.
+        ⚠️ HIGH RISK — TIME-LIMITED USAGE
+        Old name only (already contract-broken).
+        Tests should surface warning noise.
+        Continued use is risky; migrate ASAP.
     end note
 
     note right of Removed
