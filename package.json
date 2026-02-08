@@ -69,13 +69,18 @@
     "fix-gpg": "bash ./disable_git_gpg_signing.sh",
     "validate:skills": "node scripts/validate-skills.mjs",
     "check:zero-imports": "node scripts/report-zero-import-modules.mjs",
-    "check:zero-imports:strict": "node scripts/report-zero-import-modules.mjs --strict"
+    "check:zero-imports:strict": "node scripts/report-zero-import-modules.mjs --strict",
+    "test:ui:codegen": "node scripts/runPlaywright.js codegen",
+    "test:ui:trace": "node scripts/runPlaywright.js show",
+    "diagram:gen": "node scripts/runMermaid.js",
+    "diagram:preview": "node scripts/runMermaid.js -i diagram.mmd -o /tmp/preview.svg"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@mermaid-js/mermaid-cli": "^11.12.0",
     "@playwright/test": "^1.56.1",
     "@stryker-mutator/core": "^8.0.0",
     "@stryker-mutator/vitest-runner": "^8.0.0",
@@ -91,6 +96,7 @@
     "husky": "^9.1.7",
     "jsdom": "^26.1.0",
     "pa11y": "^9.0.0",
+    "playwright": "^1.58.2",
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
     "vite": "^7.1.11",
