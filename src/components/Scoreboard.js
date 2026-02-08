@@ -2,6 +2,7 @@ import { ScoreboardModel } from "./ScoreboardModel.js";
 import { ScoreboardView } from "./ScoreboardView.js";
 import { createScoreboardCore } from "./scoreboardCore.js";
 import { createScoreboardDomAdapter } from "./scoreboardDomAdapter.js";
+import { disposeBattleScoreboardAdapter } from "../helpers/battleScoreboard.js";
 import {
   showMessage as showRoundMessage,
   clearMessage as clearRoundMessage,
@@ -110,33 +111,54 @@ export class Scoreboard {
    * @param {{outcome?:boolean,outcomeType?:string}} [opts] - Outcome flags.
    */
   showMessage(text, opts = {}) {
+    if (this.view) {
+      this.view.showMessage(text, opts);
+    }
     showRoundMessage(text, opts);
   }
 
   clearMessage() {
+    if (this.view) {
+      this.view.clearMessage();
+    }
     clearRoundMessage();
   }
 
   /** @param {string} text */
   showTemporaryMessage(text) {
+    if (this.view) {
+      return this.view.showTemporaryMessage(text);
+    }
     return showTemporaryRoundMessage(text);
   }
 
   /** @param {number} seconds */
   updateTimer(seconds) {
+    if (this.view) {
+      this.view.updateTimer(seconds);
+    }
     updateRoundTimer(seconds);
   }
 
   clearTimer() {
+    if (this.view) {
+      this.view.clearTimer();
+    }
     clearRoundTimer();
   }
 
   /** @param {number} round */
   updateRoundCounter(round) {
+    if (this.view) {
+      this.view.updateRoundCounter(round);
+    }
     updateRoundCounterDisplay(round);
   }
 
   clearRoundCounter() {
+    if (this.view) {
+      this.view.clearRoundCounter();
+    }
     clearRoundCounterDisplay();
   }
 
@@ -176,14 +198,7 @@ export class Scoreboard {
   destroy() {
     this.core.dispose();
     try {
-      import("../helpers/battleScoreboard.js")
-        .then((m) => {
-          try {
-            if (typeof m.disposeBattleScoreboardAdapter === "function")
-              m.disposeBattleScoreboardAdapter();
-          } catch {}
-        })
-        .catch(() => {});
+      disposeBattleScoreboardAdapter();
     } catch {}
   }
 }

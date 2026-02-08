@@ -80,22 +80,41 @@ export class ScoreboardView {
     this.scoreEl = scoreEl;
     this._scoreAnimId = 0;
     this._scoreRaf = null;
+    this._outcomeLocked = false;
+    this._outcomeTimerId = null;
   }
 
   /**
    * Display a round message.
    *
    * @pseudocode
-   * 1. Set textContent of message element.
-   * 2. Return void.
+   * 1. Check if outcome is locked and prevent override.
+   * 2. Set textContent of message element.
+   * 3. Lock future updates if outcome flag is true and schedule unlock.
+   * 4. Return void.
    * @param {string} text - Message to show.
    * @param {{outcome?:boolean}} [opts] - Options including outcome flag.
    */
   showMessage(text, opts = {}) {
+    // Don't override if outcome is locked and this is not an outcome message
+    if (this._outcomeLocked && !opts.outcome) {
+      return;
+    }
+    // Clear any pending outcome timer
+    if (this._outcomeTimerId !== null) {
+      clearTimeout(this._outcomeTimerId);
+      this._outcomeTimerId = null;
+    }
     if (this.messageEl) {
       this.messageEl.textContent = text;
       if (opts.outcome) {
         this.messageEl.dataset.outcome = "true";
+        this._outcomeLocked = true;
+        // Auto-unlock after 1000ms
+        this._outcomeTimerId = setTimeout(() => {
+          this._outcomeLocked = false;
+          this._outcomeTimerId = null;
+        }, 1000);
       } else {
         delete this.messageEl.dataset.outcome;
       }
@@ -115,8 +134,14 @@ export class ScoreboardView {
    *
    * @pseudocode
    * 1. Delegate to showMessage with empty string.
+   * 2. Clear outcome lock and timer.
    */
   clearMessage() {
+    if (this._outcomeTimerId !== null) {
+      clearTimeout(this._outcomeTimerId);
+      this._outcomeTimerId = null;
+    }
+    this._outcomeLocked = false;
     this.showMessage("");
   }
 
@@ -289,15 +314,21 @@ export class ScoreboardView {
   }
 
   /**
-   * Clean up resources, cancelling any pending animation frames.
+   * Clean up resources, cancelling any pending animation frames and timers.
    * @pseudocode
    * 1. If a score animation frame is scheduled, cancel it.
-   * 2. Set the animation frame handle to null.
+   * 2. Clear any pending outcome lock timer.
+   * 3. Reset flags and handles to null.
    */
   destroy() {
     if (this._scoreRaf) {
       cancel(this._scoreRaf);
       this._scoreRaf = null;
     }
+    if (this._outcomeTimerId !== null) {
+      clearTimeout(this._outcomeTimerId);
+      this._outcomeTimerId = null;
+    }
+    this._outcomeLocked = false;
   }
 }

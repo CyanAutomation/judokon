@@ -57,6 +57,23 @@ export function createScoreboardCore(adapter) {
       applyScore(player, opponent);
     },
     render(patch = {}) {
+      // Validate and process score patch if present
+      if (patch.score) {
+        // Only update if both player and opponent are provided
+        const nextPlayer = safeNumber(patch.score.player);
+        const nextOpponent = safeNumber(patch.score.opponent);
+        if (nextPlayer === null || nextOpponent === null) {
+          // If validation fails, don't pass score to adapter
+          const { score: _ignored, ...restPatch } = patch;
+          if (Object.keys(restPatch).length > 0) {
+            adapter.render(restPatch);
+          }
+          return;
+        }
+      }
+      // Pass full patch to adapter for rendering
+      adapter.render(patch);
+      // Update internal score state if provided and valid
       if (patch.score) {
         applyScore(patch.score.player, patch.score.opponent);
       }

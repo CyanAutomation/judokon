@@ -41,12 +41,27 @@ export function createScoreboardDomAdapter({ model, view, eventTarget = null }) 
       };
     },
     render(viewModel = {}) {
-      if (!viewModel.score) {
-        return;
+      // Update score if provided
+      if (viewModel.score) {
+        const { player, opponent } = viewModel.score;
+        model.updateScore(player, opponent);
+        view.updateScore();
       }
-      const { player, opponent } = viewModel.score;
-      model.updateScore(player, opponent);
-      view.updateScore();
+      // Update message if provided
+      if (viewModel.message) {
+        view.showMessage(viewModel.message.text || "", {
+          outcome: viewModel.message.outcome,
+          outcomeType: viewModel.message.outcomeType
+        });
+      }
+      // Update timer if provided
+      if (viewModel.timerSeconds !== undefined) {
+        view.updateTimer(viewModel.timerSeconds);
+      }
+      // Update round counter if provided
+      if (viewModel.roundNumber !== undefined) {
+        view.updateRoundCounter(viewModel.roundNumber);
+      }
     },
     dispose() {
       removeAllListeners();
