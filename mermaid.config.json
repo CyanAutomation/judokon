@@ -1,0 +1,9 @@
+{
+  "theme": "default",
+  "outputFormat": "svg",
+  "cssFile": null,
+  "mermaidConfig": {
+    "startOnLoad": false,
+    "logLevel": "error"
+  }
+}
