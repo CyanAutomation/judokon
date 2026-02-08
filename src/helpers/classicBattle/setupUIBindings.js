@@ -13,6 +13,61 @@ import { isEnabled } from "../featureFlags.js";
 import { initTooltips } from "../tooltip.js";
 import { handleReplay } from "./roundManager.js";
 
+let isReplayClickBound = false;
+let replayStoreRef = null;
+
+/**
+ * Check whether an event target is a replay control.
+ *
+ * @param {EventTarget | null | undefined} target
+ * @returns {boolean}
+ */
+function isReplayControlTarget(target) {
+  if (!(target instanceof Element)) {
+    return false;
+  }
+
+  return Boolean(
+    target.closest('#replay-button, #match-replay-button, [data-testid="replay-button"]')
+  );
+}
+
+/**
+ * Handle document-level replay click delegation.
+ *
+ * @param {MouseEvent} event
+ * @returns {Promise<void>}
+ */
+async function onDocumentReplayClick(event) {
+  if (!isReplayControlTarget(event?.target) || !replayStoreRef) {
+    return;
+  }
+
+  await handleReplay(replayStoreRef);
+}
+
+/**
+ * Bind delegated replay click handling once.
+ *
+ * @param {unknown} store
+ */
+function bindReplayClickListener(store) {
+  if (isReplayClickBound) {
+    return;
+  }
+
+  replayStoreRef = store;
+  document.addEventListener("click", onDocumentReplayClick, { capture: true });
+  isReplayClickBound = true;
+}
+  if (isReplayClickBound) {
+    return;
+  }
+
+  document.addEventListener("click", onDocumentReplayClick, { capture: true });
+  isReplayClickBound = true;
+}
+
 /**
  * Wire up DOM bindings for the classic battle view.
  *
@@ -31,28 +86,7 @@ export async function setupUIBindings(view) {
   setupScoreboard(view.controller.timerControls);
   initQuitButton(store);
   initInterruptHandlers(store);
-  const applyReplayScoreReset = async () => {
-    await handleReplay(store);
-  };
-  document.addEventListener(
-    "click",
-    (event) => {
-      const target = event?.target;
-      if (!(target instanceof Element)) {
-        return;
-      }
-
-      const replayTarget = target.closest(
-        '#replay-button, #match-replay-button, [data-testid="replay-button"]'
-      );
-      if (!replayTarget) {
-        return;
-      }
-
-      applyReplayScoreReset();
-    },
-    { capture: true }
-  );
+  bindReplayClickListener(store);
   watchBattleOrientation(() => view.applyBattleOrientation());
 
   setupNextButton();
