@@ -151,12 +151,14 @@ export async function loadBattleCLI(options = {}) {
           break;
         }
       });
+      const resetBattleEventDedupeState = vi.fn();
       return {
         onBattleEvent,
         offBattleEvent,
         emitBattleEvent,
         getBattleEventTarget,
-        __resetBattleEventTarget
+        __resetBattleEventTarget,
+        resetBattleEventDedupeState
       };
     });
   }
@@ -252,6 +254,7 @@ export async function cleanupBattleCLI() {
   // Reset module-level state in init.js (selectionApplying, timers, etc.)
   try {
     const initMod = await import("../../../src/pages/battleCLI/init.js");
+    initMod.unwireEvents?.();
     await initMod.resetMatch?.();
   } catch {}
 
