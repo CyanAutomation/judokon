@@ -474,8 +474,14 @@ export async function drawCards(options = {}) {
   if (playerJudoka && playerContainer) {
     const clearPlayerContainer = () => {
       try {
-        playerContainer.replaceChildren();
+        // This is a safer way to clear the container than replaceChildren()
+        // or innerHTML, as it avoids some potential event listener and
+        // security issues.
+        while (playerContainer.firstChild) {
+          playerContainer.removeChild(playerContainer.firstChild);
+        }
       } catch {
+        // Fallback for older browsers or other issues
         playerContainer.innerHTML = "";
       }
     };
