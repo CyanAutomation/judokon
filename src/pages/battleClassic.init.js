@@ -1042,7 +1042,9 @@ export function renderStatButtons(store) {
     }
   } catch {}
   STATE.detachStatHotkeys = undefined;
-  container.innerHTML = "";
+  while (container.firstChild) {
+    container.removeChild(container.firstChild);
+  }
 
   for (const stat of STATS) {
     const btn = doc.createElement("button");
