@@ -347,6 +347,7 @@ let commandHistory = [];
 let historyIndex = -1;
 let historyAnchorStat = null;
 let eventsWired = false;
+let battleEventBindingsInstalled = false;
 let flagsListenersWired = false;
 let flagsListenerCleanupCallbacks = [];
 let toggleVerboseFromFlags = null;
@@ -525,6 +526,7 @@ try {
 
       // Listener state
       eventsWired = false;
+      battleEventBindingsInstalled = false;
       cleanupFlagsListeners();
       toggleVerboseFromFlags = null;
       applyScanlinesFromFlags = () => {};
@@ -3093,14 +3095,33 @@ const battleEventHandlers = {
 };
 
 function installEventBindings() {
+  if (battleEventBindingsInstalled) {
+    return;
+  }
   try {
     if (typeof onBattleEvent === "function") {
       Object.entries(battleEventHandlers).forEach(([event, handler]) =>
         onBattleEvent(event, handler)
       );
       onBattleEvent("battleStateChange", handleBattleState);
+      battleEventBindingsInstalled = true;
     }
   } catch {}
+}
+
+function uninstallEventBindings() {
+  if (!battleEventBindingsInstalled) {
+    return;
+  }
+  try {
+    if (typeof offBattleEvent === "function") {
+      Object.entries(battleEventHandlers).forEach(([event, handler]) =>
+        offBattleEvent(event, handler)
+      );
+      offBattleEvent("battleStateChange", handleBattleState);
+    }
+  } catch {}
+  battleEventBindingsInstalled = false;
 }
 
 /**
@@ -3443,6 +3464,7 @@ function handlePageHide() {
  * mark listeners as unwired
  */
 export function unwireEvents() {
+  uninstallEventBindings();
   if (eventsWired) {
     offBattleEvent("battleStateChange", handleBattleStateChange);
     if (typeof window !== "undefined") {
@@ -3478,15 +3500,15 @@ export function unwireEvents() {
  * @returns {void}
  */
 export function wireEvents() {
+  if (eventsWired) {
+    return;
+  }
   installEventBindings();
   // Critical: Register round UI event handlers including round.start listener
   // that dismisses countdown/opponent snackbars when Next is clicked or round advances.
   // Bug: If this call is missing, snackbars (like "You Picked: X") persist across rounds.
   bindRoundFlowControllerOnce();
   bindRoundUIEventHandlersDynamic();
-  if (eventsWired) {
-    return;
-  }
   onBattleEvent("battleStateChange", handleBattleStateChange);
   if (typeof window !== "undefined") {
     window.addEventListener("keydown", onKeyDown);
