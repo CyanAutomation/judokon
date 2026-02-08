@@ -159,11 +159,6 @@ function handleGlobalEscape(event) {
   }
 }
 
-if (hasDocument) {
-  try {
-    document.addEventListener("keydown", handleGlobalEscape);
-  } catch {}
-}
 /**
  * Delay between manual fallback state transitions when the orchestrator is unavailable.
  *
@@ -3467,7 +3462,7 @@ function handlePageHide() {
  * if not currently wired → return
  * remove battle state listener from battle event bus
  * remove keydown/pageshow/pagehide listeners from window
- * remove click/visibility listeners from document
+ * remove click/visibility/escape listeners from document
  * mark listeners as unwired
  */
 export function unwireEvents() {
@@ -3479,6 +3474,7 @@ export function unwireEvents() {
       window.removeEventListener("pagehide", handlePageHide);
     }
     if (typeof document !== "undefined") {
+      document.removeEventListener("keydown", handleGlobalEscape);
       document.removeEventListener("click", onClickAdvance);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     }
@@ -3500,7 +3496,7 @@ export function unwireEvents() {
  * @pseudocode
  * 1. Call `installEventBindings()` to connect DOM event helpers.
  * 2. Subscribe to `battleStateChange` to toggle the keyboard hint.
- * 3. Attach keyboard and click handlers for advance controls.
+ * 3. Attach keyboard and click handlers for advance controls and Escape handling.
  * 4. Register visibility lifecycle listeners to pause or resume timers.
  *
  * @returns {void}
@@ -3521,6 +3517,7 @@ export function wireEvents() {
     window.addEventListener("pagehide", handlePageHide);
   }
   if (typeof document !== "undefined") {
+    document.addEventListener("keydown", handleGlobalEscape);
     document.addEventListener("click", onClickAdvance);
     document.addEventListener("visibilitychange", handleVisibilityChange);
   }

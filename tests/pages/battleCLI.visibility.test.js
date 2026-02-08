@@ -168,4 +168,36 @@ describe("battleCLI visibility change handling", () => {
       hiddenSpy.mockRestore();
     }
   });
+
+  it("handles Escape once after init/unwire/re-init cycles without accumulating listeners", async () => {
+    await withMutedConsole(async () => {
+      const mod = await loadBattleCLI();
+      await mod.init();
+
+      const mountEscapeDialog = (onCancel) => {
+        const dialog = document.createElement("dialog");
+        dialog.className = "modal";
+        dialog.setAttribute("open", "");
+        dialog.addEventListener("cancel", onCancel);
+        document.body.appendChild(dialog);
+        return dialog;
+      };
+
+      const cancelSpy = vi.fn();
+      const firstDialog = mountEscapeDialog(cancelSpy);
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      await Promise.resolve();
+      expect(cancelSpy).toHaveBeenCalledTimes(1);
+      firstDialog.remove();
+
+      mod.unwireEvents();
+      await mod.init();
+
+      const secondDialog = mountEscapeDialog(cancelSpy);
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      await Promise.resolve();
+      expect(cancelSpy).toHaveBeenCalledTimes(2);
+      secondDialog.remove();
+    });
+  });
 });
