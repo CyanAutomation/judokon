@@ -493,7 +493,15 @@ export async function drawCards(options = {}) {
           cardElement.nodeType === Node.ELEMENT_NODE);
 
       if (isElement) {
-        playerContainer.replaceChildren(cardElement);
+        // Clear the container before appending the new card.
+        // This is a safer way to clear the container than replaceChildren()
+        // or innerHTML, as it avoids some potential event listener and
+        // security issues.
+        while (playerContainer.firstChild) {
+          playerContainer.removeChild(playerContainer.firstChild);
+        }
+        playerContainer.appendChild(cardElement);
+
         if (cardElement.querySelector(".signature-move-container")) {
           markSignatureMoveReady();
         }

@@ -245,6 +245,7 @@ If you're unsure which test group covers a file:
    - If it's imported by pages → `test:pages`
 
 4. **When in doubt, run broader groups:**
+
    ```bash
    # Start broad, then narrow down
    npm run test:helpers        # All helper tests

@@ -65,6 +65,7 @@ describe("My Test", () => {
 ```
 
 **Available timer helpers:**
+
 - `useCanonicalTimers()` - Setup with cleanup
 - `withFakeTimers(fn)` - Auto-setup/cleanup wrapper
 - `runAllTimersAsync()` - Execute all pending timers
@@ -98,16 +99,19 @@ it("should handle RAF", () => {
 ## Test Categories
 
 ### Unit Tests (`tests/**/*.test.js`)
+
 - Test individual functions and modules
 - Use Vitest with JSDOM environment
 - Focus on logic, not DOM interactions
 
 ### Integration Tests (`tests/integration/`)
+
 - Test component interactions
 - May involve multiple modules
 - Still use mocking for external dependencies
 
 ### Playwright Tests (`playwright/`)
+
 - End-to-end browser testing
 - Test complete user workflows
 - Located in `playwright/` directory
