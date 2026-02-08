@@ -6,28 +6,12 @@ import {
 import { mount, clearBody } from "./domUtils.js";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
-function mountScoreboardDom() {
+async function mountScoreboardDom() {
+  const { createScoreboard } = await import("../../src/components/Scoreboard.js");
   const { container } = mount();
   const header = document.createElement("header");
   header.className = "battle-header";
-  header.innerHTML = `
-    <p id="round-message" aria-live="polite" aria-atomic="true" role="status"></p>
-    <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status">
-      <span data-part="label">Time Left:</span>
-      <span data-part="value">0s</span>
-    </p>
-    <p id="round-counter" aria-live="polite" aria-atomic="true"></p>
-    <p id="score-display" aria-live="polite" aria-atomic="true">
-      <span data-side="player">
-        <span data-part="label">You:</span>
-        <span data-part="value">0</span>
-      </span>
-      <span data-side="opponent">
-        <span data-part="label">Opponent:</span>
-        <span data-part="value">0</span>
-      </span>
-    </p>
-  `;
+  createScoreboard(header);
   container.appendChild(header);
   return header;
 }
@@ -82,7 +66,7 @@ describe("battleScoreboard deterministic event sequences", () => {
   beforeEach(async () => {
     timers = useCanonicalTimers();
     __resetBattleEventTarget();
-    const header = mountScoreboardDom();
+    const header = await mountScoreboardDom();
     const { initScoreboard, resetScoreboard } = await import("../../src/components/Scoreboard.js");
     resetScoreboard();
     initScoreboard(header);
@@ -189,7 +173,7 @@ describe("battleScoreboard deterministic event sequences", () => {
     disposeBattleScoreboardAdapter();
     __resetBattleEventTarget();
     clearBody();
-    const header = mountScoreboardDom();
+    const header = await mountScoreboardDom();
     const { initScoreboard, resetScoreboard } = await import("../../src/components/Scoreboard.js");
     resetScoreboard();
     initScoreboard(header);
