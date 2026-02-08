@@ -32,56 +32,61 @@ Acceptance Criteria:
 
 1. On page load, `resolveRoundStartPolicy` checks for `?autostart=1` or a saved selection and starts a match immediately if found.
 2. When no preference or autostart override is available, present the modal so the player can choose a win target; selecting an option stores it, logs telemetry, and launches the match.
-3. If the modal fails to load, log the error and surface a fallback **Start Match** button that begins a match with default settings.
+3. If the modal fails to load, log the error and surface a fallback **Start Match** path that resolves points through the same resolver chain and begins the match.
 
 ### Initialization Flow: Autostart, Persistence & Fallback Decision Tree
 
 ```mermaid
 flowchart TB
     A["Page load<br/>battleJudoka.html"] --> B["resolveRoundStartPolicy called"]
-    B --> C{"Query param<br/>?autostart=1?"}
+    B --> C{"Autostart requested<br/>?autostart=1?"}
+    B --> T{"bypassForTests?<br/>!showModalInTest && (testMode || playwright)"}
 
-    C -->|YES| D["Start match<br/>with default settings<br/>(10 points)"]
-    C -->|NO| E["Check localStorage<br/>key: battle.pointsToWin"]
+    C -->|YES| D["Resolve pointsToWin (autostart chain):<br/>1) engine target<br/>2) storage battle.pointsToWin<br/>3) DEFAULT_AUTOSTART_POINTS_TO_WIN"]
+    C -->|NO| U
+    T -->|YES| D
+    T -->|NO| U["Continue non-autostart path"]
 
-    E --> F{"Saved preference<br/>found?"}
+    U --> E["Check persisted selection<br/>battle.pointsToWin"]
+    E --> F{"Persisted selection<br/>valid option?"}
 
-    F -->|YES| G["Start match<br/>with saved points"]
-    F -->|NO| H["Attempt to load<br/>modal component"]
+    F -->|YES| H["Attempt to load modal<br/>with persisted default selected"]
+    F -->|NO| H
 
     H --> I{"Modal load<br/>successful?"}
 
     I -->|YES| J["🔊 Show modal<br/>Options: 3, 5, 10 points"]
-    I -->|NO| K["⚠️ Log error<br/>Show fallback button"]
+    I -->|NO| K["⚠️ Log error<br/>Modal-fallback start"]
 
     J --> L["Player selects option"]
-    K --> L
-
     L --> M["Store selection<br/>localStorage<br/>battle.pointsToWin"]
     M --> N["🔊 Log telemetry<br/>Start match"]
-    N --> O["Match begins"]
 
-    G --> O
-    D --> O
+    K --> P["Resolve fallback pointsToWin (non-autostart chain):<br/>1) engine target<br/>2) storage battle.pointsToWin<br/>3) DEFAULT_POINTS_TO_WIN (5)"]
+    D --> O["Match begins"]
+    N --> O
+    P --> O
 
     style A fill:#e3f2fd
     style C fill:#fff9c4
+    style T fill:#fff9c4
     style E fill:#fff9c4
     style F fill:#fff9c4
+    style U fill:#fff9c4
     style H fill:#fff9c4
     style I fill:#fff9c4
     style D fill:#c8e6c9
-    style G fill:#c8e6c9
     style J fill:#e8f5e9
     style K fill:#ffcdd2
+    style P fill:#fff9c4
     style M fill:#fff9c4
     style N fill:#fff9c4
     style O fill:#c8e6c9
 ```
 
-**Rationale**: This flowchart encodes the three initialization phases—**Check** (query param → localStorage → modal load), **Present** (show modal UI), and **Fallback** (error handling with basic button)—using decision diamonds for conditional branches. The color scheme distinguishes initialization entry (blue), decision checkpoints (yellow), success paths (green), and error states (red). The 🔊 annotations mark telemetry and accessibility logging points. This focuses on initialization logic only; modal component lifecycle is handled separately by the UI layer. Assumes localStorage key `battle.pointsToWin` is reliable and that `?autostart=1` always takes precedence over saved preferences.
+**Rationale**: This flowchart encodes the three initialization phases—**Check** (autostart + test bypass + resolver chain), **Present** (show modal UI), and **Fallback** (error handling that still uses the same resolver logic)—using decision diamonds for conditional branches. The color scheme distinguishes initialization entry (blue), decision checkpoints (yellow), success paths (green), and error states (red). The 🔊 annotations mark telemetry and accessibility logging points. This focuses on initialization logic only; modal component lifecycle is handled separately by the UI layer. The points-to-win resolution is modeled as a shared chain (engine target → persisted storage → mode-specific default), so autostart does not assume an unconditional fixed value when higher-priority sources are available.
 
-P1 - Autostart Behavior: `?autostart=1` bypasses modal and starts a default-length match.
+P1 - Autostart Behavior: `?autostart=1` bypasses modal and starts a match using the resolver chain (engine target, then persisted storage, then autostart default if needed).
 
 Acceptance Criteria:
 
