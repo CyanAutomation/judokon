@@ -347,6 +347,7 @@ let commandHistory = [];
 let historyIndex = -1;
 let historyAnchorStat = null;
 let eventsWired = false;
+let battleEventBindingsInstalled = false;
 const SHORTCUT_HINT_MESSAGES = {
   default:
     "Use keys 1 through 5 to choose a stat, Enter or Space to continue, H to toggle help, and Q to quit.",
@@ -433,6 +434,7 @@ try {
 
       // Listener state
       eventsWired = false;
+      battleEventBindingsInstalled = false;
 
       // Cache state
       cachedStatDefs = null;
@@ -2997,12 +2999,16 @@ const battleEventHandlers = {
 };
 
 function installEventBindings() {
+  if (battleEventBindingsInstalled) {
+    return;
+  }
   try {
     if (typeof onBattleEvent === "function") {
       Object.entries(battleEventHandlers).forEach(([event, handler]) =>
         onBattleEvent(event, handler)
       );
       onBattleEvent("battleStateChange", handleBattleState);
+      battleEventBindingsInstalled = true;
     }
   } catch {}
 }
@@ -3403,6 +3409,7 @@ export function unwireEvents() {
     document.removeEventListener("visibilitychange", handleVisibilityChange);
   }
   eventsWired = false;
+  battleEventBindingsInstalled = false;
 }
 
 /**
@@ -3413,23 +3420,25 @@ export function unwireEvents() {
  * visibility updates.
  *
  * @pseudocode
- * 1. Call `installEventBindings()` to connect DOM event helpers.
- * 2. Subscribe to `battleStateChange` to toggle the keyboard hint.
- * 3. Attach keyboard and click handlers for advance controls.
- * 4. Register visibility lifecycle listeners to pause or resume timers.
+ * 1. If listeners were already wired in this lifecycle, return immediately.
+ * 2. Call `installEventBindings()` to connect battle event subscriptions once.
+ * 3. Subscribe to `battleStateChange` to toggle the keyboard hint.
+ * 4. Attach keyboard and click handlers for advance controls.
+ * 5. Register visibility lifecycle listeners to pause or resume timers.
  *
  * @returns {void}
  */
 export function wireEvents() {
+  if (eventsWired) {
+    return;
+  }
+
   installEventBindings();
   // Critical: Register round UI event handlers including round.start listener
   // that dismisses countdown/opponent snackbars when Next is clicked or round advances.
   // Bug: If this call is missing, snackbars (like "You Picked: X") persist across rounds.
   bindRoundFlowControllerOnce();
   bindRoundUIEventHandlersDynamic();
-  if (eventsWired) {
-    return;
-  }
   onBattleEvent("battleStateChange", handleBattleStateChange);
   if (typeof window !== "undefined") {
     window.addEventListener("keydown", onKeyDown);
