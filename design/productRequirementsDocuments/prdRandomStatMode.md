@@ -6,7 +6,7 @@ Random Stat Auto-Select is an optional game mode in JU-DO-KON! where, if the pla
 
 ## Problem Statement
 
-Players sometimes want stats auto-chosen to speed play and reduce decision stress. Random Stat Auto-Select (feature flag: FF_AUTO_SELECT) enables automatic stat selection when the timer expires, keeping matches fast-paced and accessible for all play styles.
+Players sometimes want stats auto-chosen to speed play and reduce decision stress. Random Stat Auto-Select (feature flag key: `autoSelect`) enables automatic stat selection when the timer expires, keeping matches fast-paced and accessible for all play styles.
 
 ## Goals / Success Metrics
 
@@ -35,8 +35,8 @@ Players sometimes want stats auto-chosen to speed play and reduce decision stres
 ## Acceptance Criteria
 
 - A visible countdown timer appears during stat selection, starting at 30s (or fallback default if config fails).
-- When Random Stat Auto-Select (FF_AUTO_SELECT) is ON and the timer expires, a valid stat is auto-picked and applied to the round.
-- When Random Stat Auto-Select is OFF, the timer does not appear and the player can take unlimited time.
+- When Random Stat Auto-Select (`autoSelect`) is ON and the timer expires, a valid stat is auto-picked and applied to the round.
+- When Random Stat Auto-Select is OFF, timeout follows the interrupt path (`interruptRound`) instead of auto-resolving the round.
 - Players can toggle the feature in the Settings page; the toggle is clearly labeled and persists across sessions.
 - The auto-select message is displayed to the player when a stat is chosen automatically.
 - Timer and messages are accessible (ARIA live, high-contrast, non-obstructive).
@@ -46,18 +46,18 @@ Players sometimes want stats auto-chosen to speed play and reduce decision stres
 
 ```mermaid
 flowchart TD
-    A["Player enters<br/>stat selection"] --> B["🔊 Announce: Choose stat<br/>FF_AUTO_SELECT check"]
-    B --> C{"Is FF_AUTO_SELECT<br/>enabled?"}
+    A["Player enters<br/>stat selection"] --> B["🔊 Announce: Choose stat<br/>check autoSelect state"]
+    B --> C{"Is autoSelect<br/>enabled?"}
 
-    C -->|YES| D["Start 30s countdown<br/>Display timer"]
-    C -->|NO| E["No timer displayed<br/>Unlimited time"]
+    C -->|YES| D["Stat selection timer running<br/>Timeout path -> roundResolve"]
+    C -->|NO| E["Stat selection timer running<br/>Timeout path -> interruptRound"]
 
     D --> F{"Player action<br/>before timeout?"}
     E --> F
 
     F -->|Stat selected| G["Apply selected stat<br/>🔊 Announce: 'You selected [STAT]'"]
-    F -->|Timeout + FF_ON| H["Random stat auto-pick<br/>🔊 Announce: 'Auto-selected [STAT]'"]
-    F -->|Timeout + FF_OFF| I["Interrupt round<br/>Offer resume options"]
+    F -->|Timeout + autoSelectEnabled| H["Random stat auto-pick<br/>🔊 Announce: 'Auto-selected [STAT]'"]
+    F -->|Timeout + !autoSelectEnabled| I["Interrupt round<br/>Offer resume options"]
 
     G --> J["Stat locked<br/>Proceed to roundResolve"]
     H --> J
@@ -72,7 +72,7 @@ flowchart TD
     style K fill:#ffebee
 ```
 
-**Rationale**: This flowchart encodes the core branching logic—feature flag gate, dual timeout paths, and immediate stat resolution. The 🔊 annotations indicate where accessibility announcements occur. Focuses on stat selection only; full round flow is handled by the state machine.
+**Rationale**: This flowchart encodes the implemented branching logic from `roundSelect`—feature flag gate, dual timeout paths, and immediate stat resolution. The 🔊 annotations indicate where accessibility announcements occur. Focuses on stat selection only; full round flow is handled by the state machine.
 
 ## Edge Cases / Failure States
 
@@ -86,37 +86,31 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A["Battle round start<br/>Stat selection phase"] --> B["Initialize selection timer<br/>Hardcoded: 30 seconds"]
-    B --> C{"Check FF_AUTO_SELECT?"}
+    A["Battle round start<br/>Stat selection phase"] --> B["Initialize selection timer<br/>30-second selection window"]
+    B --> C{"Check autoSelect?"}
 
-    C -->|Enabled| D["Timer active<br/>Auto-select on timeout"]
-    C -->|Disabled| E["Timer active<br/>No auto-select"]
+    C -->|Enabled| D["On timeout -> roundResolve<br/>Auto-select stat"]
+    C -->|Disabled| E["On timeout -> interruptRound<br/>Manual recovery path"]
 
-    D --> F{"Display timer<br/>if FF_SHOW_SELECTION_TIMER ON?"}
-    E --> F
-
-    F -->|YES| G["Show countdown in UI<br/>🔊 Announce: 'Timer: X seconds'"]
-    F -->|NO| H["No timer display<br/>Timer runs silently"]
-
-    G --> I["Wait for user action<br/>or timeout"]
-    H --> I
+    D --> I["Wait for user action<br/>or timeout"]
+    E --> I
 
     I --> J{"Selection complete?"}
     J -->|User clicked stat| K["Clear timer"]
-    J -->|Timeout| L{"FF_AUTO_SELECT ON?"}
+    J -->|Timeout| L{"autoSelect enabled?"}
     L -->|YES| M["Auto-select random stat"]
-    L -->|NO| N["Manual selection required"]
+    L -->|NO| N["Interrupt round state entered"]
     M --> K
     N --> K
 
     style A fill:#e3f2fd
     style B fill:#c8e6c9
-    style G fill:#fff9c4
-    style H fill:#e8f5e9
     style K fill:#e0e0e0
 ```
 
-**Rationale**: The selection timer is **hardcoded to 30 seconds** and does not load from external configuration. This diagram shows the actual implementation: initialize at 30s, check feature flags for auto-select and display behavior, and wait for user action or timeout. No fallback mechanism is needed because the timer has a known, static default value.
+**Rationale (implemented today)**: Runtime code has a single auto-select flag (`autoSelect`) and guard names (`autoSelectEnabled` / `!autoSelectEnabled`) for timeout routing. There is no separate canonical runtime flag for “show selection timer,” so that branch is intentionally removed from this implementation diagram.
+
+**Note (proposed behavior)**: A future explicit display-only timer flag could be introduced, but it is not part of current state-table or settings behavior.
 
 ## Non-Functional Requirements / Design Considerations
 
@@ -127,26 +121,26 @@ flowchart TD
 
 ### Settings Persistence Lifecycle
 
-> **Note**: This diagram illustrates the intended persistence flow. Race condition handling (e.g., persistence failure while next round starts) is simplified for clarity. See implementation in `src/config/settingsDefaults.js` for error handling details.
+> **Note**: This diagram illustrates the implemented persistence flow at a high level. Race condition handling (e.g., persistence failure while next round starts) is simplified for clarity.
 
 ```mermaid
 flowchart TD
-    A["Player opens Settings"] --> B["Load current FF_AUTO_SELECT<br/>toggle state from storage"]
+    A["Player opens Settings"] --> B["Load `settings` from localStorage<br/>merge with DEFAULT_SETTINGS"]
     B --> C{"Storage read<br/>successful?"}
 
     C -->|YES| D["Display toggle with<br/>current state"]
-    C -->|NO| E["⚠️ Storage error<br/>Use DEFAULT_SETTINGS<br/>autoSelect.enabled = true"]
+    C -->|NO| E["⚠️ Storage read failed<br/>Use DEFAULT_SETTINGS<br/>featureFlags.autoSelect.enabled"]
 
     D --> E
     E --> F["Player toggles feature"]
 
-    F --> G["Attempt to persist<br/>new state to storage"]
+    F --> G["Persist `featureFlags.autoSelect.enabled`<br/>to `settings` localStorage key"]
     G --> H{"Persist<br/>successful?"}
 
-    H -->|YES| I["🔊 Announce:<br/>'Setting saved'<br/>Change deferred to<br/>next round"]
+    H -->|YES| I["🔊 Announce:<br/>'Setting saved'<br/>Setting is persisted across sessions"]
     H -->|NO| J["⚠️ Persist failed<br/>Show error toast"]
 
-    I --> K["On next round start<br/>Use persisted state<br/>with feature flag check"]
+    I --> K["On next settings load<br/>merge persisted state<br/>with defaults + runtime JSON"]
     J --> K
 
     K --> L["Across sessions<br/>Retrieve saved toggle<br/>state on app load"]
@@ -160,7 +154,9 @@ flowchart TD
     style L fill:#e0e0e0
 ```
 
-**Rationale**: This lifecycle diagram ensures players understand that toggle changes persist and take effect from the next round (not immediately mid-match). Error states have graceful fallbacks. The 🔊 annotation shows where confirmation feedback is provided.
+**Rationale (implemented today)**: Settings are stored under a single `settings` localStorage key and merged with `DEFAULT_SETTINGS`/runtime settings JSON; the toggle key is camelCase (`featureFlags.autoSelect.enabled`).
+
+**Note (proposed behavior)**: "Defer to next round" may still be a UX policy choice, but persistence itself is immediate once save succeeds.
 
 ## Wireframes / Visual Concepts
 
