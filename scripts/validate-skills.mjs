@@ -42,7 +42,7 @@ async function main() {
   for (const file of skillFiles) {
     const content = await readFile(file, "utf8");
     const missing = requiredHeadings.filter((heading) => {
-      const regex = new RegExp(`^${heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'm');
+      const regex = new RegExp(`^${heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`, "m");
       return !regex.test(content);
     });
 
