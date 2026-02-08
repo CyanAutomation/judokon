@@ -3094,16 +3094,26 @@ const battleEventHandlers = {
   matchOver: handleMatchOver
 };
 
+const battleStateHandlers = {
+  battleStateChange: [handleBattleState, handleBattleStateChange]
+};
+
+function forEachBattleSubscription(callback) {
+  Object.entries(battleEventHandlers).forEach(([event, handler]) => {
+    callback(event, handler);
+  });
+  Object.entries(battleStateHandlers).forEach(([event, handlers]) => {
+    handlers.forEach((handler) => callback(event, handler));
+  });
+}
+
 function installEventBindings() {
   if (battleEventBindingsInstalled) {
     return;
   }
   try {
     if (typeof onBattleEvent === "function") {
-      Object.entries(battleEventHandlers).forEach(([event, handler]) =>
-        onBattleEvent(event, handler)
-      );
-      onBattleEvent("battleStateChange", handleBattleState);
+      forEachBattleSubscription((event, handler) => onBattleEvent(event, handler));
       battleEventBindingsInstalled = true;
     }
   } catch {}
@@ -3115,10 +3125,7 @@ function uninstallEventBindings() {
   }
   try {
     if (typeof offBattleEvent === "function") {
-      Object.entries(battleEventHandlers).forEach(([event, handler]) =>
-        offBattleEvent(event, handler)
-      );
-      offBattleEvent("battleStateChange", handleBattleState);
+      forEachBattleSubscription((event, handler) => offBattleEvent(event, handler));
     }
   } catch {}
   battleEventBindingsInstalled = false;
@@ -3466,7 +3473,6 @@ function handlePageHide() {
 export function unwireEvents() {
   uninstallEventBindings();
   if (eventsWired) {
-    offBattleEvent("battleStateChange", handleBattleStateChange);
     if (typeof window !== "undefined") {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("pageshow", handlePageShow);
@@ -3509,7 +3515,6 @@ export function wireEvents() {
   // Bug: If this call is missing, snackbars (like "You Picked: X") persist across rounds.
   bindRoundFlowControllerOnce();
   bindRoundUIEventHandlersDynamic();
-  onBattleEvent("battleStateChange", handleBattleStateChange);
   if (typeof window !== "undefined") {
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("pageshow", handlePageShow);
