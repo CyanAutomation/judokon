@@ -20,45 +20,6 @@ Error: Failed to resolve import "../../src/helpers/classicBattle/roundStore.js" 
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/73]⎯
 
- FAIL  tests/unit/roundStore.reset.spec.js [ tests/unit/roundStore.reset.spec.js ]
-Error: Failed to resolve import "@/helpers/classicBattle/roundStore.js" from "tests/unit/roundStore.reset.spec.js". Does the file exist?
-  Plugin: vite:import-analysis
-  File: /home/runner/work/judokon/judokon/tests/unit/roundStore.reset.spec.js:2:28
-  1  |  import { describe, it, expect, beforeEach } from "vitest";
-  2  |  import { roundStore } from "@/helpers/classicBattle/roundStore.js";
-     |                              ^
-  3  |  
-  4  |  describe("roundStore.reset", () => {
- ❯ TransformPluginContext._formatLog node_modules/vite/dist/node/chunks/config.js:31120:43
- ❯ TransformPluginContext.error node_modules/vite/dist/node/chunks/config.js:31117:14
- ❯ normalizeUrl node_modules/vite/dist/node/chunks/config.js:29604:18
- ❯ node_modules/vite/dist/node/chunks/config.js:29662:32
- ❯ TransformPluginContext.transform node_modules/vite/dist/node/chunks/config.js:29630:4
- ❯ EnvironmentPluginContainer.transform node_modules/vite/dist/node/chunks/config.js:30919:14
- ❯ loadAndTransform node_modules/vite/dist/node/chunks/config.js:26057:26
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/73]⎯
-
- FAIL  tests/unit/roundStore.test.js [ tests/unit/roundStore.test.js ]
-Error: Failed to resolve import "../../src/helpers/classicBattle/roundStore.js" from "tests/unit/roundStore.test.js". Does the file exist?
-  Plugin: vite:import-analysis
-  File: /home/runner/work/judokon/judokon/tests/unit/roundStore.test.js:8:0
-  2  |    emitBattleEvent: vi.fn()
-  3  |  }));
-  4  |  const __vi_import_0__ = await import("../../src/helpers/classicBattle/roundStore.js");
-     |                                       ^
-  5  |  /**
-  6  |   * Unit tests for RoundStore - centralized round state management
- ❯ TransformPluginContext._formatLog node_modules/vite/dist/node/chunks/config.js:31120:43
- ❯ TransformPluginContext.error node_modules/vite/dist/node/chunks/config.js:31117:14
- ❯ normalizeUrl node_modules/vite/dist/node/chunks/config.js:29604:18
- ❯ node_modules/vite/dist/node/chunks/config.js:29662:32
- ❯ TransformPluginContext.transform node_modules/vite/dist/node/chunks/config.js:29630:4
- ❯ EnvironmentPluginContainer.transform node_modules/vite/dist/node/chunks/config.js:30919:14
- ❯ loadAndTransform node_modules/vite/dist/node/chunks/config.js:26057:26
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/73]⎯
-
  FAIL  tests/helpers/classicBattle/controller.startRound.test.js [ tests/helpers/classicBattle/controller.startRound.test.js ]
 Error: Failed to resolve import "../../../src/helpers/classicBattle/scoreboardAdapter.js" from "tests/helpers/classicBattle/controller.startRound.test.js". Does the file exist?
   Plugin: vite:import-analysis
@@ -77,80 +38,10 @@ Error: Failed to resolve import "../../../src/helpers/classicBattle/scoreboardAd
  ❯ EnvironmentPluginContainer.transform node_modules/vite/dist/node/chunks/config.js:30919:14
  ❯ loadAndTransform node_modules/vite/dist/node/chunks/config.js:26057:26
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/73]⎯
-
- FAIL  tests/helpers/classicBattle/difficulty.test.js [ tests/helpers/classicBattle/difficulty.test.js ]
-Error: [vitest] No "syncScoreDisplay" export is defined on the "../../../../src/helpers/classicBattle/scoreDisplay.js" mock. Did you forget to return it from "vi.mock"?
-If you need to partially mock a module, you can use "importOriginal" helper inside:
-
-vi.mock(import("../../../../src/helpers/classicBattle/scoreDisplay.js"), async (importOriginal) => {
-  const actual = await importOriginal()
-  return {
-    ...actual,
-    // your mocked methods
-  }
-})
-
- ❯ src/helpers/classicBattle/uiHelpers.js:162:33
-    160|  * 1. Delegate to the shared score display helper.
-    161|  */
-    162| export const syncScoreDisplay = syncScoreDisplayImpl;
-       |                                 ^
-    163| 
-    164| /**
- ❯ src/helpers/classicBattle/roundManager.js:22:1
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/73]⎯
-
- FAIL  tests/helpers/classicBattle/keyboardNavigation.test.js [ tests/helpers/classicBattle/keyboardNavigation.test.js ]
-Error: [vitest] There was an error when mocking a module. If you are using "vi.mock" factory, make sure there are no top level variables inside, since this call is hoisted to top of the file. Read more: https://vitest.dev/api/vi.html#vi-mock
- ❯ src/helpers/classicBattle/roundManager.js:22:1
-     20| import { createEventBus } from "./eventBusUtils.js";
-     21| import { updateDebugPanel } from "./debugPanel.js";
-     22| import { setNextButtonFinalizedState } from "./uiHelpers.js";
-       | ^
-     23| import { showSnackbar } from "../showSnackbar.js";
-     24| import { t } from "../i18n.js";
- ❯ src/helpers/classicBattle/endModal.js:3:1
-
-Caused by: Error: [vitest] No "emitBattleEvent" export is defined on the "../../../src/helpers/classicBattle/battleEvents.js" mock. Did you forget to return it from "vi.mock"?
-If you need to partially mock a module, you can use "importOriginal" helper inside:
-
-vi.mock(import("../../../src/helpers/classicBattle/battleEvents.js"), async (importOriginal) => {
-  const actual = await importOriginal()
-  return {
-    ...actual,
-    // your mocked methods
-  }
-})
-
- ❯ src/helpers/classicBattle/countdownCoordinator.js:3:28
- ❯ src/helpers/classicBattle/timerService.js:14:1
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/73]⎯
-
- FAIL  tests/helpers/classicBattle/roundReadyState.test.js [ tests/helpers/classicBattle/roundReadyState.test.js ]
-Error: Failed to resolve import "../../../src/helpers/classicBattle/roundStore.js" from "tests/helpers/classicBattle/roundReadyState.test.js". Does the file exist?
-  Plugin: vite:import-analysis
-  File: /home/runner/work/judokon/judokon/tests/helpers/classicBattle/roundReadyState.test.js:28:35
-  26 |        resetReadyDispatchState
-  27 |      } = await import("../../../src/helpers/classicBattle/roundReadyState.js"));
-  28 |      ({ roundStore } = await import("../../../src/helpers/classicBattle/roundStore.js"));
-     |                                     ^
-  29 |  
-  30 |      roundStore.reset();
- ❯ TransformPluginContext._formatLog node_modules/vite/dist/node/chunks/config.js:31120:43
- ❯ TransformPluginContext.error node_modules/vite/dist/node/chunks/config.js:31117:14
- ❯ normalizeUrl node_modules/vite/dist/node/chunks/config.js:29604:18
- ❯ node_modules/vite/dist/node/chunks/config.js:29662:32
- ❯ TransformPluginContext.transform node_modules/vite/dist/node/chunks/config.js:29630:4
- ❯ EnvironmentPluginContainer.transform node_modules/vite/dist/node/chunks/config.js:30919:14
- ❯ loadAndTransform node_modules/vite/dist/node/chunks/config.js:26057:26
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/73]⎯
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/73]⎯
 
 
-⎯⎯⎯⎯⎯⎯ Failed Tests 65 ⎯⎯⎯⎯⎯⎯⎯
+⎯⎯⎯⎯⎯⎯ Failed Tests 51 ⎯⎯⎯⎯⎯⎯⎯
 
  FAIL  tests/classicBattle/cooldown-suppression.test.js > Cooldown suppression during opponent prompt > shows cooldown snackbar during opponent prompt minimum duration window
 AssertionError: expected [ undefined ] to deep equally contain StringMatching /Next round in/
@@ -524,31 +415,6 @@ If this is a long-running test, pass a timeout value as the last argument or con
      64|       "../../src/helpers/layoutDebugPanel.js"
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/73]⎯
-
- FAIL  tests/helpers/orchestrator.stateChange.test.js > initClassicBattleOrchestrator state change hooks > emits battleStateChange and invokes onStateChange
-Error: [vitest] No "matchEvaluateEnter" export is defined on the "../../src/helpers/classicBattle/orchestratorHandlers.js" mock. Did you forget to return it from "vi.mock"?
-If you need to partially mock a module, you can use "importOriginal" helper inside:
-
-vi.mock(import("../../src/helpers/classicBattle/orchestratorHandlers.js"), async (importOriginal) => {
-  const actual = await importOriginal()
-  return {
-    ...actual,
-    // your mocked methods
-  }
-})
-
- ❯ createOnEnterMap src/helpers/classicBattle/orchestrator.js:652:20
-    650|     roundResolve: roundResolveEnter,
-    651|     roundDisplay: roundDisplayEnter,
-    652|     matchEvaluate: matchEvaluateEnter,
-       |                    ^
-    653|     matchDecision: matchDecisionEnter,
-    654|     matchOver: matchOverEnter,
- ❯ src/helpers/classicBattle/orchestrator.js:417:24
- ❯ Module.initClassicBattleOrchestrator src/helpers/classicBattle/orchestrator.js:442:5
- ❯ tests/helpers/orchestrator.stateChange.test.js:65:24
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/73]⎯
 
  FAIL  tests/helpers/orchestratorHandlers.computeOutcome.test.js > computeAndDispatchOutcome > dispatches interrupt when no outcome is produced
 AssertionError: expected "spy" to be called with arguments: [ 'interrupt', …(1) ]
@@ -928,29 +794,6 @@ If this is a long-running test, pass a timeout value as the last argument or con
     130|     const flushPendingTimers = async (rounds = 3) => {
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[53/73]⎯
-
- FAIL  tests/helpers/classicBattle/interruptStateReset.test.js > classic battle interrupt selection cleanup > resets selection state before restarting the round
-Error: [vitest] No "cancelRoundResolveGuard" export is defined on the "../../../src/helpers/classicBattle/stateHandlers/guardCancellation.js" mock. Did you forget to return it from "vi.mock"?
-If you need to partially mock a module, you can use "importOriginal" helper inside:
-
-vi.mock(import("../../../src/helpers/classicBattle/stateHandlers/guardCancellation.js"), async (importOriginal) => {
-  const actual = await importOriginal()
-  return {
-    ...actual,
-    // your mocked methods
-  }
-})
-
- ❯ Module.interruptRoundEnter src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js:41:3
-     39| 
-     40|   // Cancel round resolve guard to prevent duplicate selections
-     41|   cancelRoundResolveGuard();
-       |   ^
-     42| 
-     43|   // Update UI to reflect interrupted state
- ❯ tests/helpers/classicBattle/interruptStateReset.test.js:75:11
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[54/73]⎯
 
  FAIL  tests/helpers/classicBattle/nextButton.cooldown.fallback.test.js > Next button cooldown fallback > restores readiness and exits cooldown when timer controls are missing
 AssertionError: expected 'false' to be 'true' // Object.is equality
