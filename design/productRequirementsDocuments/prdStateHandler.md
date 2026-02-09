@@ -183,8 +183,18 @@ stateDiagram-v2
   { "from": "roundPrompt", "to": "roundSelect", "trigger": "cardsRevealed" },
   { "from": "roundPrompt", "to": "interruptRound", "trigger": "interrupt" },
   { "from": "roundSelect", "to": "roundResolve", "trigger": "statSelected" },
-  { "from": "roundSelect", "to": "roundResolve", "trigger": "timeout", "guard": "autoSelectEnabled" },
-  { "from": "roundSelect", "to": "interruptRound", "trigger": "timeout", "guard": "!autoSelectEnabled" },
+  {
+    "from": "roundSelect",
+    "to": "roundResolve",
+    "trigger": "timeout",
+    "guard": "autoSelectEnabled"
+  },
+  {
+    "from": "roundSelect",
+    "to": "interruptRound",
+    "trigger": "timeout",
+    "guard": "!autoSelectEnabled"
+  },
   { "from": "roundSelect", "to": "interruptRound", "trigger": "interrupt" },
   { "from": "roundResolve", "to": "roundDisplay", "trigger": "outcome=winPlayer" },
   { "from": "roundResolve", "to": "roundDisplay", "trigger": "outcome=winOpponent" },
@@ -339,20 +349,20 @@ This section replaces the legacy compliance report so implementation status stay
 - **Missing**: 9 (31%)
 - **Critical gaps**: 2 (Priority 1)
 
-| State                    | Type    | Required Actions                                                                     | Status                         | Missing Actions                                     | Priority Notes                                                                      | Handler                          |
-| ------------------------ | ------- | ------------------------------------------------------------------------------------ | ------------------------------ | --------------------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------- |
-| `waitingForMatchStart`   | initial | render:matchLobby<br>reset:scoresAndUI                                               | ✅ Fully compliant (2/2)       | —                                                   | —                                                                                   | `waitingForMatchStartEnter.js`   |
-| `matchStart`             | normal  | init:matchContext<br>store:winTargetSelection<br>reset:scores<br>set:firstPlayerUser | ✅ Fully compliant (4/4)       | —                                                   | —                                                                                   | `matchStartEnter.js`             |
-| `roundWait`              | normal  | timer:startShortCountdown<br>announce:nextRoundInUI                                  | ❌ Missing (0/2)               | timer:startShortCountdown<br>announce:nextRoundInUI | 🚨 Priority 1 (timer:startShortCountdown)<br>⚠️ Priority 2 (announce:nextRoundInUI) | `roundWaitEnter.js`              |
-| `roundPrompt`            | normal  | draw:randomJudokaBothSides<br>reveal:roundCards<br>set:activePlayerUser              | ✅ Fully compliant (3/3)       | —                                                   | —                                                                                   | `roundPromptEnter.js`            |
-| `roundSelect`            | normal  | prompt:chooseStat<br>timer:startStatSelection<br>a11y:exposeTimerStatus              | ✅ Fully compliant (3/3)       | —                                                   | —                                                                                   | `roundSelectEnter.js`            |
-| `roundResolve`           | normal  | compare:selectedStat<br>compute:roundOutcome<br>announce:roundOutcome                | ⚠️ Partially implemented (1/3) | compare:selectedStat<br>compute:roundOutcome        | 🚨 Priority 1 (compare:selectedStat)<br>ℹ️ Priority 3 (compute:roundOutcome)        | `roundResolveEnter.js`           |
-| `roundDisplay`           | normal  | update:score<br>update:UIRoundSummary                                                | ❌ Missing (0/2)               | update:score<br>update:UIRoundSummary               | ⚠️ Priority 2 (both)                                                                | `roundDisplayEnter.js`           |
-| `matchDecision`          | normal  | compute:matchOutcome<br>render:matchSummary                                          | ❌ Missing (0/2)               | compute:matchOutcome<br>render:matchSummary         | ⚠️ Priority 2 (render:matchSummary)<br>ℹ️ Priority 3 (compute:matchOutcome)         | `matchDecisionEnter.js`          |
-| `matchOver`              | final   | show:matchResultScreen                                                               | ❌ Missing (0/1)               | show:matchResultScreen                              | ⚠️ Priority 2                                                                       | `matchOverEnter.js`              |
-| `interruptRound`         | normal  | timer:clearIfRunning<br>rollback:roundContextIfNeeded<br>log:analyticsInterruptRound | ✅ Fully compliant (3/3)       | —                                                   | —                                                                                   | `interruptRoundEnter.js`         |
-| `roundModification`      | normal  | open:roundModificationPanel                                                          | ✅ Fully compliant (1/1)       | —                                                   | Optional overlay (FF_ROUND_MODIFY)                                                  | `roundModificationEnter.js`      |
-| `interruptMatch`         | normal  | timer:clearIfRunning<br>teardown:matchContext<br>log:analyticsInterruptMatch         | ✅ Fully compliant (3/3)       | —                                                   | —                                                                                   | `interruptMatchEnter.js`         |
+| State                  | Type    | Required Actions                                                                     | Status                         | Missing Actions                                     | Priority Notes                                                                      | Handler                        |
+| ---------------------- | ------- | ------------------------------------------------------------------------------------ | ------------------------------ | --------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------ |
+| `waitingForMatchStart` | initial | render:matchLobby<br>reset:scoresAndUI                                               | ✅ Fully compliant (2/2)       | —                                                   | —                                                                                   | `waitingForMatchStartEnter.js` |
+| `matchStart`           | normal  | init:matchContext<br>store:winTargetSelection<br>reset:scores<br>set:firstPlayerUser | ✅ Fully compliant (4/4)       | —                                                   | —                                                                                   | `matchStartEnter.js`           |
+| `roundWait`            | normal  | timer:startShortCountdown<br>announce:nextRoundInUI                                  | ❌ Missing (0/2)               | timer:startShortCountdown<br>announce:nextRoundInUI | 🚨 Priority 1 (timer:startShortCountdown)<br>⚠️ Priority 2 (announce:nextRoundInUI) | `roundWaitEnter.js`            |
+| `roundPrompt`          | normal  | draw:randomJudokaBothSides<br>reveal:roundCards<br>set:activePlayerUser              | ✅ Fully compliant (3/3)       | —                                                   | —                                                                                   | `roundPromptEnter.js`          |
+| `roundSelect`          | normal  | prompt:chooseStat<br>timer:startStatSelection<br>a11y:exposeTimerStatus              | ✅ Fully compliant (3/3)       | —                                                   | —                                                                                   | `roundSelectEnter.js`          |
+| `roundResolve`         | normal  | compare:selectedStat<br>compute:roundOutcome<br>announce:roundOutcome                | ⚠️ Partially implemented (1/3) | compare:selectedStat<br>compute:roundOutcome        | 🚨 Priority 1 (compare:selectedStat)<br>ℹ️ Priority 3 (compute:roundOutcome)        | `roundResolveEnter.js`         |
+| `roundDisplay`         | normal  | update:score<br>update:UIRoundSummary                                                | ❌ Missing (0/2)               | update:score<br>update:UIRoundSummary               | ⚠️ Priority 2 (both)                                                                | `roundDisplayEnter.js`         |
+| `matchDecision`        | normal  | compute:matchOutcome<br>render:matchSummary                                          | ❌ Missing (0/2)               | compute:matchOutcome<br>render:matchSummary         | ⚠️ Priority 2 (render:matchSummary)<br>ℹ️ Priority 3 (compute:matchOutcome)         | `matchDecisionEnter.js`        |
+| `matchOver`            | final   | show:matchResultScreen                                                               | ❌ Missing (0/1)               | show:matchResultScreen                              | ⚠️ Priority 2                                                                       | `matchOverEnter.js`            |
+| `interruptRound`       | normal  | timer:clearIfRunning<br>rollback:roundContextIfNeeded<br>log:analyticsInterruptRound | ✅ Fully compliant (3/3)       | —                                                   | —                                                                                   | `interruptRoundEnter.js`       |
+| `roundModification`    | normal  | open:roundModificationPanel                                                          | ✅ Fully compliant (1/1)       | —                                                   | Optional overlay (FF_ROUND_MODIFY)                                                  | `roundModificationEnter.js`    |
+| `interruptMatch`       | normal  | timer:clearIfRunning<br>teardown:matchContext<br>log:analyticsInterruptMatch         | ✅ Fully compliant (3/3)       | —                                                   | —                                                                                   | `interruptMatchEnter.js`       |
 
 ### Missing action follow-ups
 
