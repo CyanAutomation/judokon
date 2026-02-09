@@ -88,12 +88,14 @@ npx playwright install
 ```
 
 **When to use:**
+
 - Recording new user flows for design documentation
 - Validating `data-testid` attributes and semantic selectors
 - Creating screenshot baselines for visual regression testing
 - Debugging layout or interaction issues
 
 **Key principles:**
+
 - Use semantic selectors (`data-testid`, `role=`) instead of implementation-detail CSS selectors
 - Record interactions naturally (`click()`, `fill()`, `press()`) without synthetic events
 - Always capture contrast and focus indicators for accessibility validation
@@ -117,6 +119,7 @@ npm run diagram:preview
 ```
 
 **When to use:**
+
 - Exporting PRD diagrams as static assets (PNG, SVG, PDF)
 - Generating diagram families from data structures
 - Creating documentation archives

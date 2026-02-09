@@ -41,11 +41,13 @@ Use this skill when prompts include or imply:
 ## Expected output format
 
 ### Markdown-Embedded Diagrams
+
 - Mermaid block embedded in Markdown.
 - 2–4 line rationale for diagram type and structure choices.
 - Notes on assumptions, ambiguities, and future extension opportunities.
 
 ### CLI-Generated Exports
+
 - `.mmd` source file with complete, documented diagram.
 - Exported image file (SVG, PNG) in `artifacts/` or `docs/diagrams/` directory.
 - Brief markdown summary: diagram purpose, export target, browsers/tools tested.
@@ -82,6 +84,7 @@ done
 ### Configuration
 
 Project defaults are defined in `mermaid.config.json`:
+
 - `theme`: Default rendering theme (e.g., "default", "forest", "dark")
 - `outputFormat`: Default export format (svg, png, pdf)
 - `cssFile`: Optional custom CSS for styling (path or null)

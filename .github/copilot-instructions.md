@@ -1220,10 +1220,12 @@ Complete plan and guidelines available in:
 The project provides wrapper scripts for consistent CLI tool invocation:
 
 #### Playwright CLI (UI Design & Recording)
+
 ```bash
 npm run test:ui:codegen     # Start interactive browser recording
 npm run test:ui:trace       # Inspect saved trace files
 ```
+
 - **Skill**: [judokon-playwright-cli](.github/skills/judokon-playwright-cli/SKILL.md)
 - **Purpose**: Record user flows, validate selectors, capture design baselines, debug layout issues
 - **Wrapper**: [scripts/runPlaywright.js](scripts/runPlaywright.js)
@@ -1231,11 +1233,13 @@ npm run test:ui:trace       # Inspect saved trace files
 - **When to use**: Recording new UI flows, validating `data-testid` attributes, creating visual baselines
 
 #### Mermaid CLI (Diagram Generation)
+
 ```bash
 npm run diagram:gen -i input.mmd -o output.svg   # Generate SVG
 npm run diagram:preview                           # Quick preview
 node scripts/runMermaid.js -i diagram.mmd -o diagram.png  # Custom invocation
 ```
+
 - **Skill**: [judokon-mermaid-creator](.github/skills/judokon-mermaid-creator/SKILL.md) (includes CLI generation)
 - **Purpose**: Generate diagrams programmatically, export PRD diagrams to static formats
 - **Wrapper**: [scripts/runMermaid.js](scripts/runMermaid.js)
