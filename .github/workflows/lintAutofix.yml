@@ -203,6 +203,8 @@ jobs:
             ${{ steps.weather.outputs.weather }}
           branch: auto/format-lint-fixes
           branch-suffix: timestamp
+          add-paths: |
+            ${{ steps.git-check.outputs.changed_files }}
           labels: |
             automated
             linting
