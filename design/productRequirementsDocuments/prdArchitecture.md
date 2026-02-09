@@ -161,7 +161,7 @@ Core battle logic lives in `helpers/battleEngine.js` with no DOM access. UI scri
 
 ##### helpers/navigation
 
-Use `helpers/navigation/navigationService.js` for validation and URL helpers, and `helpers/navigation/navigationUI.js` to build orientation-specific menus and responsive hamburger toggles. `buildMenu(gameModes, { orientation })` returns the menu element; `setupHamburger(breakpoint?)` wires a toggle button and cleanup handler.
+Navigation behavior is composed from focused modules such as `helpers/navigationBar.js` and `helpers/setupBottomNavbar.js`, with page-level orchestrators wiring URL state and menu rendering. Prefer these entry points when extending responsive navigation flows.
 
 ##### helpers/vector search
 

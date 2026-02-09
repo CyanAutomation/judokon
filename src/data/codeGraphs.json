@@ -3985,8 +3985,7 @@
       "imports": [
         "vitest",
         "../../src/helpers/settings/gameModeSwitches.js",
-        "../../src/helpers/settings/featureFlagSwitches.js",
-        "../../src/helpers/navigation/navigationService.js"
+        "../../src/helpers/settings/featureFlagSwitches.js"
       ],
       "functions": {}
     },
@@ -4044,12 +4043,7 @@
       "functions": {}
     },
     "tests/helpers/navigationTooltips.test.js": {
-      "imports": [
-        "vitest",
-        "../../src/data/tooltips.json",
-        "../../src/data/gameModes.json",
-        "../../src/helpers/navigation/navigationService.js"
-      ],
+      "imports": ["vitest", "../../src/data/tooltips.json", "../../src/data/gameModes.json"],
       "functions": {}
     },
     "tests/helpers/navigationCache.test.js": {
@@ -4968,8 +4962,7 @@
         "../../components/ToggleSwitch.js",
         "../gameModeUtils.js",
         "../showSettingsError.js",
-        "../showSnackbar.js",
-        "../navigation/navigationService.js"
+        "../showSnackbar.js"
       ],
       "functions": {
         "handleGameModeChange": {
@@ -5224,7 +5217,7 @@
       }
     },
     "src/helpers/navigation/navigationUI.js": {
-      "imports": ["./navigationService.js"],
+      "imports": [],
       "functions": {
         "clearBottomNavbar": {
           "calls": ["querySelector"],
@@ -5275,35 +5268,8 @@
         }
       }
     },
-    "src/helpers/navigation/navigationService.js": {
-      "imports": ["../debug.js"],
-      "functions": {
-        "navTooltipKey": {
-          "calls": [
-            "join",
-            "map",
-            "split",
-            "trim",
-            "replace",
-            "String",
-            "toLowerCase",
-            "toUpperCase",
-            "slice"
-          ],
-          "patterns": []
-        },
-        "escapeHtml": {
-          "calls": ["replace", "String"],
-          "patterns": []
-        },
-        "validateGameModes": {
-          "calls": ["filter", "debugLog"],
-          "patterns": []
-        }
-      }
-    },
     "src/helpers/navigation/navMenu.js": {
-      "imports": ["./navigationUI.js", "./navigationService.js"],
+      "imports": ["./navigationUI.js"],
       "functions": {
         "toggleExpandedMapView": {
           "calls": ["buildMenu"],
@@ -5320,7 +5286,7 @@
       }
     },
     "src/helpers/navigation/navData.js": {
-      "imports": ["../settingsStorage.js", "../gameModeUtils.js", "./navigationService.js"],
+      "imports": ["../settingsStorage.js", "../gameModeUtils.js"],
       "functions": {
         "loadMenuModes": {
           "calls": [
