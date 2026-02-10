@@ -1522,7 +1522,7 @@ function recordCommandHistory(stat) {
  * set `roundResolving`
  * dispatch "statSelected" on machine
  */
-export function selectStat(stat) {
+export async function selectStat(stat) {
   // DEBUG: Log to localStorage so we can trace execution
   try {
     const logs = JSON.parse(localStorage.getItem("__DEBUG_SELECT_STAT_LOG") || "[]");
@@ -1534,6 +1534,8 @@ export function selectStat(stat) {
   } catch {}
 
   if (!stat) return;
+  // Ignore additional selections once a choice has already been committed.
+  if (store?.selectionMade) return;
   // Ignore re-entrant calls while a selection is being applied.
   if (selectionApplying) return;
   clearHistoryPreview({ restoreAnchor: false });
@@ -1576,20 +1578,11 @@ export function selectStat(stat) {
     state.roundResolving = true;
     // Dispatch the statSelected event to the state machine and emit the battle event
     emitBattleEvent("statSelected", { stat });
-    const dispatchResult = safeDispatch("statSelected");
-    const handleDispatchError = (err) => {
-      console.error("Error dispatching statSelected", err);
-    };
-    if (dispatchResult && typeof dispatchResult.catch === "function") {
-      dispatchResult.catch(handleDispatchError);
-    } else {
-      // Always wrap in Promise.resolve to preserve error handling for falsy values
-      Promise.resolve(dispatchResult).catch(handleDispatchError);
-    }
+    await Promise.resolve(safeDispatch("statSelected"));
   } catch (err) {
     console.error("Error dispatching statSelected", err);
   } finally {
-    // Allow future selections after dispatch has been initiated
+    // Allow future selections only after dispatch settles (success or failure).
     selectionApplying = false;
   }
 }
