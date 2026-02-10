@@ -1,4 +1,4 @@
-import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { mockDispatchBattleEvent } = vi.hoisted(() => ({
   mockDispatchBattleEvent: vi.fn()
@@ -14,57 +14,62 @@ vi.mock("../../src/helpers/classicBattle/orchestrator.js", async (importOriginal
 
 describe("Battle CLI selectStat locking", () => {
   let ensureCliDomForTest;
+  let renderStatList;
   let selectStat;
+  let battleCliDebug;
 
   beforeEach(async () => {
     vi.resetModules();
     mockDispatchBattleEvent.mockReset();
+
     if (!globalThis.window) {
       globalThis.window = globalThis;
     }
+
     if (!window.localStorage) {
-      const store = new Map();
+      const backing = new Map();
       Object.defineProperty(window, "localStorage", {
         value: {
-          getItem: (key) => (store.has(key) ? store.get(key) : null),
-          setItem: (key, value) => store.set(String(key), String(value)),
-          removeItem: (key) => store.delete(key),
-          clear: () => store.clear()
+          getItem: (key) => (backing.has(key) ? backing.get(key) : null),
+          setItem: (key, value) => backing.set(String(key), String(value)),
+          removeItem: (key) => backing.delete(key),
+          clear: () => backing.clear()
         },
         configurable: true
       });
     }
+
     if (!globalThis.localStorage) {
       globalThis.localStorage = window.localStorage;
     }
+
     window.__TEST__ = true;
 
     const module = await import("../../src/pages/battleCLI/init.js");
     ensureCliDomForTest = module.ensureCliDomForTest;
+    renderStatList = module.renderStatList;
     selectStat = module.selectStat;
 
     ensureCliDomForTest({ reset: true });
-    
-    // Initialize store with selectionMade flag to test the guard
-    const module = await import("../../src/pages/battleCLI/init.js");
-    if (typeof window !== "undefined") {
-      window.battleStore = {
-        selectionMade: false,
-        playerChoice: null
-      };
-    }
-    
-    const list = document.getElementById("cli-stats");
-    list.innerHTML = "";
-    ["power", "speed"].forEach((stat, index) => {
-      const row = document.createElement("div");
-      row.className = "cli-stat";
-      row.dataset.stat = stat;
-      row.dataset.statIndex = String(index + 1);
-      list.appendChild(row);
+    await renderStatList({
+      stats: {
+        power: 10,
+        speed: 9,
+        technique: 8,
+        kumikata: 7,
+        neWaza: 6
+      }
     });
 
+    battleCliDebug = window.__battleCLIinit;
+    battleCliDebug?.__setStoreForTest?.({
+      selectionMade: false,
+      playerChoice: null
+    });
+  });
+
   afterEach(() => {
+    battleCliDebug?.__setStoreForTest?.(null);
     document.body.innerHTML = "";
     localStorage.clear();
     delete window.__TEST__;
@@ -87,5 +92,16 @@ describe("Battle CLI selectStat locking", () => {
     resolveDispatch();
     await firstSelection;
     await secondSelection;
+  });
+
+  it("ignores additional selections after store marks selectionMade", async () => {
+    battleCliDebug?.__setStoreForTest?.({
+      selectionMade: true,
+      playerChoice: "power"
+    });
+
+    await selectStat("speed");
+
+    expect(mockDispatchBattleEvent).not.toHaveBeenCalled();
   });
 });

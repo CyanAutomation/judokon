@@ -532,6 +532,33 @@ try {
       Object.keys(statDisplayNames).forEach((key) => {
         delete statDisplayNames[key];
       });
+    },
+
+    /**
+     * Set module-scoped store for deterministic unit tests.
+     *
+     * @param {object|null} nextStore
+     * @returns {void}
+     * @pseudocode
+     * if !window.__TEST__ → return
+     * set module store reference to nextStore when object, else null
+     */
+    __setStoreForTest(nextStore) {
+      if (!window.__TEST__) return;
+      store = nextStore && typeof nextStore === "object" ? nextStore : null;
+    },
+
+    /**
+     * Read module-scoped store for tests.
+     *
+     * @returns {object|null}
+     * @pseudocode
+     * if !window.__TEST__ → return null
+     * return module store reference
+     */
+    __getStoreForTest() {
+      if (!window.__TEST__) return null;
+      return store;
     }
   });
 } catch {
