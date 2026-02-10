@@ -44,6 +44,16 @@ describe("Battle CLI selectStat locking", () => {
     selectStat = module.selectStat;
 
     ensureCliDomForTest({ reset: true });
+    
+    // Initialize store with selectionMade flag to test the guard
+    const module = await import("../../src/pages/battleCLI/init.js");
+    if (typeof window !== "undefined") {
+      window.battleStore = {
+        selectionMade: false,
+        playerChoice: null
+      };
+    }
+    
     const list = document.getElementById("cli-stats");
     list.innerHTML = "";
     ["power", "speed"].forEach((stat, index) => {
@@ -53,7 +63,6 @@ describe("Battle CLI selectStat locking", () => {
       row.dataset.statIndex = String(index + 1);
       list.appendChild(row);
     });
-  });
 
   afterEach(() => {
     document.body.innerHTML = "";
