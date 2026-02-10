@@ -37,7 +37,12 @@ export async function forceAutoSelectAndDispatch(onExpiredSelect) {
 /**
  * Schedule a stalled-selection prompt and optional auto-select.
  *
- * @param {{autoSelectId: ReturnType<typeof setTimeout> | null}} store Battle state store.
+ * @param {{
+ * autoSelectId: ReturnType<typeof setTimeout> | null,
+ * autoSelectCountdownId?: ReturnType<typeof setTimeout> | null,
+ * autoSelectExecuteId?: ReturnType<typeof setTimeout> | null,
+ * roundsPlayed?: number
+ * }} store Battle state store.
  * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => void} onSelect Stat selection callback.
  * @param {number} [timeoutMs=5000] Delay before prompting.
  * @returns {void}
@@ -49,12 +54,18 @@ export async function forceAutoSelectAndDispatch(onExpiredSelect) {
  *    c. If auto-select enabled:
  *       i. Announce next-round countdown after a short delay.
  *       ii. Trigger `autoSelectStat(onSelect)` shortly after.
- * 2. Store the timeout id on `store.autoSelectId`.
+ * 2. Store each timeout id on `store.autoSelectId`, `store.autoSelectCountdownId`, and
+ *    `store.autoSelectExecuteId`.
  */
 /**
  * Schedule a stalled-selection prompt and optional auto-select.
  *
- * @param {{autoSelectId: ReturnType<typeof setTimeout> | null}} store Battle state store.
+ * @param {{
+ * autoSelectId: ReturnType<typeof setTimeout> | null,
+ * autoSelectCountdownId?: ReturnType<typeof setTimeout> | null,
+ * autoSelectExecuteId?: ReturnType<typeof setTimeout> | null,
+ * roundsPlayed?: number
+ * }} store Battle state store.
  * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => void} onSelect Stat selection callback.
  * @param {number} [timeoutMs=5000] Delay before prompting.
  * @returns {void}
@@ -66,17 +77,33 @@ export async function forceAutoSelectAndDispatch(onExpiredSelect) {
  *    c. If auto-select enabled:
  *       i. Announce next-round countdown after a short delay.
  *       ii. Auto-select a stat after countdown announcement.
- * 2. Store timeout ID in `store.autoSelectId` for cleanup.
+ * 2. Store timeout IDs in `store.autoSelectId`, `store.autoSelectCountdownId`, and
+ *    `store.autoSelectExecuteId` for cleanup.
  */
 export function handleStatSelectionTimeout(store, onSelect, timeoutMs = 5000) {
   const scheduler = getScheduler();
+  const scheduledRoundToken = Number.isFinite(Number(store?.roundsPlayed))
+    ? Number(store.roundsPlayed)
+    : null;
+  const isStaleRound = () => {
+    if (!store || typeof store !== "object") {
+      return true;
+    }
+    const currentRoundToken = Number.isFinite(Number(store.roundsPlayed))
+      ? Number(store.roundsPlayed)
+      : null;
+    return currentRoundToken !== scheduledRoundToken;
+  };
   if (store && typeof store === "object") {
     store.selectionTimeoutScheduler = scheduler;
     store.statTimeoutScheduler = scheduler;
     store.autoSelectScheduler = scheduler;
+    store.autoSelectRoundToken = scheduledRoundToken;
+    store.autoSelectCountdownId = null;
+    store.autoSelectExecuteId = null;
   }
   store.autoSelectId = scheduler.setTimeout(() => {
-    if (store?.selectionMade) return;
+    if (store?.selectionMade || isStaleRound()) return;
 
     // 1. Show stalled message
     const stalledMsg = t("ui.statSelectionStalled");
@@ -99,14 +126,14 @@ export function handleStatSelectionTimeout(store, onSelect, timeoutMs = 5000) {
 
     if (isEnabled("autoSelect")) {
       // 2. Schedule countdown message
-      scheduler.setTimeout(() => {
-        if (store?.selectionMade) return;
+      store.autoSelectCountdownId = scheduler.setTimeout(() => {
+        if (store?.selectionMade || isStaleRound()) return;
         const secs = computeNextRoundCooldown();
         showSnackbar(t("ui.nextRoundIn", { seconds: secs }));
 
         // 3. Schedule auto-select
-        scheduler.setTimeout(() => {
-          if (store?.selectionMade) return;
+        store.autoSelectExecuteId = scheduler.setTimeout(() => {
+          if (store?.selectionMade || isStaleRound()) return;
           try {
             autoSelectStat(onSelect);
           } catch (error) {

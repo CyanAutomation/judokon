@@ -90,6 +90,9 @@ function createStore() {
   return {
     statTimeoutId: createFakeTimeoutHandle(),
     autoSelectId: createFakeTimeoutHandle(),
+    autoSelectCountdownId: createFakeTimeoutHandle(),
+    autoSelectExecuteId: createFakeTimeoutHandle(),
+    autoSelectRoundToken: 5,
     compareRaf: 123
   };
 }
@@ -108,16 +111,21 @@ describe("initInterruptHandlers", () => {
     const { resetSkipState } = await import("../../../src/helpers/classicBattle/skipHandler.js");
 
     const store = createStore();
-    const { statTimeoutId, autoSelectId } = store;
+    const { statTimeoutId, autoSelectId, autoSelectCountdownId, autoSelectExecuteId } = store;
     initInterruptHandlers(store);
 
     window.dispatchEvent(new Event("pagehide"));
 
     expect(store.statTimeoutId).toBeNull();
     expect(store.autoSelectId).toBeNull();
+    expect(store.autoSelectCountdownId).toBeNull();
+    expect(store.autoSelectExecuteId).toBeNull();
+    expect(store.autoSelectRoundToken).toBeNull();
     expect(store.compareRaf).toBe(0);
     expect(statTimeoutId.clear).toHaveBeenCalledTimes(1);
     expect(autoSelectId.clear).toHaveBeenCalledTimes(1);
+    expect(autoSelectCountdownId.clear).toHaveBeenCalledTimes(1);
+    expect(autoSelectExecuteId.clear).toHaveBeenCalledTimes(1);
     expect(cancel).toHaveBeenCalledWith(123);
     expect(resetSkipState).toHaveBeenCalled();
     expect(clearTimer).toHaveBeenCalled();

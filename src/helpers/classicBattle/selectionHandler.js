@@ -619,8 +619,9 @@ function clearTimerHandle(handle, schedulers) {
  *    the orchestrator cancels any in-flight countdown controller.
  * 4. Blank the DOM fallback `#next-round-timer` node when direct helpers are
  *    unavailable.
- * 5. Clear `store.statTimeoutId` and `store.autoSelectId` via `clearTimeout`.
- * 6. Null out the stored ids so subsequent cleanup calls are safe.
+ * 5. Clear `store.statTimeoutId`, `store.autoSelectId`, `store.autoSelectCountdownId`,
+ *    and `store.autoSelectExecuteId` via `clearTimeout`.
+ * 6. Null out the stored ids and round token so subsequent cleanup calls are safe.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @returns {void}
@@ -647,6 +648,13 @@ export function cleanupTimers(store) {
   store.statTimeoutId = null;
   clearTimerHandle(store?.autoSelectId, schedulers);
   store.autoSelectId = null;
+  clearTimerHandle(store?.autoSelectCountdownId, schedulers);
+  store.autoSelectCountdownId = null;
+  clearTimerHandle(store?.autoSelectExecuteId, schedulers);
+  store.autoSelectExecuteId = null;
+  if (store && typeof store === "object" && "autoSelectRoundToken" in store) {
+    store.autoSelectRoundToken = null;
+  }
   if (store && typeof store === "object") {
     if ("selectionTimeoutScheduler" in store) store.selectionTimeoutScheduler = null;
     if ("statTimeoutScheduler" in store) store.statTimeoutScheduler = null;

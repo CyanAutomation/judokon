@@ -55,7 +55,13 @@ function removeInterruptHandlers() {
  *    d. Surface an error dialog with the message.
  *    e. Dispatch `"interrupt"` with the reason.
  *
- * @param {{statTimeoutId: ReturnType<typeof setTimeout>|null, autoSelectId: ReturnType<typeof setTimeout>|null, compareRaf: number}} store
+ * @param {{
+ * statTimeoutId: ReturnType<typeof setTimeout>|null,
+ * autoSelectId: ReturnType<typeof setTimeout>|null,
+ * autoSelectCountdownId?: ReturnType<typeof setTimeout>|null,
+ * autoSelectExecuteId?: ReturnType<typeof setTimeout>|null,
+ * compareRaf: number
+ * }} store
  * - Battle state store used to clear pending timers.
  */
 /**
@@ -75,7 +81,13 @@ function removeInterruptHandlers() {
  *    a readable message, call `cleanup`, interrupt the match with reason
  *    `error`, show an error modal, and emit an interrupt battle event.
  *
- * @param {{statTimeoutId: ReturnType<typeof setTimeout>|null, autoSelectId: ReturnType<typeof setTimeout>|null, compareRaf: number}} store
+ * @param {{
+ * statTimeoutId: ReturnType<typeof setTimeout>|null,
+ * autoSelectId: ReturnType<typeof setTimeout>|null,
+ * autoSelectCountdownId?: ReturnType<typeof setTimeout>|null,
+ * autoSelectExecuteId?: ReturnType<typeof setTimeout>|null,
+ * compareRaf: number
+ * }} store
  *  Shared store for scheduled timers used by the orchestrator.
  * @returns {() => void} Cleanup function for all registered interrupt listeners.
  */
@@ -89,7 +101,7 @@ export function initInterruptHandlers(store) {
    * Cancel timers and scheduler callbacks to prevent UI drift.
    *
    * @pseudocode
-   * 1. Clear `statTimeoutId` and `autoSelectId` from the store and reset them.
+   * 1. Clear stat selection and all auto-select timeout IDs from the store and reset them.
    * 2. Cancel any scheduled frame via `compareRaf` and reset it.
    * 3. Reset skip handler state.
    * 4. Clear the scoreboard timer and stop the shared scheduler.
@@ -105,8 +117,15 @@ export function initInterruptHandlers(store) {
     try {
       clearTimeout(currentStore.statTimeoutId);
       clearTimeout(currentStore.autoSelectId);
+      clearTimeout(currentStore.autoSelectCountdownId);
+      clearTimeout(currentStore.autoSelectExecuteId);
       currentStore.statTimeoutId = null;
       currentStore.autoSelectId = null;
+      currentStore.autoSelectCountdownId = null;
+      currentStore.autoSelectExecuteId = null;
+      if ("autoSelectRoundToken" in currentStore) {
+        currentStore.autoSelectRoundToken = null;
+      }
     } catch {}
     try {
       cancelFrame(currentStore.compareRaf);

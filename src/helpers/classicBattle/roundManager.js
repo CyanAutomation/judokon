@@ -108,6 +108,9 @@ export function createBattleStore() {
     roundReadyForInput: false,
     stallTimeoutMs: 35000,
     autoSelectId: null,
+    autoSelectCountdownId: null,
+    autoSelectExecuteId: null,
+    autoSelectRoundToken: null,
     playerChoice: null,
     playerCardEl: null,
     opponentCardEl: null,
@@ -288,6 +291,15 @@ export async function startRound(store, onRoundStart) {
     };
     const selectionInFlight = !!store?.[SELECTION_IN_FLIGHT_GUARD];
     if (!selectionInFlight) {
+      try {
+        clearTimeout(store?.autoSelectId);
+        clearTimeout(store?.autoSelectCountdownId);
+        clearTimeout(store?.autoSelectExecuteId);
+      } catch {}
+      store.autoSelectId = null;
+      store.autoSelectCountdownId = null;
+      store.autoSelectExecuteId = null;
+      store.autoSelectRoundToken = null;
       store.playerChoice = null;
       resetSelectionFlags("startRound.reset");
       try {
@@ -1271,11 +1283,16 @@ export function _resetForTest(store, preserveConfig = {}) {
       () => {
         clearTimeout(store.statTimeoutId);
         clearTimeout(store.autoSelectId);
+        clearTimeout(store.autoSelectCountdownId);
+        clearTimeout(store.autoSelectExecuteId);
       },
       { suppressInProduction: true }
     );
     store.statTimeoutId = null;
     store.autoSelectId = null;
+    store.autoSelectCountdownId = null;
+    store.autoSelectExecuteId = null;
+    store.autoSelectRoundToken = null;
     store.selectionMade = false;
     store.__lastSelectionMade = false;
     // Reset any prior player stat selection

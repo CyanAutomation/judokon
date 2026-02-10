@@ -74,13 +74,16 @@ describe("handleStatSelectionTimeout", () => {
   });
 
   test("should show messages and auto-select in a correct, sequential order", () => {
-    const store = { selectionMade: false };
+    const store = { selectionMade: false, roundsPlayed: 3 };
     const onSelect = vi.fn();
 
     handleStatSelectionTimeout(store, onSelect, 5000);
 
     // Verify store was modified by handleStatSelectionTimeout
     expect(store.autoSelectId).toBeDefined();
+    expect(store.autoSelectRoundToken).toBe(3);
+    expect(store.autoSelectCountdownId).toBeNull();
+    expect(store.autoSelectExecuteId).toBeNull();
 
     // 1. The initial timeout should be registered for the provided delay.
     expect(fakeScheduler.setTimeout).toHaveBeenCalledWith(expect.any(Function), 5000);
@@ -97,6 +100,7 @@ describe("handleStatSelectionTimeout", () => {
 
     // 3. The countdown announcement should be scheduled for 800ms later.
     expect(fakeScheduler.setTimeout).toHaveBeenCalledWith(expect.any(Function), 800);
+    expect(store.autoSelectCountdownId).toBeDefined();
     const countdownCall = fakeScheduler.setTimeout.mock.calls.find(([, delay]) => delay === 800);
     expect(countdownCall).toBeDefined();
     const [countdownTimeout] = countdownCall;
@@ -110,6 +114,7 @@ describe("handleStatSelectionTimeout", () => {
 
     // 5. Auto-select should be scheduled 250ms after the countdown announcement.
     expect(fakeScheduler.setTimeout).toHaveBeenCalledWith(expect.any(Function), 250);
+    expect(store.autoSelectExecuteId).toBeDefined();
     const autoSelectCall = fakeScheduler.setTimeout.mock.calls.find(([, delay]) => delay === 250);
     expect(autoSelectCall).toBeDefined();
     const [autoSelectTimeout] = autoSelectCall;
@@ -117,5 +122,22 @@ describe("handleStatSelectionTimeout", () => {
     // 6. Trigger the final callback and verify the auto-select is invoked once.
     autoSelectTimeout();
     expect(autoSelectStat).toHaveBeenCalledTimes(1);
+  });
+
+  test("should no-op stale timeout callbacks when round token changes", () => {
+    const store = { selectionMade: false, roundsPlayed: 7 };
+
+    handleStatSelectionTimeout(store, vi.fn(), 1000);
+
+    const mainTimeoutCall = fakeScheduler.setTimeout.mock.calls.find(([, delay]) => delay === 1000);
+    expect(mainTimeoutCall).toBeDefined();
+    const [mainTimeout] = mainTimeoutCall;
+
+    store.roundsPlayed = 8;
+    mainTimeout();
+
+    expect(showSnackbar).not.toHaveBeenCalled();
+    expect(autoSelectStat).not.toHaveBeenCalled();
+    expect(fakeScheduler.setTimeout).toHaveBeenCalledTimes(1);
   });
 });
