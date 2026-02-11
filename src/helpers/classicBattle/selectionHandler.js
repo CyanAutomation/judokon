@@ -587,19 +587,19 @@ function clearTimerHandle(handle, schedulers) {
     return;
   }
 
-  let schedulerProvidesClear = false;
+  let cleared = false;
 
   for (const scheduler of schedulers) {
     if (scheduler && typeof scheduler.clearTimeout === "function") {
-      schedulerProvidesClear = true;
       try {
         scheduler.clearTimeout(handle);
+        cleared = true;
         return;
       } catch {}
     }
   }
 
-  if (!schedulerProvidesClear && typeof clearTimeout === "function") {
+  if (!cleared && typeof clearTimeout === "function") {
     try {
       clearTimeout(handle);
     } catch {}

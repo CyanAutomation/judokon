@@ -266,6 +266,31 @@ describe("handleStatSelection helpers", () => {
     }
   });
 
+  it("falls back to global clearTimeout when scheduler clear throws", async () => {
+    const failingHandle = { id: "failing-handle" };
+    const fakeScheduler = {
+      clearTimeout: vi.fn(() => {
+        throw new Error("scheduler clear failed");
+      })
+    };
+
+    store.statTimeoutId = failingHandle;
+    store.statTimeoutScheduler = fakeScheduler;
+
+    const globalClear = vi.spyOn(global, "clearTimeout");
+
+    try {
+      cleanupTimers(store);
+
+      expect(fakeScheduler.clearTimeout).toHaveBeenCalledWith(failingHandle);
+      expect(globalClear).toHaveBeenCalledWith(failingHandle);
+      expect(store.statTimeoutId).toBeNull();
+      expect(store.statTimeoutScheduler).toBeNull();
+    } finally {
+      globalClear.mockRestore();
+    }
+  });
+
   it("should not call resolveRoundDirect when orchestrator handles the event", async () => {
     const { resolveRound } = await import("../../src/helpers/classicBattle/roundResolver.js");
     dispatchBattleEvent.mockResolvedValue(true); // Simulate orchestrator handling it
