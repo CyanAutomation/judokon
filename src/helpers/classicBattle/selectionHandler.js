@@ -621,7 +621,7 @@ function clearTimerHandle(handle, schedulers) {
  *    unavailable.
  * 5. Clear `store.statTimeoutId`, `store.autoSelectId`, `store.autoSelectCountdownId`,
  *    and `store.autoSelectExecuteId` via `clearTimeout`.
- * 6. Null out the stored ids and round token so subsequent cleanup calls are safe.
+ * 6. Null out the stored ids, round token, and schedule nonce so subsequent cleanup calls are safe.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @returns {void}
@@ -652,8 +652,13 @@ export function cleanupTimers(store) {
   store.autoSelectCountdownId = null;
   clearTimerHandle(store?.autoSelectExecuteId, schedulers);
   store.autoSelectExecuteId = null;
-  if (store && typeof store === "object" && "autoSelectRoundToken" in store) {
-    store.autoSelectRoundToken = null;
+  if (store && typeof store === "object") {
+    if ("autoSelectRoundToken" in store) {
+      store.autoSelectRoundToken = null;
+    }
+    if ("autoSelectScheduleNonce" in store) {
+      store.autoSelectScheduleNonce = 0;
+    }
   }
   if (store && typeof store === "object") {
     if ("selectionTimeoutScheduler" in store) store.selectionTimeoutScheduler = null;

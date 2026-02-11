@@ -93,6 +93,7 @@ function createStore() {
     autoSelectCountdownId: createFakeTimeoutHandle(),
     autoSelectExecuteId: createFakeTimeoutHandle(),
     autoSelectRoundToken: 5,
+    autoSelectScheduleNonce: 9,
     compareRaf: 123
   };
 }
@@ -121,6 +122,7 @@ describe("initInterruptHandlers", () => {
     expect(store.autoSelectCountdownId).toBeNull();
     expect(store.autoSelectExecuteId).toBeNull();
     expect(store.autoSelectRoundToken).toBeNull();
+    expect(store.autoSelectScheduleNonce).toBe(0);
     expect(store.compareRaf).toBe(0);
     expect(statTimeoutId.clear).toHaveBeenCalledTimes(1);
     expect(autoSelectId.clear).toHaveBeenCalledTimes(1);

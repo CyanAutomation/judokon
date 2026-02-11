@@ -109,7 +109,16 @@ describe("handleStatSelection helpers", () => {
     }));
 
     timers = useCanonicalTimers();
-    store = { selectionMade: false, playerChoice: null, statTimeoutId: null, autoSelectId: null };
+    store = {
+      selectionMade: false,
+      playerChoice: null,
+      statTimeoutId: null,
+      autoSelectId: null,
+      autoSelectCountdownId: null,
+      autoSelectExecuteId: null,
+      autoSelectScheduleNonce: 0,
+      roundsPlayed: 0
+    };
 
     // Import all modules after setting up mocks
     const battleEngineFacade = await import("../../src/helpers/BattleEngine.js");
@@ -263,6 +272,45 @@ describe("handleStatSelection helpers", () => {
     } finally {
       getSchedulerSpy.mockRestore();
       globalClear.mockRestore();
+    }
+  });
+
+  it("no-ops stale auto-select callbacks when round nonce changes", async () => {
+    const handles = [];
+    const fakeScheduler = {
+      setTimeout: vi.fn((callback, delay) => {
+        const handle = { callback, delay, id: handles.length + 1 };
+        handles.push(handle);
+        return handle;
+      }),
+      clearTimeout: vi.fn()
+    };
+
+    const schedulerModule = await import("../../src/helpers/scheduler.js");
+    const getSchedulerSpy = vi
+      .spyOn(schedulerModule, "getScheduler")
+      .mockReturnValue(fakeScheduler);
+
+    try {
+      const { handleStatSelectionTimeout } = await import(
+        "../../src/helpers/classicBattle/autoSelectHandlers.js"
+      );
+
+      handleStatSelectionTimeout(store, () => {}, 1000);
+      const scheduledHandle = store.autoSelectId;
+      expect(scheduledHandle).toBeTruthy();
+      expect(store.autoSelectRoundToken).toBe(0);
+      expect(store.autoSelectScheduleNonce).toBe(1);
+
+      // Simulate a newer round/selection schedule replacing this one.
+      store.autoSelectScheduleNonce = 2;
+      scheduledHandle.callback();
+
+      expect(fakeScheduler.setTimeout).toHaveBeenCalledTimes(1);
+      expect(store.autoSelectCountdownId).toBeNull();
+      expect(store.autoSelectExecuteId).toBeNull();
+    } finally {
+      getSchedulerSpy.mockRestore();
     }
   });
 

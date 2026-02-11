@@ -60,6 +60,7 @@ function removeInterruptHandlers() {
  * autoSelectId: ReturnType<typeof setTimeout>|null,
  * autoSelectCountdownId?: ReturnType<typeof setTimeout>|null,
  * autoSelectExecuteId?: ReturnType<typeof setTimeout>|null,
+ * autoSelectScheduleNonce?: number,
  * compareRaf: number
  * }} store
  * - Battle state store used to clear pending timers.
@@ -86,6 +87,7 @@ function removeInterruptHandlers() {
  * autoSelectId: ReturnType<typeof setTimeout>|null,
  * autoSelectCountdownId?: ReturnType<typeof setTimeout>|null,
  * autoSelectExecuteId?: ReturnType<typeof setTimeout>|null,
+ * autoSelectScheduleNonce?: number,
  * compareRaf: number
  * }} store
  *  Shared store for scheduled timers used by the orchestrator.
@@ -125,6 +127,9 @@ export function initInterruptHandlers(store) {
       currentStore.autoSelectExecuteId = null;
       if ("autoSelectRoundToken" in currentStore) {
         currentStore.autoSelectRoundToken = null;
+      }
+      if ("autoSelectScheduleNonce" in currentStore) {
+        currentStore.autoSelectScheduleNonce = 0;
       }
     } catch {}
     try {

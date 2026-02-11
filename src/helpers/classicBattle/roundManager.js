@@ -111,6 +111,7 @@ export function createBattleStore() {
     autoSelectCountdownId: null,
     autoSelectExecuteId: null,
     autoSelectRoundToken: null,
+    autoSelectScheduleNonce: 0,
     playerChoice: null,
     playerCardEl: null,
     opponentCardEl: null,
@@ -295,11 +296,14 @@ export async function startRound(store, onRoundStart) {
         clearTimeout(store?.autoSelectId);
         clearTimeout(store?.autoSelectCountdownId);
         clearTimeout(store?.autoSelectExecuteId);
-      } catch {}
+      } catch (error) {
+        void error;
+      }
       store.autoSelectId = null;
       store.autoSelectCountdownId = null;
       store.autoSelectExecuteId = null;
       store.autoSelectRoundToken = null;
+      store.autoSelectScheduleNonce = 0;
       store.playerChoice = null;
       resetSelectionFlags("startRound.reset");
       try {
@@ -1293,6 +1297,7 @@ export function _resetForTest(store, preserveConfig = {}) {
     store.autoSelectCountdownId = null;
     store.autoSelectExecuteId = null;
     store.autoSelectRoundToken = null;
+    store.autoSelectScheduleNonce = 0;
     store.selectionMade = false;
     store.__lastSelectionMade = false;
     // Reset any prior player stat selection

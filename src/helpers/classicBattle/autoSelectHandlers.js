@@ -41,6 +41,8 @@ export async function forceAutoSelectAndDispatch(onExpiredSelect) {
  * autoSelectId: ReturnType<typeof setTimeout> | null,
  * autoSelectCountdownId?: ReturnType<typeof setTimeout> | null,
  * autoSelectExecuteId?: ReturnType<typeof setTimeout> | null,
+ * autoSelectRoundToken?: number | null,
+ * autoSelectScheduleNonce?: number,
  * roundsPlayed?: number
  * }} store Battle state store.
  * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => void} onSelect Stat selection callback.
@@ -82,9 +84,12 @@ export async function forceAutoSelectAndDispatch(onExpiredSelect) {
  */
 export function handleStatSelectionTimeout(store, onSelect, timeoutMs = 5000) {
   const scheduler = getScheduler();
-  const scheduledRoundToken = Number.isFinite(Number(store?.roundsPlayed))
+  const roundToken = Number.isFinite(Number(store?.roundsPlayed))
     ? Number(store.roundsPlayed)
     : null;
+  const scheduleNonce = Number(store?.autoSelectScheduleNonce);
+  const scheduledNonce = Number.isFinite(scheduleNonce) ? scheduleNonce + 1 : 1;
+
   const isStaleRound = () => {
     if (!store || typeof store !== "object") {
       return true;
@@ -92,13 +97,18 @@ export function handleStatSelectionTimeout(store, onSelect, timeoutMs = 5000) {
     const currentRoundToken = Number.isFinite(Number(store.roundsPlayed))
       ? Number(store.roundsPlayed)
       : null;
-    return currentRoundToken !== scheduledRoundToken;
+    return (
+      currentRoundToken !== roundToken ||
+      store.autoSelectRoundToken !== roundToken ||
+      store.autoSelectScheduleNonce !== scheduledNonce
+    );
   };
   if (store && typeof store === "object") {
     store.selectionTimeoutScheduler = scheduler;
     store.statTimeoutScheduler = scheduler;
     store.autoSelectScheduler = scheduler;
-    store.autoSelectRoundToken = scheduledRoundToken;
+    store.autoSelectRoundToken = roundToken;
+    store.autoSelectScheduleNonce = scheduledNonce;
     store.autoSelectCountdownId = null;
     store.autoSelectExecuteId = null;
   }
