@@ -19,6 +19,7 @@ describe("Classic Battle opponent delay behavior", () => {
   let onBattleEvent;
   let resetEventTarget;
   let getOpponentPromptTimestamp;
+  let renderOpponentCard;
   let placeholderId;
   let placeholderAriaLabel;
   let opponentCardAriaLabel;
@@ -73,6 +74,10 @@ describe("Classic Battle opponent delay behavior", () => {
 
     const { showSnackbar } = await harness.importModule("../../src/helpers/showSnackbar.js");
 
+    renderOpponentCard = vi.fn((card, container) => {
+      container.dataset.cardName = card.name;
+    });
+
     deps = {
       showSnackbar,
       t: (key) => (key === "ui.opponentChoosing" ? "Opponent is choosing…" : key),
@@ -83,9 +88,7 @@ describe("Classic Battle opponent delay behavior", () => {
       getOpponentDelay: snackbar.getOpponentDelay,
       scoreboard: { clearTimer: () => {} },
       getOpponentCardData: () => ({ name: "Shiai Rival" }),
-      renderOpponentCard: (card, container) => {
-        container.dataset.cardName = card.name;
-      },
+      renderOpponentCard,
       showRoundOutcome: () => {},
       showStatComparison: () => {},
       updateDebugPanel: () => {},
@@ -143,5 +146,43 @@ describe("Classic Battle opponent delay behavior", () => {
     expect(getOpponentPromptTimestamp()).toBeGreaterThan(0);
 
     stopListening?.();
+  });
+
+  it("renders opponent card once and removes placeholder after reveal timing completes", async () => {
+    const requestAnimationFrameSpy = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation((callback) => {
+        callback(0);
+        return 1;
+      });
+    try {
+      emitBattleEvent("opponentReveal");
+      emitBattleEvent("round.evaluated", {
+        message: "Result",
+        statKey: "power",
+        playerVal: 1,
+        opponentVal: 2,
+        scores: { player: 0, opponent: 0 },
+        store: {}
+      });
+
+      await timers.runAllTimersAsync();
+      await Promise.resolve();
+
+      const opponentCard = document.getElementById("opponent-card");
+      const placeholder = document.getElementById(placeholderId);
+
+      expect(renderOpponentCard).toHaveBeenCalledTimes(1);
+      expect(renderOpponentCard).toHaveBeenCalledWith(
+        { name: "Shiai Rival" },
+        expect.objectContaining({ id: "opponent-card" })
+      );
+      expect(placeholder).toBeNull();
+      expect(opponentCard?.classList.contains("is-obscured")).toBe(false);
+      expect(opponentCard?.classList.contains("opponent-hidden")).toBe(false);
+      expect(opponentCard?.getAttribute("aria-label")).toBe(opponentCardAriaLabel);
+    } finally {
+      requestAnimationFrameSpy.mockRestore();
+    }
   });
 });

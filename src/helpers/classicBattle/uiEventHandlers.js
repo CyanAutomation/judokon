@@ -230,12 +230,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       clearPendingOpponentCardData(undefined, selectionToken);
       return;
     }
-    try {
-      await renderOpponentCardFn(resolvedCardData, container);
-    } catch {
-      clearPendingOpponentCardData(undefined, selectionToken);
-      return;
-    }
     await waitForMinimumOpponentObscureDuration();
     await waitForNextFrame();
     if (!isCurrentReveal()) {
