@@ -73,7 +73,7 @@ function setPendingOpponentCardData(cardData, sequence, token) {
 
 function clearPendingOpponentCardData(sequence, token) {
   const isSequenceClearable =
-    !Number.isFinite(sequence) || pendingOpponentCardDataSequence < sequence;
+    !Number.isFinite(sequence) || pendingOpponentCardDataSequence <= sequence;
   const isTokenMatch = token === undefined || pendingOpponentCardDataToken === token;
   if (isSequenceClearable && isTokenMatch) {
     pendingOpponentCardData = null;
@@ -216,7 +216,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       }
     }
     if (!isCurrentReveal()) {
-      clearPendingOpponentCardData(revealSequence, selectionToken);
+      clearPendingOpponentCardData(revealSequence, capturedToken);
       return;
     }
     const tokenMatches = selectionToken === undefined || selectionToken === capturedToken;
@@ -233,7 +233,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     await waitForMinimumOpponentObscureDuration();
     await waitForNextFrame();
     if (!isCurrentReveal()) {
-      clearPendingOpponentCardData(revealSequence, selectionToken);
+      clearPendingOpponentCardData(revealSequence, capturedToken);
       return;
     }
     try {
@@ -464,3 +464,20 @@ export async function awaitStatSelectedHandler() {
 export async function dismissOpponentSnackbar() {
   await clearOpponentSnackbar();
 }
+
+export const __testHooks = {
+  createPendingOpponentCardDataToken,
+  setPendingOpponentCardData,
+  clearPendingOpponentCardData,
+  getPendingOpponentCardDataState: () => ({
+    cardData: pendingOpponentCardData,
+    sequence: pendingOpponentCardDataSequence,
+    token: pendingOpponentCardDataToken
+  }),
+  resetPendingOpponentCardDataState: () => {
+    pendingOpponentCardData = null;
+    pendingOpponentCardDataSequence = 0;
+    pendingOpponentCardDataToken = null;
+    pendingOpponentCardDataTokenSequence = 0;
+  }
+};
