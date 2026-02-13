@@ -5,7 +5,7 @@ _Last reviewed: 2026-02-13_
 ## Product
 
 - [README.md](../README.md) — product overview, gameplay summary, and entry links.
-- [Architecture](../architecture.md) — architecture and system-level orientation.
+- [Architecture](../design/productRequirementsDocuments/prdArchitecture.md) — architecture and system-level orientation.
 - [Initialization Sequence](./initialization-sequence.md) — battle initialization phase order and guardrails.
 
 ## Engineering
