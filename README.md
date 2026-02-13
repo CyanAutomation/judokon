@@ -1,5 +1,7 @@
 # JU-DO-KON! 🥋
 
+_Last reviewed: 2026-02-13_
+
 **JU-DO-KON!** is a fast-paced, web-based card game, featuring real-life elite judoka. Designed for ages 8–12, the game uses simplified stats, vibrant collectible cards, and a player-vs-computer battle format. First to win 10 rounds takes the match!
 
 Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io/judokon/)
@@ -19,6 +21,7 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 
 ### Summary
 
+- Start with the top-level documentation map in [`docs/INDEX.md`](./docs/INDEX.md).
 - Contributor workflow and collaboration expectations are maintained in [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 - Agent workflow, policy guardrails, and delivery rules are maintained in [`AGENTS.md`](./AGENTS.md).
 - Full validation command catalog is canonical in [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks).
