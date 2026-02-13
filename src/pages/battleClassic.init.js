@@ -112,7 +112,7 @@ import {
   DEFAULT_OPPONENT_MESSAGE_BUFFER_MS
 } from "../helpers/classicBattle/selectionDelayCalculator.js";
 import { isDevelopmentEnvironment } from "../helpers/environment.js";
-import { STORE_READY_EVENT } from "../helpers/setupClassicBattleHomeLink.js";
+import { STORE_READY_EVENT } from "../helpers/classicBattleHomeLink.constants.js";
 
 // =============================================================================
 // Configuration & Constants
