@@ -274,3 +274,9 @@ When the player selects **Quit**:
 - CSS is integrated but needs to be imported in the main stylesheet
 - Engine event subscription is in place but handlers are optional
 - Keyboard shortcuts are global and automatically attached/removed with render/destroy
+
+## Source of Truth
+
+- Code: `src/`
+- Tests: `tests/` and `playwright/`
+- Tracking: `design/productRequirementsDocuments/INDEX.md`

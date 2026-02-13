@@ -156,7 +156,7 @@ Before scanning broadly for any question-style prompt, start with targeted file 
 AI agents are encouraged to contribute in areas such as:
 
 - Tooltips (`tooltips.json`) – adding, validating, or updating entries
-- PRD generation or review (`docs/prd/`)
+- PRD generation or review (start with `design/productRequirementsDocuments/INDEX.md`, then open targeted docs)
 - Layout, accessibility, and stat consistency checks
 - Feature flag testing
 - Prompt engineering and agent documentation

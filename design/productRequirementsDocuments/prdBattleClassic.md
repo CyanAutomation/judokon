@@ -382,3 +382,9 @@ User behavior linkage: when a player intentionally clicks a Next/Skip control du
 
 ![Classic battle screen mockup 1](assets/mockups/mockupBattleScreen1.jpg)
 ![Classic battle screen mockup 2](assets/mockups/mockupBattleScreen2.png)
+
+## Source of Truth
+
+- Code: `src/`
+- Tests: `tests/` and `playwright/`
+- Tracking: `design/productRequirementsDocuments/INDEX.md`

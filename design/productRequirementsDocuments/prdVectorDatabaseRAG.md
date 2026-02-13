@@ -495,3 +495,9 @@ pure utilities.
 - Unit tests should cover `buildQueryVector` for proper expansion and vector dimensions.
 - Integration tests should simulate `handleSearch` and assert `applyResultsState` transitions for `loading` → `results` / `empty` / `error` paths.
 - End-to-end Playwright tests should verify the demo UI renders matches and keyboard navigation works when the embedding file is loaded.
+
+## Source of Truth
+
+- Code: `src/`
+- Tests: `tests/` and `playwright/`
+- Tracking: `design/productRequirementsDocuments/INDEX.md`

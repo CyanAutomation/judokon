@@ -428,3 +428,9 @@ flowchart LR
 - [ ] 7.0 Debug Panel
   - [ ] 7.1 Log layout application success/failure and duration.
   - [ ] 7.2 Display ASCII snapshot, applied layout ID, feature-flag state, and fallback status.
+
+## Source of Truth
+
+- Code: `src/`
+- Tests: `tests/` and `playwright/`
+- Tracking: `design/productRequirementsDocuments/INDEX.md`
