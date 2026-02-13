@@ -3,10 +3,31 @@ import { quitMatch } from "./classicBattle/quitModal.js";
 import { markBattlePartReady } from "./battleInit.js";
 import { logEvent } from "./telemetry.js";
 import {
-  STORE_READY_EVENT,
-  STORE_POLL_INTERVAL_MS,
-  STORE_POLL_MAX_ATTEMPTS
+  STORE_READY_EVENT as STORE_READY_EVENT_CONSTANT,
+  STORE_POLL_INTERVAL_MS as STORE_POLL_INTERVAL_MS_CONSTANT,
+  STORE_POLL_MAX_ATTEMPTS as STORE_POLL_MAX_ATTEMPTS_CONSTANT
 } from "./classicBattleHomeLink.constants.js";
+
+/**
+ * Store-ready custom event name used by the Classic Battle initialization flow.
+ *
+ * @type {"classicBattle:store-ready"}
+ */
+export const STORE_READY_EVENT = STORE_READY_EVENT_CONSTANT;
+
+/**
+ * Bounded polling interval (milliseconds) used while waiting for battleStore readiness.
+ *
+ * @type {25}
+ */
+export const STORE_POLL_INTERVAL_MS = STORE_POLL_INTERVAL_MS_CONSTANT;
+
+/**
+ * Maximum bounded polling attempts before timing out store readiness.
+ *
+ * @type {80}
+ */
+export const STORE_POLL_MAX_ATTEMPTS = STORE_POLL_MAX_ATTEMPTS_CONSTANT;
 
 function notifyStoreReadyTimeout(attempts) {
   const payload = {
@@ -90,7 +111,5 @@ export function setupClassicBattleHomeLink() {
 
   waitForBattleStoreReady();
 }
-
-export { STORE_READY_EVENT, STORE_POLL_INTERVAL_MS, STORE_POLL_MAX_ATTEMPTS };
 
 onDomReady(setupClassicBattleHomeLink);
