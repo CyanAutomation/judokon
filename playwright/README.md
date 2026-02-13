@@ -1,63 +1,20 @@
-# Playwright Homepage Specs
+# Playwright
 
-Unless overridden, Playwright tests run at a 1920×1080 desktop viewport.
+_Last reviewed: 2026-02-13_
 
-| Spec file | Responsibilities |
-|-----------|------------------|
-| `homepage.spec.js` | Verifies footer navigation link visibility, ordering, and other interactive elements. |
-| `homepage-layout.spec.js` | Focuses on responsive layout of the homepage grid and footer without testing navigation behavior. |
+## Scope
+End-to-end browser tests for user-visible workflows and regression coverage.
 
-## Debugging and logs
+## Audience
+Contributors writing, maintaining, or debugging Playwright specs.
 
-- Browser contexts created by the shared [`commonSetup`](./fixtures/commonSetup.js) fixture expose a `window.__PLAYWRIGHT_TEST__`
-  flag so app code can detect when it is running inside Playwright. When the
-  `SHOW_TEST_LOGS` environment variable is truthy, the fixture mirrors the flag
-  into the browser context so client-side code can see it too.
-- Console output is muted by default when this flag is present, suppressing
-  `console.log`, `console.info`, and `console.debug`. Warnings and errors are
-  still surfaced to keep actionable failures visible.
-- Set `SHOW_TEST_LOGS=1` before running Playwright to opt in to verbose logging:
+## Key Commands
+- `npx playwright test` — run the Playwright suite.
+- `SHOW_TEST_LOGS=1 npx playwright test` — run with verbose in-browser logs.
 
-  ```bash
-  SHOW_TEST_LOGS=1 npx playwright test
-  ```
+## Canonical Docs
+- See canonical testing policy and command reference: [`prdTestingStandards.md`](../design/productRequirementsDocuments/prdTestingStandards.md).
+- See canonical contributor workflow: [`CONTRIBUTING.md`](../CONTRIBUTING.md).
+- See test architecture overview: [`docs/TESTING_ARCHITECTURE.md`](../docs/TESTING_ARCHITECTURE.md).
 
-# Battle tests
-
-| Spec file | Responsibilities |
-|-----------|------------------|
-| `skip-cooldown.spec.js` | Ensures the **Next** button can skip an active cooldown and re-enable stat buttons. |
-
-# Playwright Tests
-
-## Settings tests
-- Routes for navigation and game mode data are registered through `fixtures/commonSetup.js`, keeping specs concise.
-- Each test navigates to `/src/pages/settings.html` and asserts a single concern.
-- `controls expose correct labels` verifies accessible labels for toggles and feature flags.
-- `tab order follows expected sequence` ensures keyboard navigation visits controls in order.
-
-## Screens without persistent navigation
-
-The **Browse Judoka**, **Random Judoka**, **Meditation**, and **Settings** screens intentionally skip the top navigation so players can stay focused on roster browsing, random discovery, the daily quote, or adjusting preferences. When verifying these pages, set the `expectNav` option to `false` in `verifyPageBasics` so the helper skips navigation assertions while still checking titles, the logo, and any custom page expectations.
-
-## PRD reader tests
-
-- `prd-reader.spec.js` stubs `prdIndex.json` and related markdown files so tests never rely on network access.
-- Enable the `enableTestMode` feature flag to skip document prefetch and keep runs deterministic.
-
-```js
-await page.route("**/prdIndex.json", (route) =>
-  route.fulfill({ path: "tests/fixtures/prdIndex.json" })
-);
-await page.route("**/docA.md", (route) =>
-  route.fulfill({ path: "tests/fixtures/docA.md" })
-);
-```
-
-## Reduced motion
-
-Some specs emulate the user's reduced-motion preference to ensure animations are optional:
-
-```js
-await page.emulateMedia({ reducedMotion: "reduce" });
-```
+For detailed per-spec behavior and local conventions, see canonical docs above.

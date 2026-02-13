@@ -1,9 +1,13 @@
 # Contributing to JU-DO-KON
 
+_Last reviewed: 2026-02-13_
+
 This document summarizes the key steps and rules for submitting pull requests.
 It consolidates the instructions from `AGENTS.md` and the design documents so contributors can quickly confirm the required checks and documentation standards.
 
 **Content Ownership**: This file provides practical contributor guidance. For comprehensive agent rules, see [AGENTS.md](./AGENTS.md). For detailed validation workflows, see [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) and the test-focused playbooks in [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference).
+
+Start with the top-level documentation map: [docs/INDEX.md](./docs/INDEX.md).
 
 The project ships directly as static ES modules without a build step.
 

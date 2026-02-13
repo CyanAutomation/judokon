@@ -1,15 +1,17 @@
 # Scripts
 
-## buildOfflineRag.mjs
+_Last reviewed: 2026-02-13_
 
-Converts `client_embeddings.json` into compact assets for offline vector search.
+## Scope
+Repository automation scripts for build, validation, and maintenance tasks.
 
-### Usage
+## Audience
+Contributors and maintainers running scripted project operations.
 
-```bash
-npm run build:offline-rag
-```
+## Key Commands
+- `npm run build:offline-rag` — generate offline RAG vector + metadata assets.
 
-This writes:
-- `src/data/offline_rag_vectors.bin` – binary Int8 vectors
-- `src/data/offline_rag_metadata.json` – JSON metadata matching vector order
+## Canonical Docs
+- See canonical contributor workflow: [`CONTRIBUTING.md`](../CONTRIBUTING.md).
+- See canonical validation command catalog: [`prdDevelopmentStandards.md`](../design/productRequirementsDocuments/prdDevelopmentStandards.md).
+- Script-specific detail for offline RAG generation lives in [`buildOfflineRag.mjs`](./buildOfflineRag.mjs).
