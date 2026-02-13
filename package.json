@@ -73,7 +73,8 @@
     "test:ui:codegen": "node scripts/runPlaywright.js codegen",
     "test:ui:trace": "node scripts/runPlaywright.js show",
     "diagram:gen": "node scripts/runMermaid.js",
-    "diagram:preview": "node scripts/runMermaid.js -i diagram.mmd -o /tmp/preview.svg"
+    "diagram:preview": "node scripts/runMermaid.js -i diagram.mmd -o /tmp/preview.svg",
+    "check:root-markdown": "node scripts/check-root-markdown.mjs"
   },
   "keywords": [],
   "author": "",
