@@ -21,6 +21,7 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 
 - Contributor workflow and collaboration expectations are maintained in [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 - Agent workflow, policy guardrails, and delivery rules are maintained in [`AGENTS.md`](./AGENTS.md).
+- PRD discovery starts in [`design/productRequirementsDocuments/INDEX.md`](./design/productRequirementsDocuments/INDEX.md) (active vs archive + status tracking).
 - Full validation command catalog is canonical in [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks).
 - Test quality command catalog is canonical in [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference).
 
@@ -117,6 +118,7 @@ Typical agent tasks include:
 AI agents should begin by reading:
 
 - [AGENTS.md](./AGENTS.md) for task guides and scope
+- [design/productRequirementsDocuments/INDEX.md](./design/productRequirementsDocuments/INDEX.md) to locate PRDs by lifecycle status before opening individual docs
 - [CONTRIBUTING.md](./CONTRIBUTING.md) for commit conventions
 - [architecture.md](./architecture.md) for layout structure and observability models
 

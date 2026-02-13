@@ -464,3 +464,9 @@ This PRD consolidates content from the following design files:
 ## Mockups
 
 ![Button types mockup](assets/mockups/mockupButtonTypes1.jpeg)
+
+## Source of Truth
+
+- Code: `src/`
+- Tests: `tests/` and `playwright/`
+- Tracking: `design/productRequirementsDocuments/INDEX.md`

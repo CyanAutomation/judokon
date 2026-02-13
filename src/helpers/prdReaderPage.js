@@ -83,8 +83,8 @@ export async function loadPrdFileList(docsMap) {
   let files = [];
   if (docsMap) files = Object.keys(docsMap);
   else if (typeof import.meta.glob === "function") {
-    files = Object.keys(import.meta.glob("../../design/productRequirementsDocuments/*.md")).map(
-      (p) => p.split("/").pop()
+    files = Object.keys(import.meta.glob("../../design/productRequirementsDocuments/**/*.md")).map(
+      (p) => p.replace("../../design/productRequirementsDocuments/", "")
     );
   } else {
     try {
@@ -96,13 +96,10 @@ export async function loadPrdFileList(docsMap) {
   }
   files.sort((a, b) => a.localeCompare(b));
   const baseNames = files.map((f) => f.replace(/\.md$/, ""));
-  const labels = files.map((file) =>
-    file
-      .replace(/^prd/, "")
-      .replace(/\.md$/, "")
-      .replace(/([A-Z])/g, " $1")
-      .trim()
-  );
+  const labels = files.map((file) => {
+    const stem = file.split("/").pop()?.replace(/^prd/, "").replace(/\.md$/, "") || file;
+    return stem.replace(/([A-Z])/g, " $1").trim();
+  });
   return { files, baseNames, labels, dir };
 }
 
