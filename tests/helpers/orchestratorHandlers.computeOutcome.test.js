@@ -105,6 +105,51 @@ describe("computeAndDispatchOutcome", () => {
     timers.cleanup();
   });
 
+  it("does not resolve before async outcome dispatch completes", async () => {
+    const timers = useCanonicalTimers();
+    getOpponentJudoka.mockImplementation(() => ({ stats: { strength: 3 } }));
+    getStatValue.mockImplementation((el) => (el?.id === "player-card" ? 5 : 3));
+
+    const mod = await import("../../src/helpers/classicBattle/orchestratorHandlers.js");
+    const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
+    const emitSpy = vi.spyOn(battleEvents, "emitBattleEvent");
+
+    const { cleanup, dispatchBattleState } = await createTestBattleDom();
+    cleanupBattleDom = cleanup;
+    dispatchBattleState({ from: "roundPrompt", to: "roundSelect" });
+    dispatchBattleState({ from: "roundSelect", to: "roundResolve" });
+    debugHooks.exposeDebugState("roundDebug", {});
+
+    const store = { playerChoice: "strength" };
+    let releaseDispatch;
+    const pendingDispatch = new Promise((resolve) => {
+      releaseDispatch = resolve;
+    });
+    const machine = {
+      dispatch: vi
+        .fn()
+        .mockImplementationOnce(() => pendingDispatch)
+        .mockResolvedValue(undefined)
+    };
+
+    let settled = false;
+    const pendingOutcome = mod.computeAndDispatchOutcome(store, machine).then(() => {
+      settled = true;
+    });
+
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(settled).toBe(false);
+    expect(emitSpy).not.toHaveBeenCalledWith("debugPanelUpdate");
+
+    releaseDispatch();
+    await pendingOutcome;
+
+    expect(machine.dispatch).toHaveBeenCalledWith("outcome=winPlayer");
+    expect(machine.dispatch).toHaveBeenCalledWith("continue");
+    expect(emitSpy).toHaveBeenCalledWith("debugPanelUpdate");
+    timers.cleanup();
+  });
   it("dispatches interrupt when no outcome is produced", async () => {
     getOpponentJudoka.mockImplementation(() => ({ stats: { strength: 5 } }));
     getStatValue.mockImplementation(() => NaN);
