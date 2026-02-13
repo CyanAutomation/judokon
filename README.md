@@ -123,7 +123,7 @@ AI agents should begin by reading:
 - [AGENTS.md](./AGENTS.md) for task guides and scope
 - [design/productRequirementsDocuments/INDEX.md](./design/productRequirementsDocuments/INDEX.md) to locate PRDs by lifecycle status before opening individual docs
 - [CONTRIBUTING.md](./CONTRIBUTING.md) for commit conventions
-- [architecture.md](./architecture.md) for layout structure and observability models
+- [prdArchitecture.md](./design/productRequirementsDocuments/prdArchitecture.md) for layout structure and observability models
 
 ---
 
@@ -295,7 +295,7 @@ Run `npm run update:codes` whenever you add or edit judoka in `src/data/judoka.j
 ## 📎 Related Docs for Agents
 
 - [AGENTS.md](./AGENTS.md): Agent playbooks, task types, audit checklists
-- [architecture.md](./architecture.md): DOM layout, feature flags, testing hooks
+- [prdArchitecture.md](./design/productRequirementsDocuments/prdArchitecture.md): DOM layout, feature flags, testing hooks
 - [CONTRIBUTING.md](./CONTRIBUTING.md): PR templates, commit message formats
 
 ---
