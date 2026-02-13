@@ -132,12 +132,26 @@ async function dispatchOutcomeEvent(outcomeEvent, machine) {
 async function dispatchOutcome(outcomeEvent, machine) {
   if (outcomeEvent) {
     try {
-      const run = () => dispatchOutcomeEvent(outcomeEvent, machine);
-      if (typeof queueMicrotask === "function") {
-        queueMicrotask(run);
-      } else {
-        setTimeout(run, 0);
-      }
+      await new Promise((resolve, reject) => {
+        const run = async () => {
+          try {
+            await dispatchOutcomeEvent(outcomeEvent, machine);
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        };
+
+        try {
+          if (typeof queueMicrotask === "function") {
+            queueMicrotask(run);
+            return;
+          }
+          setTimeout(run, 0);
+        } catch (err) {
+          reject(err);
+        }
+      });
     } catch (err) {
       debugLog("DEBUG: dispatchOutcome queueMicrotask error", { error: err.message });
       await dispatchOutcomeEvent(outcomeEvent, machine);
