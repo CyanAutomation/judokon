@@ -1,3 +1,6 @@
+> **Scope:** Operational migration procedure for Vitest harness modernization.
+> **When to read this:** Use when executing or reviewing harness migration work; start at the [Testing Documentation Hub](./INDEX.md).
+
 # Vitest Harness Migration Playbook
 
 **Owner:** Test Infrastructure Working Group  
@@ -33,6 +36,12 @@ Step-by-step procedure for migrating tests from deprecated harness mocking to th
 - [ ] Module imports occur after harness setup
 - [ ] Tests remain deterministic (fake timers and muted console discipline)
 - [ ] Targeted test command passes
+
+## Validation Commands
+
+Use the canonical command section in the hub:
+
+- [Testing Documentation Hub → Canonical Validation Command Reference](./INDEX.md#canonical-validation-command-reference)
 
 ## Stop Conditions
 

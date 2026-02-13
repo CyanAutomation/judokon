@@ -1,3 +1,6 @@
+> **Scope:** High-level status tracking for harness migration progress.
+> **When to read this:** Use for migration status snapshots and milestones; start at the [Testing Documentation Hub](../../testing/INDEX.md).
+
 # Vitest Harness Migration Log
 
 **Owner:** Test Infrastructure Working Group  
@@ -20,3 +23,7 @@
 ## Current Tracking Guidance
 
 Use this file for high-level migration checkpoints only. Keep per-file implementation details in PR descriptions and commit history to avoid oversized status docs.
+
+For command usage, use the canonical command section in the hub:
+
+- [Testing Documentation Hub → Canonical Validation Command Reference](../../testing/INDEX.md#canonical-validation-command-reference)

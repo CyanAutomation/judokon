@@ -1,4 +1,5 @@
-> **Scope: Quickstart / local testing conventions**
+> **Scope:** Test author quickstart and local conventions.
+> **When to read this:** Use when writing/updating tests quickly; for architecture and policy context start at the [Testing Documentation Hub](../docs/testing/INDEX.md).
 
 # Test Author Quickstart
 
@@ -29,12 +30,9 @@ Use the canonical decision matrix:
 
 ## 4) Run targeted validation before commit
 
-```bash
-npx vitest run <relevant-test-files>
-npx eslint .
-npx prettier . --check
-npm run check:jsdoc
-```
+Use the canonical command section in the hub:
+
+- [Testing Documentation Hub → Canonical Validation Command Reference](../docs/testing/INDEX.md#canonical-validation-command-reference)
 
 For broader expectations and anti-patterns, see:
 
