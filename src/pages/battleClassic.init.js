@@ -112,6 +112,7 @@ import {
   DEFAULT_OPPONENT_MESSAGE_BUFFER_MS
 } from "../helpers/classicBattle/selectionDelayCalculator.js";
 import { isDevelopmentEnvironment } from "../helpers/environment.js";
+import { STORE_READY_EVENT } from "../helpers/setupClassicBattleHomeLink.js";
 
 // =============================================================================
 // Configuration & Constants
@@ -1883,6 +1884,7 @@ export async function init() {
     const store = createBattleStore();
     if (typeof window !== "undefined") {
       window.battleStore = store;
+      window.dispatchEvent(new CustomEvent(STORE_READY_EVENT, { detail: { store } }));
     }
 
     await initializePhase1_Utilities();
