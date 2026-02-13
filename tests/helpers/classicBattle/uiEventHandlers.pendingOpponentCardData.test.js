@@ -41,4 +41,29 @@ describe("uiEventHandlers pending opponent card data clear guards", () => {
       token: 21
     });
   });
+
+  it("clears pending data when sequence parameter is undefined", () => {
+    __testHooks.setPendingOpponentCardData({ name: "D" }, 5, 33);
+
+    __testHooks.clearPendingOpponentCardData(undefined, 33);
+
+    expect(__testHooks.getPendingOpponentCardDataState()).toEqual({
+      cardData: null,
+      sequence: 0,
+      token: null
+    });
+  });
+
+  it("clears pending data when token parameter is undefined", () => {
+    __testHooks.setPendingOpponentCardData({ name: "E" }, 9, 77);
+
+    __testHooks.clearPendingOpponentCardData(9, undefined);
+
+    expect(__testHooks.getPendingOpponentCardDataState()).toEqual({
+      cardData: null,
+      sequence: 0,
+      token: null
+    });
+  });
+});
 });
