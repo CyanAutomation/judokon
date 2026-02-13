@@ -90,11 +90,52 @@ describe("schedulePostResolveWatchdog", () => {
       getState: vi.fn(() => "roundResolve"),
       dispatch: vi.fn()
     };
-    mod.schedulePostResolveWatchdog(machine);
+    const token = "token-1";
+    debugHooks.exposeDebugState("roundResolveWatchdogToken", token);
+    mod.schedulePostResolveWatchdog(machine, token);
     await vi.runAllTimersAsync();
     expect(machine.dispatch).toHaveBeenCalledWith("outcome=draw", {
       reason: "postResolveWatchdog"
     });
+    timers.cleanup();
+  });
+
+  it("returns a cancel function that prevents fallback dispatch", async () => {
+    const timers = useCanonicalTimers();
+    const mod = await harness.importModule(
+      "../../src/helpers/classicBattle/orchestratorHandlers.js"
+    );
+    const machine = {
+      getState: vi.fn(() => "roundResolve"),
+      dispatch: vi.fn()
+    };
+    const token = "token-cancel";
+    debugHooks.exposeDebugState("roundResolveWatchdogToken", token);
+    const cancelWatchdog = mod.schedulePostResolveWatchdog(machine, token);
+
+    cancelWatchdog();
+    await vi.runAllTimersAsync();
+
+    expect(machine.dispatch).not.toHaveBeenCalled();
+    timers.cleanup();
+  });
+
+  it("ignores stale watchdog dispatch when a newer token is active", async () => {
+    const timers = useCanonicalTimers();
+    const mod = await harness.importModule(
+      "../../src/helpers/classicBattle/orchestratorHandlers.js"
+    );
+    const machine = {
+      getState: vi.fn(() => "roundResolve"),
+      dispatch: vi.fn()
+    };
+
+    debugHooks.exposeDebugState("roundResolveWatchdogToken", "round-2");
+    mod.schedulePostResolveWatchdog(machine, "round-1");
+
+    await vi.runAllTimersAsync();
+
+    expect(machine.dispatch).not.toHaveBeenCalled();
     timers.cleanup();
   });
 });

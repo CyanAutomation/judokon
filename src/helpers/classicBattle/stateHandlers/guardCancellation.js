@@ -19,8 +19,14 @@ export function cancelRoundResolveGuard() {
     if (typeof guardFn === "function") {
       guardFn();
     }
+    const watchdogCancelFn = readDebugState("roundResolveWatchdogCancel");
+    if (typeof watchdogCancelFn === "function") {
+      watchdogCancelFn();
+    }
     // Clear the guard from debug state
     exposeDebugState("roundResolveGuard", null);
+    exposeDebugState("roundResolveWatchdogCancel", null);
+    exposeDebugState("roundResolveWatchdogToken", null);
   } catch (err) {
     debugLog("Failed to cancel resolve guard:", err);
   }
