@@ -334,17 +334,27 @@ export function guardSelectionResolution(store, machine) {
  * 2. If still in `roundResolve`, dispatch outcome fallback.
  *
  * @param {import('../stateManager.js').ClassicBattleStateManager} machine - State machine.
- * @returns {void}
+ * @param {string|number} token - Per-entry token used to invalidate stale watchdogs.
+ * @returns {() => void} Cleanup that cancels the watchdog timer.
  */
-export function schedulePostResolveWatchdog(machine) {
-  setTimeout(() => {
+export function schedulePostResolveWatchdog(machine, token) {
+  let canceled = false;
+  const timeoutId = setTimeout(() => {
     guardAsync(async () => {
+      if (canceled) return;
+      const currentToken = readDebugState("roundResolveWatchdogToken");
+      if (currentToken !== token) return;
       const still = machine.getState ? machine.getState() : null;
       if (still === "roundResolve") {
         await dispatchFallbackOutcome(machine, "postResolveWatchdog");
       }
     });
   }, POST_RESOLVE_WATCHDOG_DELAY_MS);
+
+  return () => {
+    canceled = true;
+    clearTimeout(timeoutId);
+  };
 }
 
 async function dispatchFallbackOutcome(machine, reason) {

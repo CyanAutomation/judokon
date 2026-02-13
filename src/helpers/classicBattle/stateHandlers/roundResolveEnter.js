@@ -11,6 +11,7 @@ import { handleRoundError } from "../handleRoundError.js";
 import { debugLog } from "../debugLog.js";
 import { reportSentryError } from "./sentryReporter.js";
 import { createComponentLogger } from "../debugLogger.js";
+import { exposeDebugState } from "../debugHooks.js";
 
 const stateLogger = createComponentLogger("RoundResolve");
 
@@ -59,11 +60,23 @@ export async function roundResolveEnter(machine) {
     });
 
     const cancel = guardSelectionResolution(store, machine);
+    const watchdogToken = `${Date.now()}-${Math.random()}`;
+    let cancelWatchdog = null;
     let guardCanceled = false;
+    let watchdogCanceled = false;
+
     const cancelGuardOnce = () => {
       if (guardCanceled) return;
       guardCanceled = true;
       cancel();
+    };
+
+    const cancelWatchdogOnce = () => {
+      if (watchdogCanceled) return;
+      watchdogCanceled = true;
+      if (typeof cancelWatchdog === "function") {
+        cancelWatchdog();
+      }
     };
     try {
       let resolved = await resolveSelectionIfPresent(store);
@@ -85,9 +98,12 @@ export async function roundResolveEnter(machine) {
         }
       }
       cancelGuardOnce();
-      schedulePostResolveWatchdog(machine);
+      exposeDebugState("roundResolveWatchdogToken", watchdogToken);
+      cancelWatchdog = schedulePostResolveWatchdog(machine, watchdogToken);
+      exposeDebugState("roundResolveWatchdogCancel", cancelWatchdog);
     } catch (err) {
       cancelGuardOnce();
+      cancelWatchdogOnce();
 
       reportSentryError(err, {
         contexts: {
