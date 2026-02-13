@@ -35,7 +35,7 @@ rg -n "mocks\s*:" tests -g "!client_embeddings.json"
 grep -r "dispatchEvent\|createEvent" tests/ --exclude=client_embeddings.json
 
 # Verify console discipline
-grep -r "console\.(warn\|error)" tests/ --exclude=client_embeddings.json | grep -v "tests/utils/console.js"
+grep -Er "console\.(warn|error)" tests/ --exclude=client_embeddings.json | grep -v "tests/utils/console.js"
 ```
 
 ## Escalation Commands (when scope expands)
