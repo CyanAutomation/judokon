@@ -2,10 +2,11 @@ import { onDomReady } from "./domReady.js";
 import { quitMatch } from "./classicBattle/quitModal.js";
 import { markBattlePartReady } from "./battleInit.js";
 import { logEvent } from "./telemetry.js";
-
-const STORE_READY_EVENT = "classicBattle:store-ready";
-const STORE_POLL_INTERVAL_MS = 25;
-const STORE_POLL_MAX_ATTEMPTS = 80;
+import {
+  STORE_READY_EVENT,
+  STORE_POLL_INTERVAL_MS,
+  STORE_POLL_MAX_ATTEMPTS
+} from "./classicBattleHomeLink.constants.js";
 
 function notifyStoreReadyTimeout(attempts) {
   const payload = {
