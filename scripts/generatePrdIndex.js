@@ -5,6 +5,13 @@ const dir = new URL("../design/productRequirementsDocuments/", import.meta.url);
 /**
  * Recursively collect PRD markdown files relative to a directory URL.
  *
+ * @pseudocode
+ * 1. Read directory entries with file type information
+ * 2. For each entry:
+ *    - If directory: recursively collect files with updated prefix
+ *    - If file starting with "prd" and ending with ".md": add to collection
+ * 3. Return array of relative file paths
+ *
  * @param {URL} rootDir
  * @param {string} [prefix]
  * @returns {Promise<string[]>}
