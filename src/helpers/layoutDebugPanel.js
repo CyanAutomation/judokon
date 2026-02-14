@@ -87,6 +87,7 @@ function scheduleIdleWork(run) {
 
   if (typeof requestIdleCallback === "function") {
     idleId = requestIdleCallback(settleRun);
+    fallbackTimeoutId = setTimeout(settleRun, 48);
     pendingTaskCancel = settleCancel;
     return;
   }
@@ -121,16 +122,19 @@ function scheduleOutlineRender(selectorList) {
       pendingResolve = null;
       const activeSelectors = pendingSelectorList ? pendingSelectorList.slice() : clonedSelectors;
       pendingSelectorList = null;
-      measureDebugFlagToggle(
-        "layoutDebugPanel",
-        () => {
-          clearOutlines();
-          applyOutlines(activeSelectors);
-        },
-        { selectors: activeSelectors.length }
-      );
-      lastOutlineAt = Date.now();
-      resolve();
+      try {
+        measureDebugFlagToggle(
+          "layoutDebugPanel",
+          () => {
+            clearOutlines();
+            applyOutlines(activeSelectors);
+          },
+          { selectors: activeSelectors.length }
+        );
+        lastOutlineAt = Date.now();
+      } finally {
+        resolve();
+      }
     };
 
     if (delay > 0) {
