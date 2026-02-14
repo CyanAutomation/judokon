@@ -232,6 +232,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       const resolvedCardData = tokenMatches ? cardData : capturedCardData;
       if (!resolvedCardData) {
         completionDetail.cancelled = true;
+        clearPendingOpponentCardData(undefined, selectionToken);
         return;
       }
       try {
