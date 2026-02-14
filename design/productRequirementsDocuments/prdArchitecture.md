@@ -41,7 +41,7 @@ flowchart TB
     
     subgraph Utils["Utilities & Testing"]
         Nav["Navigation<br/>Components"]
-        Comp["UI Components<br/>(Card, Tooltip, etc.)]
+        Comp["UI Components<br/>(Card, Tooltip, etc.)"]
         Test["Test Fixtures<br/>(Playwright, Vitest)"]
     end
     
