@@ -121,7 +121,7 @@ flowchart TD
 
 ---
 
-## Team Battle Bout Sequence & Scoring
+## Scoring and Win Conditions
 
 - Default team size is five members (Male and Female modes) or six members (Mixed mode).
 - Teams score one point per victorious bout.

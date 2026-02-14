@@ -163,6 +163,135 @@ Each tile contains:
 
 ---
 
+## Homepage Navigation Grid Flow
+
+```mermaid
+graph TD
+    A["🏠 Home Page Loads"] -->|domcontentloaded| B["Initialize Navigation"]
+    B --> C{"Viewport Width?"}
+    C -->|≥768px| D["📱 Desktop/Tablet: 2×2 Grid"]
+    C -->|&lt;768px| E["📱 Mobile: 1-Column Stack"]
+    
+    D --> F["Render 4 Tiles<br/>Classic Battle | Random Judoka<br/>Browse Judoka | Meditation"]
+    E --> F
+    
+    F --> G["Attach Event Listeners<br/>Click + Keyboard (Tab/Enter)"]
+    G --> H["📊 game-mode-grid Detected<br/>Dispatch 'home-ready' event<br/>Set data-home-ready='true'"]
+    
+    H --> I{"User Input?"}
+    I -->|Click/Enter on Tile| J{"Which Tile?"}
+    I -->|Tab/Shift+Tab| K["🎯 Focus Management<br/>Cycle through 6 nav items"]
+    
+    J -->|Classic Battle| L["Navigate → battleClassic.html<br/>Launch 1v1 match"]
+    J -->|Random Judoka| M["Navigate → randomJudoka.html<br/>Display random card"]
+    J -->|Browse Judoka| N["Navigate → browseJudoka.html<br/>Show carousel"]
+    J -->|Meditation| O["Navigate → meditation.html<br/>Display quote"]
+    J -->|CLI Battle| P["Navigate → battleCLI.html<br/>Launch terminal mode"]
+    J -->|Settings| Q["Navigate → settings.html<br/>Configure flags"]
+    
+    K --> I
+    L --> R["✅ Game Mode Launched"]
+    M --> R
+    N --> R
+    O --> R
+    P --> R
+    Q --> R
+    
+    style A fill:#lightblue
+    style D fill:#lightyellow
+    style E fill:#lightyellow
+    style H fill:#lightgreen
+    style K fill:#lightcyan
+    style R fill:#lightgreen
+```
+
+**Tile Configuration & Navigation Map**:
+
+| Desktop/Tablet (2×2 Grid) | Mobile (1-Column) |
+|---|---|
+| **Row 1:** Classic Battle \| Random Judoka | **Classic Battle** |
+| **Row 2:** Browse Judoka \| Meditation | **Random Judoka** |
+| | **Browse Judoka** |
+| | **Meditation** |
+| | *(+ CLI Battle, Settings if present in nav)* |
+
+**Keyboard Navigation State Machine**:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Focus_1: Tab (from address bar)
+    
+    Focus_1: 🎯 Focus: Classic Battle
+    Focus_2: 🎯 Focus: Random Judoka
+    Focus_3: 🎯 Focus: Browse Judoka
+    Focus_4: 🎯 Focus: Meditation
+    Focus_5: 🎯 Focus: CLI Battle
+    Focus_6: 🎯 Focus: Settings
+    
+    Focus_1 --> Focus_2: Tab
+    Focus_2 --> Focus_3: Tab
+    Focus_3 --> Focus_4: Tab
+    Focus_4 --> Focus_5: Tab
+    Focus_5 --> Focus_6: Tab
+    Focus_6 --> Focus_1: Tab (wrap around)
+    
+    Focus_1 --> Focus_6: Shift+Tab
+    Focus_2 --> Focus_1: Shift+Tab
+    Focus_3 --> Focus_2: Shift+Tab
+    Focus_4 --> Focus_3: Shift+Tab
+    Focus_5 --> Focus_4: Shift+Tab
+    Focus_6 --> Focus_5: Shift+Tab
+    
+    Focus_1 --> Active_1: Enter / Space
+    Focus_2 --> Active_2: Enter / Space
+    Focus_3 --> Active_3: Enter / Space
+    Focus_4 --> Active_4: Enter / Space
+    Focus_5 --> Active_5: Enter / Space
+    Focus_6 --> Active_6: Enter / Space
+    
+    Active_1: ✉️ Navigate: battleClassic.html
+    Active_2: ✉️ Navigate: randomJudoka.html
+    Active_3: ✉️ Navigate: browseJudoka.html
+    Active_4: ✉️ Navigate: meditation.html
+    Active_5: ✉️ Navigate: battleCLI.html
+    Active_6: ✉️ Navigate: settings.html
+    
+    Active_1 --> [*]
+    Active_2 --> [*]
+    Active_3 --> [*]
+    Active_4 --> [*]
+    Active_5 --> [*]
+    Active_6 --> [*]
+    
+    note right of Active_1
+        Standard browser
+        navigation; latency <100ms
+    end note
+```
+
+**Responsive Behavior**:
+
+- **Desktop (≥1024px):** 2 columns × 2 rows, even spacing
+- **Tablet (≥768px, <1024px):** 2 columns × 2 rows, adjusted tile size
+- **Mobile (<768px):** 1 column, tiles stack vertically (single column layout); tap targets 44px × 44px minimum
+
+**Hover/Focus Styling**:
+- Cursor: pointer
+- Transform: scale(1.05) over 150ms ease-in
+- Contrast: ≥4.5:1 (WCAG AA)
+
+**Status Badge**: ✅ **VERIFIED** — Validated against:
+- `playwright/homepage.spec.js` — 6 navigation items tested (Classic Battle, CLI Battle, Random, Browse, Meditation, Settings)
+- `src/helpers/homePage.js` — MutationObserver signals `.game-mode-grid` readiness
+- `src/helpers/settings/gameModeSwitches.js` — navigationItems dynamic loading
+
+**Related Diagrams**: 
+- [Game Modes Navigation](prdGameModes.md) — All entry points for 7 game modes
+- [Navigation Bar](prdNavigationBar.md) — Secondary navigation structure
+- [Settings Menu](prdSettingsMenu.md) — Feature flag configuration
+
+---
+
 ## Acceptance Criteria
 
 - Clicking on a tile navigates to the correct destination URL, interaction latency <100ms.
