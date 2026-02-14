@@ -10,6 +10,7 @@
 ## Executive Summary
 
 All 16 Mermaid diagrams in the repository have been reviewed and corrected. Changes addressed:
+
 - ✅ **10 diagrams verified as accurate** (no changes needed)
 - 🟠 **4 diagrams clarified as aspirational/planned** (with status notes added)
 - ⚠️ **2 diagrams aligned to current architecture** (with implementation gaps noted)
@@ -19,12 +20,14 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
 ## Phase 1: Battle State Management ✅
 
 ### 1.1 Canonical State Machine (prdStateHandler.md:71)
+
 - **Status**: ✅ VERIFIED ACCURATE
 - **Action**: No changes — diagram matches implementation
 - **Validation**: State names align with `src/helpers/classicBattle/stateTable.js`
 - **Test Coverage**: `tests/helpers/classicBattle/stateTransitions.test.js`
 
 ### 1.2 Round Modification Overlay (prdStateHandler.md:163)
+
 - **Status**: 🟡 FEATURE PRESENT, TESTING INCOMPLETE
 - **Changes Made**: Updated status box to clarify incomplete testing
 - **Details**: Feature flag `FF_ROUND_MODIFY` exists and is wired; comprehensive integration tests are sparse
@@ -37,10 +40,12 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
 - **New Text**: "FEATURE PRESENT but INCOMPLETE TESTING"
 
 ### 1.3 FSM Overview (prdBattleEngine.md:187-206)
+
 - **Status**: ⚠️ ABSTRACT STATES vs CANONICAL DIAGRAM
 - **Changes Made**: Added clarification note before "### States" section
 - **Details**: The text describes conceptual states (init, prestart, selection) but the Mermaid diagram shows actual state names (waitingForMatchStart, roundPrompt, roundSelect). This is intentional but confusing.
-- **Clarification Added**: 
+- **Clarification Added**:
+
   ```
   > **Note**: The states listed below are conceptual/abstract categories. 
   > The canonical state machine uses more granular states 
@@ -48,6 +53,7 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
   > See [prdStateHandler.md](prdStateHandler.md#canonical-state-graph-names) for the detailed, 
   > implemented state list and complete diagram.
   ```
+
 - **Header Changed**: "### States" → "### States (Conceptual Model)"
 
 ---
@@ -55,6 +61,7 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
 ## Phase 2: Event Architecture ✅
 
 ### 2.1 Event Inventory Table (prdEventContracts.md:60-71)
+
 - **Status**: 🔴 CRITICAL NAMING MISMATCH
 - **Changes Made**: Updated event names to match actual implementation
 - **Old Event Names**:
@@ -66,6 +73,7 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
   - `round.selection.locked` (✅ correct)
   - `round.evaluated` (✅ correct)
 - **Added Note**:
+
   ```
   > **Note:** Legacy aliases exist for backwards compatibility: 
   > `battle:round-start` (→ `round.started`), 
@@ -73,12 +81,14 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
   > `battle:round-resolved` (→ `round.evaluated`). 
   > See [Event naming legend](#event-naming-legend) for full compatibility mapping.
   ```
+
 - **Schema Examples**: Updated JSON schema file paths to match new event names
   - `battle.round-start.schema.json` → `round.started.schema.json`
   - `battle.stat-selected.schema.json` → `round.selection.locked.schema.json`
   - `battle.round-resolved.schema.json` → `round.evaluated.schema.json`
 
 ### 2.2 Breaking Change Decision Tree (prdEventContracts.md:133)
+
 - **Status**: 🟠 ASPIRATIONAL — NOT IMPLEMENTED
 - **Changes Made**: Updated status box to clarify aspirational intent
 - **Details**: 1-cycle compatibility layer with dual-emission is *proposed* but not yet implemented
@@ -87,12 +97,14 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
 - **Clarification**: "Current state: Events transition directly from Active → Deprecated without intermediate dual-emission window."
 
 ### 2.3 Event Lifecycle Diagram (prdEventContracts.md:175)
+
 - **Status**: 🟠 ASPIRATIONAL/PLANNED — NOT IMPLEMENTED
 - **Changes Made**: Enhanced status box with current vs future behavior
 - **Details**: Diagram shows 5 states (CurrentStable, ProposedDual, Deprecated, DeprecatedNoMigration, Removed); current implementation is simpler (Active → Deprecated → Removed)
 - **Old Status**: "ASPIRATIONAL - ProposedDual and 1-cycle compatibility flow **NOT FULLY IMPLEMENTED**"
 - **New Status**: "🟠 Status: ASPIRATIONAL/PLANNED"
 - **Added Details**:
+
   ```
   > **Current behavior** (implemented): Event names either active or deprecated; 
   > no intermediate compatibility period.
@@ -106,14 +118,16 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
 ## Phase 3: Scoreboard & Idempotency ✅ VERIFIED
 
 ### 3.1 Event Authority Sequence (prdBattleScoreboard.md:77)
+
 - **Status**: ✅ VERIFIED ACCURATE
 - **Validation**: Diagram matches implementation in `src/helpers/battleScoreboard.js`
 - **Authority Model**: Only `control.state.changed` is authoritative (correctly shown)
-- **Test Coverage**: 
+- **Test Coverage**:
   - `tests/helpers/battleScoreboard.event-sequences.test.js` (line 86 validates event flow)
   - `tests/helpers/battleScoreboard.authority.test.js`
 
 ### 3.2 Idempotency Guard Algorithm (prdBattleScoreboard.md:142)
+
 - **Status**: ✅ VERIFIED ACCURATE
 - **Validation**: Flowchart encodes exact ordering from `isStaleAgainstAuthority` function
 - **Guard Sequence**: sequence → roundIndex → matchToken (matches code exactly)
@@ -124,6 +138,7 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
 ## Phase 4: Round Selection & Auto-Select ✅ VERIFIED
 
 ### 4.1 Round Selection Flow (prdRoundSelection.md:39)
+
 - **Status**: ✅ VERIFIED ACCURATE
 - **Features Verified**:
   - Autostart query param (`?autostart=1`) ✅
@@ -132,6 +147,7 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
 - **Test Coverage**: Settings persistence tests
 
 ### 4.2 Auto-Select Feature (prdRandomStatMode.md:47, 87, 126)
+
 - **Status**: ✅ VERIFIED ACCURATE (all 3 diagrams)
 - **Features Verified**:
   - Auto-select state branching ✅
@@ -143,6 +159,7 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
   - `tests/helpers/timerService.autoSelectDisabled.test.js`
 
 ### 4.3 Round UI Sequence (prdBattleClassic.md:105)
+
 - **Status**: ✅ VERIFIED ACCURATE
 - **Events Verified**: `round.started`, `round.selection.locked`, `round.evaluated` all implemented
 - **Test Coverage**: `tests/helpers/classicBattle/` directory
@@ -152,6 +169,7 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
 ## Phase 5: Layout System ⚠️ INFRASTRUCTURE vs IMPLEMENTATION
 
 ### 5.1 Layout Selection & Application Flow (prdBattleLayoutEngine.md:299)
+
 - **Status**: ⚠️ INFRASTRUCTURE PRESENT, MODULES PENDING
 - **Changes Made**: Added status box clarifying implementation gaps
 - **Current State**:
@@ -160,6 +178,7 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
   - ❌ Layout module files (`.layout.js`) are NOT yet created in `src/layouts/`
   - ⚠️ Only inline JSON fallback is currently active
 - **Added Note**:
+
   ```
   > **⚠️ Status: INFRASTRUCTURE PRESENT but LAYOUT MODULES PENDING**
   >
@@ -170,13 +189,14 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
   > Current state: The registry and fallback system exist, but are unpopulated. 
   > Inline JSON fallback is the only active path until layout modules are added.
   ```
+
 - **Roadmap**: Link to [LAYOUT_EDITOR_IMPLEMENTATION_PROPOSAL.md](../../../../LAYOUT_EDITOR_IMPLEMENTATION_PROPOSAL.md) for future work
 
 ---
 
 ## Phase 6: Quality Badges & Test References 🔄 IN PROGRESS
 
-### Cross-File Updates Needed:
+### Cross-File Updates Needed
 
 1. **prdBattleScoreboard.md**
    - Add test file references to Authority and Idempotency diagrams
