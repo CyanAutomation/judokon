@@ -19,13 +19,13 @@ Status documentation is organized by lifecycle:
 
 Historical root-level redirect files are mapped in [`docs/status/MOVED.md`](./MOVED.md) so old links remain discoverable:
 
-| Old path | Canonical path |
-| --- | --- |
+| Old path                                   | Canonical path                                                                                                               |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
 | `LAYOUT_EDITOR_IMPLEMENTATION_PROPOSAL.md` | [`active/2025-12-30_layout-editor-implementation-proposal.md`](./active/2025-12-30_layout-editor-implementation-proposal.md) |
-| `quitFlowIssue.md` | [`archive/2025-12-31_quit-flow-issue.md`](./archive/2025-12-31_quit-flow-issue.md) |
-| `report.md` | [`archive/2025-12-31_dom-manipulation-bug-report.md`](./archive/2025-12-31_dom-manipulation-bug-report.md) |
-| `sample-test-failures.md` | [`archive/2025-01-01_sample-test-failures.md`](./archive/2025-01-01_sample-test-failures.md) |
-| `snackBarIssue.md` | [`archive/2025-12-31_snackbar-behavior-issue.md`](./archive/2025-12-31_snackbar-behavior-issue.md) |
+| `quitFlowIssue.md`                         | [`archive/2025-12-31_quit-flow-issue.md`](./archive/2025-12-31_quit-flow-issue.md)                                           |
+| `report.md`                                | [`archive/2025-12-31_dom-manipulation-bug-report.md`](./archive/2025-12-31_dom-manipulation-bug-report.md)                   |
+| `sample-test-failures.md`                  | [`archive/2025-01-01_sample-test-failures.md`](./archive/2025-01-01_sample-test-failures.md)                                 |
+| `snackBarIssue.md`                         | [`archive/2025-12-31_snackbar-behavior-issue.md`](./archive/2025-12-31_snackbar-behavior-issue.md)                           |
 
 ## Index
 

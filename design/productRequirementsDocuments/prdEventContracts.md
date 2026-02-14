@@ -49,11 +49,11 @@ Acceptance Criteria:
 
 ## Event Inventory (starter)
 
-| Event name              | Emitter       | Primary consumers     | Payload schema (path)                                         | Owner             |
-| ----------------------- | ------------- | --------------------- | ------------------------------------------------------------- | ----------------- |
-| `round.started`    | Battle Engine | UI, CLI, tests        | `design/dataSchemas/events/round.started.schema.json`    | Battle Engine     |
-| `round.selection.locked`  | UI / CLI      | Battle Engine, tests  | `design/dataSchemas/events/round.selection.locked.schema.json`  | Classic Battle UI |
-| `round.evaluated` | Battle Engine | UI, scoreboard, tests | `design/dataSchemas/events/round.evaluated.schema.json` | Battle Engine     |
+| Event name               | Emitter       | Primary consumers     | Payload schema (path)                                          | Owner             |
+| ------------------------ | ------------- | --------------------- | -------------------------------------------------------------- | ----------------- |
+| `round.started`          | Battle Engine | UI, CLI, tests        | `design/dataSchemas/events/round.started.schema.json`          | Battle Engine     |
+| `round.selection.locked` | UI / CLI      | Battle Engine, tests  | `design/dataSchemas/events/round.selection.locked.schema.json` | Classic Battle UI |
+| `round.evaluated`        | Battle Engine | UI, scoreboard, tests | `design/dataSchemas/events/round.evaluated.schema.json`        | Battle Engine     |
 
 > **Note:** Legacy aliases exist for backwards compatibility: `battle:round-start` (→ `round.started`), `battle:stat-selected` (→ `round.selection.locked`), `battle:round-resolved` (→ `round.evaluated`). See [Event naming legend](#event-naming-legend) for full compatibility mapping.
 
@@ -128,7 +128,7 @@ Process:
 
 > **🟠 Status: ASPIRATIONAL**
 >
-> Full 1-cycle compatibility layer **NOT YET IMPLEMENTED**. Current state: Events transition directly from Active → Deprecated without intermediate dual-emission window. This diagram shows the *intended* versioning policy; see [Event Lifecycle Diagram](#event-lifecycle-diagram) for *current* implemented behavior.
+> Full 1-cycle compatibility layer **NOT YET IMPLEMENTED**. Current state: Events transition directly from Active → Deprecated without intermediate dual-emission window. This diagram shows the _intended_ versioning policy; see [Event Lifecycle Diagram](#event-lifecycle-diagram) for _current_ implemented behavior.
 
 ```mermaid
 flowchart TD

@@ -66,7 +66,7 @@ export function createScoreboardCore(adapter) {
           // If validation fails, don't pass score to adapter
           const patchWithoutScore = {};
           for (const key in patch) {
-            if (key !== 'score') {
+            if (key !== "score") {
               patchWithoutScore[key] = patch[key];
             }
           }
