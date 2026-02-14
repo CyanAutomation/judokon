@@ -205,6 +205,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     const container = document.getElementById("opponent-card");
     try {
       if (!container) {
+        completionDetail.cancelled = true;
         clearPendingOpponentCardData(undefined, selectionToken);
         return;
       }
@@ -230,11 +231,13 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       const tokenMatches = selectionToken === undefined || selectionToken === capturedToken;
       const resolvedCardData = tokenMatches ? cardData : capturedCardData;
       if (!resolvedCardData) {
+        completionDetail.cancelled = true;
         return;
       }
       try {
         await renderOpponentCardFn(resolvedCardData, container);
       } catch {
+        completionDetail.cancelled = true;
         clearPendingOpponentCardData(undefined, selectionToken);
         return;
       }
