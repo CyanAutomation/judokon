@@ -186,7 +186,9 @@ sequenceDiagram
 
 ## 7. Finite-State Machine (FSM) Overview
 
-### States
+> **Note**: The states listed below are conceptual/abstract categories. The canonical state machine uses more granular states (e.g., `roundPrompt`, `roundSelect`, `roundResolve`, `roundDisplay`, `matchEvaluate`, etc.). See [prdStateHandler.md](prdStateHandler.md#canonical-state-graph-names) for the detailed, implemented state list and complete diagram.
+
+### States (Conceptual Model)
 
 - **init** — engine constructed, no match started.
 - **prestart** — optional countdown / readiness handshake before round 1.

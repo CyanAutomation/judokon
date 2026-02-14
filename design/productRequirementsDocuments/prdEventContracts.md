@@ -51,9 +51,11 @@ Acceptance Criteria:
 
 | Event name              | Emitter       | Primary consumers     | Payload schema (path)                                         | Owner             |
 | ----------------------- | ------------- | --------------------- | ------------------------------------------------------------- | ----------------- |
-| `battle:round-start`    | Battle Engine | UI, CLI, tests        | `design/dataSchemas/events/battle.round-start.schema.json`    | Battle Engine     |
-| `battle:stat-selected`  | UI / CLI      | Battle Engine, tests  | `design/dataSchemas/events/battle.stat-selected.schema.json`  | Classic Battle UI |
-| `battle:round-resolved` | Battle Engine | UI, scoreboard, tests | `design/dataSchemas/events/battle.round-resolved.schema.json` | Battle Engine     |
+| `round.started`    | Battle Engine | UI, CLI, tests        | `design/dataSchemas/events/round.started.schema.json`    | Battle Engine     |
+| `round.selection.locked`  | UI / CLI      | Battle Engine, tests  | `design/dataSchemas/events/round.selection.locked.schema.json`  | Classic Battle UI |
+| `round.evaluated` | Battle Engine | UI, scoreboard, tests | `design/dataSchemas/events/round.evaluated.schema.json` | Battle Engine     |
+
+> **Note:** Legacy aliases exist for backwards compatibility: `battle:round-start` (→ `round.started`), `battle:stat-selected` (→ `round.selection.locked`), `battle:round-resolved` (→ `round.evaluated`). See [Event naming legend](#event-naming-legend) for full compatibility mapping.
 
 Owners must keep this table current. Add new events with a short rationale and acceptance tests.
 
@@ -124,11 +126,9 @@ Process:
 
 ### Breaking Change Decision Tree
 
-> **Status**: ASPIRATIONAL - Full 1-cycle compatibility layer **NOT YET IMPLEMENTED**
+> **🟠 Status: ASPIRATIONAL**
 >
-> Current state: Events are either current OR deprecated; no intermediate dual-emission window is observed in production. See [Event Lifecycle Diagram](#event-lifecycle-diagram) for implemented behavior.
->
-> Future implementation roadmap: Track field removals in event aliases and emit both old and new names during transition period (1 cycle = 1 release).
+> Full 1-cycle compatibility layer **NOT YET IMPLEMENTED**. Current state: Events transition directly from Active → Deprecated without intermediate dual-emission window. This diagram shows the *intended* versioning policy; see [Event Lifecycle Diagram](#event-lifecycle-diagram) for *current* implemented behavior.
 
 ```mermaid
 flowchart TD
@@ -161,11 +161,13 @@ flowchart TD
 
 ### Event Lifecycle Diagram
 
-> **Status**: ASPIRATIONAL - ProposedDual and 1-cycle compatibility flow **NOT FULLY IMPLEMENTED**
+> **🟠 Status: ASPIRATIONAL/PLANNED**
 >
-> Current implementation: Events transition directly from Current → Deprecated → Removed. The ProposedDual state and telemetry tracking shown in this diagram are planned but not yet active in production.
+> ProposedDual and 1-cycle compatibility flow **NOT YET IMPLEMENTED**. Current implementation follows simplified path: Active → Deprecated → Removed. The ProposedDual state (dual-emission window), telemetry tracking, and provisional/experimental branches shown here are planned enhancements.
 >
-> Future enhancement: Implement ProposedDual state and dual-emission logic to emit both old and new event names simultaneously during 1-cycle transition periods, with error telemetry.
+> **Current behavior** (implemented): Event names either active or deprecated; no intermediate compatibility period.
+>
+> **Future enhancement** (planned): ProposedDual state with dual-emission for 1-cycle transition periods, plus error telemetry for monitoring consumer migrations.
 
 Lifecycle durability definitions used in this diagram:
 

@@ -434,3 +434,4 @@ describe("isOrchestratorActive", () => {
     document.body.dataset.battleState = "roundResolve";
     expect(isOrchestratorActive({ orchestrator: {} })).toBe(true);
   });
+});

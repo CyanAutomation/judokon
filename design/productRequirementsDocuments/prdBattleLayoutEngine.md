@@ -294,6 +294,12 @@ This schema defines the canonical layout payload used by the Layout Engine. It i
 
 ## Layout Selection & Application Flow
 
+> **⚠️ Status: INFRASTRUCTURE PRESENT but LAYOUT MODULES PENDING**
+>
+> The layout engine infrastructure (loadLayout, applyLayout, validation) is implemented and ready. However, the layout module files (`.layout.js`) referenced in the flowchart diagram have not yet been created in `src/layouts/`. 
+>
+> Current state: The registry and fallback system exist, but are unpopulated. Inline JSON fallback is the only active path until layout modules are added. See implementation notes below for architecture details.
+
 The flowchart below illustrates the complete layout selection, validation, and application pipeline:
 
 ```mermaid

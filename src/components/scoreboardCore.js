@@ -64,9 +64,14 @@ export function createScoreboardCore(adapter) {
         const nextOpponent = safeNumber(patch.score.opponent);
         if (nextPlayer === null || nextOpponent === null) {
           // If validation fails, don't pass score to adapter
-          const { score: _, ...restPatch } = patch;
-          if (Object.keys(restPatch).length > 0) {
-            adapter.render(restPatch);
+          const patchWithoutScore = {};
+          for (const key in patch) {
+            if (key !== 'score') {
+              patchWithoutScore[key] = patch[key];
+            }
+          }
+          if (Object.keys(patchWithoutScore).length > 0) {
+            adapter.render(patchWithoutScore);
           }
           return;
         }
