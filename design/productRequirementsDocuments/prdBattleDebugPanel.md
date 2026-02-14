@@ -70,9 +70,10 @@ stateDiagram-v2
 ```
 
 **Visibility Logic:**
+
 - **Hidden by Default**: Panel hidden unless explicitly enabled in Settings or debug flag set
 - **Toggle-Enabled**: Settings page toggle switches panel visibility on/off
-- **Debug Flags Override**: DEBUG_LOGGING or __PROFILE_DEBUG_FLAGS__ force panel visible for development
+- **Debug Flags Override**: DEBUG_LOGGING or **PROFILE_DEBUG_FLAGS** force panel visible for development
 - **Persistence**: Toggle state saved to localStorage, persists across battles
 
 ---
@@ -99,12 +100,14 @@ graph TD
 ```
 
 **Real-Time Updates Trigger:**
+
 - Score changes (round won/lost)
 - Timer countdown (<500ms refresh rate)
 - Match end detection (final score locked)
 - Test mode seed visibility (if applicable)
 
 **Panel Content Structure:**
+
 ```json
 {
   "playerScore": 2,
@@ -150,6 +153,7 @@ graph LR
 ```
 
 **Profiling Activation Conditions:**
+
 - `window.__PROFILE_DEBUG_FLAGS__ = true`
 - `window.__DEBUG_PERF__ = true`
 - `window.__profileDebugFlags()` (function call)
@@ -157,6 +161,7 @@ graph LR
 - Environment: `process.env.DEBUG_FLAG_PERF` or `process.env.DEBUG_PERF`
 
 **Alert Threshold:**
+
 - Default: 16ms (for 60fps performance target)
 - Configurable: `window.__DEBUG_FLAG_ALERT_THRESHOLD__` or `process.env.DEBUG_FLAG_ALERT_THRESHOLD`
 - Alert if: `avg >= threshold` OR `max >= threshold` OR `last >= threshold`
@@ -196,6 +201,7 @@ graph TD
 ```
 
 **HUD Features:**
+
 - **Fixed Position**: Lower-right corner, always visible when active
 - **Metrics Display**: Live list of flag execution times (avg, last, max, count)
 - **Alert History**: Most recent 5 alerts (up to 100 stored)
@@ -246,6 +252,7 @@ stateDiagram-v2
 ```
 
 **User Interactions:**
+
 - **Enable Panel**: Toggle in Settings ON → Panel appears immediately
 - **Copy State**: Click Copy → Content to clipboard → Toast confirmation
 - **Disable Panel**: Toggle OFF → Panel hides → Content cleared

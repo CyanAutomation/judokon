@@ -13,12 +13,14 @@
 This document tracks the systematic implementation of 49 missing Mermaid diagrams across PRD files. Currently, 8 PRD files contain 16 diagrams; 49 files lack diagrams and are candidates for implementation.
 
 **Approach**:
+
 - **Single-session batch implementation** (6 phases, ~40–60 hours total)
 - **Dependency-ordered execution**: Foundational systems (Phase 1) first, then variants and helpers
 - **Code + Test validation**: All diagrams verified against implementation files and linked to test coverage
 - **Tracked progress**: Status badges, verification checklist, cross-references
 
 **Success Criteria**:
+
 - ✅ All 49 diagrams implemented with valid Mermaid syntax
 - ✅ Each diagram verified against implementation code OR PRD requirements
 - ✅ Test coverage references added (format: `**Test Coverage**: Verified by: [path.js](path)`)
@@ -93,6 +95,7 @@ This document tracks the systematic implementation of 49 missing Mermaid diagram
 | - | prdUIDesignSystem.md | Design system | Component Catalog | MEDIUM | Medium | ◻️ Not Started | Phase 5 or later |
 
 **Legend**:
+
 - ◻️ Not Started
 - 🔄 In Progress
 - ✅ Completed
@@ -105,6 +108,7 @@ This document tracks the systematic implementation of 49 missing Mermaid diagram
 ### Diagram Style Conventions
 
 **Color Palette** (matching existing 16 diagrams):
+
 - **Initial states**: `lightblue` (waiting, init, ready)
 - **Active states**: `lightgreen` (processing, selection, active)
 - **Error states**: `lightsalmon` (error, retry, fallback)
@@ -113,30 +117,38 @@ This document tracks the systematic implementation of 49 missing Mermaid diagram
 - **Aspirational/Future**: `lightcyan` (planned, not yet implemented)
 
 **Box/Text Standards**:
+
 - Single-line explicit state names (e.g., `roundSelect` not `Round Selection Step A`)
 - CamelCase for state machine node IDs, SCREAM_CASE for constants
 - Arrows labeled with triggers or data (e.g., `user tap` → `Modal Open`)
 - Subgraph groups for related states (e.g., all "Round" states under one subgraph)
 
 **Test Coverage Reference Format**:
+
 ```markdown
 **Test Coverage**: Verified by: [path/to/test.js](path/to/test.js) — Brief description of what test validates
 ```
 
 **Status Note Template** (when applicable):
+
 ```markdown
 > ✅ **Status: VERIFIED** — This diagram matches implementation as of [date/commit]
 ```
+
 or
+
 ```markdown
 > 🟠 **Status: ASPIRATIONAL/PLANNED** — Feature design is complete; implementation pending [specific blockers/timeline]
 ```
+
 or
+
 ```markdown
 > ⚠️ **Status: PENDING** — Implementation in progress; diagram reflects proposed design
 ```
 
 **Cross-Reference Template**:
+
 ```markdown
 > **Related diagrams**: See also [prdStateHandler.md#canonical-state-graph](prdStateHandler.md#canonical-state-graph) for canonical state definitions; [prdEventContracts.md](prdEventContracts.md) for event architecture
 ```
@@ -146,7 +158,7 @@ or
 Before a diagram is marked as "COMPLETED", it must pass:
 
 1. **Syntax Validation**
-   - ✅ Copy diagram into Mermaid Live Editor (https://mermaid.live) — renders without errors
+   - ✅ Copy diagram into Mermaid Live Editor (<https://mermaid.live>) — renders without errors
    - ✅ No unmatched brackets, invalid syntax, or reserved word misuse
 
 2. **Architecture Alignment**
@@ -170,6 +182,7 @@ Before a diagram is marked as "COMPLETED", it must pass:
 ### Style Examples
 
 **State Machine** (from existing [prdStateHandler.md](design/productRequirementsDocuments/prdStateHandler.md)):
+
 ```mermaid
 stateDiagram-v2
     [*] --> waitingForMatchStart
@@ -183,6 +196,7 @@ stateDiagram-v2
 ```
 
 **Flowchart** (from existing [prdBattleScoreboard.md](design/productRequirementsDocuments/prdBattleScoreboard.md)):
+
 ```mermaid
 flowchart TD
     A["Score Update Event"] --> B{Stale<br/>Guard?}
@@ -193,6 +207,7 @@ flowchart TD
 ```
 
 **Sequence Diagram** (from existing [prdEventContracts.md](design/productRequirementsDocuments/prdEventContracts.md)):
+
 ```mermaid
 sequenceDiagram
     participant UI as Classic Battle UI
@@ -210,7 +225,7 @@ sequenceDiagram
 
 After each phase completes, verify:
 
-- [ ] All diagrams in phase rendered successfully (copy each into https://mermaid.live)
+- [ ] All diagrams in phase rendered successfully (copy each into <https://mermaid.live>)
 - [ ] All test coverage links point to valid files (use grep to spot-check paths)
 - [ ] No state name conflicts with existing diagrams or canonical definitions
 - [ ] All status notes present and accurate per gate checklist
@@ -218,6 +233,7 @@ After each phase completes, verify:
 - [ ] Phase status updated in tracking table (◻️ → 🔄 → ✅)
 
 **Final Verification** (all 49 diagrams complete):
+
 ```bash
 # Verify all PRD files now have Mermaid diagrams
 grep -r "^\`\`\`mermaid" design/productRequirementsDocuments/*.md | wc -l
@@ -263,12 +279,14 @@ Phase 1 (Foundational)
 ## Next Steps
 
 **Phase 0 (Current)**:
+
 1. ✅ Create this tracking document (DONE)
 2. Document Mermaid style guide (DONE)
 3. Define validation gates (DONE)
 4. Ready to begin Phase 1
 
 **Phase 1 (Foundational Systems)** — Ready to start
+
 - Start with [prdArchitecture.md](design/productRequirementsDocuments/prdArchitecture.md)
 - Implement system architecture diagram (5–7 components)
 - Verify against implementation and cross-reference

@@ -104,6 +104,7 @@ graph TD
 ```
 
 **Workflow Stages:**
+
 - **Import**: Load existing `.layout.js` via ESM import or use default
 - **Edit**: Drag/resize components; validation in real-time
 - **Preview**: Live iframe shows layout as it would appear in battle
@@ -153,6 +154,7 @@ graph TB
 ```
 
 **Component Hierarchy:**
+
 - **Header**: Mode selection, reset, theme
 - **Canvas**: Grid + draggable region boxes with selection handles
 - **Inspector**: Editable region properties (ID, x, y, w, h, z)
@@ -202,12 +204,14 @@ graph LR
 ```
 
 **Input Formats:**
+
 - ESM `.layout.js` module (dynamic import)
 - JSON `.layout.json` file (parse)
 - ASCII text (reconstruct from visual)
 - localStorage draft (recover unsaved work)
 
 **Output Formats:**
+
 - JSON: structuring for runtime import
 - ASCII: documentation and CI snapshots
 - ESM: ready-to-use `.layout.js` module
@@ -247,12 +251,14 @@ sequenceDiagram
 ```
 
 **Message Protocol:**
+
 - **Type**: LOAD_LAYOUT (send layout to iframe)
 - **Payload**: Full layout object with grid, regions, metadata
 - **Response**: ACK_LAYOUT_APPLIED (iframe confirms update)
 - **Frequency**: On each change (debounced <16ms for 60fps)
 
 **Sandbox Permissions:**
+
 ```
 allow-scripts (run JavaScript)
 allow-same-origin (access Layout Engine)
@@ -306,6 +312,7 @@ stateDiagram-v2
 ```
 
 **Editing States:**
+
 - **Ready**: Awaiting user interaction
 - **RegionSelected**: Region highlighted with handles visible
 - **Dragging**: Moving region with grid snap and live preview
