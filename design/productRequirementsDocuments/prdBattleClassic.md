@@ -82,6 +82,61 @@ Currently, only ~45% of new players complete their first battle across all modes
 - The higher value wins the round and scores **1 point**; used cards are discarded.
 - The match ends when a player reaches a **user-selected win target of 3, 5, or 10 points** (default 5) or after **25 rounds** (draw).
 
+## Bootstrap & Initialization
+
+Classic Battle initializes through a deterministic **5-phase bootstrap sequence** defined in `src/pages/battleClassic.init.js`. This sequence ensures that utilities, UI, engine state, and event handlers are wired in the correct order, preventing timing bugs and enabling testable initialization.
+
+### Initialization Phases Sequence
+
+```mermaid
+flowchart LR
+    subgraph Setup["Setup & Dependencies"]
+        P1["Phase 1: Utilities<br/>(Scheduler, Test APIs)"]
+        P2["Phase 2: UI<br/>(Scoreboard, Flags)"]
+        Store["Create Battle Store<br/>(Shared State)"]
+    end
+    
+    subgraph Engine["Engine & Events"]
+        P3["Phase 3: Engine<br/>(BattleEngine, Orch)"]
+        P4["Phase 4: Event Handlers<br/>(Listeners, Buttons)"]
+    end
+    
+    subgraph Match["Match Initialization"]
+        WireStats["Wire Stat Buttons<br/>(BEFORE match start)"]
+        P5["Phase 5: Match Start<br/>(Round Selection Modal)"]
+        WireControl["Wire Control Buttons<br/>(AFTER match start)"]
+    end
+    
+    P1 --> P2
+    P2 --> Store
+    Store --> P3
+    P3 --> P4
+    P4 --> WireStats
+    WireStats --> P5
+    P5 --> WireControl
+    WireControl --> Ready["✅ ready<br/>(window.__battleInitComplete)"]
+    
+    Ready --> GameReady["🎮 Game Ready<br/>Player can play"]
+    
+    %% Styling
+    classDef phase fill:#lightblue,stroke:#333,stroke-width:2px
+    classDef critical fill:#lightsalmon,stroke:#333,stroke-width:2px
+    classDef success fill:#lightgreen,stroke:#333,stroke-width:2px
+    
+    class P1,P2,P3,P4,P5 phase
+    class WireStats,WireControl critical
+    class Ready,GameReady success
+```
+
+**Critical Timing Rules** (from [AGENTS.md](../../AGENTS.md)):
+- ✅ **Wire stat buttons BEFORE match start** — needed for gameplay from round 1
+- ❌ **DO NOT wire control buttons before match start** — buttons are replaced during Phase 5, losing handlers
+- ✅ **Wire control buttons AFTER match start** — prevents DOM replacement issues
+
+> **Why this order matters**: During Phase 5 (`initializeMatchStart`), the round selection modal is shown. If the Quit or Next buttons are wired before this phase, their event handlers will be lost when the DOM elements are replaced by the modal. Therefore, these buttons must be wired AFTER Phase 5.
+
+**Test Coverage**: Verified by: [tests/battleClassic/quit-flow.test.js](tests/battleClassic/quit-flow.test.js) — validates quit button handler persistence; [tests/battleClassic/element-identity.test.js](tests/battleClassic/element-identity.test.js) — ensures buttons maintain identity across DOM replacements
+
 ### Round UI Flow
 
 This section outlines how each round broadcasts state changes to keep the UI, Scoreboard, and automation hooks aligned.

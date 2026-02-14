@@ -114,6 +114,65 @@ _As a player_, I want short snackbars to notify me of round results, cooldowns, 
 
 ---
 
+## Battle Bandit Round Loop
+
+```mermaid
+flowchart TD
+    Start(["🎮 Match Start<br/>(Round Select Modal)"])
+    Start -->|confirm| Init["📊 Initialize Scoreboard<br/>(0-0, Round 1)"]
+    
+    Init --> Ready["✋ Button Ready<br/>(Player presses button)"]
+    
+    Ready -->|press button| Spin["🎰 Random Selection<br/>(Judoka + Stat)"]
+    
+    Spin --> Evaluate["⚙️ Engine Evaluate<br/>(Compare stats)"]
+    
+    Evaluate --> Resolve["🏆 Resolve Outcome<br/>(Win/Loss/Draw)"]
+    
+    Resolve --> Score["📈 Update Score<br/>(+1 point to winner)"]
+    
+    Score -->|score < 10| Display["📢 Show Result<br/>(Snackbar)"]
+    
+    Display --> Cooldown["⏳ Cooldown 3s<br/>(Button disabled)"]
+    
+    Cooldown --> Expire["✅ Cooldown Expired<br/>(Button enabled)"]
+    
+    Expire -->|next round| Ready
+    
+    Score -->|score >= 10| Winner["🥇 Declare Winner<br/>(Match Over)"]
+    
+    Winner --> End["🔄 Restart<br/>or Return to Home"]
+    
+    End --> Done(["✨ Done"])
+    
+    %% Styling
+    classDef setup fill:#lightblue,stroke:#333,stroke-width:2px
+    classDef playing fill:#lightgreen,stroke:#333,stroke-width:2px
+    classDef cooldown fill:#lightyellow,stroke:#333,stroke-width:2px
+    classDef end fill:#lightsalmon,stroke:#333,stroke-width:2px
+    
+    class Start,Init setup
+    class Ready,Spin,Evaluate,Resolve,Score,Display playing
+    class Cooldown,Expire cooldown
+    class Winner,End,Done end
+```
+
+**Round Sequence**:
+1. **Button Press** (Ready) → Random selection (Judoka + Stat)
+2. **Engine Evaluation** → Outcome determination
+3. **Score Update** → +1 point to winner
+4. **Result Display** → Snackbar with outcome
+5. **Cooldown** (3s) → Button disabled
+6. **Next Round** OR **Match End** (first to 10 wins)
+
+**Key Difference from Classic Battle**: No player choice. All selections (judoka, stat) are random and determined atomically per round. Cooldown is fixed 3s and non-interactive (no Next button to skip).
+
+**Test Coverage**: Verified by: [tests/battles-regressions/bandit/](tests/battles-regressions/bandit/) — integration tests for round loop, cooldown enforcement, and match progression; [playwright/](playwright/) — E2E tests for button interaction and snackbar display
+
+**Related diagrams**: See [prdBattleClassic.md](prdBattleClassic.md) for classic round flow (more complex with player choice); [prdBattleEngine.md](prdBattleEngine.md) for shared engine; [prdSnackbar.md](prdSnackbar.md) for message display
+
+---
+
 ## 7. Non-Functional Requirements
 
 - Must integrate with **Battle Engine/Orchestrator** for determinism and testability.

@@ -62,11 +62,15 @@ vi.mock("../../../src/helpers/BattleEngine.js", () => {
 });
 
 // Mock the non-existent scoreboardAdapter module
-vi.mock("../../../src/helpers/classicBattle/scoreboardAdapter.js", () => ({
-  initScoreboardAdapter: mockInitScoreboard,
-  disposeScoreboardAdapter: mockDisposeScoreboard,
-  whenScoreboardReady: mockWhenScoreboardReady
-}), { virtual: true });
+vi.mock(
+  "../../../src/helpers/classicBattle/scoreboardAdapter.js",
+  () => ({
+    initScoreboardAdapter: mockInitScoreboard,
+    disposeScoreboardAdapter: mockDisposeScoreboard,
+    whenScoreboardReady: mockWhenScoreboardReady
+  }),
+  { virtual: true }
+);
 
 /**
  * Build a scoreboard header matching the Classic Battle layout.

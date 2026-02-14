@@ -135,6 +135,8 @@ sequenceDiagram
 
 **Diagram Rationale:** This sequenceDiagram clarifies the three-hop event propagation (Engine → Orchestrator → Scoreboard) and visually encodes the authority boundary through arrow styles: solid arrows for state-driving events (`control.state.changed`), dashed arrows for value-only events (domain/timer). The diagram shows identity-based stale guarding (`sequence`, `roundIndex`, `matchToken`), fallback timeout behavior, and outcome persistence rules. This eliminates ambiguity around which events trigger state transitions versus which merely update display values.
 
+**Test Coverage**: Verified by: [tests/helpers/battleScoreboard.event-sequences.test.js](tests/helpers/battleScoreboard.event-sequences.test.js) — validates event propagation order and state transitions; [tests/components/Scoreboard.idempotency.test.js](tests/components/Scoreboard.idempotency.test.js) — tests fallback timeout and persistence rules
+
 ### 6b. Idempotency Guard Algorithm
 
 The following flowchart details the decision logic that Scoreboard uses to guard against stale and out-of-order events. This is critical for deterministic test execution and AI-driven match simulations.
@@ -177,6 +179,8 @@ flowchart TD
 ```
 
 **Diagram Rationale:** This flowchart makes explicit the implemented stale-check ordering from `isStaleAgainstAuthority`: (1) sequence precedence, (2) roundIndex comparison, then (3) the matchToken mismatch edge case when sequence/roundIndex are absent. It also keeps `control.state.changed` as the sole authoritative state-transition source (`updateControlAuthority`). By visualizing these decision points with color coding (green for updates, red for ignores), the diagram ensures that downstream AI agents, developers, and test frameworks can reliably reason about event processing order and identity-based stale rejection. For maintainability, treat `extractRoundIdentity` and `isStaleAgainstAuthority` as the single source of truth for guard semantics.
+
+**Test Coverage**: Verified by: [tests/helpers/battleScoreboard.idempotency.test.js](tests/helpers/battleScoreboard.idempotency.test.js) — validates stale-check ordering and idempotency guards against duplicate/out-of-order events; [tests/components/Scoreboard.test.js](tests/components/Scoreboard.test.js) — tests state transitions and value-only update paths
 
 ---
 

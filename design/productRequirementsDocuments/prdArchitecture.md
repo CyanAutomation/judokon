@@ -14,6 +14,98 @@ Architecture decisions are cross-cutting and affect multiple teams and features.
 - Define public contracts (APIs, events, data shapes) that are stable and versioned.
 - Reduce integration regressions by 90% (measured by integration test failures tied to interface changes).
 
+## System Architecture Overview
+
+```mermaid
+flowchart TB
+    subgraph UI["UI & Presentation Layer"]
+        CBattle["Classic Battle UI<br/>(battleClassic.html)"]
+        CLI["CLI Mode<br/>(battleCLI.html)"]
+    end
+    
+    subgraph Core["Core Game Logic"]
+        Engine["Battle Engine<br/>(BattleEngine.js)"]
+        Facade["Engine Facade<br/>(battleEngineFacade.js)"]
+    end
+    
+    subgraph Data["Data Layer"]
+        Judoka["judoka.json"]
+        Tooltips["tooltips.json"]
+        Cards["cards.json"]
+    end
+    
+    subgraph AI["AI & Search"]
+        RAG["RAG/Vector Search<br/>(vectorSearch/)"]
+        MiniLM["MiniLM Models"]
+    end
+    
+    subgraph Utils["Utilities & Testing"]
+        Nav["Navigation<br/>Components"]
+        Comp["UI Components<br/>(Card, Tooltip, etc.)]
+        Test["Test Fixtures<br/>(Playwright, Vitest)"]
+    end
+    
+    %% Data flow to UI
+    Judoka -->|reads| CBattle
+    Judoka -->|reads| CLI
+    Tooltips -->|reads| CBattle
+    Cards -->|reads| CBattle
+    Cards -->|reads| CLI
+    
+    %% UI to Facade to Engine
+    CBattle -->|user actions| Facade
+    CLI -->|user actions| Facade
+    Facade -->|delegates| Engine
+    
+    %% Engine emits events back
+    Engine -->|state changes,<br/>events| CBattle
+    Engine -->|state changes,<br/>events| CLI
+    
+    %% Components use data
+    Data -->|reads| Comp
+    Comp -->|rendered by| CBattle
+    Comp -->|rendered by| CLI
+    
+    %% Navigation
+    Nav -->|routes UI| CBattle
+    Nav -->|routes UI| CLI
+    
+    %% RAG integration
+    CBattle -->|queries| RAG
+    RAG -->|local embeddings| MiniLM
+    RAG -->|results| CBattle
+    
+    %% Testing
+    CBattle -->|validates| Test
+    CLI -->|validates| Test
+    Engine -->|validates| Test
+    
+    %% Styling
+    classDef engine fill:#lightgreen,stroke:#333,stroke-width:2px
+    classDef ui fill:#lightblue,stroke:#333,stroke-width:2px
+    classDef data fill:#lightyellow,stroke:#333,stroke-width:2px
+    classDef test fill:#lightgray,stroke:#333,stroke-width:2px
+    classDef ai fill:#lightcyan,stroke:#333,stroke-width:2px
+    
+    class Engine,Facade engine
+    class CBattle,CLI ui
+    class Judoka,Tooltips,Cards,Data data
+    class Test test
+    class RAG,MiniLM,AI ai
+```
+
+> ✅ **Status: VERIFIED** — Architecture diagram shows core components and event flow matching implementation in `src/helpers/battleEngineFacade.js`, `src/pages/battleClassic.html`, and `src/pages/battleCLI/init.js`
+>
+> **Key Relationships**:
+> - Battle Engine is authoritative (center, green) — all logic flows through it
+> - Classic Battle UI and CLI both consume events from Engine and delegate actions via Facade
+> - Data Layer feeds both UI surfaces independently
+> - Components (Card, Tooltip, Navigation) are wired into UI surfaces
+> - RAG/Vector Search is auxiliary, integrated into Battle UI for advanced search
+> - Test fixtures validate all three layers (Engine, UI, CLI)
+
+> **Related diagrams**: See [prdBattleEngine.md](prdBattleEngine.md) for state machine details; [prdEventContracts.md](prdEventContracts.md) for event naming and payloads; [prdBattleClassic.md](prdBattleClassic.md) for Classic Battle initialization sequence
+
 ## Component Responsibilities
 
 - Battle Engine (`src/helpers/BattleEngine.js` and `src/helpers/battleEngineFacade.js`): authoritative game logic (draws, scoring, resolution). Emits canonical events used by UI and tests.
