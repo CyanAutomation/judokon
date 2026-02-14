@@ -163,8 +163,11 @@ async function performStatSelectionFlow(testApi) {
   // Step 5: Wait for state machine to reach roundDisplay to ensure full resolution
   // roundDisplay is entered after evaluation completes and engine rounds are incremented
   await withMutedConsole(async () => {
-    await state.waitForBattleState(["roundDisplay", "roundWait"], 5000);
+    await state.waitForBattleState(["roundResolve", "roundDisplay", "roundWait"], 5000);
   });
+
+  const roundCompleted = await state.waitForRoundsPlayed(1);
+  expect(roundCompleted).toBe(true);
 
   const nextRoundButton = document.querySelector('[data-role="next-round"]');
   expect(nextRoundButton).not.toBeNull();
