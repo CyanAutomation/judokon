@@ -72,7 +72,204 @@ This problem is especially pressing now as the roster grows, and players want a 
 
 ---
 
-## Acceptance Criteria
+## Browse Judoka Workflow
+
+```mermaid
+graph TD
+    A["🎮 Player selects<br/>Browse Judoka"] -->|Navigate from Menu/Map/Bar| B["📍 Open browseJudoka.html"]
+    B --> C["📥 Load judoka.json<br/>(async)"]
+    C -->|Success| D["🔍 Display Country<br/>Filter Panel"]
+    C -->|Fail| E["❌ Show Error<br/>+ Retry Button"]
+    E -->|Retry| C
+    E -->|Abandon| Z["Exit to Menu"]
+    D --> F{"Data<br/>Empty?"}
+    F -->|Yes| G["📭 Show<br/>No cards message"]
+    F -->|No| H["🎨 Build Card Carousel<br/>via buildCardCarousel()"]
+    H --> I["⬅️➡️ Display Navigation<br/>Arrows + Page Markers"]
+    I --> J["👁️ Player Explores"]
+    J -->|Swipe/Keyboard/Click| K["📍 Navigate Cards"]
+    K --> L["🎯 Center Card<br/>Enlarged +10%"]
+    L --> J
+    J -->|Select Country| M["🌍 Filter by Country"]
+    M --> N["🔄 Update Carousel<br/>with Filtered Data"]
+    N -->|Found matches| K
+    N -->|No matches| O["📭 Show<br/>No judoka found"]
+    O --> J
+    J -->|Back/Menu| Z["Exit Browse"]
+    style A fill:lightgreen
+    style J fill:lightblue
+    style Z fill:lightyellow
+    style E fill:lightsalmon
+    style G fill:lightsalmon
+    style O fill:lightsalmon
+```
+
+**Flow Annotations:**
+- **Entry**: Player navigates to Browse Judoka from main menu, map, or navigation bar
+- **Data Loading**: judoka.json fetched asynchronously; retry on failure
+- **Country Filter**: Alphabetical country list from judoka roster
+- **Carousel Display**: Cards rendered via buildCardCarousel with 1-2 (mobile) or 3-5 (desktop) visible
+- **Navigation**: Left/right arrows, swipe, keyboard (arrow keys), or mouse click
+- **Filtering**: Country selection filters carousel in real-time
+- **Exit**: Back button or menu navigation returns to previous screen
+
+---
+
+## Country Filter Integration Flow
+
+```mermaid
+graph LR
+    A["🌍 Global<br/>Judoka List<br/>100 cards"] -->|Filter Panel<br/>Displayed| B["📍 Country<br/>Selector"]
+    B -->|User selects<br/>country| C["🔍 Extract matching<br/>judoka"]
+    C -->|Filter SUCCESS| D["✅ Carousel<br/>Updated<br/>Filtered cards"]
+    C -->|No matches| E["📭 Empty state<br/>No judoka found"]
+    D -.->|User clears<br/>filter| F["🔄 Reset to<br/>all judoka"]
+    F -->|Refilter| A
+    E -->|Retry selection| B
+    B -->|Escape/Close| G["📊 Show<br/>All cards"]
+    style A fill:lightgreen
+    style B fill:lightblue
+    style D fill:lightgreen
+    style E fill:lightsalmon
+    style F fill:lightblue
+    style G fill:lightgreen
+```
+
+**Integration Points:**
+- **Filter Entry**: details/summary disclosure opens country picker
+- **Data Binding**: Country codes from judoka.json matched against flag assets
+- **Real-Time Update**: Carousel carousel refresh on country selection
+- **Reset Path**: Clear filter icon or close picker returns to unfiltered state
+- **Empty State**: "No judoka found" message when no matches for selected country
+
+---
+
+## Carousel Display: Responsive Card Layout
+
+| Context | Mobile (320-600px) | Desktop (>600px) |
+|---------|-------------------|------------------|
+| **Cards Visible** | 1-2 cards | 3-5 cards |
+| **Center Zoom** | 1.05x (tap focus) | 1.10x (hover/focus) |
+| **Snap Behavior** | Touch swipe + center snap | Click next/prev + auto-center |
+| **Page Markers** | Below carousel (full width) | Below carousel (centered) |
+| **Navigation Arrows** | Swipe-only on mobile | Large Prev/Next buttons |
+| **Card Height** | Flex (maintains aspect) | Locked ~400px |
+| **Spacing** | 8px gap | 16px gap |
+| **Bottom Stack** | Filter above carousel <768px | Filter beside carousel >768px |
+
+**Carousel Specifications:**
+```
+- Max cards per row: 5 (desktop) / 1 (mobile strict)
+- Lazy load images on viewport visibility
+- GPU-accelerated translate3d animations <400ms
+- Smooth scroll physics with inertia deceleration
+- Focus outline: 2px solid, 4:1 contrast ratio
+- Touch target: 44px minimum (cards + buttons)
+```
+
+---
+
+## Keyboard & Touch Navigation States
+
+```mermaid
+stateDiagram-v2
+    [*] --> Ready
+    Ready --> [*]
+
+    Ready --> Browsing: Focus on Card
+    Ready --> Filtering: Open Filter Panel
+
+    Browsing --> CardFocused: ArrowLeft/ArrowRight
+    CardFocused --> CardSelected: Enter/Space
+    CardSelected --> Browsing: Escape
+    CardFocused --> Browsing: TAB focus shift
+
+    Filtering --> CountrySelected: Select Country
+    CountrySelected --> FilterApplied: Carousel Updates
+    FilterApplied --> Browsing: Filter applied
+    FilterApplied --> CountrySelected: Change country
+    Filtering --> Browsing: Escape
+
+    note right of CardFocused
+        Focus outline visible
+        Card enlarged +10%
+        aria-current="true"
+    end note
+
+    note right of FilterApplied
+        aria-live updates
+        Carousel re-renders
+        Page markers reset
+    end note
+
+    note right of CountrySelected
+        Selected country
+        highlighted
+        (aria-selected="true")
+    end note
+```
+
+**Navigation States:**
+- **Ready**: Initial state, awaiting user interaction
+- **Browsing**: Carousel active, keyboard/touch navigation available
+- **CardFocused**: Individual card in focus, enlargement applied
+- **CardSelected**: Card opened (if tap action defined in future)
+- **Filtering**: Country picker open, selection mode active
+- **FilterApplied**: Carousel updates post-filter, markers reset
+
+---
+
+## Error Handling & Recovery State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> LoadingData
+    LoadingData --> [*]
+
+    LoadingData --> DataReady: Load Success
+    LoadingData --> LoadError: Fetch Fails
+
+    DataReady --> Browse: Has judoka
+    DataReady --> EmptyState: No judoka
+    EmptyState --> [*]
+
+    Browse --> Browse
+    Browse --> FilterEmpty: No matches for country
+    FilterEmpty --> Browse: Clear filter
+    FilterEmpty --> [*]
+
+    LoadError --> Error: Show "Unable to load roster"
+    Error --> RetryPrompt: User sees Retry button
+    RetryPrompt --> LoadingData: Retry clicked
+    RetryPrompt --> [*]: Abandon (return to menu)
+
+    note right of LoadError
+        Network timeout
+        JSON parse error
+        Data unavailable
+    end note
+
+    note right of FilterEmpty
+        Selected country
+        has 0 judoka
+        Display message
+    end note
+
+    note right of EmptyState
+        judoka.json empty
+        or invalid data
+        Display message
+    end note
+```
+
+**Error Recovery:**
+- **Fetch Failures**: Show error + Retry button; reload judoka.json on retry
+- **Empty Data**: Display "No cards available" message
+- **Filter Empty**: Display "No judoka found for [country]" + option to clear filter
+- **Image Failures**: Use default judoka card (id=0) placeholder
+- **Flag Asset Failures**: Use generic fallback flag icon, preserve alt text
+
+**Acceptance Criteria:**
 
 - If the judoka list is empty, display a message saying “No cards available.”
 - The full list of up to 100 judoka cards loads and is visible quickly.

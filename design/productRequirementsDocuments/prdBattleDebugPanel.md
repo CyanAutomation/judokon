@@ -38,7 +38,220 @@ Developers and testers need a way to observe internal game state (e.g., scores, 
 | P2       | Accessibility Compliance      | Use <pre> and aria-live for screen readers                    |
 | P3       | Hide in Production by Default | Hidden unless explicitly enabled (or DEBUG_LOGGING=true)      |
 
-## Acceptance Criteria
+## Debug Panel Visibility State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> Hidden
+    Hidden --> [*]
+
+    Hidden --> Hidden: Player starts Classic Battle
+    Hidden --> Visible: Settings toggle ON
+    Hidden --> Visible: DEBUG_LOGGING=true
+    Hidden --> Visible: __PROFILE_DEBUG_FLAGS__=true
+
+    Visible --> Visible: Round advances
+    Visible --> Visible: Timer updates
+    Visible --> Visible: Stat selected
+    Visible --> Hidden: Settings toggle OFF
+    Visible --> Hidden: Player exits battle
+
+    note right of Hidden
+        Default state
+        No panel displayed
+        Production users only
+    end note
+
+    note right of Visible
+        Panel above cards
+        Real-time updates
+        Copy button available
+    end note
+```
+
+**Visibility Logic:**
+- **Hidden by Default**: Panel hidden unless explicitly enabled in Settings or debug flag set
+- **Toggle-Enabled**: Settings page toggle switches panel visibility on/off
+- **Debug Flags Override**: DEBUG_LOGGING or __PROFILE_DEBUG_FLAGS__ force panel visible for development
+- **Persistence**: Toggle state saved to localStorage, persists across battles
+
+---
+
+## Debug Panel Content & Real-Time Updates
+
+```mermaid
+graph TD
+    A["⚔️ Battle Starts<br/>initClassicBattle()"] -->|Subscribe to events| B["📊 Debug State Buffer"]
+    B --> C["🔄 Store current state:<br/>playerScore, opponentScore,<br/>timer, matchEnded, seed"]
+    C --> D["📍 Render Panel<br/>above opponent card"]
+    E["🎯 Round Advance Event"] -->|Update| C
+    F["⏱️ Timer Tick"] -->|Update| C
+    G["✅ Stat Selected Event"] -->|Update| C
+    H["🏁 Match Ended Event"] -->|Update| C
+    C --> I["📝 Panel Content<br/>pre-formatted JSON"]
+    I --> J["📋 Copy Button<br/>copies to clipboard"]
+    J --> K["✅ Copied!<br/>Toast confirmation"]
+    D --> L["🎨 Visual: translucent<br/>background, fixed width<br/>Position: above cards"]
+    style A fill:lightgreen
+    style B fill:lightblue
+    style I fill:lightblue
+    style K fill:lightgreen
+```
+
+**Real-Time Updates Trigger:**
+- Score changes (round won/lost)
+- Timer countdown (<500ms refresh rate)
+- Match end detection (final score locked)
+- Test mode seed visibility (if applicable)
+
+**Panel Content Structure:**
+```json
+{
+  "playerScore": 2,
+  "opponentScore": 1,
+  "timer": 45000,
+  "matchEnded": false,
+  "seed": "a1b2c3d4e5" [if test mode]
+}
+```
+
+---
+
+## Performance HUD Activation & Alert Flow
+
+```mermaid
+graph LR
+    A["🚀 Page Load"] --> B{"Check Profiling<br/>Triggers"}
+    B -->|__PROFILE_DEBUG_FLAGS__=true| C["✅ Profiling<br/>ENABLED"]
+    B -->|__DEBUG_PERF__=true| C
+    B -->|__profileDebugFlags()| C
+    B -->|__debugPerf()| C
+    B -->|process.env flags| C
+    B -->|None set| D["❌ Profiling<br/>DISABLED"]
+    
+    C -->|Init on:| E["📊 Initialize HUD<br/>Settings page / Battle init<br/>CLI Battle init"]
+    E --> F["🔍 Start collecting<br/>flag execution times"]
+    F --> G["⏱️ Record metric<br/>avg/last/max + count"]
+    
+    G -->|Duration >= threshold| H["🚨 Flag ALERTING<br/>Default: 16ms"]
+    G -->|Duration < threshold| I["✅ Flag OK"]
+    
+    H --> J["📖 Add to alert history<br/>max 100 entries"]
+    J --> K["🎨 Show 5 most recent<br/>in HUD alert section"]
+    K --> L["📢 Dispatch event:<br/>debug-flag-hud:alert"]
+    L --> M["⚠️ Alert snapshot<br/>with timestamp"]
+    
+    D -->|Only logging| N["📝 Console output only<br/>for DEBUG_PERF logs"]
+    
+    style C fill:lightgreen
+    style D fill:lightyellow
+    style H fill:lightsalmon
+    style I fill:lightgreen
+```
+
+**Profiling Activation Conditions:**
+- `window.__PROFILE_DEBUG_FLAGS__ = true`
+- `window.__DEBUG_PERF__ = true`
+- `window.__profileDebugFlags()` (function call)
+- `window.__debugPerf()` (function call)
+- Environment: `process.env.DEBUG_FLAG_PERF` or `process.env.DEBUG_PERF`
+
+**Alert Threshold:**
+- Default: 16ms (for 60fps performance target)
+- Configurable: `window.__DEBUG_FLAG_ALERT_THRESHOLD__` or `process.env.DEBUG_FLAG_ALERT_THRESHOLD`
+- Alert if: `avg >= threshold` OR `max >= threshold` OR `last >= threshold`
+
+---
+
+## Performance HUD UI Layout & Controls
+
+```mermaid
+graph TD
+    A["📊 Performance HUD<br/>Fixed bottom-right corner<br/>z-index: 9999+"]
+    A --> B["🔝 Header"]
+    B --> C["Title: Debug Flag Metrics"]
+    B --> D["❌ Close button"]
+    
+    A --> E["📈 Metrics List<br/>Most recent collected"]
+    E --> F["Row: FLAG_NAME"]
+    F --> G["Avg: X.XXms | Last: Y.YYms | Max: Z.ZZms | Count: N"]
+    F --> H["🎯 Highlighting if alerting"]
+    
+    A --> I["🚨 Alert History<br/>Collapsible section"]
+    I --> J["Shows 5 most recent alerts"]
+    J --> K["Each alert: timestamp +<br/>flagName + duration"]
+    
+    A --> L["🎛️ Action Buttons"]
+    L --> M["📋 Copy Alerts<br/>JSON to clipboard"]
+    L --> N["🗑️ Clear<br/>Reset metrics + refresh"]
+    
+    M --> O["✅ Fallback: download<br/>if clipboard unavailable"]
+    
+    style A fill:lightblue
+    style B fill:lightgreen
+    style E fill:lightblue
+    style H fill:lightsalmon
+    style I fill:lightblue
+    style L fill:lightblue
+```
+
+**HUD Features:**
+- **Fixed Position**: Lower-right corner, always visible when active
+- **Metrics Display**: Live list of flag execution times (avg, last, max, count)
+- **Alert History**: Most recent 5 alerts (up to 100 stored)
+- **Copy Action**: Export alert history as JSON (or fallback to file download)
+- **Clear Action**: Reset metrics and refresh display
+- **Visual Indication**: Alerting flags highlighted (warning colors)
+
+---
+
+## Interactive Debug Panel State & Controls
+
+```mermaid
+stateDiagram-v2
+    [*] --> Ready
+    Ready --> [*]
+
+    Ready --> PanelVisible: Toggle ON or debug flag set
+    Ready --> CopiedToClipboard: (N/A - panel not visible)
+
+    PanelVisible --> ContentUpdated: Round event / Timer tick
+    ContentUpdated --> ContentUpdated: Score change
+    ContentUpdated --> ContentUpdated: Match end
+    PanelVisible --> CopiedToClipboard: User clicks Copy button
+    CopiedToClipboard --> PanelVisible: Notification fades
+
+    PanelVisible --> PanelHidden: Toggle OFF or exit battle
+    PanelHidden --> Ready
+
+    note right of PanelVisible
+        Panel displays:
+        - JSON formatted state
+        - Updated real-time
+        - Copy button enabled
+        - aria-live for a11y
+    end note
+
+    note right of CopiedToClipboard
+        Panel content copied
+        Toast confirmation shown
+        "Copied to clipboard" message
+    end note
+
+    note right of ContentUpdated
+        Panel refreshes <100ms
+        after event
+        Score/timer/match state
+    end note
+```
+
+**User Interactions:**
+- **Enable Panel**: Toggle in Settings ON → Panel appears immediately
+- **Copy State**: Click Copy → Content to clipboard → Toast confirmation
+- **Disable Panel**: Toggle OFF → Panel hides → Content cleared
+- **Real-Time Watching**: Panel updates automatically on events (no manual refresh needed)
+
+**Acceptance Criteria:**
 
 - Debug panel is hidden by default for all users
 - Enabling the toggle in Settings immediately shows the debug panel above the player and opponent cards in Classic Battle

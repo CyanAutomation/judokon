@@ -114,7 +114,227 @@ Quick Battle addresses this by offering a **single-round resolution**, cutting f
 
 ---
 
-## Acceptance Criteria
+## Quick Battle: Single-Round Game Loop
+
+```mermaid
+graph TD
+    A["🎮 Player launches<br/>Quick Battle"] -->|Direct start| B["🃏 Card Draw Phase"]
+    B -->|Each side draws<br/>one unique card| C["📍 Display Player Card<br/>+ Opponent Card<br/>(face-down placeholder)"]
+    
+    C --> D["⏱️ Stat Selection Phase<br/>30s countdown"]
+    D --> E["👁️ Player sees<br/>stat buttons"]
+    E -->|Player selects stat| F["✅ Player stat chosen"]
+    E -->|30s expires +<br/>autoSelect=true| G["🤖 Auto-select<br/>random stat"]
+    
+    F --> H["⏳ Opponent thinking<br/>Delay 500-1000ms<br/>Show: Opponent is choosing"]
+    G --> H
+    
+    H -->|AI selects stat<br/>per difficulty| I["🎲 Opponent stat chosen<br/>Difficulty:<br/>Easy=random<br/>Medium=avg+<br/>Hard=max"]
+    
+    I --> J["⚖️ Compare Phase<br/>Player stat vs<br/>Opponent stat"]
+    J --> K{Outcome}
+    K -->|Player > Opponent| L["🏆 VICTORY<br/>Show modal"]
+    K -->|Player < Opponent| M["💔 DEFEAT<br/>Show modal"]
+    K -->|Player = Opponent| N["🤝 DRAW<br/>Show modal"]
+    
+    L --> O["🎉 End Modal<br/>Cards + Result<br/>Play Again / Quit"]
+    M --> O
+    N --> O
+    
+    O -->|Play Again| A
+    O -->|Quit| P["🚪 Return to<br/>Menu"]
+    
+    style A fill:lightgreen
+    style B fill:lightblue
+    style C fill:lightblue
+    style D fill:lightblue
+    style J fill:lightyellow
+    style L fill:lightgreen
+    style M fill:lightsalmon
+    style N fill:lightyellow
+    style O fill:lightblue
+```
+
+**Game Flow:**
+1. **Card Draw**: Each player gets one random unique card
+2. **Stat Selection**: 30s countdown; player picks; auto-select on timeout
+3. **Opponent AI**: Selects based on difficulty (Easy/Medium/Hard)
+4. **Resolution**: Compare stats; Win/Loss/Draw
+5. **End Modal**: Show outcome; Play Again or Quit
+
+**Timing:**
+- Card draw: instant
+- Stat selection: 30s with countdown timer
+- Opponent delay: 500–1000ms (artificial thinking time)
+- Modal display: show immediately after comparison
+
+---
+
+## Quick Battle vs Classic Battle Comparison
+
+| Feature | Quick Battle | Classic Battle | Shared |
+|---------|--------------|----------------|--------|
+| **Duration** | <60s | 5-15min | N/A |
+| **Rounds** | 1 (fixed) | 3+ (customizable) | Stat selection loop |
+| **Round Select Modal** | ❌ None | ✅ Present | Card draw format |
+| **Scoreboard** | Shows current only | Shows progression | Result calculation |
+| **End Condition** | After round 1 | Win target reached | Stat comparison logic |
+| **Difficulty** | Easy/Medium/Hard | Implicit (opponent AI) | Same AI algorithm |
+| **Timer (30s)** | ✅ Per stat selection | ✅ Per stat selection | Identical countdown |
+| **Auto-Select** | ✅ On timeout | ✅ On timeout | Same drift handling |
+| **Opponent AI** | Selectable | Fixed (game default) | Score comparison logic |
+| **Victory Modal** | ✅ Immediate | ✅ After match end | Modal structure |
+| **Keyboard Hotkeys** | ✅ 1-5 for stats | ✅ 1-5 for stats | Feature flag controlled |
+
+**Key Differences:**
+- **No round selection**: Quick launches immediately to card draw
+- **Single round**: Match always ends after stat comparison
+- **Instant result**: Modal appears directly after stat comparison
+- **Optional difficulty selection**: Player may choose opponent difficulty
+
+---
+
+## Quick Battle State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> LaunchReady
+    LaunchReady --> [*]
+
+    LaunchReady --> CardDraw: Player taps Quick Battle
+    CardDraw --> PlayerCardReady: Cards drawn + shuffled
+    
+    PlayerCardReady --> WaitingForSelection: Show player card<br/>+ stat buttons
+    WaitingForSelection --> StatSelectionActive: Player focus on buttons
+    
+    StatSelectionActive --> PlayerStatChosen: User selects stat<br/>OR timeout (autoSelect)
+    
+    PlayerStatChosen --> OpponentThinking: Show "Opponent<br/>is choosing..."
+    OpponentThinking --> OpponentStatChosen: AI selects stat
+    
+    OpponentStatChosen --> Comparing: Reveal opponent card
+    Comparing --> ResultReady: Compare stats<br/>determine winner
+    
+    ResultReady --> VictoryModal: Player > Opponent
+    ResultReady --> DefeatModal: Player < Opponent
+    ResultReady --> DrawModal: Player = Opponent
+    
+    VictoryModal --> PlayAgainPrompt: Show "Play Again"<br/>button
+    DefeatModal --> PlayAgainPrompt
+    DrawModal --> PlayAgainPrompt
+    
+    PlayAgainPrompt --> QuitConfirm: Player chooses action
+    QuitConfirm --> Quit: Confirmed
+    QuitConfirm --> LaunchReady: Play Again
+    
+    Quit --> [*]
+
+    note right of CardDraw
+        Each player draws
+        one unique card
+    end note
+    
+    note right of PlayerStatChosen
+        30s countdown
+        auto-select if elapsed
+    end note
+    
+    note right of Comparing
+        Reveal opponent card
+        Show stat values
+    end note
+```
+
+**State Definitions:**
+- **Card Draw**: Initialize game; shuffle; assign random cards
+- **Selection**: 30s timer with auto-select fallback
+- **Opponent Thinking**: Artificial delay (500–1000ms) with "thinking..." message
+- **Comparison**: Reveal both cards and stat values; compute outcome
+- **Result Modal**: Victory/Defeat/Draw with Play Again / Quit options
+
+---
+
+## Quick Battle End Modal: Result Presentation
+
+```mermaid
+graph TD
+    A["📊 End Modal<br/>after 1 round"]
+    
+    A --> B{Outcome<br/>Type}
+    
+    B -->|Victory| C["🏆 VICTORY Header<br/>Gold background"]
+    B -->|Defeat| D["💔 DEFEAT Header<br/>Red background"]
+    B -->|Draw| E["🤝 DRAW Header<br/>Gray background"]
+    
+    C --> F["Card Showdown<br/>Player Card | vs | Opponent Card"]
+    D --> F
+    E --> F
+    
+    F --> G["📊 Stat Comparison<br/>Player: Power [X]<br/>vs<br/>Opponent: Power [Y]<br/>(or Speed, Technique, etc.)"]
+    
+    G --> H["🎖️ Outcome Detail<br/>You won by [Z] points<br/>or<br/>Tied at [X] points<br/>or<br/>Lost by [Z] points"]
+    
+    H --> I["🎛️ Action Buttons"]
+    I --> J["Play Again<br/>(restart game)"]
+    I --> K["Quit<br/>(return to menu)"]
+    
+    J --> L["Back to Quick<br/>Battle start"]
+    K --> M["Confirm quit<br/>→ Menu"]
+    
+    style A fill:lightblue
+    style C fill:lightgreen
+    style D fill:lightsalmon
+    style E fill:lightyellow
+    style F fill:lightblue
+    style G fill:lightblue
+```
+
+**Modal Content:**
+- **Header**: Victory/Defeat/Draw with appropriate styling
+- **Card Showdown**: Both cards displayed side-by-side
+- **Stat Comparison**: Show selected stat + values for both players
+- **Outcome Detail**: Points difference or draw marker
+- **Actions**: Play Again (loop) or Quit (menu)
+
+---
+
+## Timer Behavior: Selection Countdown & Auto-Select
+
+```mermaid
+graph TD
+    A["⏱️ Stat Selection Started<br/>Timer: 30s"] -->|Normal| B["📊 Countdown ticking<br/>30s → 25s → 20s ..."]
+    B -->|Timer > 2s| C["✅ Waiting for<br/>player selection"]
+    B -->|User selects| D["✅ Selection confirmed<br/>Cancel timer<br/>Proceed to opponent"]
+    
+    B -->|Timer ≤ 2s| E["⚠️ Drift detected<br/>Duration > 2s+<br/>Reset countdown"]
+    E --> B
+    
+    B -->|Timer reaches 0| F{autoSelect<br/>enabled?}
+    F -->|Yes| G["🤖 Auto-select<br/>random stat"]
+    F -->|No| H["⏸️ Wait for manual<br/>selection"]
+    
+    G --> I["✅ Stat selected via<br/>timeout"]
+    D --> J["Proceed to opponent<br/>AI thinking phase"]
+    I --> J
+    H --> J
+    
+    style A fill:lightgreen
+    style B fill:lightblue
+    style C fill:lightblue
+    style D fill:lightgreen
+    style E fill:lightyellow
+    style G fill:lightyellow
+    style I fill:lightgreen
+    style J fill:lightblue
+```
+
+**Timer Mechanics:**
+- **Countdown**: 30s visible to player
+- **Drift Detection**: If duration > 2s of expected, reset and show "Waiting..." message
+- **Auto-Select**: On timeout (if `autoSelect = true`), pick random stat
+- **Player Selection**: Cancel timer immediately; proceed to opponent phase
+
+**Acceptance Criteria:**
 
 - Player can launch Quick Battle, play one round, and see end modal in ≤ 60 s.
 - Stat selection timer behaves correctly (pause/resume, auto-select, drift fix).
