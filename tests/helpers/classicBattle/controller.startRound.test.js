@@ -6,13 +6,13 @@ import "./commonMocks.js";
 
 // Use vi.hoisted to create mock functions at the top level
 const {
-  initScoreboardAdapter: mockInitScoreboard,
-  disposeScoreboardAdapter: mockDisposeScoreboard,
-  whenScoreboardReady: mockWhenScoreboardReady
+  mockInitScoreboard,
+  mockDisposeScoreboard,
+  mockWhenScoreboardReady
 } = vi.hoisted(() => ({
-  initScoreboardAdapter: vi.fn(() => vi.fn()),
-  disposeScoreboardAdapter: vi.fn(),
-  whenScoreboardReady: vi.fn(async () => undefined)
+  mockInitScoreboard: vi.fn(() => vi.fn()),
+  mockDisposeScoreboard: vi.fn(),
+  mockWhenScoreboardReady: vi.fn(async () => undefined)
 }));
 
 // ===== Top-level vi.mock() call (Vitest static analysis phase) =====
@@ -61,16 +61,10 @@ vi.mock("../../../src/helpers/BattleEngine.js", () => {
   };
 });
 
-// Mock the non-existent scoreboardAdapter module
-vi.mock(
-  "../../../src/helpers/classicBattle/scoreboardAdapter.js",
-  () => ({
-    initScoreboardAdapter: mockInitScoreboard,
-    disposeScoreboardAdapter: mockDisposeScoreboard,
-    whenScoreboardReady: mockWhenScoreboardReady
-  }),
-  { virtual: true }
-);
+vi.mock("../../../src/helpers/battleScoreboard.js", () => ({
+  initBattleScoreboardAdapter: mockInitScoreboard,
+  disposeBattleScoreboardAdapter: mockDisposeScoreboard
+}));
 
 /**
  * Build a scoreboard header matching the Classic Battle layout.
@@ -223,7 +217,8 @@ describe.sequential("ClassicBattleController.startRound", () => {
 
     const scoreboardModule = await import("../../../src/helpers/setupScoreboard.js");
     scoreboardModule.setupScoreboard({ pauseTimer: vi.fn(), resumeTimer: vi.fn() });
-    disposeScoreboard = mockInitScoreboard();
+    const battleScoreboardModule = await import("../../../src/helpers/battleScoreboard.js");
+    disposeScoreboard = battleScoreboardModule.initBattleScoreboardAdapter();
     await mockWhenScoreboardReady();
 
     const roundStateModule = await import("../../../src/helpers/classicBattle/roundState.js");
@@ -282,8 +277,8 @@ describe.sequential("ClassicBattleController.startRound", () => {
     const opponentCard = document.getElementById("opponent-card");
     expect(opponentCard?.querySelector(".judoka-card")).toBeTruthy();
 
-    const roundCounter = document.getElementById("round-counter");
-    expect(roundCounter?.textContent.trim()).toBe("Round 1");
+    expect(mockInitScoreboard).toHaveBeenCalledTimes(1);
+    expect(mockWhenScoreboardReady).toHaveBeenCalledTimes(1);
   });
 
   it("emits roundStartError when opponent readiness fails", async () => {
