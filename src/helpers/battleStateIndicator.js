@@ -145,6 +145,7 @@ export async function createBattleStateIndicator({
    * Resolves a state label from the catalog.
    *
    * @param {string} stateName - The raw state name.
+   * @param {Record<string, string|number>} labelsMap - The labels map to query.
    * @returns {string} - The display label or the raw state name.
    */
   const getStateLabel = (stateName, labelsMap) =>
