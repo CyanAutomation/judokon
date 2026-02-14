@@ -73,7 +73,40 @@ describe("createBattleStateIndicator", () => {
     expect(announcerP.getAttribute("aria-live")).toBe("polite");
   });
 
-  it("should fetch the catalog and render the state list", async () => {
+  it("should prefer exact catalog keys over alias fallback when rendering", async () => {
+    const catalog = {
+      version: "v1",
+      order: ["roundWait"],
+      ids: {
+        roundWait: 7,
+        cooldown: 2
+      },
+      labels: {
+        roundWait: "Round Wait",
+        cooldown: "Cooldown"
+      },
+      display: { include: ["roundWait"] }
+    };
+    getCatalog.mockResolvedValue(catalog);
+
+    const { isReady } = await createBattleStateIndicator({
+      mount: mountEl,
+      announcer: announcerEl,
+      events,
+      getCatalog
+    });
+
+    expect(isReady).toBe(true);
+    const listItems = mountEl.querySelectorAll("li");
+    expect(listItems.length).toBe(1);
+
+    expect(listItems[0].dataset.stateRaw).toBe("roundWait");
+    expect(listItems[0].dataset.stateId).toBe("7");
+    expect(listItems[0].dataset.stateLabel).toBe("Round Wait");
+    expect(listItems[0].textContent).toBe("Round Wait");
+  });
+
+  it("should fallback to aliases when canonical keys are present", async () => {
     const catalog = {
       version: "v1",
       order: ["matchInit", "roundWait", "playerInput"],
@@ -115,6 +148,34 @@ describe("createBattleStateIndicator", () => {
     expect(listItems[2].dataset.stateId).toBe("3");
     expect(listItems[2].dataset.stateLabel).toBeUndefined();
     expect(listItems[2].textContent).toBe("playerInput");
+  });
+
+  it("should not map unknown aliases when rendering", async () => {
+    const catalog = {
+      version: "v1",
+      order: ["preRoundDelay"],
+      ids: {
+        cooldown: 2
+      },
+      labels: {
+        cooldown: "Cooldown"
+      },
+      display: { include: ["preRoundDelay"] }
+    };
+    getCatalog.mockResolvedValue(catalog);
+
+    await createBattleStateIndicator({
+      mount: mountEl,
+      announcer: announcerEl,
+      events,
+      getCatalog
+    });
+
+    const listItem = mountEl.querySelector("li");
+    expect(listItem.dataset.stateRaw).toBe("preRoundDelay");
+    expect(listItem.dataset.stateId).toBeUndefined();
+    expect(listItem.dataset.stateLabel).toBeUndefined();
+    expect(listItem.textContent).toBe("preRoundDelay");
   });
 
   it("should subscribe to and handle control.state.changed events", async () => {
