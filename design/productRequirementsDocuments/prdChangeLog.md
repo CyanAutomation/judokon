@@ -21,6 +21,54 @@ Players and developers currently lack a simple, in-game method to see which Judo
 
 ---
 
+## Recent Updates Data Flow
+
+**Changelog Load & Display Sequence**:
+
+```mermaid
+graph LR
+    A["📄 judoka.json<br/>Full judoka list"] -->|"Load data<br/>fetch or import"| B["🔄 Parse judoka<br/>entries"]
+    B -->|"Filter valid<br/>entries"| C["📊 Extract required<br/>fields"]
+    C -->|"lastUpdated,<br/>name, etc."| D["↕️ Sort by<br/>lastUpdated<br/>descending"]
+    D -->|"Then by<br/>name"| E["✂️ Limit to<br/>top 20 entries"]
+    E -->|"Build table<br/>rows"| F["🎨 Render table<br/>ID | Portrait |<br/>Name | Code | Date"]
+    F -->|"Load images<br/>lazy"| G["🖼️ Display<br/>portraits with<br/>fallback"]
+    G -->|"Add links"| H["🔗 Link Judoka<br/>names to profile<br/>or editor"]
+    H -->|"Format dates"| I["📅 Show<br/>lastUpdated<br/>timestamps"]
+    
+    I -->|"Render"| J["✅ Changelog<br/>table complete"]
+    
+    D -.->|"Load error"| K["⚠️ Show fallback<br/>'No Judoka data'<br/>message"]
+    
+    style A fill:#lightgreen
+    style J fill:#lightcyan
+    style E fill:#lightyellow
+    style F fill:#lightyellow
+```
+
+**Table Column Structure**:
+
+| Column | Width | Content | Sortable |
+|---|---|---|---|
+| Judoka ID | 48px | Numeric ID | No |
+| Portrait | 48px | Thumbnail image + fallback | No |
+| Judoka Name | flex | Text link to profile | No |
+| Card Code | auto | Code (e.g., JK-003) | No |
+| Last Modified | auto | Date last updated | No |
+
+**Status Badge**: ✅ **VERIFIED** — Validated against:
+- `src/pages/changelog.html` — Changelog page markup
+- `src/pages/changelog.init.js` — Data loading and table rendering
+- `src/data/judoka.json` — Data source with lastUpdated field
+- `tests/pages/changelog.test.js` — Data sorting and filtering tests
+- `playwright/changelog.spec.js` — E2E table display and link tests
+
+**Related Diagrams**:
+- [Data Schemas](prdDataSchemas.md) — Judoka data structure definition
+- [Settings Menu](prdSettingsMenu.md) — Navigation entry point
+
+---
+
 ## User Stories
 
 - As a player, I want to see which Judoka cards were recently updated so I can understand balance changes.

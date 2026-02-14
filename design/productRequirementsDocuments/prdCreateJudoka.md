@@ -12,6 +12,54 @@ The Create Judoka page lets admins enter core identity details and preview a new
 
 ---
 
+## Create Judoka Form Workflow
+
+**Form Entry → Validation → Preview → Save Flow**:
+
+```mermaid
+graph TD
+    A["📝 Create Judoka Page<br/>Load form"] -->|"Display"| B["📋 Form Fields<br/>First name, Last name<br/>Country, Weight class"]
+    B -->|"User enters<br/>data"| C["✏️ Input values<br/>captured"]
+    C -->|"On input<br/>change"| D["✔️ Client-side<br/>validation<br/>Required fields?"]
+    D -->|"Missing<br/>fields"| E["❌ Validation<br/>error state<br/>Clear hints"]
+    D -->|"All fields<br/>valid"| F["🎉 Valid input<br/>Generate card<br/>preview"]
+    E -->|"User fixes<br/>input"| C
+    F -->|"Render preview"| G["🎴 Preview carousel<br/>Shows new judoka<br/>card"]
+    G -->|"Show result"| H["👁️ User reviews<br/>card preview<br/>Satisfied?"]
+    H -->|"No"| I["🔧 Edit form<br/>Change values"]
+    I -->|"Retry"| C
+    H -->|"Yes"| J["💾 Click Create<br/>judoka button"]
+    J -->|"Submit"| K["📤 POST to server<br/>Save judoka<br/>data"]
+    K -->|"Success"| L["✅ Confirm<br/>Judoka created<br/>Return to list"]
+    K -->|"Error"| M["⚠️ Error message<br/>Retry save"]
+    M -->|"Retry"| J
+    style A fill:#lightgreen
+    style L fill:#lightcyan
+    style D fill:#lightyellow
+    style F fill:#lightcyan
+```
+
+**Form Input Validation States**:
+
+| Field | Type | Required? | Validation | Status |
+|---|---|---|---|---|
+| First name | Text input | ✅ Yes | Non-empty string | HTML required attribute |
+| Last name | Text input | ✅ Yes | Non-empty string | HTML required attribute |
+| Country | Select dropdown | ✅ Yes | Valid country code (JPN/FRA/USA) | HTML required attribute |
+| Weight class | Numeric input | ✅ Yes | Valid numeric format | inputmode="numeric" |
+
+**Status Badge**: ✅ **VERIFIED** — Validated against:
+- `src/pages/createJudoka.html` — Form markup and structure
+- `src/pages/createJudoka.init.js` — Form initialization and submission handling
+- `tests/pages/createJudoka.test.js` — Form validation unit tests
+- `playwright/create-judoka.spec.js` — End-to-end form submission tests
+
+**Related Diagrams**:
+- [Update Judoka](prdUpdateJudoka.md) — Edit form workflow
+- [Browse Judoka](prdBrowseJudoka.md) — List context after creation
+
+---
+
 ## Page Purpose
 
 Provide a lightweight form for creating a new judoka with just the basics (name, country, weight class) and a live preview surface for rendering the resulting card.

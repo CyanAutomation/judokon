@@ -14,6 +14,92 @@ This document defines the canonical data structures for all major entities in th
 
 ---
 
+## Data Schema Architecture
+
+**Core Entity Relationships**:
+
+```mermaid
+graph LR
+    A["⚔️ Judoka<br/>id, name, stats<br/>signatureMove, card"] -->|"1:1"| B["📊 Stats<br/>power, speed<br/>technique<br/>kumikIta, newaza"]
+    A -->|"M:1"| C["🌍 Country<br/>code, name"]
+    A -->|"1:1"| D["🎴 Card<br/>rarity, code<br/>weight class"]
+    A -->|"1:1"| E["📝 Bio<br/>firstName, surname<br/>birthday"]
+    C -->|"References"| G["🗂️ Country Codes<br/>ISO 3166-1 alpha-2"]
+    H["⚙️ Settings<br/>sound, UI, theme<br/>feature flags"] -->|"References"| I["🏳️ Feature Flags<br/>enabled, tooltip"]
+    J["📖 Aesop's Fables<br/>id, story, title"] -->|"1:1"| K["🎬 Fable Meta<br/>theme, difficulty<br/>keywords"]
+    L["💬 Stat Names<br/>id, name<br/>japanese, description"] -->|"Maps stat<br/>indices"| B
+    M["🥋 Gokyo Techniques<br/>nage-waza<br/>katame-waza"] -->|"Taxonomy for"| N["🏅 Signature Moves<br/>technique ID<br/>name, description"]
+    style A fill:#lightgreen
+    style B fill:#lightyellow
+    style H fill:#lightblue
+    style J fill:#lightcyan
+    style G fill:#lightyellow
+```
+
+**Schema Validation Lifecycle**:
+
+```mermaid
+graph TD
+    A["📝 Data change<br/>judoka.json<br/>or schema"] -->|"Update required"| B["🔁 Update Schema<br/>src/schemas/*.json<br/>Add/modify properties"]
+    B -->|"Use JSON Schema<br/>Draft-07"| C["🔍 Validate Structure<br/>Required fields?<br/>Type constraints?"]
+    C -->|"Pass"| D["✅ Run validate:data<br/>npm run validate:data<br/>Executes validateData.js"]
+    D -->|"Ajv engine"| E["🧪 Check all<br/>data files<br/>against schemas"]
+    E -->|"Success"| F["✨ All valid<br/>Ready to commit<br/>Update PRD"]
+    E -->|"Errors"| G["❌ Schema mismatch<br/>Fix data or schema<br/>Re-validate"]
+    G -->|"Retry"| D
+    style A fill:#lightgreen
+    style F fill:#lightcyan
+    style D fill:#lightyellow
+    style G fill:#lightsalmon
+```
+
+**Schema Hierarchy**:
+
+```mermaid
+graph TD
+    A["src/schemas/<br/>Canonical Source"] -->|"Root"| B["judoka.schema.json"]
+    A -->|"Root"| C["settings.schema.json"]
+    A -->|"Root"| D["aesopsFables.schema.json"]
+    A -->|"Root"| E["aesopsMeta.schema.json"]
+    A -->|"Shared"| F["commonDefinitions.schema.json<br/>Stats, CountryCode<br/>WeightClass, refs"]
+    B -->|"$ref"| F
+    C -->|"$ref"| F
+    D -->|"$ref"| F
+    E -->|"$ref"| F
+    G["src/data/<br/>Runtime Data"] -->|"Implements"| B
+    G -->|"Implements"| C
+    G -->|"Implements"| D
+    style A fill:#lightgreen
+    style G fill:#lightyellow
+    style F fill:#lightcyan
+```
+
+**Performance & Validation SLAs**:
+
+| Metric | Target |
+|---|---|
+| Schema validation (build) | < 500ms for full data set |
+| Runtime validation | < 10ms per object |
+| Schema file size | < 50KB each |
+| Data payload size | < 5MB (judoka.json) |
+| Ajv compilation | < 100ms per schema |
+
+**Status Badge**: ✅ **VERIFIED** — Validated against:
+- `src/schemas/judoka.schema.json` — Canonical judoka schema
+- `src/schemas/settings.schema.json` — Settings/feature flags schema
+- `src/schemas/commonDefinitions.schema.json` — Shared type definitions
+- `src/data/judoka.json` — Real judoka payload (200+ entries)
+- `src/data/statNames.json` — Stat name mappings
+- `scripts/validateData.js` — Validation workflow script
+- `tests/validation/schema-validation.test.js` — Schema compliance tests
+
+**Related Diagrams**:
+- [Settings Menu](prdSettingsMenu.md#configuration-structure) — Settings schema usage in UI
+- [Battle Scoreboard](prdBattleScoreboard.md) — Stat data structure in display context
+- [Create Judoka](prdCreateJudoka.md) — Form workflow for schema creation
+
+---
+
 ## Problem Statement / Why it matters
 
 Inconsistent data shapes cause runtime errors, UI breakage, and brittle tests. Tests and integrations depend on stable schemas. We need a single source of truth describing canonical fields, validation, and deprecation policy.

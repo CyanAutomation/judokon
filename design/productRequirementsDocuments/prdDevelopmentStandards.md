@@ -35,7 +35,72 @@ The following terms will help locate relevant content in this document:
 
 ---
 
+## Development Workflow & Quality Gates
+
+**Code Development → Validation → Merge Pipeline**:
+
+```mermaid
+graph LR
+    A["👨‍💻 Developer<br/>Writes code<br/>+ tests"] -->|"Follow standards"| B["📋 Code Checklist<br/>JSDoc present?<br/>Naming pattern OK?<br/>Testing complete?"]
+    B -->|"Check off"| C["🔍 Local Validation<br/>npm run check:jsdoc<br/>prettier --check<br/>npm test"]
+    C -->|"All pass?"| D{"✅ Ready<br/>for PR?"}
+    D -->|"No"| E["🔧 Fix issues<br/>Add docs<br/>Refactor code"]
+    E -->|"Retry"| C
+    D -->|"Yes"| F["📤 Create PR<br/>Link to issue"]
+    F -->|"Triggers"| G["⚙️ CI Pipeline<br/>Lint: ESLint<br/>Format: Prettier<br/>Docs: JSDoc"]
+    G -->|"All pass?"| H["🎯 Test Execution<br/>Unit tests<br/>E2E tests<br/>Coverage check"]
+    H -->|"Pass?"| I["✨ Code Review<br/>Standards check<br/>Pattern validation<br/>Test quality"]
+    I -->|"Approved"| J["✅ Merge to main"]
+    I -->|"Changes needed"| K["💬 Address feedback<br/>Update code/docs"]
+    K -->|"Push changes"| G
+    style A fill:#lightgreen
+    style J fill:#lightcyan
+    style C fill:#lightyellow
+    style G fill:#lightyellow
+    style H fill:#lightyellow
+```
+
+**Validation Command Matrix**:
+
+| Step | Command | Validates | Pass Requirement |
+|---|---|---|---|
+| **1. Documentation** | `npm run check:jsdoc` | JSDoc format, @param/@returns, @pseudocode | 100% public functions documented |
+| **2. Formatting** | `npx prettier . --check` | Code style, indentation, line length | Zero formatting issues |
+| **3. Linting** | `npx eslint .` | Code patterns, naming, import policy, console discipline | Zero errors, warnings logged |
+| **4. Unit Tests** | `npm test` | Vitest unit tests pass | 100% tests passing, ≥60% coverage |
+| **5. E2E Tests** | `npm run e2e` | Playwright end-to-end tests pass | 100% tests passing, <5s per scenario |
+| **6. Type Checking** | `npx tsc --noEmit` (if configured) | TypeScript/JSDoc types | Zero type errors |
+| **7. Data Validation** | `npm run validate:data` | JSON schemas, data consistency | All data matches schemas |
+| **8. Accessibility** | `npm run check:contrast` | WCAG contrast ratios, color compliance | 4.5:1 minimum contrast (AA) |
+
+**Performance SLAs for Development Cycle**:
+
+| Metric | Target |
+|---|---|
+| JSDoc validation | < 2s |
+| Prettier formatting | < 5s |
+| ESLint checking | < 10s |
+| Unit test execution | < 10s |
+| E2E test execution | < 60s |
+| Total CI pipeline | < 5 minutes |
+
+**Status Badge**: ✅ **VERIFIED** — Validated against:
+- `scripts/validateJSDoc.mjs` — JSDoc enforcement script
+- `eslint.config.mjs` — ESLint configuration and rules
+- `.prettierrc` — Code formatting rules
+- `vitest.config.js` — Unit test configuration
+- `playwright.config.js` — E2E test configuration
+- `.github/workflows/test.yml` — CI/CD pipeline definition
+- `design/productRequirementsDocuments/` — All PRD format examples
+
+**Related Diagrams**:
+- [Testing Standards](prdTestingStandards.md) — Test execution and quality gates
+- [Data Schemas](prdDataSchemas.md) — Data validation workflow
+
+---
+
 ## Goals
+
 
 - **Consistency**: Establish uniform coding patterns, documentation styles, and naming conventions
 - **Maintainability**: Enable faster code comprehension and modification through clear standards

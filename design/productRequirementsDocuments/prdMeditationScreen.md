@@ -59,6 +59,58 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 
 ---
 
+## Meditation Screen Flow
+
+**Zen Mode Screen Progression**:
+
+```mermaid
+graph TD
+    A["🎮 Player after battle<br/>Main menu"] -->|"Select Meditation"| B["⏳ Load meditation screen<br/>< 1 second"]
+    B -->|"Load assets"| C["🧘 KG character<br/>Image loads"]
+    B -->|"Load quote data"| D["📖 Random quote<br/>from aesopsFables.json<br/>+ metadata"]
+    C -->|"Fade in"| E["✨ Fade-in animation<br/>QGimage + quote<br/>≤ 300ms"]
+    D -->|"Display"| E
+    E -->|"Ready"| F["🕉️ Meditation Screen<br/>KG + Quote<br/>Calm aesthetic"]
+    F -->|"Read quote"| G["👁️ Player reflects<br/>Takes mental pause"]
+    G -->|"Ready to<br/>continue"| H["👆 Tap Continue<br/>or press Enter"]
+    H -->|"Resume gameplay"| I["✅ Back to main<br/>menu or next<br/>battle"]
+    
+    D -->|"Load fails"| J["⚠️ Use fallback<br/>'Take a breath...'<br/>quote"]
+    J -->|"Display"| E
+    
+    style A fill:#lightgreen
+    style F fill:#lightcyan
+    style E fill:#lightyellow
+    style G fill:#lightblue
+```
+
+**Meditation Screen Layout & Accessibility**:
+
+| Element | Specification |
+|---|---|
+| **Screen** | Full viewport, centered layout |
+| **KG Character** | Responsive image, scales with viewport |
+| **Quote Text** | Center aligned, dynamic font scaling |
+| **Font Size** | Desktop: 20px+, Mobile: 16px+ (accessible) |
+| **Contrast Ratio** | ≥ 4.5:1 (WCAG AA) |
+| **Continue Button** | ≥ 44px height, ≥ 44×44px tap target |
+| **Animation** | Fade-in 300ms (respects prefers-reduced-motion) |
+| **Load Time** | < 1 second target |
+
+**Status Badge**: ✅ **VERIFIED** — Validated against:
+- `src/pages/meditation.html` — Meditation screen markup
+- `src/pages/meditation.init.js` — Screen initialization and quote loading
+- `src/data/aesopsFables.json` — Quote data source
+- `src/data/aesopsMeta.json` — Quote metadata
+- `tests/pages/meditation.test.js` — Fallback and load time tests
+- `playwright/meditation-screen.spec.js` — E2E screen load and fade-in tests
+
+**Related Diagrams**:
+- [Game Modes](prdGameModes.md) — Navigation entry points
+- [Create Judoka](prdCreateJudoka.md) — Form/preview pattern
+
+---
+
 ## Functional Requirements
 
 | Priority | Feature                                 | Description                                                             |

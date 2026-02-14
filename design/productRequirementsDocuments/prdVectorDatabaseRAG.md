@@ -243,6 +243,93 @@ The Vector Search demo is implemented in [`src/pages/vectorSearch.html`](../../s
 
 ---
 
+## Vector Search Pipeline Architecture
+
+**Embedding Generation (Offline)**:
+
+```mermaid
+graph LR
+    A["📁 Source Files<br/>PRDs, tooltips.json<br/>judoka.json"] -->|Parse & chunk| B["✂️ Text Chunking<br/>~350 tokens<br/>15% overlap"]
+    B -->|Deduplicate| C["🔍 Normalize Text<br/>Lowercase<br/>Remove duplicates"]
+    C -->|Embed| D["🧠 Generate embeddings<br/>MiniLM model<br/>384-dim vectors"]
+    D -->|Add metadata| E["📝 Build entries<br/>id, text, embedding,<br/>source, tags"]
+    E -->|Shard| F["💾 Save client_embeddings<br/>JSON file<br/>< 38.8mb"]
+    F -->|Commit| G["✅ Ready for search"]
+    style A fill:#lightgreen
+    style G fill:#lightcyan
+    style D fill:#lightyellow
+```
+
+**Runtime Query-to-Results Pipeline**:
+
+```mermaid
+graph TD
+    A["🔍 User Query<br/>'How to implement <br/>tooltip system'"] -->|Normalize| B["📚 Query Expansion<br/>Synonyms lookup<br/>Multi-intent split"]
+    B -->|Encode| C["🧠 Generate query vector<br/>Same MiniLM model<br/>384-dim"]
+    C -->|Pre-filter| D["⚡ Sparse term match<br/>Quick discard<br/>non-overlapping entries"]
+    D -->|Rank| E["📊 Cosine similarity<br/>Top 5 matches<br/>Score ≥ 0.6"]
+    E -->|Select| F["✨ Filter strong matches<br/>Score boost for<br/>exact term matches"]
+    F -->|Format| G["📋 Return results<br/>text, source, tags<br/>score, contextPath"]
+    G -->|Display| H["🎨 Render in UI<br/>Match | Source | Tags | Score"]
+    style A fill:#lightgreen
+    style H fill:#lightcyan
+    style E fill:#lightyellow
+```
+
+**Search Result Flow**:
+
+```mermaid
+sequenceDiagram
+    participant User as User/Agent
+    participant UI as Vector Search UI
+    participant Store as client_embeddings<br/>.json
+    participant Similarity as Cosine Similarity<br/>Engine
+    participant Context as Context<br/>Fetcher
+
+    User->>UI: Enter query + filter tags
+    UI->>UI: Expand query with synonyms
+    UI->>UI: Generate query vector (MiniLM)
+    UI->>Store: Load embeddings (cached)
+    Store-->>UI: Return all indexed entries
+    UI->>Similarity: Compare query vs all entries
+    Similarity-->>UI: Return scored matches (top 5)
+    UI->>UI: Filter by tag if selected
+    UI->>UI: Apply strong/weak classification
+    alt Strong matches (score ≥ 0.6)
+        UI->>Context: Fetch adjacent context
+        Context-->>UI: Return markdown snippet
+    end
+    UI->>User: Display ranked results + context
+```
+
+**Performance SLAs**:
+
+| Metric | Target |
+|---|---|
+| Embedding generation | < 30s (offline) |
+| First query latency | ≤ 200ms |
+| Subsequent queries | ≤ 100ms (cached embeddings) |
+| Context fetch | ≤ 50ms (from loaded documents) |
+| UI render (results) | ≤ 16ms (60fps) |
+| File size | < 38.8mb for fast load |
+
+**Test Coverage**: ✅ **VERIFIED** — Validated against:
+- `src/helpers/queryRag.js` — Main query interface
+- `src/helpers/vectorSearch/similarity.js` — Cosine similarity implementation
+- `src/helpers/vectorSearch/chunkConfig.js` — Text chunking rules
+- `src/pages/vectorSearch.html` — UI demo page
+- `tests/helpers/queryRag.test.js` — Vector search unit tests
+- `playwright/prd-reader.spec.js` — E2E vector search demo tests
+- `scripts/buildOfflineRag.mjs` — Embedding generation script
+- `scripts/evaluation/evaluateRAG.js` — RAG performance metrics
+
+**Related Diagrams**:
+- [Battle Engine FSM](prdBattleEngine.md) — State definitions for "state management" queries
+- [Data Schemas](prdDataSchemas.md) — Data structure references for "JSON structure" queries
+- [Settings Menu](prdSettingsMenu.md) — Feature flag guidance for "configuration" queries
+
+---
+
 ## Operations & Tooling
 
 ### Quick Start

@@ -6,6 +6,105 @@ This PRD establishes comprehensive testing standards for the JU-DO-KON! project,
 
 ---
 
+## Testing Quality & Validation Pipeline
+
+**Complete Test-to-Merge Workflow**:
+
+```mermaid
+graph LR
+    A["👨‍💻 Developer<br/>writes code"] -->|"Create tests"| B["🧪 Write Unit/E2E<br/>Follow standards"]
+    B -->|"Follow patterns"| C["📋 Test Structure<br/>Describe blocks<br/>Given/When/Then"]
+    C -->|"Run locally"| D["🏃 Execute Tests<br/>npm test<br/>npm run e2e"]
+    D -->|"Analyze results"| E{"✅ Tests<br/>Pass?"}
+    E -->|"Yes"| F["📊 Evaluate Quality<br/>npm run test:value<br/>Scoring rubric"]
+    E -->|"No"| G["🔧 Fix code/tests"]
+    G -->|"Retry"| D
+    F -->|"Score ≤4?"| H["❌ Fail<br/>Improve quality"]
+    H -->|"Refactor"| B
+    F -->|"Score ≥5?"| I["📤 Push to GitHub<br/>Create PR"]
+    I -->|"CI runs"| J["⚙️ CI Pipeline<br/>Lint, Format,<br/>Type Check"]
+    J -->|"All pass?"| K["🎯 Test Validation<br/>Unit: npm test<br/>E2E: npm run e2e"]
+    K -->|"All pass"| L["✨ Code Review<br/>Assess quality<br/>Test coverage"]
+    L -->|"Approved"| M["✅ Merge to main"]
+    M -->|"Triggers"| N["🚀 Deploy & Monitor<br/>Track test health"]
+    style A fill:#lightgreen
+    style M fill:#lightcyan
+    style F fill:#lightyellow
+    style E fill:#lightyellow
+    style H fill:#lightsalmon
+```
+
+**Unit vs E2E Test Quality Scoring Matrix**:
+
+| Dimension | Unit Tests (Vitest) | E2E Tests (Playwright) | Weight |
+|---|---|---|---|
+| **Intent Clarity** | Descriptive titles, behavior-focused | User flow documented, linked to requirements | 2 |
+| **Behavioral Relevance** | Tests critical functions, linked to issues/PRD | Tests critical user paths, validates visible outcomes | 2 |
+| **Assertion Quality** | Semantic assertions (.toEqual), avoid snapshots | Web-first locators (getByRole), no hardcoded delays | 2 |
+| **Isolation & Robustness** | Fake timers, minimal mocking (<4 spies), no DOM manipulation | Stable locators, condition-based waits, no timeouts | 2 |
+| **Cost vs Coverage** | Fast execution (<100ms each) | Parallelize safely, minimize resource use | 2 |
+| **Scoring Range** | 0–10 points | 0–10 points | — |
+| **Pass Threshold** | ≥5 points | ≥4 points (CI enforced) | — |
+
+**Automated Test Evaluation Workflow**:
+
+```mermaid
+sequenceDiagram
+    participant Dev as Developer
+    participant Test as Test Files
+    participant Vitest as Vitest<br/>Unit Tests
+    participant Playwright as Playwright<br/>E2E Tests
+    participant Scoring as Quality<br/>Scorer
+    participant CI as CI Pipeline
+
+    Dev->>Test: Write tests (unit + E2E)
+    Dev->>Vitest: npm test (run unit tests)
+    Vitest-->>Dev: Results + coverage
+    Dev->>Playwright: npm run e2e (run E2E tests)
+    Playwright-->>Dev: Pass/Fail + flakiness
+    
+    alt All Tests Pass
+        Dev->>Scoring: npm run test:value
+        Scoring->>Test: Analyze test quality
+        Scoring-->>Dev: Quality score (0-10)
+        
+        alt Score >= 5 (Good)
+            Dev->>CI: Push to GitHub
+            CI->>Test: Re-run all tests
+        else Score < 5 (Poor Quality)
+            Dev->>Test: Refactor tests
+            Dev->>Vitest: npm test (retry)
+        end
+    else Tests Fail
+        Dev->>Test: Fix code or tests
+        Dev->>Vitest: npm test (retry)
+    end
+```
+
+**Performance SLAs for Testing**:
+
+| Test Type | Target | Acceptable | Critical |
+|---|---|---|---|
+| Unit test execution | < 100ms | < 200ms | < 500ms |
+| E2E test (simple flow) | < 2s | < 5s | < 10s |
+| Full test suite (unit) | < 10s | < 30s | — |
+| Full E2E suite (parallel) | < 60s | < 120s | — |
+| CI validation gate | < 5 min | < 10 min | — |
+
+**Status Badge**: ✅ **VERIFIED** — Validated against:
+- `tests/` — Unit test implementations (Vitest)
+- `playwright/` — E2E test specifications (Playwright)
+- `scripts/evaluateTestValue.mjs` — Quality scoring algorithm
+- `.github/workflows/test.yml` — CI test validation gates
+- `.github/workflows/pw-test-value.yml` — Playwright quality enforcement
+- `docs/testing/` — Testing documentation and examples
+
+**Related Diagrams**:
+- [Development Standards](prdDevelopmentStandards.md#validation-pipeline) — Code validation and quality gates
+- [Battle Pages Regression Testing](prdBattlePages.md) — Specialized test organization for critical pages
+
+---
+
 ## Problem Statement
 
 Inconsistent testing practices across the JU-DO-KON! project lead to unreliable test suites, false positives, and tests that fail to catch real regressions. Without unified standards for test structure, naming, and quality assessment, developers create tests of varying quality, and the test suite becomes difficult to maintain. Poor test practices result in reduced confidence in the codebase, slower development cycles, and increased maintenance overhead.
