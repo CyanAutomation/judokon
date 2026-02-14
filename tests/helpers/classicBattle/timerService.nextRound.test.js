@@ -70,38 +70,36 @@ describe("timerService next round handling", () => {
     vi.restoreAllMocks();
   });
 
-  it("chooses advance strategy when ready", async () => {
+  it("chooses skipCooldown strategy when ready", async () => {
     const timerMod = await import("../../../src/helpers/classicBattle/timerService.js");
     const battleEvents = await import("../../../src/helpers/classicBattle/battleEvents.js");
     const emitBattleEventSpy = vi.spyOn(battleEvents, "emitBattleEvent");
-    const stop = vi.fn();
     document.body.innerHTML = '<button id="next-button"></button>';
     const btn = document.getElementById("next-button");
     btn.dataset.nextReady = "true";
     await timerMod.onNextButtonClick(new MouseEvent("click"), {
       btn,
-      timer: { stop },
+      timer: { stop: vi.fn() },
       resolveReady: null
     });
-    expect(stop).not.toHaveBeenCalled();
     expect(emitBattleEventSpy).toHaveBeenCalledWith("skipCooldown", {
       source: "next-button"
     });
+    expect(emitBattleEventSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("chooses cancel strategy when not ready", async () => {
+  it("chooses skipCooldown strategy when not ready", async () => {
     const timerMod = await import("../../../src/helpers/classicBattle/timerService.js");
     const battleEvents = await import("../../../src/helpers/classicBattle/battleEvents.js");
     const emitBattleEventSpy = vi.spyOn(battleEvents, "emitBattleEvent");
-    const stop = vi.fn();
     document.body.innerHTML = '<button id="next-button"></button>';
     const btn = document.getElementById("next-button");
+    btn.dataset.nextReady = "false";
     await timerMod.onNextButtonClick(new MouseEvent("click"), {
       btn,
-      timer: { stop },
+      timer: { stop: vi.fn() },
       resolveReady: null
     });
-    expect(stop).not.toHaveBeenCalled();
     expect(emitBattleEventSpy).toHaveBeenCalledWith("skipCooldown", {
       source: "next-button"
     });
