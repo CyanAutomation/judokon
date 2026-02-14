@@ -579,9 +579,28 @@ describe("Battle Classic Page Integration", () => {
     // Instead, assert stable completion invariants that are contractually guaranteed.
     expect(postRoundOverStore).toBe(initialStore);
 
+    const nextRoundButton = document.querySelector('[data-role="next-round"]');
+    const selectionTimer = document.getElementById("selection-timer");
+    // Next-round controls/timers are durable readiness indicators after a completed round.
+    expect(nextRoundButton || selectionTimer).toBeTruthy();
+
+    const roundCompletionObserved = await withMutedConsole(async () => {
+      const timeoutAt = Date.now() + 3000;
+      while (Date.now() < timeoutAt) {
+        const currentStoreRounds = Number(getBattleStore()?.roundsPlayed ?? 0);
+        const currentEngineRounds = Number(testApi.engine.getRoundsPlayed() ?? 0);
+        if (currentStoreRounds > roundsBefore || currentEngineRounds > roundsBefore) {
+          return true;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 25));
+      }
+      return false;
+    });
+    expect(roundCompletionObserved).toBe(true);
+
     const debugAfter = testApi.inspect.getDebugInfo();
-    const roundsAfter = debugAfter?.store?.roundsPlayed ?? 0;
-    const engineRoundsAfter = testApi.engine.getRoundsPlayed();
+    const roundsAfter = Number(debugAfter?.store?.roundsPlayed ?? getBattleStore()?.roundsPlayed ?? 0);
+    const engineRoundsAfter = Number(testApi.engine.getRoundsPlayed() ?? 0);
     // roundsPlayed increment and engine/store sync are stable post-round invariants.
     expect(roundsAfter).toBeGreaterThan(roundsBefore);
     expect(engineRoundsAfter).toBe(roundsAfter);
