@@ -48,18 +48,58 @@ function cancelPendingTask() {
 }
 
 function scheduleIdleWork(run) {
+  let fallbackTimeoutId = null;
+  let frameId = null;
+  let idleId = null;
+  let settled = false;
+
+  const clearScheduledHandles = () => {
+    if (typeof fallbackTimeoutId === "number") {
+      clearTimeout(fallbackTimeoutId);
+      fallbackTimeoutId = null;
+    }
+    if (typeof frameId === "number" && typeof cancelAnimationFrame === "function") {
+      cancelAnimationFrame(frameId);
+      frameId = null;
+    }
+    if (typeof idleId === "number" && typeof cancelIdleCallback === "function") {
+      cancelIdleCallback(idleId);
+      idleId = null;
+    }
+  };
+
+  const settleRun = () => {
+    if (settled) {
+      return;
+    }
+    settled = true;
+    clearScheduledHandles();
+    run();
+  };
+
+  const settleCancel = () => {
+    if (settled) {
+      return;
+    }
+    settled = true;
+    clearScheduledHandles();
+  };
+
   if (typeof requestIdleCallback === "function") {
-    const idleId = requestIdleCallback(run);
-    pendingTaskCancel = () => cancelIdleCallback(idleId);
+    idleId = requestIdleCallback(settleRun);
+    pendingTaskCancel = settleCancel;
     return;
   }
+
   if (typeof requestAnimationFrame === "function") {
-    const frameId = requestAnimationFrame(run);
-    pendingTaskCancel = () => cancelAnimationFrame(frameId);
+    frameId = requestAnimationFrame(settleRun);
+    fallbackTimeoutId = setTimeout(settleRun, 48);
+    pendingTaskCancel = settleCancel;
     return;
   }
-  const timeoutId = setTimeout(run, 16);
-  pendingTaskCancel = () => clearTimeout(timeoutId);
+
+  fallbackTimeoutId = setTimeout(settleRun, 16);
+  pendingTaskCancel = settleCancel;
 }
 
 function scheduleOutlineRender(selectorList) {
