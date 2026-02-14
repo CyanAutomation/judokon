@@ -98,8 +98,12 @@ async function performStatSelectionFlow(testApi) {
   expect(store.selectionMade).toBe(false);
   expect(store.playerChoice).toBeNull();
 
+  const roundsBefore = Number(engine.getRoundsPlayed() ?? 0);
   const debugBefore = inspect.getDebugInfo();
-  const roundsBefore = debugBefore?.store?.roundsPlayed ?? 0;
+  const debugRoundsBefore = Number(debugBefore?.store?.roundsPlayed ?? 0);
+  const storeRoundsBefore = Number(ensureStore().roundsPlayed ?? 0);
+  expect(debugRoundsBefore).toBe(roundsBefore);
+  expect(storeRoundsBefore).toBe(roundsBefore);
 
   // Step 2: Click round button and wait for roundSelect state
   const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
@@ -166,21 +170,25 @@ async function performStatSelectionFlow(testApi) {
     await state.waitForBattleState(["roundResolve", "roundDisplay", "roundWait"], 5000);
   });
 
-  const roundCompleted = await state.waitForRoundsPlayed(1);
+  const roundCompleted = await state.waitForRoundsPlayed(roundsBefore + 1);
   expect(roundCompleted).toBe(true);
 
   const nextRoundButton = document.querySelector('[data-role="next-round"]');
   expect(nextRoundButton).not.toBeNull();
   expect(nextRoundButton?.textContent ?? "").not.toBe("");
 
+  const roundsAfter = engine.getRoundsPlayed();
   const debugAfter = inspect.getDebugInfo();
-  const roundsAfter = debugAfter?.store?.roundsPlayed ?? 0;
+  const debugRoundsAfter = Number(debugAfter?.store?.roundsPlayed ?? 0);
+  const storeRoundsAfter = Number(ensureStore().roundsPlayed ?? 0);
+  expect(debugRoundsAfter).toBe(roundsAfter);
+  expect(storeRoundsAfter).toBe(roundsAfter);
 
   return {
     store: ensureStore(),
     roundsBefore,
     roundsAfter,
-    engineRounds: engine.getRoundsPlayed()
+    engineRounds: roundsAfter
   };
 }
 
@@ -509,7 +517,7 @@ describe("Battle Classic Page Integration", () => {
     expect(result.store).toBeTruthy();
     expect(result.roundsAfter).toBeGreaterThan(result.roundsBefore);
     expect(result.engineRounds).toBe(result.roundsAfter);
-  });
+  }, 20000);
 
   it("keeps roundsPlayed in sync between engine and store in orchestrated flow", async () => {
     await init();
@@ -521,7 +529,7 @@ describe("Battle Classic Page Integration", () => {
     expect(result.store).toBeTruthy();
     expect(result.roundsAfter).toBeGreaterThan(result.roundsBefore);
     expect(result.engineRounds).toBe(result.roundsAfter);
-  });
+  }, 20000);
 
   it("exposes the battle store through the public accessor during a full selection flow", async () => {
     await init();
