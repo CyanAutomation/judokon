@@ -72,6 +72,8 @@ describe("timerService next round handling", () => {
 
   it("chooses advance strategy when ready", async () => {
     const timerMod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const battleEvents = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    const emitBattleEventSpy = vi.spyOn(battleEvents, "emitBattleEvent");
     const stop = vi.fn();
     document.body.innerHTML = '<button id="next-button"></button>';
     const btn = document.getElementById("next-button");
@@ -81,13 +83,16 @@ describe("timerService next round handling", () => {
       timer: { stop },
       resolveReady: null
     });
-    const dispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
     expect(stop).not.toHaveBeenCalled();
-    expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
+    expect(emitBattleEventSpy).toHaveBeenCalledWith("skipCooldown", {
+      source: "next-button"
+    });
   });
 
   it("chooses cancel strategy when not ready", async () => {
     const timerMod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const battleEvents = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    const emitBattleEventSpy = vi.spyOn(battleEvents, "emitBattleEvent");
     const stop = vi.fn();
     document.body.innerHTML = '<button id="next-button"></button>';
     const btn = document.getElementById("next-button");
@@ -96,9 +101,38 @@ describe("timerService next round handling", () => {
       timer: { stop },
       resolveReady: null
     });
-    const dispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
-    expect(stop).toHaveBeenCalled();
-    expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
+    expect(stop).not.toHaveBeenCalled();
+    expect(emitBattleEventSpy).toHaveBeenCalledWith("skipCooldown", {
+      source: "next-button"
+    });
+    expect(emitBattleEventSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("prevents duplicate Next clicks while click handling is in flight", async () => {
+    const timerMod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const battleEvents = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    const emitBattleEventSpy = vi.spyOn(battleEvents, "emitBattleEvent");
+    document.body.innerHTML = '<button id="next-button"></button>';
+    const btn = document.getElementById("next-button");
+
+    const firstClick = timerMod.onNextButtonClick(new MouseEvent("click"), {
+      btn,
+      timer: { stop: vi.fn() },
+      resolveReady: null
+    });
+
+    await timerMod.onNextButtonClick(new MouseEvent("click"), {
+      btn,
+      timer: { stop: vi.fn() },
+      resolveReady: null
+    });
+
+    await firstClick;
+
+    expect(emitBattleEventSpy).toHaveBeenCalledWith("skipCooldown", {
+      source: "next-button"
+    });
+    expect(emitBattleEventSpy).toHaveBeenCalledTimes(1);
   });
 
   it("clicking Next during cooldown skips current phase", async () => {
@@ -252,10 +286,10 @@ describe("timerService next round handling", () => {
     timer.start(3);
 
     expect(snackbarManager.show).toHaveBeenCalledWith({
-      message: "Next round in: 3s",
+      text: "Next round in: 3s",
       priority: "HIGH",
       minDuration: 0,
-      autoDismiss: 0
+      ttl: 0
     });
     // Snackbar shows static message (no updates after initial render)
     // Scoreboard still updates each tick
@@ -305,8 +339,7 @@ describe("timerService next round handling", () => {
       expect(setupFallbackTimer).toHaveBeenCalled();
       expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
       expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
-      // When shared dispatcher succeeds, machine dispatch should NOT be called
-      expect(machine.dispatch).not.toHaveBeenCalled();
+      expect(machine.dispatch).toHaveBeenCalledWith("ready");
       expect(getStateSnapshot).toHaveBeenCalled();
     } finally {
       debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
