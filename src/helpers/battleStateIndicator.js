@@ -127,13 +127,28 @@ export async function createBattleStateIndicator({
   };
 
   /**
+   * Safely resolves catalog map values (ids/labels) as plain objects.
+   *
+   * @param {object} sourceCatalog - The catalog to read from.
+   * @param {"ids"|"labels"} key - The map key to resolve.
+   * @returns {Record<string, string|number>} - A safe map object.
+   */
+  const getCatalogMap = (sourceCatalog, key) => {
+    const map = sourceCatalog?.[key];
+    if (!map || typeof map !== "object" || Array.isArray(map)) {
+      return {};
+    }
+    return map;
+  };
+
+  /**
    * Resolves a state label from the catalog.
    *
    * @param {string} stateName - The raw state name.
    * @returns {string} - The display label or the raw state name.
    */
-  const getStateLabel = (stateName) =>
-    resolveStateValue(stateName, currentCatalog.labels) || stateName;
+  const getStateLabel = (stateName, labelsMap) =>
+    resolveStateValue(stateName, labelsMap) || stateName;
 
   /**
    * Updates the unknown state flag on the root element.
@@ -152,15 +167,17 @@ export async function createBattleStateIndicator({
    * Renders the state list using a DocumentFragment to minimize reflows.
    */
   const renderList = () => {
+    const idsMap = getCatalogMap(currentCatalog, "ids");
+    const labelsMap = getCatalogMap(currentCatalog, "labels");
     const fragment = document.createDocumentFragment();
     currentCatalog.display.include.forEach((stateName) => {
       const li = document.createElement("li");
       li.dataset.stateRaw = stateName;
-      const stateId = resolveStateValue(stateName, currentCatalog.ids);
+      const stateId = resolveStateValue(stateName, idsMap);
       if (stateId !== undefined) {
         li.dataset.stateId = stateId;
       }
-      const label = getStateLabel(stateName);
+      const label = getStateLabel(stateName, labelsMap);
       if (label !== stateName) {
         li.dataset.stateLabel = label;
       }
