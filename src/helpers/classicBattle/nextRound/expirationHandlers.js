@@ -479,7 +479,12 @@ export async function dispatchReadyWithOptions(params) {
  * @returns {Promise<{ dispatched: boolean, dedupeTracked: boolean }>}
  */
 export async function dispatchReadyDirectly(params) {
-  const { machineReader, emitTelemetry, forceMachineDispatchAfterShared = false, customDispatcher } = params;
+  const {
+    machineReader,
+    emitTelemetry,
+    forceMachineDispatchAfterShared = false,
+    customDispatcher
+  } = params;
   let machine = null;
   try {
     machine = machineReader?.();

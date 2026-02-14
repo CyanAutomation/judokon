@@ -312,6 +312,7 @@ describe("handleStatSelection helpers", () => {
     } finally {
       getSchedulerSpy.mockRestore();
     }
+  });
 
   it("falls back to global clearTimeout when scheduler clear throws", async () => {
     const failingHandle = { id: "failing-handle" };
