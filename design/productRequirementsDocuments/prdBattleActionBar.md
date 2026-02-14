@@ -196,21 +196,21 @@ graph LR
 stateDiagram-v2
     [*] --> Default: Engine Init
     
-    Default: ⚪ All Stat Buttons<br/>VISIBLE but DISABLED<br/>(grayed out, opacity 0.5)
+    Default: ⚪ All Stat Buttons\nVISIBLE but DISABLED\n(grayed out, opacity 0.5)
     
-    Default --> SelectionRequired: Engine emits<br/>roundSelect event
+    Default --> SelectionRequired: Engine emits\nroundSelect event
     
-    SelectionRequired: 🎯 Stat Buttons ENABLED<br/>Keyboard: 1-5 active<br/>Mouse/Touch: clickable
+    SelectionRequired: 🎯 Stat Buttons ENABLED\nKeyboard: 1-5 active\nMouse/Touch: clickable
     
-    SelectionRequired --> InputReceived: User presses<br/>key 1-5 / clicks stat
+    SelectionRequired --> InputReceived: User presses\nkey 1-5 / clicks stat
     
-    InputReceived: ⚫ Button active state<br/>Pulse animation 150ms<br/>Send stat selection to engine
+    InputReceived: ⚫ Button active state\nPulse animation 150ms\nSend stat selection to engine
     
-    InputReceived --> Cooldown: Engine evaluates<br/>Stat comparison<br/>Awards points
+    InputReceived --> Cooldown: Engine evaluates\nStat comparison\nAwards points
     
-    Cooldown: 🔒 All Stat Buttons LOCKED<br/>DISABLED + opacity reduced<br/>Duration: 3s (default)
+    Cooldown: 🔒 All Stat Buttons LOCKED\nDISABLED + opacity reduced\nDuration: 3s (default)
     
-    Cooldown --> Default: Cooldown expires<br/>OR next round begins
+    Cooldown --> Default: Cooldown expires\nOR next round begins
     
     note right of Default
         Always in DOM
@@ -271,38 +271,38 @@ graph TD
 
 ```mermaid
 graph TD
-    A["🎮 Engine Emits State"] --> B{"State Type?"}
+    A["👆 Tap/Click ⚙ Button"] -->|Keyboard: O| B["▶️ Modal Opening\nFade-in 200ms"]
     
-    B -->|waitingForMatchStart| C["Label: START"]
-    B -->|roundDraw| D["Label: DRAW"]
-    B -->|roundResolve| E["Label: NEXT"]
-    B -->|cooldown| F["🔒 LOCKED<br/>opacity 0.5<br/>onClick blocked"]
-    B -->|matchEnd| G["Label: REPLAY"]
+    B --> C["📋 Modal Open\n4 Controls:\n• Quit\n• Replay\n• Audio Toggle\n• Reduced Motion Toggle"]
     
-    C --> H["Action Button<br/>ENABLED"]
-    D --> H
-    E --> H
-    G --> H
+    C --> D{"User Action?"}
     
-    F --> I["Action Button<br/>DISABLED<br/>No response to click/Enter"]
+    D -->|Tap Quit| E["🔴 Confirm Modal\nPre-focus: Cancel"]
+    D -->|Tap Replay| F["🔄 Replay Match\nReset to start"]
+    D -->|Toggle Audio| G["🔊 Update settings\nPersist to localStorage"]
+    D -->|Toggle Motion| H["✨ Apply reduced motion\nCSS: prefers-reduced-motion"]
+    D -->|Tap outside / Esc| I["▶️ Modal Closing\nFade-out 200ms"]
     
-    H --> J["👆 User presses<br/>Button / Enter / Space"]
+    E --> J{"Confirm?"}
+    J -->|Cancel| I
+    J -->|Confirm Quit| K["🚪 Return to\nLanding Page\nLog: battle.quit event"]
     
-    J --> K["⚫ Button active state<br/>Pulse 150ms"]
+    F --> L["🎮 Battle resets\nRound 1, Score 0-0"]
+    G --> M["💾 Save audio state"]
+    H --> N["🎨 Apply motion prefs"]
     
-    K --> L["🔹 Emit engine event<br/>actionButtonPressed"]
+    L --> I
+    M --> I
+    N --> I
     
-    L --> M["Engine processes<br/>Advances match state"]
+    K --> End["🏁 End"]
     
-    I -->|Cooldown expires| H
+    I --> O["✅ Modal Closed"]
+    O --> P["⚙ Button released"]
     
-    style C fill:#lightgreen
-    style D fill:#lightgreen
-    style E fill:#lightgreen
-    style G fill:#lightgreen
-    style F fill:#ffe6e6
-    style H fill:#lightgreen
-    style I fill:#ffe6e6
+    style B fill:#fff8dc
+    style C fill:#e0ffff
+    style O fill:#d0f0c0
 ```
 
 **Button State Transitions & Keyboard Mapping**:
