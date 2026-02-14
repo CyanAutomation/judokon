@@ -314,6 +314,8 @@ describe("handleStatSelection helpers", () => {
     }
   });
 
+  // Keep subsequent cases at describe-scope (not nested in the prior `it`).
+
   it("falls back to global clearTimeout when scheduler clear throws", async () => {
     const failingHandle = { id: "failing-handle" };
     const fakeScheduler = {
