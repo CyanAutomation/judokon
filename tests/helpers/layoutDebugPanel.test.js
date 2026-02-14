@@ -119,4 +119,27 @@ describe("toggleLayoutDebugPanel", () => {
     expect(el.classList.contains("layout-debug-outline")).toBe(true);
     expect(globalThis.requestAnimationFrame).toHaveBeenCalledTimes(1);
   });
+
+  it("falls back when requestIdleCallback exists but never invokes callback", async () => {
+    globalThis.requestIdleCallback = vi.fn(() => 88);
+    globalThis.cancelIdleCallback = vi.fn();
+
+    const { toggleLayoutDebugPanel, flushLayoutDebugPanelWork } = await import(
+      "../../src/helpers/layoutDebugPanel.js"
+    );
+
+    document.body.innerHTML = '<div id="idle-stuck"></div>';
+    const el = document.getElementById("idle-stuck");
+    Object.defineProperty(el, "offsetParent", { get: () => document.body });
+
+    const pending = toggleLayoutDebugPanel(true, ["#idle-stuck"]);
+
+    await flushScheduledWork();
+    await expect(flushLayoutDebugPanelWork()).resolves.toBeUndefined();
+    await pending;
+
+    expect(el.classList.contains("layout-debug-outline")).toBe(true);
+    expect(globalThis.requestIdleCallback).toHaveBeenCalledTimes(1);
+    expect(globalThis.cancelIdleCallback).toHaveBeenCalledTimes(1);
+  });
 });
