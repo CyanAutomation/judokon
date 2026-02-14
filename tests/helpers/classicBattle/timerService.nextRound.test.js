@@ -271,7 +271,9 @@ describe("timerService next round handling", () => {
   it("CooldownRenderer shows static message", async () => {
     const timerMod = await import("../../../src/helpers/timers/createRoundTimer.js");
     const { attachCooldownRenderer } = await import("../../../src/helpers/CooldownRenderer.js");
-    const snackbarManager = (await import("../../../src/helpers/SnackbarManager.js")).default;
+    const { default: snackbarManager, SnackbarPriority } = await import(
+      "../../../src/helpers/SnackbarManager.js"
+    );
     const scoreboardMod = await import("../../../src/helpers/setupScoreboard.js");
 
     const timer = timerMod.createRoundTimer({
@@ -287,7 +289,7 @@ describe("timerService next round handling", () => {
 
     expect(snackbarManager.show).toHaveBeenCalledWith({
       text: "Next round in: 3s",
-      priority: "HIGH",
+      priority: SnackbarPriority.HIGH,
       minDuration: 0,
       ttl: 0
     });
