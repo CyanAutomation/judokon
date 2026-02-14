@@ -197,64 +197,72 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
   async function revealOpponentCardAfterResolution(selectionToken) {
     const revealSequence = ++opponentRevealSequence;
     const isCurrentReveal = () => revealSequence === opponentRevealSequence;
-    const container = document.getElementById("opponent-card");
-    if (!container) {
-      clearPendingOpponentCardData(undefined, selectionToken);
-      return;
-    }
-    const capturedToken = pendingOpponentCardDataToken;
-    if (selectionToken !== undefined && selectionToken !== capturedToken) {
-      return;
-    }
-    const capturedCardData = pendingOpponentCardData;
-    let cardData = capturedCardData;
-    if (!cardData) {
-      try {
-        cardData = await getOpponentCardDataFn();
-      } catch {
-        cardData = null;
-      }
-    }
-    if (!isCurrentReveal()) {
-      clearPendingOpponentCardData(revealSequence, capturedToken);
-      return;
-    }
-    const tokenMatches = selectionToken === undefined || selectionToken === capturedToken;
-    const resolvedCardData = tokenMatches ? cardData : capturedCardData;
-    if (!resolvedCardData) {
-      return;
-    }
-    try {
-      await renderOpponentCardFn(resolvedCardData, container);
-    } catch {
-      clearPendingOpponentCardData(undefined, selectionToken);
-      return;
-    }
-    await waitForMinimumOpponentObscureDuration();
-    await waitForNextFrame();
-    if (!isCurrentReveal()) {
-      clearPendingOpponentCardData(revealSequence, capturedToken);
-      return;
-    }
-    try {
-      const placeholder = container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`);
-      if (placeholder) placeholder.remove();
-    } catch {}
-    try {
-      container.classList.remove("is-obscured");
-      container.classList.remove("opponent-hidden");
-    } catch {}
-    try {
-      container.setAttribute("aria-label", OPPONENT_CARD_CONTAINER_ARIA_LABEL);
-    } catch {}
-    emitBattleEvent("opponentReveal.completed", {
+    const completionDetail = {
       selectionToken,
-      revealSequence
-    });
-    if (tokenMatches) {
-      clearPendingOpponentCardData(undefined, selectionToken);
+      revealSequence,
+      cancelled: false
+    };
+    const container = document.getElementById("opponent-card");
+    try {
+      if (!container) {
+        clearPendingOpponentCardData(undefined, selectionToken);
+        return;
+      }
+      const capturedToken = pendingOpponentCardDataToken;
+      if (selectionToken !== undefined && selectionToken !== capturedToken) {
+        completionDetail.cancelled = true;
+        return;
+      }
+      const capturedCardData = pendingOpponentCardData;
+      let cardData = capturedCardData;
+      if (!cardData) {
+        try {
+          cardData = await getOpponentCardDataFn();
+        } catch {
+          cardData = null;
+        }
+      }
+      if (!isCurrentReveal()) {
+        completionDetail.cancelled = true;
+        clearPendingOpponentCardData(revealSequence, capturedToken);
+        return;
+      }
+      const tokenMatches = selectionToken === undefined || selectionToken === capturedToken;
+      const resolvedCardData = tokenMatches ? cardData : capturedCardData;
+      if (!resolvedCardData) {
+        return;
+      }
+      try {
+        await renderOpponentCardFn(resolvedCardData, container);
+      } catch {
+        clearPendingOpponentCardData(undefined, selectionToken);
+        return;
+      }
+      await waitForMinimumOpponentObscureDuration();
+      await waitForNextFrame();
+      if (!isCurrentReveal()) {
+        completionDetail.cancelled = true;
+        clearPendingOpponentCardData(revealSequence, capturedToken);
+        return;
+      }
+      try {
+        const placeholder = container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`);
+        if (placeholder) placeholder.remove();
+      } catch {}
+      try {
+        container.classList.remove("is-obscured");
+        container.classList.remove("opponent-hidden");
+      } catch {}
+      try {
+        container.setAttribute("aria-label", OPPONENT_CARD_CONTAINER_ARIA_LABEL);
+      } catch {}
+      if (tokenMatches) {
+        clearPendingOpponentCardData(undefined, selectionToken);
+      }
+      lastOpponentRevealTimestamp = 0;
+    } finally {
+      emitBattleEvent("opponentReveal.completed", completionDetail);
     }
-    lastOpponentRevealTimestamp = 0;
   }
 
   // Create local helper that uses injected dependencies
