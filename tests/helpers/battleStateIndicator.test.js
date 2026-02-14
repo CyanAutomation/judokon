@@ -276,4 +276,38 @@ describe("createBattleStateIndicator", () => {
     expect(listItems.length).toBe(2);
     expect(listItems[1].dataset.stateRaw).toBe("roundWait");
   });
+
+  it("should keep alias-based stateId mapping after catalog refresh", async () => {
+    const catalogV1 = {
+      version: "v1",
+      order: ["roundWait"],
+      ids: { roundWait: 1 },
+      labels: { roundWait: "Round Wait" },
+      display: { include: ["roundWait"] }
+    };
+    const catalogV2 = {
+      version: "v2",
+      order: ["roundWait"],
+      ids: { cooldown: 2 },
+      labels: { cooldown: "Cooldown" },
+      display: { include: ["roundWait"] }
+    };
+    getCatalog.mockResolvedValueOnce(catalogV1).mockResolvedValueOnce(catalogV2);
+
+    await createBattleStateIndicator({
+      mount: mountEl,
+      announcer: announcerEl,
+      events,
+      getCatalog
+    });
+
+    const handler = events.on.mock.calls[0][1];
+    handler({ to: "roundWait", catalogVersion: "v2" });
+    await Promise.resolve();
+
+    const refreshedItem = mountEl.querySelector('li[data-state-raw="roundWait"]');
+    expect(refreshedItem.dataset.stateId).toBe("2");
+    expect(refreshedItem.dataset.stateLabel).toBe("Cooldown");
+    expect(refreshedItem.textContent).toBe("Cooldown");
+  });
 });
