@@ -82,6 +82,26 @@ function clearPendingOpponentCardData(sequence, token) {
   }
 }
 
+function finalizeRevealContainerState(container, options = {}) {
+  if (!container) return;
+  const { clearPlaceholder = false, setAriaLabel = false } = options;
+  try {
+    container.classList.remove("is-obscured");
+    container.classList.remove("opponent-hidden");
+  } catch {}
+  if (clearPlaceholder) {
+    try {
+      const placeholder = container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`);
+      if (placeholder) placeholder.remove();
+    } catch {}
+  }
+  if (setAriaLabel) {
+    try {
+      container.setAttribute("aria-label", OPPONENT_CARD_CONTAINER_ARIA_LABEL);
+    } catch {}
+  }
+}
+
 function waitForNextFrame() {
   return new Promise((resolve) => {
     try {
@@ -203,6 +223,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       cancelled: false
     };
     const container = document.getElementById("opponent-card");
+    let shouldClearPlaceholder = false;
     try {
       if (!container) {
         completionDetail.cancelled = true;
@@ -242,6 +263,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         clearPendingOpponentCardData(undefined, selectionToken);
         return;
       }
+      shouldClearPlaceholder = true;
       await waitForMinimumOpponentObscureDuration();
       await waitForNextFrame();
       if (!isCurrentReveal()) {
@@ -249,22 +271,15 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         clearPendingOpponentCardData(revealSequence, capturedToken);
         return;
       }
-      try {
-        const placeholder = container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`);
-        if (placeholder) placeholder.remove();
-      } catch {}
-      try {
-        container.classList.remove("is-obscured");
-        container.classList.remove("opponent-hidden");
-      } catch {}
-      try {
-        container.setAttribute("aria-label", OPPONENT_CARD_CONTAINER_ARIA_LABEL);
-      } catch {}
       if (tokenMatches) {
         clearPendingOpponentCardData(undefined, selectionToken);
       }
       lastOpponentRevealTimestamp = 0;
     } finally {
+      finalizeRevealContainerState(container, {
+        clearPlaceholder: shouldClearPlaceholder,
+        setAriaLabel: true
+      });
       emitBattleEvent("opponentReveal.completed", completionDetail);
     }
   }
