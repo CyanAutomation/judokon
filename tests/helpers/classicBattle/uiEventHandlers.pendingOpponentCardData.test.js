@@ -66,4 +66,3 @@ describe("uiEventHandlers pending opponent card data clear guards", () => {
     });
   });
 });
-});

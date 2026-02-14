@@ -311,6 +311,7 @@ describe("handleStatSelection helpers", () => {
       expect(store.autoSelectExecuteId).toBeNull();
     } finally {
       getSchedulerSpy.mockRestore();
+    }
   it("falls back to global clearTimeout when scheduler clear throws", async () => {
     const failingHandle = { id: "failing-handle" };
     const fakeScheduler = {
