@@ -66,7 +66,7 @@ vi.mock("../../../src/helpers/classicBattle/scoreboardAdapter.js", () => ({
   initScoreboardAdapter: mockInitScoreboard,
   disposeScoreboardAdapter: mockDisposeScoreboard,
   whenScoreboardReady: mockWhenScoreboardReady
-}));
+}), { virtual: true });
 
 /**
  * Build a scoreboard header matching the Classic Battle layout.
@@ -127,6 +127,9 @@ describe.sequential("ClassicBattleController.startRound", () => {
 
   beforeEach(async () => {
     vi.resetModules();
+    mockInitScoreboard.mockClear();
+    mockDisposeScoreboard.mockClear();
+    mockWhenScoreboardReady.mockClear();
     timers = useCanonicalTimers();
     document.body.innerHTML = "";
 
@@ -216,11 +219,8 @@ describe.sequential("ClassicBattleController.startRound", () => {
 
     const scoreboardModule = await import("../../../src/helpers/setupScoreboard.js");
     scoreboardModule.setupScoreboard({ pauseTimer: vi.fn(), resumeTimer: vi.fn() });
-    const scoreboardAdapter = await import(
-      "../../../src/helpers/classicBattle/scoreboardAdapter.js"
-    );
-    disposeScoreboard = scoreboardAdapter.initScoreboardAdapter();
-    await scoreboardAdapter.whenScoreboardReady();
+    disposeScoreboard = mockInitScoreboard();
+    await mockWhenScoreboardReady();
 
     const roundStateModule = await import("../../../src/helpers/classicBattle/roundState.js");
     roundStore = roundStateModule.roundState;
