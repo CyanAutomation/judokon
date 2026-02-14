@@ -937,7 +937,8 @@ function createReadyDispatchConfiguration({
     const rawResult = await dispatchReadyDirectly({
       machineReader,
       emitTelemetry,
-      forceMachineDispatchAfterShared: shouldForceMachineDispatchAfterShared
+      forceMachineDispatchAfterShared: shouldForceMachineDispatchAfterShared,
+      customDispatcher: options.dispatchBattleEvent
     });
     const normalizedResult =
       rawResult && typeof rawResult === "object" && rawResult !== null

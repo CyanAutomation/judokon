@@ -475,10 +475,11 @@ export async function dispatchReadyWithOptions(params) {
  * @param {() => any} params.machineReader
  * @param {(key: string, value: any) => void} [params.emitTelemetry]
  * @param {boolean} [params.forceMachineDispatchAfterShared] When true, allows machine dispatch after successful shared dispatch
+ * @param {Function} [params.customDispatcher] Optional override for the battle event dispatcher
  * @returns {Promise<{ dispatched: boolean, dedupeTracked: boolean }>}
  */
 export async function dispatchReadyDirectly(params) {
-  const { machineReader, emitTelemetry, forceMachineDispatchAfterShared = false } = params;
+  const { machineReader, emitTelemetry, forceMachineDispatchAfterShared = false, customDispatcher } = params;
   let machine = null;
   try {
     machine = machineReader?.();
@@ -538,6 +539,34 @@ export async function dispatchReadyDirectly(params) {
     return typeof currentDispatch === "function";
   };
   try {
+    // Use custom dispatcher if provided (for test overrides or dependency injection)
+    if (typeof customDispatcher === "function") {
+      const result = await customDispatcher("ready");
+      if (result !== false) {
+        dedupeTracked = true;
+        if (!shouldInvokeMachineAfterShared(customDispatcher)) {
+          return recordSuccess(true);
+        }
+        const machineStateBeforeDispatch = readMachineState();
+        if (
+          machineStateBeforeDispatch &&
+          machineStateBeforeDispatch !== "roundWait" &&
+          machineStateBeforeDispatch !== "roundDisplay"
+        ) {
+          return recordSuccess(true);
+        }
+        try {
+          await dispatchViaMachine();
+          return recordSuccess(true);
+        } catch (error) {
+          machineError = error;
+          emitTelemetry?.("handleNextRound_dispatchReadyDirectly_machineErrorAfterShared", {
+            message: error?.message ?? String(error)
+          });
+        }
+      }
+      return { dispatched: false, dedupeTracked };
+    }
     const sharedDispatch =
       typeof eventDispatcher?.dispatchBattleEvent === "function"
         ? eventDispatcher.dispatchBattleEvent
