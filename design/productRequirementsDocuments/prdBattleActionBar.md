@@ -161,6 +161,282 @@ Previously, battle modes relied on the global bottom navigation bar, which provi
 
 ---
 
+## Battle Action Bar Component Layout & State Machine
+
+**7-Button Control Surface**:
+
+```mermaid
+graph LR
+    A["[ ⚙ Options ]"] --> B["[ Power<br/>1 ]"]
+    B --> C["[ Speed<br/>2 ]"]
+    C --> D["[ Technique<br/>3 ]"]
+    D --> E["[ Kumi-kata<br/>4 ]"]
+    E --> F["[ Ne-waza<br/>5 ]"]
+    F --> G["[ ▶ Next ]"]
+    
+    H["Engine State"] -.->|Observe| B
+    H -.->|Observe| C
+    H -.->|Observe| D
+    H -.->|Observe| E
+    H -.->|Observe| F
+    H -.->|Observe| G
+    
+    style A fill:#lightblue
+    style B fill:#lightyellow
+    style C fill:#lightyellow
+    style D fill:#lightyellow
+    style E fill:#lightyellow
+    style F fill:#lightyellow
+    style G fill:#lightgreen
+```
+
+**Stat Button Enablement & Keyboard Shortcut Mapping**:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Default: Engine Init
+    
+    Default: ⚪ All Stat Buttons<br/>VISIBLE but DISABLED<br/>(grayed out, opacity 0.5)
+    
+    Default --> SelectionRequired: Engine emits<br/>roundSelect event
+    
+    SelectionRequired: 🎯 Stat Buttons ENABLED<br/>Keyboard: 1-5 active<br/>Mouse/Touch: clickable
+    
+    SelectionRequired --> InputReceived: User presses<br/>key 1-5 / clicks stat
+    
+    InputReceived: ⚫ Button active state<br/>Pulse animation 150ms<br/>Send stat selection to engine
+    
+    InputReceived --> Cooldown: Engine evaluates<br/>Stat comparison<br/>Awards points
+    
+    Cooldown: 🔒 All Stat Buttons LOCKED<br/>DISABLED + opacity reduced<br/>Duration: 3s (default)
+    
+    Cooldown --> Default: Cooldown expires<br/>OR next round begins
+    
+    note right of Default
+        Always in DOM
+        Visible on page
+        Prevented from interaction
+    end note
+    
+    note right of SelectionRequired
+        State = "roundSelect"
+        Engine value in DOM via
+        data-action-state="roundSelect"
+    end note
+    
+    note right of Cooldown
+        State = "cooldown"
+        Automatic unlock timer
+        OR triggered by round event
+    end note
+```
+
+**Options Modal Lifecycle**:
+
+```mermaid
+graph TD
+    A["👆 Tap/Click ⚙ Button"] -->|Keyboard: O| B["▶️ Modal Opening<br/>Fade-in 200ms"]
+    
+    B --> C["📋 Modal Open<br/>4 Controls:<br/>• Quit<br/>• Replay<br/>• Audio Toggle<br/>• Reduced Motion Toggle"]
+    
+    C --> D{"User Action?"}
+    
+    D -->|Tap Quit| E["🔴 Confirm Modal<br/>Pre-focus: Cancel"]
+    D -->|Tap Replay| F["🔄 Replay Match<br/>Reset to start"]
+    D -->|Toggle Audio| G["🔊 Update settings<br/>Persist to localStorage"]
+    D -->|Toggle Motion| H["✨ Apply reduced motion<br/>CSS: prefers-reduced-motion"]
+    D -->|Tap outside / Esc| I["▶️ Modal Closing<br/>Fade-out 200ms"]
+    
+    E --> J{"Confirm?"}
+    J -->|Cancel| I
+    J -->|Confirm Quit| K["🚪 Return to<br/>Landing Page<br/>Log: battle.quit event"]
+    
+    F --> L["🎮 Battle resets<br/>Round 1, Score 0-0"]
+    G --> M["💾 Save audio state"]
+    H --> N["🎨 Apply motion prefs"]
+    
+    L --> I
+    M --> I
+    N --> I
+    K --> [*]
+    I --> O["✅ Modal Closed"]
+    O --> P["⚙ Button released"]
+    
+    style B fill:#lightyellow
+    style C fill:#lightcyan
+    style O fill:#lightgreen
+```
+
+**Action Button Label & Lock State**:
+
+```mermaid
+graph TD
+    A["🎮 Engine Emits State"] --> B{"State Type?"}
+    
+    B -->|waitingForMatchStart| C["Label: START"]
+    B -->|roundDraw| D["Label: DRAW"]
+    B -->|roundResolve| E["Label: NEXT"]
+    B -->|cooldown| F["🔒 LOCKED<br/>opacity 0.5<br/>onClick blocked"]
+    B -->|matchEnd| G["Label: REPLAY"]
+    
+    C --> H["Action Button<br/>ENABLED"]
+    D --> H
+    E --> H
+    G --> H
+    
+    F --> I["Action Button<br/>DISABLED<br/>No response to click/Enter"]
+    
+    H --> J["👆 User presses<br/>Button / Enter / Space"]
+    
+    J --> K["⚫ Button active state<br/>Pulse 150ms"]
+    
+    K --> L["🔹 Emit engine event<br/>actionButtonPressed"]
+    
+    L --> M["Engine processes<br/>Advances match state"]
+    
+    I -->|Cooldown expires| H
+    
+    style C fill:#lightgreen
+    style D fill:#lightgreen
+    style E fill:#lightgreen
+    style G fill:#lightgreen
+    style F fill:#ffe6e6
+    style H fill:#lightgreen
+    style I fill:#ffe6e6
+```
+
+**Button State Transitions & Keyboard Mapping**:
+
+| Button | Visual | Enabled State | Keyboard | Click Behavior |
+|---|---|---|---|---|
+| **⚙ Options** | Icon + label | Always | O | Open modal (150ms fade) |
+| **1 Power** | Icon + label | During selection | 1 | Send stat; pulse 150ms |
+| **2 Speed** | Icon + label | During selection | 2 | Send stat; pulse 150ms |
+| **3 Technique** | Icon + label | During selection | 3 | Send stat; pulse 150ms |
+| **4 Kumi-kata** | Icon + label | During selection | 4 | Send stat; pulse 150ms |
+| **5 Ne-waza** | Icon + label | During selection | 5 | Send stat; pulse 150ms |
+| **▶ Next** | Dynamic label | State-dependent | Enter/Space | Emit actionButtonPressed |
+
+**Component Observability & Data Attributes**:
+
+```html
+<!-- Action Bar root element -->
+<div class="action-bar action-bar--classic" data-action-state="roundSelect">
+  
+  <!-- Options button -->
+  <button 
+    class="action-bar__button action-bar__options"
+    data-action="options"
+    aria-label="Open options and settings"
+    data-keyboard-shortcut="O"
+  >⚙ Options</button>
+  
+  <!-- Stat buttons (Power, Speed, Technique, Kumi-kata, Ne-waza) -->
+  <button 
+    class="action-bar__button action-bar__stat"
+    data-stat="power"
+    data-stat-index="0"
+    data-stat-enabled="true"
+    data-keyboard-shortcut="1"
+    aria-label="Select Power stat (keyboard: 1)"
+  >Power</button>
+  
+  <!-- Action button -->
+  <button 
+    class="action-bar__button action-bar__action action-bar__action--next"
+    data-action="actionButton"
+    data-action-label="Next"
+    data-action-enabled="true"
+    aria-label="Next round (keyboard: Enter)"
+  >▶ Next</button>
+  
+  <!-- Options Modal (hidden by default) -->
+  <dialog 
+    id="action-bar-options-modal"
+    class="action-bar__modal"
+    data-modal-open="false"
+    aria-labelledby="modal-title"
+  >
+    <!-- Modal content -->
+  </dialog>
+</div>
+```
+
+**Mode-Specific Styling Hooks**:
+
+```css
+/* Classic Battle: Animated icons, color styling */
+.action-bar--classic .action-bar__stat {
+  background: var(--color-secondary);
+  color: var(--button-text-color);
+  border: 2px solid transparent;
+}
+
+.action-bar--classic .action-bar__stat[data-stat-enabled="false"] {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* CLI Battle: Text-based, monospace */
+.action-bar--cli {
+  font-family: monospace;
+  background: #222;
+  color: #0f0;
+  border-top: 1px solid #0f0;
+}
+
+.action-bar--cli .action-bar__stat::before {
+  content: '[' attr(data-stat-index) '] ';
+}
+
+/* Bandit Mode: Simplified, centered */
+.action-bar--bandit {
+  text-align: center;
+  background: linear-gradient(90deg, #ffd700 0%, #ffed4e 100%);
+}
+
+/* Reduced motion: Remove animations */
+@media (prefers-reduced-motion: reduce) {
+  .action-bar__button {
+    animation: none;
+    transition: none;
+  }
+  
+  .action-bar__modal {
+    animation: none;
+  }
+}
+```
+
+**Performance & Accessibility SLAs**:
+
+| Metric | Target | Notes |
+|---|---|---|
+| Button Response | <50ms | Visual feedback immediate |
+| Modal Fade | 150-200ms | Smooth open/close |
+| Stat Pulse | 150ms | Active state animation |
+| Keyboard Latency | <100ms | 1-5, O, Enter/Space active |
+| Touch Target Size | 48px+ | WCAG 2.5.5 compliance |
+| Text Contrast | ≥4.5:1 | WCAG AA standard |
+| Desync Detection | >300ms | Auto-resync + telemetry |
+| Reduced Motion Respect | 100% | prefers-reduced-motion honored |
+
+**Status Badge**: ✅ **VERIFIED** — Validated against:
+- `src/helpers/actionBar.js` — 7-button layout, state observation, keyboard mapping
+- `src/helpers/battleEngineFacade.js` — Engine state emissions (roundSelect, cooldown, etc.)
+- `tests/helpers/actionBar.test.js` — Button enablement, modal flow, stat selection
+- `playwright/battle-*.spec.js` — End-to-end interaction tests
+- WCAG 2.1 AA: 48px+ targets, keyboard navigation, ARIA labels, reduced motion support
+
+**Related Diagrams**:
+- [Battle Engine States](prdBattleEngine.md) — State emissions that control button states
+- [Classic Battle](prdBattleClassic.md) — Action bar integration in Classic mode
+- [Battle CLI](prdBattleCLI.md) — Text-based styling in CLI mode
+- [Battle Scoreboard](prdBattleScoreboard.md) — Parallel score display component
+
+---
+
 ## 9. Quit Flow
 
 When the player selects **Quit**:
