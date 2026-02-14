@@ -1,4 +1,5 @@
-> **Scope: Canonical architecture guide**
+> **Scope:** Canonical testing architecture and policy.
+> **When to read this:** Use for durable architecture decisions, anti-pattern policy, and migration direction; start at the [Testing Documentation Hub](./testing/INDEX.md).
 
 # Testing Architecture
 
@@ -93,21 +94,9 @@ Prefer behavior-driven interaction over direct DOM mutation.
 
 ## Validation Expectations
 
-Run targeted checks based on changed scope.
+Use the canonical command section in the hub:
 
-```bash
-npx vitest run <relevant-test-files>
-npx eslint .
-npx prettier . --check
-npm run check:jsdoc
-```
-
-Optional hygiene checks:
-
-```bash
-grep -RInE "console\.(warn|error)\(" tests --exclude=client_embeddings.json | grep -v "tests/utils/console.js"
-grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle 2>/dev/null
-```
+- [Testing Documentation Hub → Canonical Validation Command Reference](./testing/INDEX.md#canonical-validation-command-reference)
 
 ## Template and Example References
 

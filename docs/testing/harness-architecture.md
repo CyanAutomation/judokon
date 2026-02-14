@@ -1,3 +1,6 @@
+> **Scope:** Vitest harness internals and architecture contract.
+> **When to read this:** Use when changing harness internals or reviewing mock lifecycle behavior; start at the [Testing Documentation Hub](./INDEX.md).
+
 # Vitest Harness Architecture Reference
 
 **Owner:** QA Platform Team  
@@ -42,6 +45,12 @@ Legacy harness flows attempted to register mocks in `beforeEach` using `vi.doMoc
 - Mock externals only (`fetch`, storage, analytics)
 - Use real internal modules to preserve interaction behavior
 - Drive assertions via observable behavior and state
+
+## Validation Commands
+
+Use the canonical command section in the hub:
+
+- [Testing Documentation Hub → Canonical Validation Command Reference](./INDEX.md#canonical-validation-command-reference)
 
 ## Related Files
 
