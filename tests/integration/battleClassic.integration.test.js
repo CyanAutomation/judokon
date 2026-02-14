@@ -676,6 +676,7 @@ describe("Battle Classic Page Integration", () => {
       // Capture the placeholder state synchronously when opponentReveal fires
       let placeholderWasPresentDuringReveal = false;
       let wasObscuredDuringReveal = false;
+      let placeholderPresentAtCompletion = true;
       const opponentRevealPromise = new Promise((resolve) => {
         const handler = () => {
           offBattleEvent("opponentReveal", handler);
@@ -687,15 +688,29 @@ describe("Battle Classic Page Integration", () => {
         };
         onBattleEvent("opponentReveal", handler);
       });
+      const opponentRevealCompletedPromise = new Promise((resolve) => {
+        const handler = () => {
+          offBattleEvent("opponentReveal.completed", handler);
+          placeholderPresentAtCompletion =
+            opponentCard?.querySelector("#mystery-card-placeholder") !== null;
+          resolve();
+        };
+        onBattleEvent("opponentReveal.completed", handler);
+      });
 
       await triggerStatSelection(store, statButtons[0], statButtons[0].dataset.stat);
       await opponentRevealPromise;
-      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      // Placeholder should still be present until reveal cleanup emits completion.
+      expect(opponentCard.querySelector("#mystery-card-placeholder")).not.toBeNull();
 
       // Verify that placeholder WAS present when opponentReveal fired
       // (it may have been removed quickly after if opponent delay is zero)
       expect(wasObscuredDuringReveal).toBe(true);
       expect(placeholderWasPresentDuringReveal).toBe(true);
+
+      await opponentRevealCompletedPromise;
+      expect(placeholderPresentAtCompletion).toBe(false);
 
       // Wait for round resolution to complete
       await withMutedConsole(async () => {

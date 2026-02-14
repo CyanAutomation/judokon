@@ -1,4 +1,4 @@
-import { onBattleEvent } from "./battleEvents.js";
+import { emitBattleEvent, onBattleEvent } from "./battleEvents.js";
 import { getOpponentCardData } from "./opponentController.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { t } from "../i18n.js";
@@ -247,6 +247,10 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     try {
       container.setAttribute("aria-label", OPPONENT_CARD_CONTAINER_ARIA_LABEL);
     } catch {}
+    emitBattleEvent("opponentReveal.completed", {
+      selectionToken,
+      revealSequence
+    });
     if (tokenMatches) {
       clearPendingOpponentCardData(undefined, selectionToken);
     }
