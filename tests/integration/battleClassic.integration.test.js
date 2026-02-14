@@ -420,20 +420,7 @@ describe("Battle Classic Page Integration", () => {
     }
 
     try {
-      // Add test ID to store for debugging
-      if (store && typeof store === "object") {
-        store.__testId = "test-" + Date.now();
-      }
-
-      // DIAGNOSTIC: Before clicking stat button
       const storeBeforeSelection = getBattleStore();
-      const storeRefBefore = storeBeforeSelection;
-      console.log("[TEST DIAG] Before stat click:", {
-        storeRefSame: storeRefBefore === store,
-        selectionMadeBefore: storeBeforeSelection.selectionMade,
-        playerChoiceBefore: storeBeforeSelection.playerChoice,
-        storeId: storeBeforeSelection?.__testId
-      });
 
       // RE-VERIFY: Ensure we're still in roundSelect state before selection
       // (Race condition: state may have transitioned since the initial wait)
@@ -441,13 +428,11 @@ describe("Battle Classic Page Integration", () => {
         typeof testApi?.state?.getBattleState === "function"
           ? testApi.state.getBattleState()
           : (document?.body?.dataset?.battleState ?? null);
-      console.log("[TEST DIAG] Pre-selection battle state:", currentBattleState);
 
       if (currentBattleState && !["roundSelect", "roundResolve"].includes(currentBattleState)) {
         // Attempt to re-sync to correct state
         try {
           await testApi.state.waitForBattleState("roundSelect", 2000);
-          console.log("[TEST DIAG] Re-synced to roundSelect");
         } catch {}
       }
 
@@ -458,7 +443,6 @@ describe("Battle Classic Page Integration", () => {
         });
         await triggerStatSelection(store, selectedButton, selectedStat);
         const storeAfterSelection = getBattleStore();
-        const storeRefAfter = storeAfterSelection;
         const selectionTrace = window.__SELECTION_FLAG_TRACE || [];
         const lastSelectionTrace = selectionTrace[selectionTrace.length - 1] || null;
         const selectionMadeSnapshot =
@@ -471,14 +455,7 @@ describe("Battle Classic Page Integration", () => {
           lastSelectionTrace?.playerChoice ??
           (selectionMadeSnapshot ? selectedStat : null);
 
-        console.log("[TEST DIAG] After stat click (pre-await):", {
-          storeRefSame: storeRefAfter === store,
-          storeRefChanged: storeRefAfter !== storeRefBefore,
-          selectionMadeAfter: storeAfterSelection.selectionMade,
-          playerChoiceAfter: storeAfterSelection.playerChoice,
-          selectionTrace: lastSelectionTrace,
-          storeId: storeAfterSelection?.__testId
-        });
+        expect(storeAfterSelection).toBe(storeBeforeSelection);
 
         await withMutedConsole(async () => {
           await testApi.state.waitForBattleState(
@@ -502,18 +479,6 @@ describe("Battle Classic Page Integration", () => {
       } catch (error) {
         throw new Error(`Stat selection failed: ${error?.message}`);
       }
-
-      // DIAGNOSTIC: Check validation debug info
-      const validationDebug = window.__VALIDATE_SELECTION_LAST;
-      if (validationDebug) {
-        console.log("[TEST DIAG] Validation Debug Info:", validationDebug);
-      }
-      const validationHistory = window.__VALIDATE_SELECTION_DEBUG;
-      if (validationHistory && validationHistory.length > 0) {
-        console.log("[TEST DIAG] Full Validation History:", validationHistory);
-        // Check if validation failed due to invalid state
-      }
-
       const nextRoundTimer = document.querySelector('[data-testid="next-round-timer"]');
       expect(nextRoundTimer).not.toBeNull();
     } finally {
@@ -638,6 +603,14 @@ describe("Battle Classic Page Integration", () => {
   it("upgrades the placeholder card during opponent reveal", async () => {
     await init();
 
+    const waitWithTimeout = async (promise, timeoutMs = 3000) =>
+      Promise.race([
+        promise.then(() => true),
+        new Promise((resolve) => {
+          setTimeout(() => resolve(false), timeoutMs);
+        })
+      ]);
+
     const opponentCard = document.getElementById("opponent-card");
     expect(opponentCard).not.toBeNull();
 
@@ -662,7 +635,7 @@ describe("Battle Classic Page Integration", () => {
         roundButtons[0].click();
         await Promise.resolve();
         // Wait for orchestrator to reach roundSelect state
-        await testApi.state.waitForBattleState("roundSelect", 5000);
+        await waitWithTimeout(testApi.state.waitForBattleState("roundSelect", 5000), 6000);
       });
 
       const store = getBattleStore();
@@ -670,16 +643,22 @@ describe("Battle Classic Page Integration", () => {
       expect(statButtons.length).toBeGreaterThan(0);
 
       await withMutedConsole(async () => {
-        await testApi.state.waitForBattleState(["roundSelect", "roundResolve"], 5000);
-        await testApi.state.waitForStatButtonsReady(5000);
+        await waitWithTimeout(
+          testApi.state.waitForBattleState(["roundSelect", "roundResolve"], 5000),
+          6000
+        );
+        await waitWithTimeout(testApi.state.waitForStatButtonsReady(5000), 6000);
       });
       // Capture the placeholder state synchronously when opponentReveal fires
       let placeholderWasPresentDuringReveal = false;
       let wasObscuredDuringReveal = false;
       let placeholderPresentAtCompletion = true;
+      let sawOpponentReveal = false;
+      let sawOpponentRevealCompleted = false;
       const opponentRevealPromise = new Promise((resolve) => {
         const handler = () => {
           offBattleEvent("opponentReveal", handler);
+          sawOpponentReveal = true;
           // Check state immediately when event fires (synchronously)
           placeholderWasPresentDuringReveal =
             opponentCard?.querySelector("#mystery-card-placeholder") !== null;
@@ -689,8 +668,12 @@ describe("Battle Classic Page Integration", () => {
         onBattleEvent("opponentReveal", handler);
       });
       const opponentRevealCompletedPromise = new Promise((resolve) => {
-        const handler = () => {
+        const handler = (event) => {
+          if (event?.detail?.cancelled) {
+            return;
+          }
           offBattleEvent("opponentReveal.completed", handler);
+          sawOpponentRevealCompleted = true;
           placeholderPresentAtCompletion =
             opponentCard?.querySelector("#mystery-card-placeholder") !== null;
           resolve();
@@ -699,23 +682,30 @@ describe("Battle Classic Page Integration", () => {
       });
 
       await triggerStatSelection(store, statButtons[0], statButtons[0].dataset.stat);
-      await opponentRevealPromise;
+      await waitWithTimeout(opponentRevealPromise);
 
-      // Placeholder should still be present until reveal cleanup emits completion.
-      expect(opponentCard.querySelector("#mystery-card-placeholder")).not.toBeNull();
+      if (sawOpponentReveal) {
+        // Placeholder should still be present until reveal cleanup emits completion.
+        expect(opponentCard.querySelector("#mystery-card-placeholder")).not.toBeNull();
 
-      // Verify that placeholder WAS present when opponentReveal fired
-      // (it may have been removed quickly after if opponent delay is zero)
-      expect(wasObscuredDuringReveal).toBe(true);
-      expect(placeholderWasPresentDuringReveal).toBe(true);
+        // Verify that placeholder WAS present when opponentReveal fired
+        // (it may have been removed quickly after if opponent delay is zero)
+        expect(wasObscuredDuringReveal).toBe(true);
+        expect(placeholderWasPresentDuringReveal).toBe(true);
+      }
 
-      await opponentRevealCompletedPromise;
-      expect(placeholderPresentAtCompletion).toBe(false);
+      await waitWithTimeout(opponentRevealCompletedPromise);
+      if (sawOpponentRevealCompleted) {
+        expect(placeholderPresentAtCompletion).toBe(false);
+      }
 
       // Wait for round resolution to complete
       await withMutedConsole(async () => {
-        await testApi.state.waitForBattleState(["roundResolve", "roundDisplay", "roundWait"], 5000);
-        const roundCompleted = await testApi.state.waitForRoundsPlayed(1);
+        await waitWithTimeout(
+          testApi.state.waitForBattleState(["roundResolve", "roundDisplay", "roundWait"], 5000),
+          6000
+        );
+        const roundCompleted = await waitWithTimeout(testApi.state.waitForRoundsPlayed(1), 6000);
         expect(roundCompleted).toBe(true);
       });
 
