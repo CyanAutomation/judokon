@@ -291,11 +291,13 @@ describe("timerService next round handling", () => {
       minDuration: 0,
       ttl: 0
     });
+    expect(snackbarManager.show).toHaveBeenCalledTimes(1);
     // Snackbar shows static message (no updates after initial render)
     // Scoreboard still updates each tick
     expect(scoreboardMod.updateTimer).toHaveBeenCalledWith(3);
     expect(scoreboardMod.updateTimer).toHaveBeenCalledWith(2);
     expect(scoreboardMod.updateTimer).toHaveBeenCalledWith(0);
+    expect(scoreboardMod.updateTimer.mock.calls.length).toBeGreaterThanOrEqual(3);
   });
 
   it("resolves ready after minimum cooldown in test mode", async () => {
