@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { __testHooks } from "../../../src/helpers/classicBattle/uiEventHandlers.js";
-
 describe("uiEventHandlers pending opponent card data clear guards", () => {
   beforeEach(() => {
     __testHooks.resetPendingOpponentCardDataState();
