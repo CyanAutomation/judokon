@@ -100,6 +100,31 @@ export async function createBattleStateIndicator({
   let activeState = null;
   let currentCatalog = catalog;
   let catalogRefreshPending = false;
+  const STATE_ALIASES = {
+    roundWait: "cooldown",
+    cooldown: "roundWait"
+  };
+
+  /**
+   * Resolves known state aliases with exact key precedence.
+   *
+   * @param {string} stateName - The raw state name.
+   * @param {Record<string, string|number>} map - The catalog map to query.
+   * @returns {string|number|undefined} - Matched value, preferring exact key.
+   */
+  const resolveStateValue = (stateName, map) => {
+    if (!map) {
+      return undefined;
+    }
+    if (Object.hasOwn(map, stateName)) {
+      return map[stateName];
+    }
+    const alias = STATE_ALIASES[stateName];
+    if (alias && Object.hasOwn(map, alias)) {
+      return map[alias];
+    }
+    return undefined;
+  };
 
   /**
    * Resolves a state label from the catalog.
@@ -108,7 +133,7 @@ export async function createBattleStateIndicator({
    * @returns {string} - The display label or the raw state name.
    */
   const getStateLabel = (stateName) =>
-    (currentCatalog.labels && currentCatalog.labels[stateName]) || stateName;
+    resolveStateValue(stateName, currentCatalog.labels) || stateName;
 
   /**
    * Updates the unknown state flag on the root element.
@@ -131,7 +156,10 @@ export async function createBattleStateIndicator({
     currentCatalog.display.include.forEach((stateName) => {
       const li = document.createElement("li");
       li.dataset.stateRaw = stateName;
-      li.dataset.stateId = currentCatalog.ids[stateName];
+      const stateId = resolveStateValue(stateName, currentCatalog.ids);
+      if (stateId !== undefined) {
+        li.dataset.stateId = stateId;
+      }
       const label = getStateLabel(stateName);
       if (label !== stateName) {
         li.dataset.stateLabel = label;
