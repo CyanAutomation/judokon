@@ -1,50 +1,72 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
-// Mock all dependencies before any imports
+const {
+  mockStopTimer,
+  mockEmitBattleEvent,
+  mockOnBattleEvent,
+  mockOffBattleEvent,
+  mockGetBattleState,
+  mockGetCardStatValue,
+  mockResolveRound,
+  mockDispatchBattleEvent,
+  mockGetRoundEvaluatedPromise,
+  mockShowSnackbar,
+  mockUpdateSnackbar,
+  mockT
+} = vi.hoisted(() => ({
+  mockStopTimer: vi.fn(),
+  mockEmitBattleEvent: vi.fn(),
+  mockOnBattleEvent: vi.fn(),
+  mockOffBattleEvent: vi.fn(),
+  mockGetBattleState: vi.fn(),
+  mockGetCardStatValue: vi.fn(),
+  mockResolveRound: vi.fn(),
+  mockDispatchBattleEvent: vi.fn(),
+  mockGetRoundEvaluatedPromise: vi.fn(),
+  mockShowSnackbar: vi.fn(),
+  mockUpdateSnackbar: vi.fn(),
+  mockT: vi.fn()
+}));
+
 vi.mock("../../src/helpers/BattleEngine.js", () => ({
   STATS: ["power"],
-  stopTimer: vi.fn()
+  stopTimer: mockStopTimer
 }));
 
 vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-  emitBattleEvent: vi.fn(),
-  onBattleEvent: vi.fn(),
-  offBattleEvent: vi.fn()
+  emitBattleEvent: mockEmitBattleEvent,
+  onBattleEvent: mockOnBattleEvent,
+  offBattleEvent: mockOffBattleEvent
 }));
 
 vi.mock("../../src/helpers/classicBattle/eventBus.js", () => ({
-  getBattleState: vi.fn()
+  getBattleState: mockGetBattleState
 }));
 
 vi.mock("../../src/helpers/classicBattle/cardStatUtils.js", () => ({
-  getCardStatValue: vi.fn(() => 1)
+  getCardStatValue: mockGetCardStatValue
 }));
 
 vi.mock("../../src/helpers/classicBattle/roundResolver.js", () => ({
-  resolveRound: vi.fn()
+  resolveRound: mockResolveRound
 }));
 
 vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
-  dispatchBattleEvent: vi.fn(async (eventName) => {
-    if (eventName === "statSelected") {
-      return Promise.resolve(true);
-    }
-    return Promise.resolve(false);
-  })
+  dispatchBattleEvent: mockDispatchBattleEvent
 }));
 
 vi.mock("../../src/helpers/classicBattle/promises.js", () => ({
-  getRoundEvaluatedPromise: vi.fn(() => Promise.resolve())
+  getRoundEvaluatedPromise: mockGetRoundEvaluatedPromise
 }));
 
 vi.mock("../../src/helpers/showSnackbar.js", () => ({
-  showSnackbar: vi.fn(),
-  updateSnackbar: vi.fn()
+  showSnackbar: mockShowSnackbar,
+  updateSnackbar: mockUpdateSnackbar
 }));
 
 vi.mock("../../src/helpers/i18n.js", () => ({
-  t: vi.fn((k) => k)
+  t: mockT
 }));
 
 describe("handleStatSelection helpers", () => {
@@ -59,54 +81,23 @@ describe("handleStatSelection helpers", () => {
   let setFlag;
 
   beforeEach(async () => {
-    // Clear module cache to ensure fresh imports with mocks applied
-    vi.resetModules();
-
-    // Re-declare mocks after reset
-    vi.mock("../../src/helpers/BattleEngine.js", () => ({
-      STATS: ["power"],
-      stopTimer: vi.fn()
-    }));
-
-    vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-      emitBattleEvent: vi.fn(),
-      onBattleEvent: vi.fn(),
-      offBattleEvent: vi.fn()
-    }));
-
-    vi.mock("../../src/helpers/classicBattle/eventBus.js", () => ({
-      getBattleState: vi.fn()
-    }));
-
-    vi.mock("../../src/helpers/classicBattle/cardStatUtils.js", () => ({
-      getCardStatValue: vi.fn(() => 1)
-    }));
-
-    vi.mock("../../src/helpers/classicBattle/roundResolver.js", () => ({
-      resolveRound: vi.fn()
-    }));
-
-    vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
-      dispatchBattleEvent: vi.fn(async (eventName) => {
-        if (eventName === "statSelected") {
-          return Promise.resolve(true);
-        }
-        return Promise.resolve(false);
-      })
-    }));
-
-    vi.mock("../../src/helpers/classicBattle/promises.js", () => ({
-      getRoundEvaluatedPromise: vi.fn(() => Promise.resolve())
-    }));
-
-    vi.mock("../../src/helpers/showSnackbar.js", () => ({
-      showSnackbar: vi.fn(),
-      updateSnackbar: vi.fn()
-    }));
-
-    vi.mock("../../src/helpers/i18n.js", () => ({
-      t: vi.fn((k) => k)
-    }));
+    mockStopTimer.mockReset();
+    mockEmitBattleEvent.mockReset();
+    mockOnBattleEvent.mockReset();
+    mockOffBattleEvent.mockReset();
+    mockGetBattleState.mockReset().mockReturnValue(null);
+    mockGetCardStatValue.mockReset().mockReturnValue(1);
+    mockResolveRound.mockReset();
+    mockDispatchBattleEvent.mockReset().mockImplementation(async (eventName) => {
+      if (eventName === "statSelected") {
+        return Promise.resolve(true);
+      }
+      return Promise.resolve(false);
+    });
+    mockGetRoundEvaluatedPromise.mockReset().mockImplementation(() => Promise.resolve());
+    mockShowSnackbar.mockReset();
+    mockUpdateSnackbar.mockReset();
+    mockT.mockReset().mockImplementation((key) => key);
 
     timers = useCanonicalTimers();
     store = {
@@ -132,7 +123,6 @@ describe("handleStatSelection helpers", () => {
 
     const eventBus = await import("../../src/helpers/classicBattle/eventBus.js");
     getBattleState = eventBus.getBattleState;
-    getBattleState.mockReturnValue(null);
 
     const classicBattle = await import("../../src/helpers/classicBattle.js");
     handleStatSelection = classicBattle.handleStatSelection;
