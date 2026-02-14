@@ -32,9 +32,9 @@ describe("timerService next round handling", () => {
           update: vi.fn()
         },
         SnackbarPriority: {
-          HIGH: "HIGH",
-          NORMAL: "NORMAL",
-          LOW: "LOW"
+          HIGH: "high",
+          NORMAL: "normal",
+          LOW: "low"
         }
       };
     });
