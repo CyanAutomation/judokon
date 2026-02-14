@@ -407,6 +407,7 @@ describe("attachCooldownRenderer", () => {
       minDuration: 0,
       ttl: 0
     });
+    expect(mockSnackbarShow).toHaveBeenCalledTimes(1);
     expect(scoreboard.updateTimer).toHaveBeenCalledWith(3);
 
     // Snackbar shows static message (no updates), but scoreboard still updates
@@ -417,6 +418,7 @@ describe("attachCooldownRenderer", () => {
     timer.emit("expired");
     expect(mockController.update).not.toHaveBeenCalled(); // No snackbar updates
     expect(scoreboard.updateTimer).toHaveBeenCalledWith(0);
+    expect(scoreboard.updateTimer).toHaveBeenCalledTimes(3);
   });
 
   it("renders initial countdown immediately when maxPromptWaitMs is zero", () => {
