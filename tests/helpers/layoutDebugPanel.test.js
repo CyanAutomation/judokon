@@ -10,39 +10,33 @@ vi.mock("../../src/helpers/debugFlagPerformance.js", () => ({
   })
 }));
 
+let timers;
+
 beforeEach(() => {
   document.body.innerHTML = "";
   vi.resetModules();
-});
+  timers = useCanonicalTimers();
 
-const originalRequestIdleCallback = globalThis.requestIdleCallback;
-const originalCancelIdleCallback = globalThis.cancelIdleCallback;
-const originalRequestAnimationFrame = globalThis.requestAnimationFrame;
-const originalCancelAnimationFrame = globalThis.cancelAnimationFrame;
+  globalThis.requestIdleCallback = (cb) =>
+    setTimeout(() => cb({ didTimeout: false, timeRemaining: () => 50 }), 1);
+  globalThis.cancelIdleCallback = (id) => clearTimeout(id);
+
+  globalThis.requestAnimationFrame = (cb) => setTimeout(() => cb(Date.now()), 16);
+  globalThis.cancelAnimationFrame = (id) => clearTimeout(id);
+});
 
 afterEach(() => {
-  vi.useRealTimers();
-  if (typeof originalRequestIdleCallback === "function") {
-    globalThis.requestIdleCallback = originalRequestIdleCallback;
-  } else {
-    delete globalThis.requestIdleCallback;
-  }
-  if (typeof originalCancelIdleCallback === "function") {
-    globalThis.cancelIdleCallback = originalCancelIdleCallback;
-  } else {
-    delete globalThis.cancelIdleCallback;
-  }
-  if (typeof originalRequestAnimationFrame === "function") {
-    globalThis.requestAnimationFrame = originalRequestAnimationFrame;
-  } else {
-    delete globalThis.requestAnimationFrame;
-  }
-  if (typeof originalCancelAnimationFrame === "function") {
-    globalThis.cancelAnimationFrame = originalCancelAnimationFrame;
-  } else {
-    delete globalThis.cancelAnimationFrame;
-  }
+  timers.cleanup();
+  delete globalThis.requestIdleCallback;
+  delete globalThis.cancelIdleCallback;
+  delete globalThis.requestAnimationFrame;
+  delete globalThis.cancelAnimationFrame;
 });
+
+async function flushScheduledWork() {
+  await timers.runAllTimersAsync();
+  await Promise.resolve();
+}
 
 describe("toggleLayoutDebugPanel", () => {
   it("adds outlines when enabled and cleans up when disabled", async () => {
@@ -52,9 +46,14 @@ describe("toggleLayoutDebugPanel", () => {
     document.body.innerHTML = '<div id="custom"></div>';
     const el = document.getElementById("custom");
     Object.defineProperty(el, "offsetParent", { get: () => document.body });
-    await toggleLayoutDebugPanel(true, ["#custom"]);
+
+    const pending = toggleLayoutDebugPanel(true, ["#custom"]);
+    await flushScheduledWork();
     await flushLayoutDebugPanelWork();
+    await pending;
+
     expect(el.classList.contains("layout-debug-outline")).toBe(true);
+
     await toggleLayoutDebugPanel(false, ["#custom"]);
     expect(el.classList.contains("layout-debug-outline")).toBe(false);
   });
@@ -66,21 +65,16 @@ describe("toggleLayoutDebugPanel", () => {
     document.body.innerHTML = '<div id="sample"></div>';
     const el = document.getElementById("sample");
     Object.defineProperty(el, "offsetParent", { get: () => document.body });
-    await toggleLayoutDebugPanel(true);
+
+    const pending = toggleLayoutDebugPanel(true);
+    await flushScheduledWork();
     await flushLayoutDebugPanelWork();
+    await pending;
+
     expect(el.classList.contains("layout-debug-outline")).toBe(true);
   });
 
   it("coalesces rapid enable toggles into a single outline run", async () => {
-    useCanonicalTimers();
-    globalThis.requestIdleCallback = undefined;
-    globalThis.cancelIdleCallback = undefined;
-    globalThis.requestAnimationFrame = (cb) => {
-      cb();
-      return 1;
-    };
-    globalThis.cancelAnimationFrame = () => {};
-
     const { toggleLayoutDebugPanel, flushLayoutDebugPanelWork } = await import(
       "../../src/helpers/layoutDebugPanel.js"
     );
@@ -95,10 +89,34 @@ describe("toggleLayoutDebugPanel", () => {
 
     expect(second).toBe(first);
 
-    await vi.runOnlyPendingTimersAsync();
+    await flushScheduledWork();
     await flushLayoutDebugPanelWork();
     await first;
 
     expect(measureDebugFlagToggle).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back when requestAnimationFrame exists but never invokes callback", async () => {
+    globalThis.requestIdleCallback = undefined;
+    globalThis.cancelIdleCallback = undefined;
+    globalThis.requestAnimationFrame = vi.fn(() => 77);
+    globalThis.cancelAnimationFrame = vi.fn();
+
+    const { toggleLayoutDebugPanel, flushLayoutDebugPanelWork } = await import(
+      "../../src/helpers/layoutDebugPanel.js"
+    );
+
+    document.body.innerHTML = '<div id="raf-stuck"></div>';
+    const el = document.getElementById("raf-stuck");
+    Object.defineProperty(el, "offsetParent", { get: () => document.body });
+
+    const pending = toggleLayoutDebugPanel(true, ["#raf-stuck"]);
+
+    await flushScheduledWork();
+    await expect(flushLayoutDebugPanelWork()).resolves.toBeUndefined();
+    await pending;
+
+    expect(el.classList.contains("layout-debug-outline")).toBe(true);
+    expect(globalThis.requestAnimationFrame).toHaveBeenCalledTimes(1);
   });
 });
