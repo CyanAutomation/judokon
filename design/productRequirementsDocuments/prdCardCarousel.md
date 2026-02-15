@@ -86,43 +86,43 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 ```mermaid
 stateDiagram-v2
     [*] --> FirstPage: Load carousel<br/>Show cards 0-2
-    
+
     FirstPage --> MiddlePages: Tap Next <br/>or Right arrow
-    
+
     MiddlePages --> FirstPage: Tap Prev <br/>or Left arrow
     MiddlePages --> MiddlePages: Tap Next/Prev <br/>Within bounds
     MiddlePages --> LastPage: Navigate to<br/>last page
-    
+
     LastPage --> MiddlePages: Tap Prev <br/>or Left arrow
-    
+
     FirstPage --> FirstPage: Tap Prev<br/>(button disabled)
     LastPage --> LastPage: Tap Next<br/>(button disabled)
-    
+
     FirstPage --> Hovering: Hover over card
     MiddlePages --> Hovering: Hover over card
     LastPage --> Hovering: Hover over card
     Hovering --> FirstPage: Mouse leave
     Hovering --> MiddlePages: Mouse leave
     Hovering --> LastPage: Mouse leave
-    
+
     note right of FirstPage
         Page 1 of N
         Prev disabled
         Next enabled
     end note
-    
+
     note right of MiddlePages
         Page X of N
         Both buttons enabled
         Can navigate both ways
     end note
-    
+
     note right of LastPage
         Page N of N
         Prev enabled
         Next disabled
     end note
-    
+
     note right of Hovering
         Card scale: 1.05
         Center card: 1.1
@@ -150,7 +150,7 @@ graph TD
     I -->|"Update UI"| L
     L -->|"Render"| M["👁️ Animate cards<br/>Hover scale 1.05<br/>Center scale 1.1"]
     M -->|"Update status"| B
-    
+
     style A fill:#lightgreen
     style L fill:#lightyellow
     style M fill:#lightcyan
@@ -158,14 +158,14 @@ graph TD
 
 **Performance & Interaction SLAs**:
 
-| Metric | Target |
-|---|---|
-| Carousel load (up to 150 cards) | ≤ 1s |
-| Page transition animation | 300-400ms |
-| Hover scaling | < 16ms (60fps) |
-| Keyboard navigation response | < 50ms |
-| Swipe responsiveness | Immediate (debounced) |
-| Lazy image load on scroll | < 500ms |
+| Metric                          | Target                |
+| ------------------------------- | --------------------- |
+| Carousel load (up to 150 cards) | ≤ 1s                  |
+| Page transition animation       | 300-400ms             |
+| Hover scaling                   | < 16ms (60fps)        |
+| Keyboard navigation response    | < 50ms                |
+| Swipe responsiveness            | Immediate (debounced) |
+| Lazy image load on scroll       | < 500ms               |
 
 **Carousel Boundaries & Button States**:
 
@@ -179,6 +179,7 @@ Cards 0-2           Cards 4-6           Cards 10-12
 ```
 
 **Status Badge**: ✅ **VERIFIED** — Validated against:
+
 - `src/helpers/carouselBuilder.js` — Carousel construction
 - `src/helpers/CarouselController.js` — Navigation state management
 - `src/helpers/setupLazyPortraits.js` — Image lazy-loading
@@ -187,6 +188,7 @@ Cards 0-2           Cards 4-6           Cards 10-12
 - WCAG 2.1 AA: keyboard navigation, aria-live for page markers, 44px+ button targets
 
 **Related Diagrams**:
+
 - [Browse Judoka](prdBrowseJudoka.md) — Parent container integration
 - [Country Picker Filter](prdCountryPickerFilter.md) — Filter integration with carousel
 

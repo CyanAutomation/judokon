@@ -76,15 +76,16 @@ graph TD
 
 **Performance & Validation SLAs**:
 
-| Metric | Target |
-|---|---|
+| Metric                    | Target                    |
+| ------------------------- | ------------------------- |
 | Schema validation (build) | < 500ms for full data set |
-| Runtime validation | < 10ms per object |
-| Schema file size | < 50KB each |
-| Data payload size | < 5MB (judoka.json) |
-| Ajv compilation | < 100ms per schema |
+| Runtime validation        | < 10ms per object         |
+| Schema file size          | < 50KB each               |
+| Data payload size         | < 5MB (judoka.json)       |
+| Ajv compilation           | < 100ms per schema        |
 
 **Status Badge**: ✅ **VERIFIED** — Validated against:
+
 - `src/schemas/judoka.schema.json` — Canonical judoka schema
 - `src/schemas/settings.schema.json` — Settings/feature flags schema
 - `src/schemas/commonDefinitions.schema.json` — Shared type definitions
@@ -94,6 +95,7 @@ graph TD
 - `tests/validation/schema-validation.test.js` — Schema compliance tests
 
 **Related Diagrams**:
+
 - [Settings Menu](prdSettingsMenu.md#configuration-structure) — Settings schema usage in UI
 - [Battle Scoreboard](prdBattleScoreboard.md) — Stat data structure in display context
 - [Create Judoka](prdCreateJudoka.md) — Form workflow for schema creation

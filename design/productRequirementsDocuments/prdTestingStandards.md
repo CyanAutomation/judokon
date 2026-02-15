@@ -36,15 +36,15 @@ graph LR
 
 **Unit vs E2E Test Quality Scoring Matrix**:
 
-| Dimension | Unit Tests (Vitest) | E2E Tests (Playwright) | Weight |
-|---|---|---|---|
-| **Intent Clarity** | Descriptive titles, behavior-focused | User flow documented, linked to requirements | 2 |
-| **Behavioral Relevance** | Tests critical functions, linked to issues/PRD | Tests critical user paths, validates visible outcomes | 2 |
-| **Assertion Quality** | Semantic assertions (.toEqual), avoid snapshots | Web-first locators (getByRole), no hardcoded delays | 2 |
-| **Isolation & Robustness** | Fake timers, minimal mocking (<4 spies), no DOM manipulation | Stable locators, condition-based waits, no timeouts | 2 |
-| **Cost vs Coverage** | Fast execution (<100ms each) | Parallelize safely, minimize resource use | 2 |
-| **Scoring Range** | 0–10 points | 0–10 points | — |
-| **Pass Threshold** | ≥5 points | ≥4 points (CI enforced) | — |
+| Dimension                  | Unit Tests (Vitest)                                          | E2E Tests (Playwright)                                | Weight |
+| -------------------------- | ------------------------------------------------------------ | ----------------------------------------------------- | ------ |
+| **Intent Clarity**         | Descriptive titles, behavior-focused                         | User flow documented, linked to requirements          | 2      |
+| **Behavioral Relevance**   | Tests critical functions, linked to issues/PRD               | Tests critical user paths, validates visible outcomes | 2      |
+| **Assertion Quality**      | Semantic assertions (.toEqual), avoid snapshots              | Web-first locators (getByRole), no hardcoded delays   | 2      |
+| **Isolation & Robustness** | Fake timers, minimal mocking (<4 spies), no DOM manipulation | Stable locators, condition-based waits, no timeouts   | 2      |
+| **Cost vs Coverage**       | Fast execution (<100ms each)                                 | Parallelize safely, minimize resource use             | 2      |
+| **Scoring Range**          | 0–10 points                                                  | 0–10 points                                           | —      |
+| **Pass Threshold**         | ≥5 points                                                    | ≥4 points (CI enforced)                               | —      |
 
 **Automated Test Evaluation Workflow**:
 
@@ -62,12 +62,12 @@ sequenceDiagram
     Vitest-->>Dev: Results + coverage
     Dev->>Playwright: npm run e2e (run E2E tests)
     Playwright-->>Dev: Pass/Fail + flakiness
-    
+
     alt All Tests Pass
         Dev->>Scoring: npm run test:value
         Scoring->>Test: Analyze test quality
         Scoring-->>Dev: Quality score (0-10)
-        
+
         alt Score >= 5 (Good)
             Dev->>CI: Push to GitHub
             CI->>Test: Re-run all tests
@@ -83,15 +83,16 @@ sequenceDiagram
 
 **Performance SLAs for Testing**:
 
-| Test Type | Target | Acceptable | Critical |
-|---|---|---|---|
-| Unit test execution | < 100ms | < 200ms | < 500ms |
-| E2E test (simple flow) | < 2s | < 5s | < 10s |
-| Full test suite (unit) | < 10s | < 30s | — |
-| Full E2E suite (parallel) | < 60s | < 120s | — |
-| CI validation gate | < 5 min | < 10 min | — |
+| Test Type                 | Target  | Acceptable | Critical |
+| ------------------------- | ------- | ---------- | -------- |
+| Unit test execution       | < 100ms | < 200ms    | < 500ms  |
+| E2E test (simple flow)    | < 2s    | < 5s       | < 10s    |
+| Full test suite (unit)    | < 10s   | < 30s      | —        |
+| Full E2E suite (parallel) | < 60s   | < 120s     | —        |
+| CI validation gate        | < 5 min | < 10 min   | —        |
 
 **Status Badge**: ✅ **VERIFIED** — Validated against:
+
 - `tests/` — Unit test implementations (Vitest)
 - `playwright/` — E2E test specifications (Playwright)
 - `scripts/evaluateTestValue.mjs` — Quality scoring algorithm
@@ -100,6 +101,7 @@ sequenceDiagram
 - `docs/testing/` — Testing documentation and examples
 
 **Related Diagrams**:
+
 - [Development Standards](prdDevelopmentStandards.md#validation-pipeline) — Code validation and quality gates
 - [Battle Pages Regression Testing](prdBattlePages.md) — Specialized test organization for critical pages
 

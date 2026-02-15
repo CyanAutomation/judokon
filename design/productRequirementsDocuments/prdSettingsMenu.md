@@ -76,7 +76,7 @@ Players need to easily adjust game settings to personalize their experience, imp
 Modules access player preferences via helpers in
 `src/helpers/settingsCache.js`:
 
-```js
+````js
 import { getSetting } from "./src/helpers/settingsCache.js";
 
 const currentTheme = getSetting("displayMode");
@@ -89,17 +89,17 @@ const currentTheme = getSetting("displayMode");
 ```mermaid
 graph TB
     A["⚙️ Settings Page Loads"] --> B["Load Data Sources"]
-    
+
     B --> C["src/data/settings.json<br/>(current user state)"]
     B --> D["src/config/settingsDefaults.js<br/>(fallback values)"]
     B --> E["src/data/navigationItems.js<br/>(game mode order)"]
     B --> F["src/data/tooltips.json<br/>(labels & descriptions)"]
-    
+
     C --> G["Cache Settings<br/>(via settingsCache.js)"]
     D --> G
-    
+
     G --> H["Render Controls"]
-    
+
     H --> H1["🔊 Audio & Accessibility<br/>Sound | Motion Effects | Typewriter<br/>Tooltips | Opponent Delay | Scanlines"]
     H --> H2["🌓 Display<br/>Light/Dark Mode (Radio)"]
     H --> H3["🗺️ Navigation<br/>Full Map Toggle | Game Modes Toggles"]
@@ -108,7 +108,7 @@ graph TB
     H --> H6["🐛 Debug Features<br/>Tooltip Overlay | Layout Outlines<br/>Nav Cache Reset"]
     H --> H7["📚 Resources<br/>Change Log | PRD Docs | Mockups<br/>Tooltips | Vector Search"]
     H --> H8["🔄 Actions<br/>Restore Defaults"]
-    
+
     H1 --> I["👤 User Interacts"]
     H2 --> I
     H3 --> I
@@ -117,7 +117,7 @@ graph TB
     H6 --> I
     H7 --> I
     H8 --> I
-    
+
     I --> J{"Toggle/Change?"}
     J -->|Toggle Flag| K["Update featureFlags[key]"]
     J -->|Toggle Boolean| L["Update setting[key]"]
@@ -125,20 +125,20 @@ graph TB
     J -->|Game Mode Toggle| N["Update gameModes[id]"]
     J -->|Resource Link| O["Navigate to page"]
     J -->|Restore Defaults| P["Load DEFAULT_SETTINGS<br/>Show confirmation modal"]
-    
+
     K --> Q["persist via settingsCache<br/>⏱️ ≤50ms"]
     L --> Q
     M --> Q
     N --> Q
     P --> Q
-    
+
     Q --> R["✉️ featureFlagsEmitter<br/>emit 'change' event"]
-    
+
     R --> S["UI Update Subscribers"]
     S --> T["🎨 Applied to page<br/>data-theme, display modes,<br/>debug panels, etc."]
-    
+
     T --> U["✅ Show snackbar<br/>confirmation"]
-    
+
     style A fill:#lightblue
     style H1 fill:#lightyellow
     style H2 fill:#lightyellow
@@ -146,20 +146,20 @@ graph TB
     style H4 fill:#lightyellow
     style Q fill:#lightgreen
     style U fill:#lightgreen
-```
+````
 
 **Settings Control Categories & Persistence**:
 
-| Category | Controls | Persistence | Triggers |
-|---|---|---|---|
-| **Audio & Accessibility** | Sound, Motion Effects, Typewriter, Tooltips, Opponent Delay, Scanlines | `settings.json` binary flags | `setupDisplaySettings.js` on page load |
-| **Display** | Light/Dark mode radio | `settings.displayMode` + `data-theme` attribute | Synced header/body radios; instant CSS |
-| **Navigation** | Full map toggle, Game modes selection | `settings.fullNavigationMap` + `settings.gameModes[id]` | CSS visibility classes from navigationItems.js |
-| **Battle Features** | Test, Debug Badge, State Progress, Inspector, Auto-Select, Hotkeys, Skip Cooldown, Viewport Sim | `featureFlags[key].enabled` | Event emitter subscriptions in battle pages |
-| **CLI Features** | Verbose, Shortcuts | `featureFlags[key].enabled` | CLI initialization reads flags |
-| **Debug Features** | Tooltip Debug, Layout Debug, Nav Cache Reset | `featureFlags[key].enabled` | Debug module subscriptions |
-| **Resources** | Links to Change Log, PRD, Mockups, Tooltips, Vector Search | N/A (navigation only) | Standard browser navigation |
-| **Actions** | Restore Defaults button | Reload `DEFAULT_SETTINGS`; show modal + snackbar | `featureFlagsEmitter` emits 'reset' |
+| Category                  | Controls                                                                                        | Persistence                                             | Triggers                                       |
+| ------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------- |
+| **Audio & Accessibility** | Sound, Motion Effects, Typewriter, Tooltips, Opponent Delay, Scanlines                          | `settings.json` binary flags                            | `setupDisplaySettings.js` on page load         |
+| **Display**               | Light/Dark mode radio                                                                           | `settings.displayMode` + `data-theme` attribute         | Synced header/body radios; instant CSS         |
+| **Navigation**            | Full map toggle, Game modes selection                                                           | `settings.fullNavigationMap` + `settings.gameModes[id]` | CSS visibility classes from navigationItems.js |
+| **Battle Features**       | Test, Debug Badge, State Progress, Inspector, Auto-Select, Hotkeys, Skip Cooldown, Viewport Sim | `featureFlags[key].enabled`                             | Event emitter subscriptions in battle pages    |
+| **CLI Features**          | Verbose, Shortcuts                                                                              | `featureFlags[key].enabled`                             | CLI initialization reads flags                 |
+| **Debug Features**        | Tooltip Debug, Layout Debug, Nav Cache Reset                                                    | `featureFlags[key].enabled`                             | Debug module subscriptions                     |
+| **Resources**             | Links to Change Log, PRD, Mockups, Tooltips, Vector Search                                      | N/A (navigation only)                                   | Standard browser navigation                    |
+| **Actions**               | Restore Defaults button                                                                         | Reload `DEFAULT_SETTINGS`; show modal + snackbar        | `featureFlagsEmitter` emits 'reset'            |
 
 **Feature Flags Nested Structure** (`featureFlags` object):
 
@@ -191,19 +191,19 @@ featureFlags: {
 graph LR
     A["👆 User Toggles<br/>Control"] -->|Within 50ms| B["Update in-memory<br/>cache"]
     B --> C["Write to<br/>settings.json"]
-    
+
     C -->|Success| D["✅ Emit 'change'<br/>event"]
     C -->|Failure| E["⚠️ Show error<br/>popup ≤200ms"]
-    
+
     D --> F["UI Subscribers<br/>update instantly"]
     F --> G["🎨 Apply changes<br/>(CSS, JS, data attrs)"]
     G --> H["✨ Show snackbar<br/>confirmation ≈2s"]
-    
+
     E -->|User reads error| I["Auto-hide after<br/>3 seconds"]
-    
+
     H -->|Fade out| J["Ready for next<br/>change"]
     I --> J
-    
+
     style B fill:#lightyellow
     style D fill:#lightcyan
     style H fill:#lightgreen
@@ -216,15 +216,15 @@ graph LR
 graph LR
     A["🔍 User types in<br/>search box"] -->|Case-insensitive| B["Search across label,<br/>description, flag key"]
     B --> C["Filter results<br/>live as typing"]
-    
+
     C -->|Matches found| D["✅ Display filtered<br/>flags"]
     C -->|No matches| E["📭 Show empty state"]
-    
+
     D --> F["Announce result<br/>count to screen readers<br/>#advanced-settings-search-status"]
     E --> F
-    
+
     G["👤 Press Escape"] --> H["Clear filter<br/>show all flags"]
-    
+
     style D fill:#lightgreen
     style E fill:#ffe6e6
     style F fill:#lightcyan
@@ -232,16 +232,16 @@ graph LR
 
 **Performance & UX SLAs**:
 
-| Operation | Target | Notes |
-|---|---|---|
-| Settings page load | ≤200ms | Mid-tier devices (2GB RAM smartphones) |
-| Toggle → data persisted | ≤50ms | settings.json write + cache update |
-| Error popup display | ≤200ms | CSS alert on save failure |
-| Save confirmation fade | ≈2 seconds | Snackbar visibility |
-| Error popup auto-hide | ≈3 seconds | Alert dismissal |
-| Advanced search filtering | <100ms | Live results as user types |
-| Display mode change | <50ms | data-theme attribute update + CSS reflow |
-| Feature flag enable/disable | <100ms | Event emission + subscriber callbacks |
+| Operation                   | Target     | Notes                                    |
+| --------------------------- | ---------- | ---------------------------------------- |
+| Settings page load          | ≤200ms     | Mid-tier devices (2GB RAM smartphones)   |
+| Toggle → data persisted     | ≤50ms      | settings.json write + cache update       |
+| Error popup display         | ≤200ms     | CSS alert on save failure                |
+| Save confirmation fade      | ≈2 seconds | Snackbar visibility                      |
+| Error popup auto-hide       | ≈3 seconds | Alert dismissal                          |
+| Advanced search filtering   | <100ms     | Live results as user types               |
+| Display mode change         | <50ms      | data-theme attribute update + CSS reflow |
+| Feature flag enable/disable | <100ms     | Event emission + subscriber callbacks    |
 
 **Data Source Integration**:
 
@@ -259,6 +259,7 @@ graph LR
 - **Legacy displayMode="retro"**: Auto-normalize to "dark" on load
 
 **Status Badge**: ✅ **VERIFIED** — Validated against:
+
 - `src/helpers/settingsCache.js` — In-memory cache with getters/setters
 - `src/helpers/featureFlags.js` — Flag enablement and event emitter
 - `src/helpers/settings/gameModeSwitches.js` — Game mode toggles
@@ -269,6 +270,7 @@ graph LR
 - `playwright/settings.spec.js` — Settings page behavior tests
 
 **Related Diagrams**:
+
 - [Navigation Bar](prdNavigationBar.md) — Navigation control visibility
 - [Home Page Navigation](prdHomePageNavigation.md) — Game mode entry point
 - [Game Modes Overview](prdGameModes.md) — All modes and their relationships

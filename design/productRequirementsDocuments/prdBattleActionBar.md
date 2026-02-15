@@ -173,14 +173,14 @@ graph LR
     D --> E["[ Kumi-kata<br/>4 ]"]
     E --> F["[ Ne-waza<br/>5 ]"]
     F --> G["[ ▶ Next ]"]
-    
+
     H["Engine State"] -.->|Observe| B
     H -.->|Observe| C
     H -.->|Observe| D
     H -.->|Observe| E
     H -.->|Observe| F
     H -.->|Observe| G
-    
+
     style A fill:#lightblue
     style B fill:#lightyellow
     style C fill:#lightyellow
@@ -195,35 +195,35 @@ graph LR
 ```mermaid
 stateDiagram-v2
     [*] --> Default: Engine Init
-    
+
     Default: ⚪ All Stat Buttons\nVISIBLE but DISABLED\n(grayed out, opacity 0.5)
-    
+
     Default --> SelectionRequired: Engine emits\nroundSelect event
-    
+
     SelectionRequired: 🎯 Stat Buttons ENABLED\nKeyboard: 1-5 active\nMouse/Touch: clickable
-    
+
     SelectionRequired --> InputReceived: User presses\nkey 1-5 / clicks stat
-    
+
     InputReceived: ⚫ Button active state\nPulse animation 150ms\nSend stat selection to engine
-    
+
     InputReceived --> Cooldown: Engine evaluates\nStat comparison\nAwards points
-    
+
     Cooldown: 🔒 All Stat Buttons LOCKED\nDISABLED + opacity reduced\nDuration: 3s (default)
-    
+
     Cooldown --> Default: Cooldown expires\nOR next round begins
-    
+
     note right of Default
         Always in DOM
         Visible on page
         Prevented from interaction
     end note
-    
+
     note right of SelectionRequired
         State = "roundSelect"
         Engine value in DOM via
         data-action-state="roundSelect"
     end note
-    
+
     note right of Cooldown
         State = "cooldown"
         Automatic unlock timer
@@ -236,32 +236,32 @@ stateDiagram-v2
 ```mermaid
 graph TD
     A["👆 Tap/Click ⚙ Button"] -->|Keyboard: O| B["▶️ Modal Opening<br/>Fade-in 200ms"]
-    
+
     B --> C["📋 Modal Open<br/>4 Controls:<br/>• Quit<br/>• Replay<br/>• Audio Toggle<br/>• Reduced Motion Toggle"]
-    
+
     C --> D{"User Action?"}
-    
+
     D -->|Tap Quit| E["🔴 Confirm Modal<br/>Pre-focus: Cancel"]
     D -->|Tap Replay| F["🔄 Replay Match<br/>Reset to start"]
     D -->|Toggle Audio| G["🔊 Update settings<br/>Persist to localStorage"]
     D -->|Toggle Motion| H["✨ Apply reduced motion<br/>CSS: prefers-reduced-motion"]
     D -->|Tap outside / Esc| I["▶️ Modal Closing<br/>Fade-out 200ms"]
-    
+
     E --> J{"Confirm?"}
     J -->|Cancel| I
     J -->|Confirm Quit| K["🚪 Return to<br/>Landing Page<br/>Log: battle.quit event"]
-    
+
     F --> L["🎮 Battle resets<br/>Round 1, Score 0-0"]
     G --> M["💾 Save audio state"]
     H --> N["🎨 Apply motion prefs"]
-    
+
     L --> I
     M --> I
     N --> I
     K --> [*]
     I --> O["✅ Modal Closed"]
     O --> P["⚙ Button released"]
-    
+
     style B fill:#lightyellow
     style C fill:#lightcyan
     style O fill:#lightgreen
@@ -272,34 +272,34 @@ graph TD
 ```mermaid
 graph TD
     A["👆 Tap/Click ⚙ Button"] -->|Keyboard: O| B["▶️ Modal Opening\nFade-in 200ms"]
-    
+
     B --> C["📋 Modal Open\n4 Controls:\n• Quit\n• Replay\n• Audio Toggle\n• Reduced Motion Toggle"]
-    
+
     C --> D{"User Action?"}
-    
+
     D -->|Tap Quit| E["🔴 Confirm Modal\nPre-focus: Cancel"]
     D -->|Tap Replay| F["🔄 Replay Match\nReset to start"]
     D -->|Toggle Audio| G["🔊 Update settings\nPersist to localStorage"]
     D -->|Toggle Motion| H["✨ Apply reduced motion\nCSS: prefers-reduced-motion"]
     D -->|Tap outside / Esc| I["▶️ Modal Closing\nFade-out 200ms"]
-    
+
     E --> J{"Confirm?"}
     J -->|Cancel| I
     J -->|Confirm Quit| K["🚪 Return to\nLanding Page\nLog: battle.quit event"]
-    
+
     F --> L["🎮 Battle resets\nRound 1, Score 0-0"]
     G --> M["💾 Save audio state"]
     H --> N["🎨 Apply motion prefs"]
-    
+
     L --> I
     M --> I
     N --> I
-    
+
     K --> End["🏁 End"]
-    
+
     I --> O["✅ Modal Closed"]
     O --> P["⚙ Button released"]
-    
+
     style B fill:#fff8dc
     style C fill:#e0ffff
     style O fill:#d0f0c0
@@ -307,51 +307,56 @@ graph TD
 
 **Button State Transitions & Keyboard Mapping**:
 
-| Button | Visual | Enabled State | Keyboard | Click Behavior |
-|---|---|---|---|---|
-| **⚙ Options** | Icon + label | Always | O | Open modal (150ms fade) |
-| **1 Power** | Icon + label | During selection | 1 | Send stat; pulse 150ms |
-| **2 Speed** | Icon + label | During selection | 2 | Send stat; pulse 150ms |
-| **3 Technique** | Icon + label | During selection | 3 | Send stat; pulse 150ms |
-| **4 Kumi-kata** | Icon + label | During selection | 4 | Send stat; pulse 150ms |
-| **5 Ne-waza** | Icon + label | During selection | 5 | Send stat; pulse 150ms |
-| **▶ Next** | Dynamic label | State-dependent | Enter/Space | Emit actionButtonPressed |
+| Button          | Visual        | Enabled State    | Keyboard    | Click Behavior           |
+| --------------- | ------------- | ---------------- | ----------- | ------------------------ |
+| **⚙ Options**  | Icon + label  | Always           | O           | Open modal (150ms fade)  |
+| **1 Power**     | Icon + label  | During selection | 1           | Send stat; pulse 150ms   |
+| **2 Speed**     | Icon + label  | During selection | 2           | Send stat; pulse 150ms   |
+| **3 Technique** | Icon + label  | During selection | 3           | Send stat; pulse 150ms   |
+| **4 Kumi-kata** | Icon + label  | During selection | 4           | Send stat; pulse 150ms   |
+| **5 Ne-waza**   | Icon + label  | During selection | 5           | Send stat; pulse 150ms   |
+| **▶ Next**     | Dynamic label | State-dependent  | Enter/Space | Emit actionButtonPressed |
 
 **Component Observability & Data Attributes**:
 
 ```html
 <!-- Action Bar root element -->
 <div class="action-bar action-bar--classic" data-action-state="roundSelect">
-  
   <!-- Options button -->
-  <button 
+  <button
     class="action-bar__button action-bar__options"
     data-action="options"
     aria-label="Open options and settings"
     data-keyboard-shortcut="O"
-  >⚙ Options</button>
-  
+  >
+    ⚙ Options
+  </button>
+
   <!-- Stat buttons (Power, Speed, Technique, Kumi-kata, Ne-waza) -->
-  <button 
+  <button
     class="action-bar__button action-bar__stat"
     data-stat="power"
     data-stat-index="0"
     data-stat-enabled="true"
     data-keyboard-shortcut="1"
     aria-label="Select Power stat (keyboard: 1)"
-  >Power</button>
-  
+  >
+    Power
+  </button>
+
   <!-- Action button -->
-  <button 
+  <button
     class="action-bar__button action-bar__action action-bar__action--next"
     data-action="actionButton"
     data-action-label="Next"
     data-action-enabled="true"
     aria-label="Next round (keyboard: Enter)"
-  >▶ Next</button>
-  
+  >
+    ▶ Next
+  </button>
+
   <!-- Options Modal (hidden by default) -->
-  <dialog 
+  <dialog
     id="action-bar-options-modal"
     class="action-bar__modal"
     data-modal-open="false"
@@ -387,7 +392,7 @@ graph TD
 }
 
 .action-bar--cli .action-bar__stat::before {
-  content: '[' attr(data-stat-index) '] ';
+  content: "[" attr(data-stat-index) "] ";
 }
 
 /* Bandit Mode: Simplified, centered */
@@ -402,7 +407,7 @@ graph TD
     animation: none;
     transition: none;
   }
-  
+
   .action-bar__modal {
     animation: none;
   }
@@ -411,18 +416,19 @@ graph TD
 
 **Performance & Accessibility SLAs**:
 
-| Metric | Target | Notes |
-|---|---|---|
-| Button Response | <50ms | Visual feedback immediate |
-| Modal Fade | 150-200ms | Smooth open/close |
-| Stat Pulse | 150ms | Active state animation |
-| Keyboard Latency | <100ms | 1-5, O, Enter/Space active |
-| Touch Target Size | 48px+ | WCAG 2.5.5 compliance |
-| Text Contrast | ≥4.5:1 | WCAG AA standard |
-| Desync Detection | >300ms | Auto-resync + telemetry |
-| Reduced Motion Respect | 100% | prefers-reduced-motion honored |
+| Metric                 | Target    | Notes                          |
+| ---------------------- | --------- | ------------------------------ |
+| Button Response        | <50ms     | Visual feedback immediate      |
+| Modal Fade             | 150-200ms | Smooth open/close              |
+| Stat Pulse             | 150ms     | Active state animation         |
+| Keyboard Latency       | <100ms    | 1-5, O, Enter/Space active     |
+| Touch Target Size      | 48px+     | WCAG 2.5.5 compliance          |
+| Text Contrast          | ≥4.5:1    | WCAG AA standard               |
+| Desync Detection       | >300ms    | Auto-resync + telemetry        |
+| Reduced Motion Respect | 100%      | prefers-reduced-motion honored |
 
 **Status Badge**: ✅ **VERIFIED** — Validated against:
+
 - `src/helpers/actionBar.js` — 7-button layout, state observation, keyboard mapping
 - `src/helpers/battleEngineFacade.js` — Engine state emissions (roundSelect, cooldown, etc.)
 - `tests/helpers/actionBar.test.js` — Button enablement, modal flow, stat selection
@@ -430,6 +436,7 @@ graph TD
 - WCAG 2.1 AA: 48px+ targets, keyboard navigation, ARIA labels, reduced motion support
 
 **Related Diagrams**:
+
 - [Battle Engine States](prdBattleEngine.md) — State emissions that control button states
 - [Classic Battle](prdBattleClassic.md) — Action bar integration in Classic mode
 - [Battle CLI](prdBattleCLI.md) — Text-based styling in CLI mode

@@ -182,9 +182,9 @@ sequenceDiagram
     DOM-->>Init: Render done (~10ms)
     Init->>DOM: No item active yet (awaiting state.changed)
     Init-->>Init: Return { isReady: true, getActiveState, cleanup }
-    
+
     Note over Init,DOM: Wait for control.state.changed event...
-    
+
     Init->>Init: Receive control.state.changed
     Init->>DOM: Set "to" state .active + aria-current
     Init->>Announcer: Update text: "State: " + to
@@ -198,7 +198,6 @@ sequenceDiagram
 - Used in tests for assertions (`expect(getActiveState()).toBe("cooldown")`)
 
 ---
-
 
 - On init: fetch catalog, render ordered list, no state selected by default
 - On `control.state.changed`:
@@ -279,6 +278,7 @@ Then `isReady` is false and no DOM rendered
 ## 12. Test Coverage & Verification
 
 **Status Badge**: ✅ **VERIFIED** — Validated against:
+
 - `src/helpers/battleStateProgress.js` — Main indicator implementation
 - `src/helpers/battleStateIndicator.js` — Shared indicator utility
 - `tests/helpers/battleStateProgress.test.js` — FSM state display tests
@@ -286,6 +286,7 @@ Then `isReady` is false and no DOM rendered
 - Classic battle initialization references in `src/pages/battleClassic.init.js`
 
 **Tested Behaviors**:
+
 - ✅ Catalog fetch and ordered list rendering (<10ms)
 - ✅ State change reflection (<2ms update after event)
 - ✅ Unknown state handling (data-unknown, announcer parity)
@@ -295,6 +296,7 @@ Then `isReady` is false and no DOM rendered
 - ✅ Accessibility parity (no keyboard, aria-current, reduced motion)
 
 **Related Diagrams**:
+
 - [Battle Engine FSM](prdBattleEngine.md#fsm-state-catalog) — State definitions and catalog
 - [Battle Event System](prdBattleEventSystem.md) — control.state.changed event contract
 
