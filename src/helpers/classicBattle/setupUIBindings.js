@@ -7,7 +7,7 @@ import {
   initStatButtons,
   applyStatLabels
 } from "./uiHelpers.js";
-import { onBattleEvent } from "./battleEvents.js";
+import { onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { initBattleStateProgress } from "../battleStateProgress.js";
 import { isEnabled } from "../featureFlags.js";
 import { initTooltips } from "../tooltip.js";
@@ -18,6 +18,29 @@ let replayStoreRef = null;
 let replayInFlight = false;
 let cleanupInterruptHandlers = null;
 let cleanupBattleOrientationWatcher = null;
+let statButtonsEnableListener = null;
+let statButtonsDisableListener = null;
+
+/**
+ * Remove stat button event listeners tied to current bindings.
+ *
+ * @pseudocode
+ * 1. Remove the enable handler when present and clear its reference.
+ * 2. Remove the disable handler when present and clear its reference.
+ *
+ * @returns {void}
+ */
+function cleanupStatButtonEventBindings() {
+  if (statButtonsEnableListener) {
+    offBattleEvent("statButtons:enable", statButtonsEnableListener);
+    statButtonsEnableListener = null;
+  }
+
+  if (statButtonsDisableListener) {
+    offBattleEvent("statButtons:disable", statButtonsDisableListener);
+    statButtonsDisableListener = null;
+  }
+}
 
 /**
  * Check whether an event target is a replay control.
@@ -102,6 +125,8 @@ function bindReplayClickListener(store) {
  * @returns {void}
  */
 export function unbindReplayClickListener() {
+  cleanupStatButtonEventBindings();
+
   if (cleanupBattleOrientationWatcher) {
     cleanupBattleOrientationWatcher();
     cleanupBattleOrientationWatcher = null;
@@ -147,7 +172,8 @@ export async function setupUIBindings(view) {
   setupNextButton();
   const statButtonControls = initStatButtons(store);
 
-  onBattleEvent("statButtons:enable", () => {
+  cleanupStatButtonEventBindings();
+  statButtonsEnableListener = () => {
     // Check if a selection is in progress; if so, don't re-enable buttons
     const container =
       typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
@@ -163,8 +189,12 @@ export async function setupUIBindings(view) {
     if (firstButton) {
       firstButton.focus();
     }
-  });
-  onBattleEvent("statButtons:disable", () => statButtonControls?.disable());
+  };
+
+  statButtonsDisableListener = () => statButtonControls?.disable();
+
+  onBattleEvent("statButtons:enable", statButtonsEnableListener);
+  onBattleEvent("statButtons:disable", statButtonsDisableListener);
 
   if (isEnabled("battleStateProgress")) {
     const cleanupBattleStateProgress = await initBattleStateProgress();

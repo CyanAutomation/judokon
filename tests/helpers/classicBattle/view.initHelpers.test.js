@@ -44,12 +44,24 @@ vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
   initDebugPanel: vi.fn()
 }));
 const eventHandlers = vi.hoisted(() => ({}));
+const eventListenerRegistry = vi.hoisted(() => ({
+  "statButtons:enable": new Set(),
+  "statButtons:disable": new Set()
+}));
 vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
   onBattleEvent: vi.fn((name, cb) => {
     eventHandlers[name] = cb;
+    if (!eventListenerRegistry[name]) {
+      eventListenerRegistry[name] = new Set();
+    }
+    eventListenerRegistry[name].add(cb);
+  }),
+  offBattleEvent: vi.fn((name, cb) => {
+    eventListenerRegistry[name]?.delete(cb);
   }),
   emitBattleEvent: vi.fn(),
-  handlers: eventHandlers
+  handlers: eventHandlers,
+  listenerRegistry: eventListenerRegistry
 }));
 vi.mock("../../../src/helpers/battleStateProgress.js", () => ({
   initBattleStateProgress: vi.fn().mockResolvedValue(() => {})
@@ -77,6 +89,7 @@ afterEach(() => {
   unbindReplayClickListener();
   resetSchedulerState();
   interruptCleanupMock.mockClear();
+  Object.values(events.listenerRegistry).forEach((listeners) => listeners.clear());
 });
 
 function makeView() {
@@ -434,6 +447,25 @@ describe("setupUIBindings", () => {
     expect(roundManager.handleReplay).toHaveBeenCalledWith(view.controller.battleStore);
 
     replayButton.remove();
+  });
+
+  it("keeps only one active stat button event listener per event across repeated setup", async () => {
+    const view = makeView();
+
+    await setupUIBindings(view);
+    const firstEnableListener = events.handlers["statButtons:enable"];
+    const firstDisableListener = events.handlers["statButtons:disable"];
+
+    await setupUIBindings(view);
+
+    expect(events.offBattleEvent).toHaveBeenCalledWith("statButtons:enable", firstEnableListener);
+    expect(events.offBattleEvent).toHaveBeenCalledWith("statButtons:disable", firstDisableListener);
+    expect(events.listenerRegistry["statButtons:enable"].size).toBe(1);
+    expect(events.listenerRegistry["statButtons:disable"].size).toBe(1);
+
+    unbindReplayClickListener();
+    expect(events.listenerRegistry["statButtons:enable"].size).toBe(0);
+    expect(events.listenerRegistry["statButtons:disable"].size).toBe(0);
   });
 
   it("unbindReplayClickListener removes replay delegation and clears state", async () => {
