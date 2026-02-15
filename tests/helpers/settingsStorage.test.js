@@ -137,6 +137,29 @@ describe("saveSettings", () => {
     }
   });
 
+  it("ignores stale debounced writes when a newer update persisted first", async () => {
+    const timers = useCanonicalTimers();
+
+    try {
+      const oldState = {
+        ...DEFAULT_SETTINGS,
+        sound: false
+      };
+
+      const pendingSave = saveSettings(oldState);
+      await updateSetting("sound", true);
+
+      timers.advanceTimersByTime(10);
+      await expect(pendingSave).resolves.toBeUndefined();
+
+      const stored = JSON.parse(localStorage.getItem("settings"));
+      expect(stored.sound).toBe(true);
+      expect(getCachedSettings().sound).toBe(true);
+    } finally {
+      timers.cleanup();
+    }
+  });
+
   it("rejects yet still updates the cache when localStorage is unavailable", async () => {
     const originalStorage = globalThis.localStorage;
     Object.defineProperty(globalThis, "localStorage", {
