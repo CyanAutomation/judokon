@@ -1,8 +1,15 @@
 // @vitest-environment jsdom
-import { describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
-const { capturedDeps } = vi.hoisted(() => ({
-  capturedDeps: { current: null }
+const { capturedDeps, modalControl, initControl } = vi.hoisted(() => ({
+  capturedDeps: { current: null },
+  modalControl: {
+    waitForCallback: false,
+    releaseCallback: null
+  },
+  initControl: {
+    failWith: null
+  }
 }));
 
 vi.mock("../../../src/helpers/domReady.js", () => ({
@@ -11,9 +18,15 @@ vi.mock("../../../src/helpers/domReady.js", () => ({
 
 vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
   resolveRoundStartPolicy: vi.fn(async (callback) => {
-    if (typeof callback === "function") {
-      await callback();
+    if (typeof callback !== "function") {
+      return;
     }
+    const callbackPromise = callback();
+    if (modalControl.waitForCallback) {
+      await callbackPromise;
+      return;
+    }
+    await Promise.resolve();
   })
 }));
 
@@ -24,7 +37,14 @@ vi.mock("../../../src/helpers/classicBattle/controller.js", () => ({
       this.battleStore = {};
       this.timerControls = {};
     }
-    async init() {}
+    async init() {
+      if (initControl.failWith) {
+        throw initControl.failWith;
+      }
+      if (typeof modalControl.releaseCallback === "function") {
+        await modalControl.releaseCallback();
+      }
+    }
   }
 }));
 
@@ -36,7 +56,7 @@ vi.mock("../../../src/helpers/classicBattle/view.js", () => ({
 }));
 
 vi.mock("../../../src/helpers/classicBattle/setupTestHelpers.js", () => ({
-  default: () => ({})
+  default: () => ({ debug: true })
 }));
 
 vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
@@ -73,6 +93,14 @@ vi.mock("../../../src/helpers/featureFlags.js", () => ({
 }));
 
 describe("classic battle bootstrap wiring", () => {
+  beforeEach(() => {
+    modalControl.waitForCallback = false;
+    modalControl.releaseCallback = null;
+    initControl.failWith = null;
+    capturedDeps.current = null;
+    delete window.__battleInitComplete;
+    delete window.battleReadyPromise;
+  });
   test("injects waitForOpponentCard from runtime utility and uses the real implementation", async () => {
     const container = document.createElement("div");
     container.id = "opponent-card";
@@ -88,5 +116,48 @@ describe("classic battle bootstrap wiring", () => {
 
     expect(typeof capturedDeps.current?.waitForOpponentCard).toBe("function");
     await expect(capturedDeps.current.waitForOpponentCard()).resolves.toBeUndefined();
+  });
+
+  test("waits for startPromise completion before resolving and setting final readiness", async () => {
+    modalControl.waitForCallback = false;
+    let resolveInit;
+    const initBarrier = new Promise((resolve) => {
+      resolveInit = resolve;
+    });
+    modalControl.releaseCallback = () => initBarrier;
+
+    const { setupClassicBattlePage } = await import(
+      "../../../src/helpers/classicBattle/bootstrap.js"
+    );
+
+    const bootstrapPromise = setupClassicBattlePage();
+
+    await Promise.resolve();
+    expect(window.battleReadyPromise).toBeInstanceOf(Promise);
+    expect(window.__battleInitComplete).toBeUndefined();
+
+    let settled = false;
+    bootstrapPromise.then(() => {
+      settled = true;
+    });
+    await Promise.resolve();
+    expect(settled).toBe(false);
+
+    resolveInit();
+    await expect(bootstrapPromise).resolves.toEqual({ debug: true });
+    expect(window.__battleInitComplete).toBe(true);
+  });
+
+  test("rejects when initialization fails", async () => {
+    initControl.failWith = new Error("init failed");
+
+    const { setupClassicBattlePage } = await import(
+      "../../../src/helpers/classicBattle/bootstrap.js"
+    );
+
+    await expect(setupClassicBattlePage()).rejects.toThrow("init failed");
+    await expect(window.battleReadyPromise).rejects.toThrow("init failed");
+
+    initControl.failWith = null;
   });
 });
