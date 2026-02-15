@@ -151,27 +151,27 @@ F7KP-WQ9M-ZD23-HYTR
 ```mermaid
 graph TD
     A["📋 Input Judoka Object"] -->|Extract attributes| B["📊 Concatenate Stats<br/>Power + Speed + Technique<br/>+ Kumikata + Newaza"]
-    
+
     B --> C["🔗 Build Raw String<br/>Format: v1-FNAME-LNAME-COUNTRY<br/>-WEIGHT-SIGID-[STATS]"]
-    
+
     C --> D["Verify all fields<br/>present & valid"]
     D -->|Valid| E["✅ Raw string ready<br/>Example:<br/>v1-TADAHIRO-NOMURA-JP<br/>-60-1234-98765"]
     D -->|Invalid| F["⚠️ Missing fields<br/>Fallback to<br/>generic code"]
-    
+
     E --> G["🔐 XOR Encoding<br/>For each char:<br/>ASCII XOR (index+37)%256"]
     G --> H["📊 Encoded bytes<br/>raw → obfuscated"]
-    
+
     H --> I["🗺️ Map to Charset<br/>Charset:<br/>ABCDEFGHJKLMNPQRST<br/>UVWXYZ23456789<br/>(no I,O,1,0)"]
     I --> J["🔤 Readable chars<br/>Example: F7KP..."]
-    
+
     J --> K["📦 Chunk into<br/>4-char groups"]
     K --> L["➕ Join with<br/>hyphens"]
-    
+
     L --> M["✅ Final Code<br/>Example:<br/>F7KP-WQ9M-ZD23-HYTR"]
     F --> M
-    
+
     M --> N["💾 Save to judoka.json<br/>attach code field"]
-    
+
     style A fill:lightgreen
     style E fill:lightblue
     style G fill:lightblue
@@ -180,6 +180,7 @@ graph TD
 ```
 
 **Generation Steps:**
+
 1. **Extract & Validate**: Gather all required fields from Judoka object
 2. **Concatenate**: Build raw string from name, country, weight, signature move, stats
 3. **XOR Encoding**: Obfuscate each character using XOR with position-dependent key
@@ -194,21 +195,21 @@ graph TD
 ```mermaid
 graph TB
     A["📝 Example Generation"]
-    
+
     A --> B["Input Judoka:<br/>Tadahiro Nomura<br/>Country: JP<br/>Weight: 60kg<br/>Signature: 1234<br/>Stats: 9,8,7,6,5"]
-    
+
     B --> C["Step 1: Build Raw String<br/>v1-TADAHIRO-NOMURA-JP-60-1234-98765"]
-    
+
     C --> D["Step 2: XOR Encoding<br/>Char 0: 'v' (118) XOR (0+37)%256=37<br/>→ 118 XOR 37 = 87<br/>Char 1: '1' (49) XOR (1+37)%256=38<br/>→ 49 XOR 38 = 11<br/>... continue for all chars"]
-    
+
     D --> E["Step 3: Map bytes to Charset<br/>87 mod 32 = 23 → 'X'<br/>11 mod 32 = 11 → 'L'<br/>... convert all bytes to charset indices"]
-    
+
     E --> F["Step 4: Get Charset Characters<br/>Charset: ABCDEFGHJKLMNPQRSTUVWXYZ23456789<br/>Index 23 → 'X'<br/>Index 11 → 'L'<br/>Result: XL... (example, not actual)"]
-    
+
     F --> G["Step 5: Format with Hyphens<br/>Full result: F7KP-WQ9M-ZD23-HYTR"]
-    
+
     G --> H["✅ Output Code Ready<br/>Obfuscated, readable<br/>Deterministic (same input<br/>→ same output)"]
-    
+
     style A fill:lightblue
     style C fill:lightgreen
     style D fill:lightyellow
@@ -218,6 +219,7 @@ graph TB
 ```
 
 **Key Properties:**
+
 - **Deterministic**: Same Judoka → same code every time
 - **Obfuscated**: XOR encoding prevents casual reverse-engineering
 - **Readable**: Charset avoids confusing characters (no I/O/1/0)
@@ -233,21 +235,21 @@ graph TD
     A["🔍 Validate Input<br/>Judoka object"] -->|All fields present| B["✅ Valid"]
     A -->|Missing field| C["⚠️ Invalid<br/>Missing: firstname<br/>or surname<br/>or country, etc."]
     A -->|Invalid type| D["⚠️ Invalid<br/>Stats not numbers<br/>or out of range"]
-    
+
     B --> E["Generate code<br/>complete process"]
     C --> F["📝 Fallback Code<br/>Use generic pattern<br/>Generic-XXXXXXXX"]
     D --> F
-    
+
     E --> G["✅ Code generated<br/>Save to judoka.json"]
     F --> G
-    
+
     G --> H{Code valid?}
     H -->|Yes| I["💾 Store + return<br/>code to UI"]
     H -->|No| J["❌ Error message<br/>inform user"]
-    
+
     I --> K["Display in UI<br/>Copy button available"]
     J --> K
-    
+
     style A fill:lightblue
     style B fill:lightgreen
     style C fill:lightsalmon
@@ -258,12 +260,14 @@ graph TD
 ```
 
 **Validation Checks:**
+
 - All required fields present (firstname, surname, country, weight, signature move ID, stats)
 - Stats are numbers within valid range
 - Country code is valid format
 - Weight class is positive number
 
 **Fallback Strategy:**
+
 - If validation fails, generate generic code with fallback pattern
 - Display error message to user
 - Suggest correction steps
@@ -275,21 +279,21 @@ graph TD
 ```mermaid
 graph LR
     A["🎴 Card Screen"]
-    
+
     A -->|Display section| B["📋 Card Code Panel<br/>Label: Card Code"]
     B --> C["🔤 Code Display<br/>Example: F7KP-WQ9M-ZD23-HYTR<br/>(monospace font)]
     C --> D["📋 Copy Button<br/>Click to clipboard"]
     D --> E["✅ Toast:<br/>Copied!"]
-    
+
     A -->|Input section| F["💬 Code Entry Input"]
     F --> G["Auto-format on input:<br/>Removes spaces<br/>Converts to UPPERCASE<br/>Removes invalid chars<br/>Adds hyphens automatically"]
     G --> H["Invalid char detected?<br/>Show red outline +<br/>informational message"]
-    
+
     G -->|Formatted| I["✅ Code valid<br/>Format check passed<br/>Ready for import"]
     I --> J["🔍 Validate against<br/>known codes or pattern"]
     J -->|Match found| K["✅ Code recognized<br/>Show matched Judoka<br/>Load/preview card"]
     J -->|No match| L["❌ Code not found<br/>Suggest create new"]
-    
+
     style A fill:lightgreen
     style B fill:lightblue
     style C fill:lightyellow
@@ -301,12 +305,14 @@ graph LR
 ```
 
 **Display UX:**
+
 - Show code in monospace font for clarity
 - Copy button for easy sharing
 - Toast confirmation when copied
 - QR code option (if supported)
 
 **Entry UX:**
+
 - Auto-format: Remove spaces, add hyphens, uppercase
 - Real-time validation feedback
 - Show matching Judoka on valid codes
@@ -319,26 +325,26 @@ graph LR
 ```mermaid
 graph TD
     A["🗺️ Charset Mapping<br/>32 friendly characters"]
-    
+
     A --> B["Base Charset:<br/>ABCDEFGHJKLMNPQRSTUVWXYZ23456789"]
-    
+
     B --> C["Index 0-7: A B C D E F G H"]
     B --> D["Index 8-15: J K L M N P Q R"]
     B --> E["Index 16-23: S T U V W X Y Z"]
     B --> F["Index 24-31: 2 3 4 5 6 7 8 9"]
-    
+
     A --> G["❌ Excluded Characters<br/>Confusing letters:"]
     G --> H["I (looks like 1)"]
     G --> I["O (looks like 0)"]
     G --> J["1 (looks like I)"]
     G --> K["0 (looks like O)"]
-    
+
     A --> L["✅ Why this set?"]
     L --> M["Kid-friendly"]
     L --> N["Minimal typos<br/>in manual entry"]
     L --> O["32 = 2^5<br/>efficient encoding"]
     L --> P["No similar-looking<br/>characters"]
-    
+
     style A fill:lightblue
     style B fill:lightgreen
     style C fill:lightyellow
@@ -350,12 +356,14 @@ graph TD
 ```
 
 **Charset Strategy:**
+
 - 32 characters = 5 bits per character
 - Avoids I, O, 1, 0 (easily confused)
 - Alphabetical (A–Z) + numeric (2–9)
 - Optimized for <2% manual entry error rate
 
 **Performance Targets:**
+
 - Code generation: <100ms
 - UI response: <200ms
 - Manual entry: <2% error rate

@@ -139,40 +139,40 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 ```mermaid
 stateDiagram-v2
     [*] --> Closed: Page Load
-    
+
     Closed: 📍 Map Closed\nIcon visible in footer\nSimple Menu Mode check
-    
+
     Closed --> Expanding: Tap map icon\n(if fullNavigationMap=true)
     Closed --> ShowsTextField: Tap map icon\n(if fullNavigationMap=false)
-    
+
     Expanding: 🎬 Expanding...<br/>Slide-up animation &lt;500ms
-    
+
     Expanding --> Open: Assets loaded<br/>Tiles rendered<br/>home-ready signal
     Expanding --> OpenFallback: Asset failure<br/>Asset timeout &gt;1s<br/>Load fallback &lt;1s
-    
+
     Open: 🗺️ Map Open<br/>Dojo | Budokan | Kodokan<br/>Tiles interactive 44px+
-    
+
     Open --> Navigating: Tap tile (any landmark)
     Open --> Collapsing: Tap outside map<br/>Tap map icon again
     Open --> Collapsing: Device rotation detected
-    
+
     OpenFallback: ⚠️ Fallback Menu Open<br/>High-contrast text menu<br/>No image assets
-    
+
     OpenFallback --> Navigating: Tap fallback option
     OpenFallback --> Collapsing: Tap outside menu<br/>Tap close button
-    
+
     Navigating: ✉️ Navigating...<br/>Mode transition &lt;300ms
-    
+
     Navigating --> Closed: Browser nav complete
-    
+
     Collapsing: 🎬 Collapsing...<br/>Slide-down animation<br/>Revert to footer
-    
+
     Collapsing --> Closed: Animation complete
-    
+
     ShowsTextField: 📝 Text Menu<br/>(Simple Mode Enabled)
     ShowsTextField --> Navigating: Tap option
     ShowsTextField --> Closed: Tap away / return
-    
+
     note right of Open
         Landmarks:
         • Dojo → Training
@@ -183,44 +183,44 @@ stateDiagram-v2
 
 **Map Tile Configuration & Landmark Mapping**:
 
-| Landmark | Mode Destination | User Action | Tile Target |
-|---|---|---|---|
-| 🏋️ **Dojo** (Training Hall) | Training Mode | Tap to train | 44px+ |
-| 🥋 **Budokan** (Martial Arts Arena) | Battle Mode | Tap to battle | 44px+ |
-| 📚 **Kodokan** (Judo HQ) | Browse/Explore Mode | Tap to browse | 44px+ |
+| Landmark                            | Mode Destination    | User Action   | Tile Target |
+| ----------------------------------- | ------------------- | ------------- | ----------- |
+| 🏋️ **Dojo** (Training Hall)         | Training Mode       | Tap to train  | 44px+       |
+| 🥋 **Budokan** (Martial Arts Arena) | Battle Mode         | Tap to battle | 44px+       |
+| 📚 **Kodokan** (Judo HQ)            | Browse/Explore Mode | Tap to browse | 44px+       |
 
 **User Interaction & Settings Flow**:
 
 ```mermaid
 graph LR
     A["👆 User Taps"] --> B{"fullNavigationMap?"}
-    
+
     B -->|ON| C{"Tap Map Icon?"}
     B -->|OFF| D["📝 Show Text Menu"]
-    
+
     C -->|Yes| E{"Map Open?"}
     E -->|No| F["▶️ Expanding<br/>&lt;500ms"]
     E -->|Yes| G["▶️ Collapsing<br/>&lt;500ms"]
-    
+
     F --> H{"Assets Ready?"}
     H -->|Yes| I["🗺️ Open & Ready"]
     H -->|No| J["⚠️ Load Fallback<br/>&lt;1s"]
-    
+
     I --> K{"Tap Tile?"}
     K -->|Yes| L["✉️ Navigate Mode<br/>≤300ms"]
     K -->|No| M{"Tap Outside?"}
     M -->|Yes| G
-    
+
     J --> N{"Tap Fallback?"}
     N -->|Yes| L
     N -->|No| G
-    
+
     L --> O["✅ Mode Loaded"]
     G --> P["🚪 Closed"]
     D --> Q{"Tap Option?"}
     Q -->|Yes| L
     Q -->|No| P
-    
+
     style F fill:#lightyellow
     style G fill:#lightyellow
     style I fill:#lightcyan
@@ -249,6 +249,7 @@ graph LR
 - **Device Rotation**: mid-animation detects orientation change via `orientationchange` event; stops slide, closes map, resets footer
 
 **Status Badge**: ✅ **VERIFIED** — Validated against:
+
 - `src/helpers/homePage.js` —MutationObserver signals readiness before expansion
 - `prdNavigationBar.md` — Footer icon placement and styling
 - `prdSettingsMenu.md` — Feature flags (fullNavigationMap, simpleMenuMode)
@@ -256,6 +257,7 @@ graph LR
 - Accessibility: WCAG 2.1 AA compliance, 44px+ targets, keyboard navigation, screen reader support
 
 **Related Diagrams**:
+
 - [Home Page Navigation](prdHomePageNavigation.md) — Primary 2×2 grid menu and keyboard focus
 - [Navigation Bar](prdNavigationBar.md) — Footer structure and map icon positioning
 - [Settings Menu](prdSettingsMenu.md) — fullNavigationMap & simpleMenuMode feature flags

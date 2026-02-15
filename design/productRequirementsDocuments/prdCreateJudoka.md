@@ -41,20 +41,22 @@ graph TD
 
 **Form Input Validation States**:
 
-| Field | Type | Required? | Validation | Status |
-|---|---|---|---|---|
-| First name | Text input | ✅ Yes | Non-empty string | HTML required attribute |
-| Last name | Text input | ✅ Yes | Non-empty string | HTML required attribute |
-| Country | Select dropdown | ✅ Yes | Valid country code (JPN/FRA/USA) | HTML required attribute |
-| Weight class | Numeric input | ✅ Yes | Valid numeric format | inputmode="numeric" |
+| Field        | Type            | Required? | Validation                       | Status                  |
+| ------------ | --------------- | --------- | -------------------------------- | ----------------------- |
+| First name   | Text input      | ✅ Yes    | Non-empty string                 | HTML required attribute |
+| Last name    | Text input      | ✅ Yes    | Non-empty string                 | HTML required attribute |
+| Country      | Select dropdown | ✅ Yes    | Valid country code (JPN/FRA/USA) | HTML required attribute |
+| Weight class | Numeric input   | ✅ Yes    | Valid numeric format             | inputmode="numeric"     |
 
 **Status Badge**: ✅ **VERIFIED** — Validated against:
+
 - `src/pages/createJudoka.html` — Form markup and structure
 - `src/pages/createJudoka.init.js` — Form initialization and submission handling
 - `tests/pages/createJudoka.test.js` — Form validation unit tests
 - `playwright/create-judoka.spec.js` — End-to-end form submission tests
 
 **Related Diagrams**:
+
 - [Update Judoka](prdUpdateJudoka.md) — Edit form workflow
 - [Browse Judoka](prdBrowseJudoka.md) — List context after creation
 
