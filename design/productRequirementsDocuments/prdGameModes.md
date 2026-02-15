@@ -115,10 +115,10 @@ The engine contains no UI code. Game modes translate events into messages and de
 ```mermaid
 flowchart TD
     Home["🏠 Home / Navigation<br/>(Map or Menu)"]
-    
+
     Home -->|tap| CBattle["⚔️ Classic Battle<br/>(1v1 Match)<br/>battleClassic.html"]
     CBattle -->|win/end| Home
-    
+
     Home -->|tap| TBSelect["👥 Team Battle<br/>Selection<br/>teamBattleSelection.html"]
     TBSelect -->|male| TBMale["🔵 Male Team Battle<br/>teamBattleMale.html"]
     TBSelect -->|female| TBFemale["🔴 Female Team Battle<br/>teamBattleFemale.html"]
@@ -126,29 +126,29 @@ flowchart TD
     TBMale -->|win/end| Home
     TBFemale -->|win/end| Home
     TBMixed -->|win/end| Home
-    
+
     Home -->|tap| Browse["🔍 Browse Judoka<br/>browseJudoka.html"]
     Browse -->|back| Home
-    
+
     Home -->|tap| Random["🎲 Random Judoka<br/>randomJudoka.html"]
     Random -->|back| Home
-    
+
     Home -->|tap| Manage["⚙️ Manage Judoka<br/>manageJudoka.html<br/>(Admin)"]
     Manage -->|create| Create["✏️ Create Judoka<br/>createJudoka.html"]
     Manage -->|edit| Update["📝 Update Judoka<br/>updateJudoka.html"]
     Create -->|save| Home
     Update -->|save| Home
     Manage -->|back| Home
-    
+
     Home -->|tap| Meditate["🧘 Meditation<br/>meditationScreen.html"]
     Meditate -->|back| Home
-    
+
     %% Styling
     classDef explore fill:#lightblue,stroke:#333,stroke-width:2px
     classDef battle fill:#lightgreen,stroke:#333,stroke-width:2px
     classDef manage fill:#lightyellow,stroke:#333,stroke-width:2px
     classDef relax fill:#lightcyan,stroke:#333,stroke-width:2px
-    
+
     class Home explore
     class CBattle,TBSelect,TBMale,TBFemale,TBMixed battle
     class Browse,Random explore
@@ -159,6 +159,7 @@ flowchart TD
 > ✅ **Status: VERIFIED** — Game mode navigation matches `prdGameModes.md` feature list and navigation references in `src/helpers/navigationBar.js` and `src/pages/` entry points
 >
 > **Key Flows**:
+>
 > - **Battle Modes** (green): User selects win target, plays rounds, returns to Home
 > - **Exploration** (blue): Browse and Random show judoka profiles without gameplay
 > - **Management** (yellow): Admin mode to create/edit judoka with form validation and persistence

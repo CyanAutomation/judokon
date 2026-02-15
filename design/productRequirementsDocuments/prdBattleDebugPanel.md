@@ -131,21 +131,21 @@ graph LR
     B -->|__debugPerf()| C
     B -->|process.env flags| C
     B -->|None set| D["❌ Profiling<br/>DISABLED"]
-    
+
     C -->|Init on:| E["📊 Initialize HUD<br/>Settings page / Battle init<br/>CLI Battle init"]
     E --> F["🔍 Start collecting<br/>flag execution times"]
     F --> G["⏱️ Record metric<br/>avg/last/max + count"]
-    
+
     G -->|Duration >= threshold| H["🚨 Flag ALERTING<br/>Default: 16ms"]
     G -->|Duration < threshold| I["✅ Flag OK"]
-    
+
     H --> J["📖 Add to alert history<br/>max 100 entries"]
     J --> K["🎨 Show 5 most recent<br/>in HUD alert section"]
     K --> L["📢 Dispatch event:<br/>debug-flag-hud:alert"]
     L --> M["⚠️ Alert snapshot<br/>with timestamp"]
-    
+
     D -->|Only logging| N["📝 Console output only<br/>for DEBUG_PERF logs"]
-    
+
     style C fill:lightgreen
     style D fill:lightyellow
     style H fill:lightsalmon
@@ -176,22 +176,22 @@ graph TD
     A --> B["🔝 Header"]
     B --> C["Title: Debug Flag Metrics"]
     B --> D["❌ Close button"]
-    
+
     A --> E["📈 Metrics List<br/>Most recent collected"]
     E --> F["Row: FLAG_NAME"]
     F --> G["Avg: X.XXms | Last: Y.YYms | Max: Z.ZZms | Count: N"]
     F --> H["🎯 Highlighting if alerting"]
-    
+
     A --> I["🚨 Alert History<br/>Collapsible section"]
     I --> J["Shows 5 most recent alerts"]
     J --> K["Each alert: timestamp +<br/>flagName + duration"]
-    
+
     A --> L["🎛️ Action Buttons"]
     L --> M["📋 Copy Alerts<br/>JSON to clipboard"]
     L --> N["🗑️ Clear<br/>Reset metrics + refresh"]
-    
+
     M --> O["✅ Fallback: download<br/>if clipboard unavailable"]
-    
+
     style A fill:lightblue
     style B fill:lightgreen
     style E fill:lightblue

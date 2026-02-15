@@ -148,16 +148,16 @@ graph LR
 
 ## Carousel Display: Responsive Card Layout
 
-| Context | Mobile (320-600px) | Desktop (>600px) |
-|---------|-------------------|------------------|
-| **Cards Visible** | 1-2 cards | 3-5 cards |
-| **Center Zoom** | 1.05x (tap focus) | 1.10x (hover/focus) |
-| **Snap Behavior** | Touch swipe + center snap | Click next/prev + auto-center |
-| **Page Markers** | Below carousel (full width) | Below carousel (centered) |
-| **Navigation Arrows** | Swipe-only on mobile | Large Prev/Next buttons |
-| **Card Height** | Flex (maintains aspect) | Locked ~400px |
-| **Spacing** | 8px gap | 16px gap |
-| **Bottom Stack** | Filter above carousel <768px | Filter beside carousel >768px |
+| Context               | Mobile (320-600px)           | Desktop (>600px)              |
+| --------------------- | ---------------------------- | ----------------------------- |
+| **Cards Visible**     | 1-2 cards                    | 3-5 cards                     |
+| **Center Zoom**       | 1.05x (tap focus)            | 1.10x (hover/focus)           |
+| **Snap Behavior**     | Touch swipe + center snap    | Click next/prev + auto-center |
+| **Page Markers**      | Below carousel (full width)  | Below carousel (centered)     |
+| **Navigation Arrows** | Swipe-only on mobile         | Large Prev/Next buttons       |
+| **Card Height**       | Flex (maintains aspect)      | Locked ~400px                 |
+| **Spacing**           | 8px gap                      | 16px gap                      |
+| **Bottom Stack**      | Filter above carousel <768px | Filter beside carousel >768px |
 
 **Carousel Specifications:**
 

@@ -607,7 +607,9 @@ describe("Battle Classic Page Integration", () => {
     expect(roundCompletionObserved).toBe(true);
 
     const debugAfter = testApi.inspect.getDebugInfo();
-    const roundsAfter = Number(debugAfter?.store?.roundsPlayed ?? getBattleStore()?.roundsPlayed ?? 0);
+    const roundsAfter = Number(
+      debugAfter?.store?.roundsPlayed ?? getBattleStore()?.roundsPlayed ?? 0
+    );
     const engineRoundsAfter = Number(testApi.engine.getRoundsPlayed() ?? 0);
     // roundsPlayed increment and engine/store sync are stable post-round invariants.
     expect(roundsAfter).toBeGreaterThan(roundsBefore);

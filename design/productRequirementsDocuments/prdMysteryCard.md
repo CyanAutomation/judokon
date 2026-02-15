@@ -33,27 +33,27 @@ Currently, the opponent’s card is visible before the player chooses a stat. Th
 stateDiagram-v2
     [*] --> Mystery: Round starts
     Mystery --> Mystery: Player hovering<br/>stats<br/>No peeking!
-    
+
     Mystery --> Revealing: Player selects<br/>stat (click/tap)
-    
+
     Revealing --> Revealed: Slide/flip animation<br/>≤ 400ms<br/>ease-out
-    
+
     Revealed --> [*]: Continue round<br/>show opponent
-    
+
     note right of Mystery
         Common border
         Large centered ?
         No other info
         Fair for both players
     end note
-    
+
     note right of Revealing
         Real opponent card
         already drawn
         but hidden
         Now displayed
     end note
-    
+
     note right of Revealed
         Opponent card visible
         Player sees stats
@@ -68,18 +68,19 @@ Timeline                        UI State
 ────────────────────────────────────────
 Opponent choosing phase     →   Show Mystery "?"
                                 (hidden real card)
-                                
+
 Player selecting stat       →   Mystery "?"
                                 (no peeking)
-                                
+
 Player confirms selection   →   Animate reveal
                                 (400ms animation)
-                                
+
 Animation complete          →   Show real card
                                 (game continues)
 ```
 
 **Status Badge**: ✅ **VERIFIED** — Validated against:
+
 - `src/pages/battleClassic.html` — Mystery card placeholder markup
 - `src/helpers/battleEngineFacade.js` — Opponent reveal timing
 - `src/helpers/showOpponentCard.js` — Card swap logic and animation
@@ -87,6 +88,7 @@ Animation complete          →   Show real card
 - `playwright/battle-classic/opponent-reveal.spec.js` — E2E mystery card reveal tests
 
 **Related Diagrams**:
+
 - [Battle Engine](prdBattleEngine.md) — Opponent selection and reveal events
 - [Battle Scoreboard](prdBattleScoreboard.md) — Card display container
 

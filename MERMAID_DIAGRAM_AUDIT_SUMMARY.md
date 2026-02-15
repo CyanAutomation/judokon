@@ -3,7 +3,7 @@
 **Date**: February 14, 2026  
 **Status**: ✅ Implementation Complete  
 **Diagrams Reviewed**: 16 total (all embedded in PRD documents)  
-**Files Updated**: 4 PRD documents  
+**Files Updated**: 4 PRD documents
 
 ---
 
@@ -47,10 +47,10 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
 - **Clarification Added**:
 
   ```
-  > **Note**: The states listed below are conceptual/abstract categories. 
-  > The canonical state machine uses more granular states 
-  > (e.g., `roundPrompt`, `roundSelect`, `roundResolve`, `roundDisplay`, `matchEvaluate`, etc.). 
-  > See [prdStateHandler.md](prdStateHandler.md#canonical-state-graph-names) for the detailed, 
+  > **Note**: The states listed below are conceptual/abstract categories.
+  > The canonical state machine uses more granular states
+  > (e.g., `roundPrompt`, `roundSelect`, `roundResolve`, `roundDisplay`, `matchEvaluate`, etc.).
+  > See [prdStateHandler.md](prdStateHandler.md#canonical-state-graph-names) for the detailed,
   > implemented state list and complete diagram.
   ```
 
@@ -75,10 +75,10 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
 - **Added Note**:
 
   ```
-  > **Note:** Legacy aliases exist for backwards compatibility: 
-  > `battle:round-start` (→ `round.started`), 
-  > `battle:stat-selected` (→ `round.selection.locked`), 
-  > `battle:round-resolved` (→ `round.evaluated`). 
+  > **Note:** Legacy aliases exist for backwards compatibility:
+  > `battle:round-start` (→ `round.started`),
+  > `battle:stat-selected` (→ `round.selection.locked`),
+  > `battle:round-resolved` (→ `round.evaluated`).
   > See [Event naming legend](#event-naming-legend) for full compatibility mapping.
   ```
 
@@ -91,7 +91,7 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
 
 - **Status**: 🟠 ASPIRATIONAL — NOT IMPLEMENTED
 - **Changes Made**: Updated status box to clarify aspirational intent
-- **Details**: 1-cycle compatibility layer with dual-emission is *proposed* but not yet implemented
+- **Details**: 1-cycle compatibility layer with dual-emission is _proposed_ but not yet implemented
 - **Old Status**: "ASPIRATIONAL - Full 1-cycle compatibility layer **NOT YET IMPLEMENTED**"
 - **New Status**: "🟠 Status: ASPIRATIONAL"
 - **Clarification**: "Current state: Events transition directly from Active → Deprecated without intermediate dual-emission window."
@@ -106,10 +106,10 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
 - **Added Details**:
 
   ```
-  > **Current behavior** (implemented): Event names either active or deprecated; 
+  > **Current behavior** (implemented): Event names either active or deprecated;
   > no intermediate compatibility period.
   >
-  > **Future enhancement** (planned): ProposedDual state with dual-emission for 
+  > **Future enhancement** (planned): ProposedDual state with dual-emission for
   > 1-cycle transition periods, plus error telemetry for monitoring consumer migrations.
   ```
 
@@ -182,11 +182,11 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
   ```
   > **⚠️ Status: INFRASTRUCTURE PRESENT but LAYOUT MODULES PENDING**
   >
-  > The layout engine infrastructure (loadLayout, applyLayout, validation) is 
-  > implemented and ready. However, the layout module files (`.layout.js`) 
+  > The layout engine infrastructure (loadLayout, applyLayout, validation) is
+  > implemented and ready. However, the layout module files (`.layout.js`)
   > referenced in the flowchart diagram have not yet been created in `src/layouts/`.
   >
-  > Current state: The registry and fallback system exist, but are unpopulated. 
+  > Current state: The registry and fallback system exist, but are unpopulated.
   > Inline JSON fallback is the only active path until layout modules are added.
   ```
 
@@ -214,12 +214,12 @@ All 16 Mermaid diagrams in the repository have been reviewed and corrected. Chan
 
 ## Statistical Summary
 
-| Diagram Category | Count | Status | Action |
-|---|---|---|---|
-| Fully Implemented & Tested | 10 | ✅ | No changes, test refs added |
-| Aspirational/Planned | 4 | 🟠 | Clarified in status boxes |
-| Infrastructure Present | 1 | ⚠️ | Implementation gap noted |
-| **TOTAL** | **16** | **Mixed** | **✅ AUDIT COMPLETE** |
+| Diagram Category           | Count  | Status    | Action                      |
+| -------------------------- | ------ | --------- | --------------------------- |
+| Fully Implemented & Tested | 10     | ✅        | No changes, test refs added |
+| Aspirational/Planned       | 4      | 🟠        | Clarified in status boxes   |
+| Infrastructure Present     | 1      | ⚠️        | Implementation gap noted    |
+| **TOTAL**                  | **16** | **Mixed** | **✅ AUDIT COMPLETE**       |
 
 ---
 

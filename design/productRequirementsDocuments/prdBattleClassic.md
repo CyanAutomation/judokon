@@ -95,18 +95,18 @@ flowchart LR
         P2["Phase 2: UI<br/>(Scoreboard, Flags)"]
         Store["Create Battle Store<br/>(Shared State)"]
     end
-    
+
     subgraph Engine["Engine & Events"]
         P3["Phase 3: Engine<br/>(BattleEngine, Orch)"]
         P4["Phase 4: Event Handlers<br/>(Listeners, Buttons)"]
     end
-    
+
     subgraph Match["Match Initialization"]
         WireStats["Wire Stat Buttons<br/>(BEFORE match start)"]
         P5["Phase 5: Match Start<br/>(Round Selection Modal)"]
         WireControl["Wire Control Buttons<br/>(AFTER match start)"]
     end
-    
+
     P1 --> P2
     P2 --> Store
     Store --> P3
@@ -115,20 +115,21 @@ flowchart LR
     WireStats --> P5
     P5 --> WireControl
     WireControl --> Ready["✅ ready<br/>(window.__battleInitComplete)"]
-    
+
     Ready --> GameReady["🎮 Game Ready<br/>Player can play"]
-    
+
     %% Styling
     classDef phase fill:#lightblue,stroke:#333,stroke-width:2px
     classDef critical fill:#lightsalmon,stroke:#333,stroke-width:2px
     classDef success fill:#lightgreen,stroke:#333,stroke-width:2px
-    
+
     class P1,P2,P3,P4,P5 phase
     class WireStats,WireControl critical
     class Ready,GameReady success
 ```
 
 **Critical Timing Rules** (from [AGENTS.md](../../AGENTS.md)):
+
 - ✅ **Wire stat buttons BEFORE match start** — needed for gameplay from round 1
 - ❌ **DO NOT wire control buttons before match start** — buttons are replaced during Phase 5, losing handlers
 - ✅ **Wire control buttons AFTER match start** — prevents DOM replacement issues

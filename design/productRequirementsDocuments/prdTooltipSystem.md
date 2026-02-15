@@ -111,12 +111,12 @@ graph TD
 
 **Interaction Patterns: Desktop vs Mobile**:
 
-| Action | Desktop | Mobile | Latency |
-|---|---|---|---|
-| **Show** | Hover element | Tap / Long-press | <150ms |
-| **Dismiss** | Mouse leave / Blur | Tap outside | <50ms |
-| **Keyboard** | Tab focus | N/A | <50ms |
-| **Animation** | Fade-in 250ms | Fade-in 250ms | ease-out |
+| Action        | Desktop            | Mobile           | Latency  |
+| ------------- | ------------------ | ---------------- | -------- |
+| **Show**      | Hover element      | Tap / Long-press | <150ms   |
+| **Dismiss**   | Mouse leave / Blur | Tap outside      | <50ms    |
+| **Keyboard**  | Tab focus          | N/A              | <50ms    |
+| **Animation** | Fade-in 250ms      | Fade-in 250ms    | ease-out |
 
 **JSON-Driven Data Structure** (`tooltips.json`):
 
@@ -139,18 +139,19 @@ graph TD
 
 **Performance & Accessibility SLAs**:
 
-| Metric | Target |
-|---|---|
-| First load latency | <150ms |
-| Cache hit | <50ms |
-| Fade animations | 250ms each |
-| Screen reader announcement | <100ms |
-| Text contrast | ≥4.5:1 (WCAG AA) |
-| Keyboard navigation | Tab focus (same as hover) |
-| Mobile long-press | 800ms hold |
-| Reduced motion | 100% respected |
+| Metric                     | Target                    |
+| -------------------------- | ------------------------- |
+| First load latency         | <150ms                    |
+| Cache hit                  | <50ms                     |
+| Fade animations            | 250ms each                |
+| Screen reader announcement | <100ms                    |
+| Text contrast              | ≥4.5:1 (WCAG AA)          |
+| Keyboard navigation        | Tab focus (same as hover) |
+| Mobile long-press          | 800ms hold                |
+| Reduced motion             | 100% respected            |
 
 **Status Badge**: ✅ **VERIFIED** — Validated against:
+
 - `src/helpers/tooltipSystem.js` — JSON API and lifecycle
 - `src/data/tooltips.json` — 200+ tooltip entries
 - `tests/helpers/tooltipSystem.test.js` — Hover, tap, keyboard, positioning
@@ -158,11 +159,11 @@ graph TD
 - WCAG 2.1 AA: aria-describedby, role:tooltip, 4.5:1 contrast
 
 **Related Diagrams**:
+
 - [Settings Menu](prdSettingsMenu.md) — Tooltip toggle control
 - [Battle Scoreboard](prdBattleScoreboard.md) — Stat card tooltip display
 
 ---
-
 
 The `tooltipOverlayDebug` feature flag exposes a visual debug overlay so QA/devs can verify tooltip target boundaries and placement without altering production behavior. The flag is **off by default** and is toggled in the Settings UI under Advanced Settings.
 

@@ -209,7 +209,7 @@ flowchart LR
         A5["🔷 cooldown"]
         A6["🔷 end"]
     end
-    
+
     subgraph Canonical["Canonical/Granular Layer<br/>(Implementation: stateTable.js)"]
         C1["waitingForMatchStart"]
         C2["matchStart<br/>matchCountdown"]
@@ -218,17 +218,17 @@ flowchart LR
         C5["roundCooldown"]
         C6["matchEvaluate<br/>matchOver"]
     end
-    
+
     A1 -.->|maps to| C1
     A2 -.->|maps to| C2
     A3 -.->|maps to| C3
     A4 -.->|maps to| C4
     A5 -.->|maps to| C5
     A6 -.->|maps to| C6
-    
+
     classDef abstract fill:#lightyellow,stroke:#333,stroke-width:2px,stroke-dasharray: 5 5
     classDef canonical fill:#lightgreen,stroke:#333,stroke-width:2px
-    
+
     class A1,A2,A3,A4,A5,A6 abstract
     class C1,C2,C3,C4,C5,C6 canonical
 ```

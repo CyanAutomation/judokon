@@ -46,47 +46,47 @@ Players enjoy forming teams of favorite judoka, but rules vary between modes and
 flowchart TD
     Start(["🎮 Match Start<br/>(Teams Arranged)"])
     Start --> Init["📊 Initialize<br/>(TeamA: 0, TeamB: 0)"]
-    
+
     Init --> BoutStart["⚔️ Bout i Starts<br/>(Fighter A[i] vs Fighter B[i])"]
-    
+
     BoutStart --> DrawCards["🃏 Draw Cards<br/>(random judoka)"]
-    
+
     DrawCards --> SelectStat["📌 Select Stat<br/>(random per rules)"]
-    
+
     SelectStat --> Compare["⚖️ Compare Stats<br/>(A.stat vs B.stat)"]
-    
+
     Compare -->|A wins| AScore["🏆 Team A gets +1<br/>(A.score++)"]
     Compare -->|B wins| BScore["🏆 Team B gets +1<br/>(B.score++)"]
     Compare -->|Tie| NoPoint["🤝 No Points<br/>(Tie round)"]
-    
+
     AScore --> CheckA{{"Team A score<br/>== team size?"}}
     BScore --> CheckB{{"Team B score<br/>== team size?"}}
     NoPoint --> CheckNext{{"More fighters?<br/>(i < team size)"}}
-    
+
     CheckA -->|No| NextBout1["➡️ Bout i+1"]
     CheckB -->|No| NextBout2["➡️ Bout i+1"]
     CheckNext -->|Yes| NextBout3["➡️ Bout i+1"]
     CheckNext -->|No| Draw["🤝 Match Draw<br/>(All bouts tied)"]
-    
+
     NextBout1 --> BoutStart
     NextBout2 --> BoutStart
     NextBout3 --> BoutStart
-    
+
     CheckA -->|Yes| WinA["🥇 Team A Wins<br/>(First to reach goal)"]
     CheckB -->|Yes| WinB["🥇 Team B Wins<br/>(First to reach goal)"]
-    
+
     WinA --> End["✨ Match Over"]
     WinB --> End
     Draw --> End
-    
+
     End --> Done(["🔄 Restart or Return"])
-    
+
     %% Styling
     classDef setup fill:#lightblue,stroke:#333,stroke-width:2px
     classDef bout fill:#lightgreen,stroke:#333,stroke-width:2px
     classDef scoring fill:#lightyellow,stroke:#333,stroke-width:2px
     classDef end fill:#lightsalmon,stroke:#333,stroke-width:2px
-    
+
     class Start,Init setup
     class BoutStart,DrawCards,SelectStat,Compare bout
     class AScore,BScore,NoPoint,CheckA,CheckB,CheckNext scoring
@@ -94,6 +94,7 @@ flowchart TD
 ```
 
 **Key Sequence**:
+
 1. **Bout Setup** (i = 0 to team-size-1)
    - Fighter A[i] vs Fighter B[i]
    - Both draw random cards
@@ -110,7 +111,8 @@ flowchart TD
    - Team B reaches target points → Team B Wins
    - All bouts are ties → Draw (rare)
 
-**Team Sizes**: 
+**Team Sizes**:
+
 - Male mode: 5 fighters (first to 5 points wins)
 - Female mode: 5 fighters (first to 5 points wins)
 - Mixed mode: 6 fighters (first to 6 points wins)

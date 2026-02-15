@@ -304,16 +304,17 @@ sequenceDiagram
 
 **Performance SLAs**:
 
-| Metric | Target |
-|---|---|
-| Embedding generation | < 30s (offline) |
-| First query latency | ≤ 200ms |
-| Subsequent queries | ≤ 100ms (cached embeddings) |
-| Context fetch | ≤ 50ms (from loaded documents) |
-| UI render (results) | ≤ 16ms (60fps) |
-| File size | < 38.8mb for fast load |
+| Metric               | Target                         |
+| -------------------- | ------------------------------ |
+| Embedding generation | < 30s (offline)                |
+| First query latency  | ≤ 200ms                        |
+| Subsequent queries   | ≤ 100ms (cached embeddings)    |
+| Context fetch        | ≤ 50ms (from loaded documents) |
+| UI render (results)  | ≤ 16ms (60fps)                 |
+| File size            | < 38.8mb for fast load         |
 
 **Test Coverage**: ✅ **VERIFIED** — Validated against:
+
 - `src/helpers/queryRag.js` — Main query interface
 - `src/helpers/vectorSearch/similarity.js` — Cosine similarity implementation
 - `src/helpers/vectorSearch/chunkConfig.js` — Text chunking rules
@@ -324,6 +325,7 @@ sequenceDiagram
 - `scripts/evaluation/evaluateRAG.js` — RAG performance metrics
 
 **Related Diagrams**:
+
 - [Battle Engine FSM](prdBattleEngine.md) — State definitions for "state management" queries
 - [Data Schemas](prdDataSchemas.md) — Data structure references for "JSON structure" queries
 - [Settings Menu](prdSettingsMenu.md) — Feature flag guidance for "configuration" queries

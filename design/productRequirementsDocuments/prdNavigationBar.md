@@ -164,23 +164,23 @@ The standard navbar uses `--color-secondary` for its background and `--button-te
 ```mermaid
 graph LR
     A["📱 Device Load"] --> B{"Viewport Width?"}
-    
+
     B -->|≥480px| C["🖥️ Standard Mode<br/>Horizontal nav bar"]
     B -->|&lt;480px| D["📱 Portrait Mode<br/>Hamburger button"]
-    
+
     C --> E["Logo | Link1 | Link2 | ... | LinkN<br/>(equal width, 44px+ targets)"]
     D --> F["Hamburger Button (44px+)<br/>Tap to expand menu"]
-    
+
     E --> G["Bottom-Fixed Navbar"]
     F --> G
-    
+
     G --> H{"Screen Type?"}
     H -->|Home, Battle, CLI, ...| I["✅ NavBar Visible"]
     H -->|Browse, Random, Meditation, Settings| J["❌ NavBar Hidden<br/>(Full-screen mode)"]
-    
+
     I --> K["Ready for interaction"]
     J --> K
-    
+
     style C fill:#lightyellow
     style D fill:#lightyellow
     style G fill:#lightcyan
@@ -193,30 +193,30 @@ graph LR
 ```mermaid
 stateDiagram-v2
     [*] --> Collapsed: Page Load (≥480px)
-    
+
     Collapsed: 📍 Standard Bar<br/>Logo | Links (horizontal)<br/>Equal width, 44px+ targets
-    
+
     Collapsed --> LinkClicked: Tap/Click link
     Collapsed --> MenuExpanded: Tap JU-DO-KON! logo
-    
+
     LinkClicked: ✉️ Navigate to Mode<br/>Transition <100ms
     LinkClicked --> [*]
-    
+
     MenuExpanded: 📂 Menu Open<br/>Vertical text list (overlay)
-    
+
     MenuExpanded --> MenuOption: Tap menu item
     MenuExpanded --> Collapsed: Tap logo again / Tap outside
-    
+
     MenuOption: ✉️ Navigate to Mode<br/>Transition <100ms
     MenuOption --> [*]
-    
+
     note right of Collapsed
         Links visible:
         - Driven by navigationItems.js
         - Fallback if load fails (≤2s)
         - Active state marks current page
     end note
-    
+
     note right of MenuExpanded
         Vertical overlay menu
         Shows all available modes
@@ -229,28 +229,28 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     [*] --> CollapsedHamburger: Page Load (<480px)
-    
+
     CollapsedHamburger: ☰ Hamburger Button<br/>Bottom-left, 44px+<br/>(or Logo + icon)
-    
+
     CollapsedHamburger --> Expanding: Tap hamburger button<br/>Tap Logo
-    
+
     Expanding: 🎬 Expanding...<br/>Slide-up menu <500ms
-    
+
     Expanding --> MenuOpen: Menu visible<br/>Vertical text list
-    
+
     MenuOpen: 📂 Menu Open<br/>Item1 | Item2 | ... | ItemN<br/>44px+ tap targets
-    
+
     MenuOpen --> ItemTap: Tap menu item
     MenuOpen --> Collapsing: Tap hamburger / outside
     MenuOpen --> Collapsing: Orientation change detected
-    
+
     Collapsing: 🎬 Collapsing...<br/>Slide-down menu <500ms
-    
+
     Collapsing --> CollapsedHamburger: Animation complete
-    
+
     ItemTap: ✉️ Navigate to Mode<br/>Transition <100ms<br/>Menu auto-collapses
     ItemTap --> [*]
-    
+
     note right of MenuOpen
         Fallback on navigationItems.js failure:
         Show hardcoded default list ≤2s
@@ -292,26 +292,26 @@ graph TD
     B --> C{"Link Visibility?"}
     C -->|Display:block| D["✅ Visible in Nav"]
     C -->|Display:none| E["❌ Hidden from Nav"]
-    
+
     F["gameModes.json"] --> G["Mode metadata<br/>(id, name, path)"]
     A --> G
-    
+
     H["Screen Detection"] --> I{"Current Page?"}
     I -->|Matches link id| J["🎯 Active state<br/>Highlight/bold"]
     I -->|No match| K["⚪ Inactive state"]
-    
+
     D --> L["NavBar Item Rendered"]
     E --> M["NavBar Item Filtered"]
     J --> L
     K --> L
-    
+
     N["Fallback Path"] --> O{"navigationItems.js<br/>Load Failed?"}
     O -->|Yes| P["⚠️ Use hardcoded<br/>default order ≤2s"]
     O -->|No| Q["✅ Use dynamic order"]
-    
+
     P --> R["NavBar Renders<br/>w/ fallback list"]
     Q --> R
-    
+
     style B fill:#lightyellow
     style D fill:#lightgreen
     style J fill:#lightcyan
@@ -321,16 +321,16 @@ graph TD
 
 **Screen-Level Visibility Rules**:
 
-| Screen | NavBar Visible? | Rationale |
-|---|---|---|
-| Home | ✅ Yes | Primary entry point; navigation needed |
-| Battle Classic | ✅ Yes | Navigate between modes during play |
-| Battle CLI | ✅ Yes | Navigate between modes (keyboard available) |
-| Browse Judoka | ❌ No | Full-screen experience; card browsing focus |
-| Random Judoka | ❌ No | Full-screen card display; focused view |
-| Meditation | ❌ No | Full-screen zen mode; immersion priority |
-| Settings | ❌ No | Full-screen settings; focused configuration |
-| Tooltips | ✅ Yes | Information feature; nav may aid return |
+| Screen         | NavBar Visible? | Rationale                                   |
+| -------------- | --------------- | ------------------------------------------- |
+| Home           | ✅ Yes          | Primary entry point; navigation needed      |
+| Battle Classic | ✅ Yes          | Navigate between modes during play          |
+| Battle CLI     | ✅ Yes          | Navigate between modes (keyboard available) |
+| Browse Judoka  | ❌ No           | Full-screen experience; card browsing focus |
+| Random Judoka  | ❌ No           | Full-screen card display; focused view      |
+| Meditation     | ❌ No           | Full-screen zen mode; immersion priority    |
+| Settings       | ❌ No           | Full-screen settings; focused configuration |
+| Tooltips       | ✅ Yes          | Information feature; nav may aid return     |
 
 **Performance & Accessibility SLAs**:
 
@@ -345,6 +345,7 @@ graph TD
 - **Reduced Motion**: Respect OS settings (prefers-reduced-motion media query)
 
 **Status Badge**: ✅ **VERIFIED** — Validated against:
+
 - `tests/fixtures/navigationItems.js` — Navigation items fixture with mock data
 - `src/components/navigationBar.js` — CSS class control via navigationItems.js
 - `src/data/gameModes.json` — Mode metadata references
@@ -352,6 +353,7 @@ graph TD
 - WCAG 2.1 AA compliance: 44px+ targets, 4.5:1 contrast, keyboard navigation, screen readers
 
 **Related Diagrams**:
+
 - [Home Page Navigation](prdHomePageNavigation.md) — Primary 2×2 grid menu
 - [Navigation Map](prdNavigationMap.md) — Thematic map expansion from footer
 - [Game Modes Overview](prdGameModes.md) — All 7 modes and their destinations

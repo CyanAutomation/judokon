@@ -78,53 +78,53 @@ flowchart TB
         Core["Battle Engine Core<br/>(Stat evaluation,<br/>scoring, timers)"]
         FSM["Orchestrator FSM<br/>(State transitions,<br/>canonical events)"]
     end
-    
+
     subgraph Classic["Classic Battle UI<br/>(src/pages/battleClassic.html)"]
         AnimUI["Animated Card Renderer<br/>+ SVG/CSS Effects"]
         Buttons["Stat Buttons<br/>+ Click/Touch Handling"]
         Score["Scoreboard Component<br/>+ Animations"]
     end
-    
+
     subgraph CLI["CLI Mode<br/>(src/pages/battleCLI.html)"]
         TextRender["Monospace Text Renderer<br/>(ASCII/Unicode tables)"]
         Keys["Keyboard Hotkeys<br/>(1-5 Select, Enter Next)"]
         Status["Status Line<br/>(Countdown, Outcome)"]
     end
-    
+
     subgraph EventBus["Canonical Event Bus<br/>(Orchestrator events)"]
         Events["round.started<br/>round.selection.locked<br/>round.evaluated<br/>control.state.changed"]
     end
-    
+
     Core --> FSM
     FSM --> EventBus
-    
+
     EventBus -->|subscribe<br/>to events| Classic
     EventBus -->|subscribe<br/>to events| CLI
-    
+
     Classic --> AnimUI
     Classic --> Buttons
     Classic --> Score
-    
+
     CLI --> TextRender
     CLI --> Keys
     CLI --> Status
-    
+
     Buttons -->|user action| Core
     Keys -->|user action| Core
-    
+
     %% Styling
     classDef engine fill:#lightgreen,stroke:#333,stroke-width:2px
     classDef classic fill:#lightblue,stroke:#333,stroke-width:2px
     classDef cli fill:#lightyellow,stroke:#333,stroke-width:2px
     classDef events fill:#lightcyan,stroke:#333,stroke-width:2px
-    
+
     class Core,FSM,Engine engine
     class AnimUI,Buttons,Score,Classic classic
     class TextRender,Keys,Status,CLI cli
     class Events,EventBus events
 ```
 
-**Key Guarantee**: Both modes receive **identical events** in **identical order** from the Orchestrator. The only difference is *how they render* those events to the player (animated vs text, graphical vs keyboard-driven). Game rules, win conditions, timers, and state transitions are **100% identical**.
+**Key Guarantee**: Both modes receive **identical events** in **identical order** from the Orchestrator. The only difference is _how they render_ those events to the player (animated vs text, graphical vs keyboard-driven). Game rules, win conditions, timers, and state transitions are **100% identical**.
 
 > **Test Parity**: Because both modes share the engine and event stream, a Playwright test written for CLI mode produces **identical game state sequences** to a classic mode test—enabling cross-mode test coverage and deterministic replay via seed parameters.
 

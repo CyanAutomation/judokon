@@ -158,26 +158,26 @@ stateDiagram-v2
     FullScreen --> SlideInPanel: Tap layout<br/>toggle
     SlideInPanel --> Hidden: Esc / Tap outside<br/>or close icon
     FullScreen --> Hidden: Esc / Tap close<br/>or click backdrop
-    
+
     SlideInPanel --> Filtered: Select country<br/>radio button
     FullScreen --> Filtered: Select country<br/>radio button
-    
+
     Filtered --> AllJudoka: Tap clear icon<br/>or select 'All'
     AllJudoka --> Hidden: Close panel
     Filtered --> Hidden: Close panel
-    
+
     note right of SlideInPanel
         Panel slides in from side
         Below top bar
         Maintains focus
     end note
-    
+
     note right of FullScreen
         Full-screen grid layout
         Larger touch targets
         Backdrop overlay
     end note
-    
+
     note right of Filtered
         Carousel shows only
         selected country
@@ -229,16 +229,17 @@ Slide-In Panel (Default)              Full-Screen Grid
 
 **Performance & Interaction SLAs**:
 
-| Metric | Target |
-|---|---|
-| Panel open/close | < 300ms animation |
-| Country filter application | < 500ms |
-| Carousel re-render | < 16ms (60fps) |
-| Keyboard navigation (tab) | < 50ms |
-| Empty state message display | Immediate |
-| Fallback flag load | < 1s |
+| Metric                      | Target            |
+| --------------------------- | ----------------- |
+| Panel open/close            | < 300ms animation |
+| Country filter application  | < 500ms           |
+| Carousel re-render          | < 16ms (60fps)    |
+| Keyboard navigation (tab)   | < 50ms            |
+| Empty state message display | Immediate         |
+| Fallback flag load          | < 1s              |
 
 **Test Coverage**: ✅ **VERIFIED** — Validated against:
+
 - `src/helpers/countryPicker.js` — Filter state management
 - `src/components/countryPickerFilter.js` — UI component
 - `src/data/judoka.json` — Country list source
@@ -247,6 +248,7 @@ Slide-In Panel (Default)              Full-Screen Grid
 - WCAG 2.1 AA: 44px+ tap targets, 4.5:1 contrast, keyboard navigation, aria-labels
 
 **Related Diagrams**:
+
 - [Browse Judoka](prdBrowseJudoka.md) — Parent screen integration
 - [Card Carousel](prdCardCarousel.md) — Filtered carousel display
 
