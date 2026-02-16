@@ -158,3 +158,69 @@ Reference implementations:
 - Depends on settings storage and feature flag infrastructure.
 - Relies on all randomization in supported modes being routed through the seeded generator.
 - (Open) UI for setting custom seed value is not yet implemented.
+
+### Deterministic Mode State and Seed Flow Diagrams
+
+#### Settings-Driven OFF/ON Transition State Diagram
+
+```mermaid
+stateDiagram-v2
+    [*] --> ModeOff: App boot
+
+    ModeOff: Test Mode OFF
+    ModeOn: Test Mode ON
+
+    ModeOff --> ModeOn: Settings toggle ON\n(feature flag enabled)
+    ModeOn --> ModeOff: Settings toggle OFF\n(mode disabled)
+
+    ModeOff --> ModeOff: Persisted seed missing\n(ignore seed, keep Math.random)
+    ModeOff --> ModeOff: Seed provided while mode disabled\n(do not initialize deterministic RNG)
+
+    ModeOn --> ModeOn: Valid seed available\n(initialize/update deterministic RNG)
+    ModeOn --> ModeOn: Missing persisted seed\n(fallback to default seed = 1)
+    ModeOn --> ModeOn: Invalid seed (NaN/Infinity/null/undefined)\n(normalize to default seed = 1)
+```
+
+#### Seeded RNG Initialization and Consumption Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Settings as Settings UI / Stored Flags
+    participant TM as testModeUtils.setTestMode
+    participant RNG as Deterministic RNG State
+    participant Systems as Game Systems (draws, stat selection)
+
+    alt Mode disabled
+        Settings->>TM: apply { enableTestMode: false }
+        TM-->>RNG: mark disabled
+        Systems->>TM: seededRandom()
+        TM-->>Systems: Math.random() value
+    else Mode enabled
+        Settings->>TM: apply { enableTestMode: true, seed? }
+        alt Valid seed provided
+            TM->>RNG: initialize with provided seed
+        else Missing persisted seed
+            TM->>RNG: initialize with default seed (1)
+        else Invalid seed provided
+            TM->>RNG: normalize to default seed (1)
+        end
+        loop Each random consumption point
+            Systems->>TM: seededRandom()
+            TM->>RNG: next deterministic value (sin(seed++) path)
+            RNG-->>Systems: reproducible value in [0,1)
+        end
+    end
+```
+
+### Existing Deterministic/Randomization Test Coverage
+
+- `tests/helpers/testModeUtils.test.js` verifies deterministic sequence replay for identical seeds, Math.random fallback when mode is disabled, zero/negative seed handling, and invalid seed normalization to default (`1`).
+- `tests/helpers/classicBattle/controller.init.test.js` verifies that feature-flag activation enables deterministic RNG in battle initialization and that toggling flags re-synchronizes random behavior.
+- `tests/helpers/classicBattle/difficulty.test.js` samples deterministic seeds to validate stable opponent stat-selection behavior across difficulty levels.
+- `tests/pages/battleCLI.seedValidation.test.js` verifies invalid seed input handling and missing persisted seed behavior in CLI seed controls.
+
+### Coverage Gaps (Explicit)
+
+- Gap: no dedicated test currently validates a cross-tab settings storage update path where Test Mode toggles and seed re-initialization happen from a `storage` event in the same assertion flow.
+- Gap: no single end-to-end Playwright scenario currently asserts all three branches (mode disabled, missing persisted seed fallback, invalid seed fallback) in one continuous user journey.
