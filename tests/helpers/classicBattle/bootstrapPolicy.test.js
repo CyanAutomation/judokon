@@ -1,10 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  BATTLE_SEED_STORAGE_KEY,
   buildBootstrapConfig,
   persistCliSeed,
   readStoredPointsToWin,
-  resolveSeedPolicy,
+  resolveBattleSeed,
   toPositiveInteger
 } from "../../../src/helpers/classicBattle/bootstrapPolicy.js";
 
@@ -39,20 +40,42 @@ describe("bootstrapPolicy", () => {
     expect(result).toHaveProperty("error");
   });
 
-  it("resolveSeedPolicy prioritizes query seed over stored seed", () => {
+  it("resolveBattleSeed prioritizes query seed over stored seed", () => {
     const storage = { getItem: vi.fn().mockReturnValue("999") };
 
-    const result = resolveSeedPolicy({ search: "?seed=123", storage });
+    const result = resolveBattleSeed({ search: "?seed=123", storage });
 
     expect(result).toEqual({ seed: 123, source: "query" });
   });
 
-  it("resolveSeedPolicy falls back to stored seed", () => {
+  it("resolveBattleSeed falls back to stored seed", () => {
     const storage = { getItem: vi.fn().mockReturnValue("77") };
 
-    const result = resolveSeedPolicy({ search: "", storage });
+    const result = resolveBattleSeed({ search: "", storage });
 
     expect(result).toEqual({ seed: 77, source: "storage" });
+  });
+
+  it("resolveBattleSeed yields identical deterministic sequence for query and storage sources", async () => {
+    const { seededRandom, setTestMode } = await import("../../../src/helpers/testModeUtils.js");
+
+    const queryPolicy = resolveBattleSeed({ search: "?seed=314", storage: { getItem: vi.fn() } });
+    const storagePolicy = resolveBattleSeed({
+      search: "",
+      storage: { getItem: vi.fn().mockReturnValue("314") }
+    });
+
+    setTestMode({ enabled: true, seed: queryPolicy.seed });
+    const querySequence = [seededRandom(), seededRandom(), seededRandom()];
+
+    setTestMode({ enabled: true, seed: storagePolicy.seed });
+    const storageSequence = [seededRandom(), seededRandom(), seededRandom()];
+
+    expect(queryPolicy.source).toBe("query");
+    expect(storagePolicy.source).toBe("storage");
+    expect(querySequence).toEqual(storageSequence);
+
+    setTestMode({ enabled: false });
   });
 
   it("buildBootstrapConfig merges debug hooks and normalizes values", () => {
@@ -83,7 +106,7 @@ describe("bootstrapPolicy", () => {
     persistCliSeed(42, storage);
     persistCliSeed("invalid", storage);
 
-    expect(storage.setItem).toHaveBeenCalledWith("battleCLI.seed", "42");
-    expect(storage.removeItem).toHaveBeenCalledWith("battleCLI.seed");
+    expect(storage.setItem).toHaveBeenCalledWith(BATTLE_SEED_STORAGE_KEY, "42");
+    expect(storage.removeItem).toHaveBeenCalledWith(BATTLE_SEED_STORAGE_KEY);
   });
 });

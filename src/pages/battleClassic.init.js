@@ -26,7 +26,10 @@ import {
   getSnapshot as getBattleSnapshot,
   STATS
 } from "../helpers/classicBattle/battleAppService.js";
-import { buildBootstrapConfig } from "../helpers/classicBattle/bootstrapPolicy.js";
+import {
+  buildBootstrapConfig,
+  resolveBattleSeed
+} from "../helpers/classicBattle/bootstrapPolicy.js";
 import { getStateSnapshot } from "../helpers/classicBattle/battleDebug.js";
 import { resolveRoundStartPolicy } from "../helpers/classicBattle/roundSelectModal.js";
 import { startTimer, onNextButtonClick } from "../helpers/classicBattle/timerService.js";
@@ -1810,14 +1813,15 @@ async function initializePhase2_UI() {
   setupInitialUI();
 }
 
-async function initializePhase3_Engine(store) {
+async function initializePhase3_Engine(store, battleSeed = null) {
   console.log("battleClassic: initializePhase3_Engine");
   const engineConfig = window.__ENGINE_CONFIG || {};
   dispatchBattleIntent(
     "engine.create",
     buildBootstrapConfig({
       engineConfig,
-      getStateSnapshot
+      getStateSnapshot,
+      seed: battleSeed
     })
   );
   registerBridgeOnEngineCreated();
@@ -1904,6 +1908,10 @@ export function createBattleClassic() {
 
   const start = async () => {
     console.log("battleClassic: init()");
+    const seedPolicy = resolveBattleSeed({
+      search: typeof window !== "undefined" ? window.location.search : "",
+      storage: typeof localStorage !== "undefined" ? localStorage : undefined
+    });
     try {
       await runClassicBattleBootstrapCoordinator({
         createStore: createBattleStore,
@@ -1916,7 +1924,7 @@ export function createBattleClassic() {
         },
         initializeUtilities: initializePhase1_Utilities,
         initializeUI: initializePhase2_UI,
-        initializeEngine: initializePhase3_Engine,
+        initializeEngine: (store) => initializePhase3_Engine(store, seedPolicy.seed),
         initializeEventHandlers: initializePhase4_EventHandlers,
         wireStatBindings: wireExistingStatButtons,
         startMatch: initializeMatchStart,
