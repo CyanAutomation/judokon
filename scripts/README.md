@@ -1,6 +1,6 @@
 # Scripts
 
-_Last reviewed: 2026-02-13_
+_Last reviewed: 2026-02-16_
 
 ## Scope
 Repository automation scripts for build, validation, and maintenance tasks.
@@ -9,9 +9,9 @@ Repository automation scripts for build, validation, and maintenance tasks.
 Contributors and maintainers running scripted project operations.
 
 ## Key Commands
-- `npm run build:offline-rag` — generate offline RAG vector + metadata assets.
+- See `package.json` scripts for currently supported commands.
 
 ## Canonical Docs
 - See canonical contributor workflow: [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 - See canonical validation command catalog: [`prdDevelopmentStandards.md`](../design/productRequirementsDocuments/prdDevelopmentStandards.md).
-- Script-specific detail for offline RAG generation lives in [`buildOfflineRag.mjs`](./buildOfflineRag.mjs).
+- RAG tooling and evaluation scripts were retired; historical references are archived in [`docs/status/archive/rag-tooling-retirement.md`](../docs/status/archive/rag-tooling-retirement.md).

@@ -2,7 +2,7 @@ import { isNodeEnvironment } from "../env.js";
 
 const HYDRATION_GUIDANCE_MESSAGE =
   "Network unreachable while loading remote MiniLM model. " +
-  "Fix: hydrate a local model at models/minilm via `npm run rag:prepare:models -- --from-dir <path>` " +
+  "Fix: provide a local model under models/minilm (tooling retired; see docs/status/archive/rag-tooling-retirement.md) " +
   "or run with SEARCH_STRICT_OFFLINE=1 to avoid CDN attempts. " +
   "Optionally enable degraded search with SEARCH_ALLOW_LEXICAL_FALLBACK=1.";
 

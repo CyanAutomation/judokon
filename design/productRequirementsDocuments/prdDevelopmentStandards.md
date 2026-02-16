@@ -423,7 +423,6 @@ The development standards rely on a consistent validation workflow that protects
 | Unit tests               | `npx vitest run` \\ `npm run test:style` (on demand) | Guards core logic against regressions.                                       | Required before every commit; run style tests when touching visual styling helpers. |
 | Playwright tests         | `npx playwright test`                                | Validates end-to-end UI workflows.                                           | Run before committing, especially for UI-affecting changes.                         |
 | Accessibility & contrast | `npm run check:contrast`                             | Ensures color contrast meets accessibility standards.                        | Mandatory after UI/styling updates and before commit.                               |
-| RAG system               | `npm run rag:validate`                               | Confirms offline model hydration and hot-path safeguards for the RAG system. | Use after documentation or RAG-adjacent updates and prior to commit.                |
 
 ### Hot Path & Log Discipline Commands
 
@@ -445,16 +444,16 @@ grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js" \
   npm run check:jsdoc && npx prettier . --check && npx eslint . && npm run check:contrast
   ```
 
-- **Full validation (including RAG preflight):**
+- **Full validation:**
 
   ```bash
-  npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast && npm run rag:validate
+  npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast
   ```
 
 ### Audience-Specific Playbooks
 
 - **Human contributors:** Run the full quick-check suite (formatting, linting, JSDoc, unit tests, Playwright tests, contrast) before committing changes.
-- **AI agents:** Execute the quick-check suite **plus** `npm run rag:validate` and the hot-path/log discipline grep commands above to ensure automation does not introduce regressions.
+- **AI agents:** Execute the quick-check suite plus the hot-path/log discipline grep commands above to ensure automation does not introduce regressions.
 
 > **See also:** [PRD: Testing Standards](./prdTestingStandards.md#quality-verification-commands-operational-reference) for advanced test quality verification commands and anti-pattern checks tailored to unit and Playwright suites.
 
@@ -464,8 +463,8 @@ grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js" \
 - **ESLint fails:** Run `npx eslint . --fix` for autofixable lint errors.
 - **Playwright fails:** Ensure the application server is available on `localhost:5000` (`npm start`).
 - **Tests fail with `localStorage` errors:** Clear browser `localStorage` manually before re-running.
-- **RAG validation fails:** Run `npm run rag:prepare:models` to hydrate offline models.
-- **General performance:** Parallelize tests where possible, avoid running `npm run test:style` unless necessary, and pre-hydrate offline RAG models in CI environments.
+- **Retired RAG tooling references:** See `docs/status/archive/rag-tooling-retirement.md` for historical notes.
+- **General performance:** Parallelize tests where possible, avoid running `npm run test:style` unless necessary, and keep validation focused on active tooling only.
 
 ---
 

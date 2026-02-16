@@ -68,9 +68,9 @@ Ultimately, these issues increase the risk of bugs reaching players, slow down t
 ### Embedding Refresh Pipeline
 
 After editing PRDs, tooltips, game rules, or any markdown that captures development/testing standards (for example `design/productRequirementsDocuments/prdDevelopmentStandards.md`, `design/productRequirementsDocuments/prdTestingStandards.md`, `design/productRequirementsDocuments/prdAIAgentWorkflows.md`, or this document) run
-`npm run generate:embeddings` from the repository root. The script at
-`scripts/generateEmbeddings.js` downloads the **quantized** `Xenova/all-MiniLM-L6-v2` model the first time it runs, so the command will fail without internet access. Cache the model locally or run it in an environment with a connection. Commit the updated
-`client_embeddings.json`—now pretty-printed for readability—so other agents work with the latest vectors. If you hit out-of-memory errors during generation, rerun the command with a higher heap limit (e.g. `node --max-old-space-size=8192 scripts/generateEmbeddings.js`). A GitHub Actions workflow could automate this
+`[retired: see rag-tooling-retirement.md]` from the repository root. The script at
+`[retired script: scripts/generateEmbeddings.js; see rag-tooling-retirement.md]` downloads the **quantized** `Xenova/all-MiniLM-L6-v2` model the first time it runs, so the command will fail without internet access. Cache the model locally or run it in an environment with a connection. Commit the updated
+`client_embeddings.json`—now pretty-printed for readability—so other agents work with the latest vectors. If you hit out-of-memory errors during generation, rerun the command with a higher heap limit (e.g. `[retired command; see rag-tooling-retirement.md]`). A GitHub Actions workflow could automate this
 regeneration whenever those folders change.
 
 The generator parses JSON arrays and objects into individual snippets so each
@@ -93,13 +93,13 @@ Chunking rules are shared across tooling via [`src/helpers/vectorSearch/chunkCon
 Prepare the embedding model for environments without network access:
 
 ```bash
-npm run rag:prepare:models -- --from-dir /path/to/minilm
+[retired command; see docs/status/archive/rag-tooling-retirement.md]
 ```
 
 Run the same command without `--from-dir` to download the model when online. Validate the offline setup afterward:
 
 ```bash
-RAG_STRICT_OFFLINE=1 npm run rag:validate
+[retired command; see docs/status/archive/rag-tooling-retirement.md]
 ```
 
 Use `RAG_ALLOW_LEXICAL_FALLBACK=1` to allow degraded lexical search when the model is missing.
@@ -234,7 +234,7 @@ The Vector Search demo is implemented in [`src/pages/vectorSearch.html`](../../s
 ### Embedding Version Warnings
 
 - If embedding entry versions or metadata versions are out of date, the page displays:
-  `⚠️ Embedding data is out of date. Run npm run generate:embeddings.`
+  `⚠️ Embedding generation tooling retired. See docs/status/archive/rag-tooling-retirement.md.`
 
 ### Embedding Count Display
 
@@ -321,8 +321,8 @@ sequenceDiagram
 - `src/pages/vectorSearch.html` — UI demo page
 - `tests/helpers/queryRag.test.js` — Vector search unit tests
 - `playwright/prd-reader.spec.js` — E2E vector search demo tests
-- `scripts/buildOfflineRag.mjs` — Embedding generation script
-- `scripts/evaluation/evaluateRAG.js` — RAG performance metrics
+- `scripts/buildOfflineRag.mjs` — retired (see `docs/status/archive/rag-tooling-retirement.md`).
+- `scripts/evaluation/evaluateRAG.js` — retired (see `docs/status/archive/rag-tooling-retirement.md`).
 
 **Related Diagrams**:
 
@@ -376,7 +376,7 @@ The `src/helpers/queryRag.js` helper includes opt-in behaviors to make agent usa
 - **Query from the terminal**
 
   ```bash
-  npm run rag:query "How does the battle engine work?"
+  [retired command; see docs/status/archive/rag-tooling-retirement.md]
   ```
 
 ### RAG Decision Workflow
@@ -444,19 +444,19 @@ Track usage against the shared success metrics for RAG-enabled workflows:
 - **Evaluate retrieval quality**
 
   ```bash
-  node scripts/evaluation/evaluateRAG.js
+  [retired command; see docs/status/archive/rag-tooling-retirement.md]
   ```
 
-  The evaluator reads `scripts/evaluation/queries.json` and reports **MRR@5**, **Recall@3**, and **Recall@5** so teams can monitor search accuracy when new sources are indexed.
+  The evaluator reads `[retired file: scripts/evaluation/queries.json; see rag-tooling-retirement.md]` and reports **MRR@5**, **Recall@3**, and **Recall@5** so teams can monitor search accuracy when new sources are indexed.
 
 ### Offline Workflow
 
 1. **Prepare the MiniLM model** (one-time per machine)
 
    ```bash
-   npm run rag:prepare:models
+   [retired command; see docs/status/archive/rag-tooling-retirement.md]
    # or use an existing download
-   npm run rag:prepare:models -- --from-dir /path/to/minilm
+   [retired command; see docs/status/archive/rag-tooling-retirement.md]
    ```
 
    These commands hydrate `models/minilm` with the quantized extractor files used by the query encoder.
@@ -464,7 +464,7 @@ Track usage against the shared success metrics for RAG-enabled workflows:
 2. **Build compact offline assets**
 
    ```bash
-   npm run build:offline-rag
+   [retired command; see docs/status/archive/rag-tooling-retirement.md]
    ```
 
    The build writes `src/data/offline_rag_vectors.bin` and `src/data/offline_rag_metadata.json` for browser usage without a network connection.
@@ -472,7 +472,7 @@ Track usage against the shared success metrics for RAG-enabled workflows:
 3. **Query in strict offline mode**
 
    ```bash
-   RAG_STRICT_OFFLINE=1 npm run rag:query "How does the battle engine work?"
+   RAG_STRICT_OFFLINE=1 [retired command; see docs/status/archive/rag-tooling-retirement.md]
    ```
 
    Set `RAG_ALLOW_LEXICAL_FALLBACK=1` to enable a degraded lexical search path when the MiniLM model is unavailable.
@@ -486,7 +486,7 @@ Track usage against the shared success metrics for RAG-enabled workflows:
 
 - **Retrieval quality workflow**
 
-  Run `node scripts/evaluation/evaluateRAG.js` from the project root to measure retrieval performance. The script reads the representative queries in `scripts/evaluation/queries.json` and reports:
+  Run `[retired command; see docs/status/archive/rag-tooling-retirement.md]` from the project root to measure retrieval performance. The script reads the representative queries in `[retired file: scripts/evaluation/queries.json; see rag-tooling-retirement.md]` and reports:
   - **MRR@5** – Mean Reciprocal Rank of the expected document within the top five results.
   - **Recall@3** – Fraction of queries whose expected document appears in the top three results.
   - **Recall@5** – Fraction of queries whose expected document appears in the top five results.
