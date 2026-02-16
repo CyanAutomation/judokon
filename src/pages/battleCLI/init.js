@@ -945,6 +945,8 @@ export async function resetMatch() {
       try {
         emitBattleEvent("battleStateChange", { to: "waitingForMatchStart" });
       } catch {}
+    } finally {
+      subscribeEngine();
     }
   });
   return resetPromise;
@@ -3621,6 +3623,7 @@ export async function setupFlags() {
  */
 export function subscribeEngine() {
   cleanupEngineSubscriptions();
+  let localUnsubscribers = [];
   try {
     const offTimerTick = subscribeBattleApp("timerTick", ({ remaining, phase }) => {
       if (phase === "round") {
@@ -3647,18 +3650,23 @@ export function subscribeEngine() {
         announcementEl.textContent = `Match over. ${outcome === "playerWin" ? "You win!" : outcome === "opponentWin" ? "Opponent wins." : "It's a draw."}`;
       }
     });
-    engineUnsubscribers = [offTimerTick, offMatchEnded].filter(
-      (cleanup) => typeof cleanup === "function"
-    );
+    localUnsubscribers = [offTimerTick, offMatchEnded].filter((cleanup) => {
+      return typeof cleanup === "function";
+    });
+    engineUnsubscribers = localUnsubscribers;
   } catch {}
   return () => {
-    [offTimerTick, offMatchEnded].forEach((cleanup) => {
+    localUnsubscribers.forEach((cleanup) => {
       if (typeof cleanup === "function") {
         try {
           cleanup();
         } catch {}
       }
     });
+    if (engineUnsubscribers === localUnsubscribers) {
+      engineUnsubscribers = [];
+    }
+    localUnsubscribers = [];
   };
 }
 
@@ -3896,7 +3904,6 @@ export async function init() {
   restorePointsToWin();
   parseUrlFlags();
   await setupFlags();
-  subscribeEngine();
   battleInstance = createBattleInstance();
 
   // Assign the engine to the store for debug access
