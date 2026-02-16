@@ -114,50 +114,37 @@ describe("saveSettings", () => {
   });
 
   it("reflects the latest values once the save promise resolves", async () => {
-    const timers = useCanonicalTimers();
+    const nextSettings = {
+      ...DEFAULT_SETTINGS,
+      motionEffects: false
+    };
 
-    try {
-      const nextSettings = {
-        ...DEFAULT_SETTINGS,
-        motionEffects: false
-      };
+    const pending = saveSettings(nextSettings);
+    flushSettingsSave();
 
-      const pending = saveSettings(nextSettings);
+    await pending;
 
-      timers.advanceTimersByTime(10);
-
-      await pending;
-
-      expect(getCachedSettings()).toEqual({
-        ...DEFAULT_SETTINGS,
-        motionEffects: false
-      });
-    } finally {
-      timers.cleanup();
-    }
+    expect(getCachedSettings()).toEqual({
+      ...DEFAULT_SETTINGS,
+      motionEffects: false
+    });
   });
 
   it("ignores stale debounced writes when a newer update persisted first", async () => {
-    const timers = useCanonicalTimers();
+    const oldState = {
+      ...DEFAULT_SETTINGS,
+      sound: false
+    };
 
-    try {
-      const oldState = {
-        ...DEFAULT_SETTINGS,
-        sound: false
-      };
+    const pendingSave = saveSettings(oldState);
+    await updateSetting("sound", true);
 
-      const pendingSave = saveSettings(oldState);
-      await updateSetting("sound", true);
+    flushSettingsSave();
+    await expect(pendingSave).resolves.toBeUndefined();
 
-      timers.advanceTimersByTime(10);
-      await expect(pendingSave).resolves.toBeUndefined();
-
-      const stored = JSON.parse(localStorage.getItem("settings"));
-      expect(stored.sound).toBe(true);
-      expect(getCachedSettings().sound).toBe(true);
-    } finally {
-      timers.cleanup();
-    }
+    const stored = JSON.parse(localStorage.getItem("settings"));
+    expect(stored.sound).toBe(true);
+    expect(getCachedSettings().sound).toBe(true);
   });
 
   it("rejects yet still updates the cache when localStorage is unavailable", async () => {

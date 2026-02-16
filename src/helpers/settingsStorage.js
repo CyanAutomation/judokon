@@ -5,44 +5,8 @@ import { loadSettings as baseLoadSettings } from "../config/loadSettings.js";
 import { setCachedSettings, getCachedSettings } from "./settingsCache.js";
 import { debounce } from "../utils/debounce.js";
 
-let setTimer = (...args) => setTimeout(...args);
-let clearTimer = (...args) => clearTimeout(...args);
 let loadSettingsSchemaModule = () =>
   import("../schemas/settings.schema.json", { with: { type: "json" } });
-
-/**
- * Override timer functions used by the internal debounce.
- * @param {{ setTimeout?: typeof setTimeout, clearTimeout?: typeof clearTimeout }} [fns]
- */
-/**
- * Override timer functions used by the internal debounce.
- *
- * Useful for tests that need to control timing or to inject fake timers.
- *
- * @pseudocode
- * 1. Accept an object with optional `setTimeout` and `clearTimeout`.
- * 2. Replace the local `setTimer` and `clearTimer` implementations when present.
- * 3. Subsequent debounced saves will use the injected timer functions.
- *
- * @param {{ setTimeout?: typeof setTimeout, clearTimeout?: typeof clearTimeout }} [fns]
- */
-/**
- * Inject custom timer functions used by the settings save debounce.
- *
- * Useful for tests that need deterministic timing or fake timers.
- *
- * @param {{ setTimeout?: typeof setTimeout, clearTimeout?: typeof clearTimeout }} [fns]
- * @returns {void}
- *
- * @pseudocode
- * 1. If `fns.setTimeout` is provided, assign it to the internal `setTimer`.
- * 2. If `fns.clearTimeout` is provided, assign it to the internal `clearTimer`.
- * 3. Subsequent debounced saves will use the injected timer functions.
- */
-export function setSettingsStorageTimers(fns = {}) {
-  if (fns.setTimeout) setTimer = fns.setTimeout;
-  if (fns.clearTimeout) clearTimer = fns.clearTimeout;
-}
 
 const SETTINGS_KEY = "settings";
 // Use a shorter debounce in test to reduce wall time while preserving semantics.
@@ -116,8 +80,7 @@ function persistSettingsIfCurrent(settings, revision) {
 
 const debouncedSave = debounce(
   ({ settings, revision }) => enqueueWriteTask(() => persistSettingsIfCurrent(settings, revision)),
-  SAVE_DELAY_MS,
-  { setTimeout: (...args) => setTimer(...args), clearTimeout: (...args) => clearTimer(...args) }
+  SAVE_DELAY_MS
 );
 
 /**
