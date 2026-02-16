@@ -1,6 +1,6 @@
 import { BATTLE_POINTS_TO_WIN } from "../../config/storageKeys.js";
 
-const CLI_SEED_STORAGE_KEY = "battleCLI.seed";
+export const BATTLE_SEED_STORAGE_KEY = "battleCLI.seed";
 
 /**
  * Convert a value to a positive integer when valid.
@@ -52,12 +52,12 @@ export function readStoredPointsToWin(storage = globalThis?.localStorage) {
  * otherwise normalize persisted seed and return storage policy when valid
  * return null policy when neither source contains a valid positive integer
  */
-export function resolveSeedPolicy({ search = "", storage = globalThis?.localStorage } = {}) {
+export function resolveBattleSeed({ search = "", storage = globalThis?.localStorage } = {}) {
   let seedParam = null;
   let storedSeed = null;
   try {
     seedParam = new URLSearchParams(search).get("seed");
-    storedSeed = storage?.getItem?.(CLI_SEED_STORAGE_KEY) ?? null;
+    storedSeed = storage?.getItem?.(BATTLE_SEED_STORAGE_KEY) ?? null;
   } catch {}
 
   const querySeed = seedParam === null || seedParam === "" ? null : toPositiveInteger(seedParam);
@@ -70,6 +70,18 @@ export function resolveSeedPolicy({ search = "", storage = globalThis?.localStor
     ? { seed: null, source: null }
     : { seed: persistedSeed, source: "storage" };
 }
+
+/**
+ * Backward-compatible alias for deterministic seed resolution.
+ *
+ * @summary Preserve legacy `resolveSeedPolicy` call sites while routing to `resolveBattleSeed`.
+ * @pseudocode
+ * delegate to resolveBattleSeed with the same options
+ * return the normalized seed policy result unchanged
+ *
+ * @deprecated Use {@link resolveBattleSeed}.
+ */
+export const resolveSeedPolicy = resolveBattleSeed;
 
 /**
  * Build normalized bootstrap config for battle engine creation/reset intents.
@@ -122,9 +134,9 @@ export function buildBootstrapConfig({
 export function persistCliSeed(seed, storage = globalThis?.localStorage) {
   try {
     if (toPositiveInteger(seed) === null) {
-      storage?.removeItem?.(CLI_SEED_STORAGE_KEY);
+      storage?.removeItem?.(BATTLE_SEED_STORAGE_KEY);
       return;
     }
-    storage?.setItem?.(CLI_SEED_STORAGE_KEY, String(seed));
+    storage?.setItem?.(BATTLE_SEED_STORAGE_KEY, String(seed));
   } catch {}
 }

@@ -51,8 +51,9 @@ import {
 import {
   buildBootstrapConfig,
   readStoredPointsToWin,
-  resolveSeedPolicy,
-  persistCliSeed
+  resolveBattleSeed,
+  persistCliSeed,
+  toPositiveInteger
 } from "../../helpers/classicBattle/bootstrapPolicy.js";
 import { POINTS_TO_WIN_OPTIONS } from "../../config/battleDefaults.js";
 import * as debugHooks from "../../helpers/classicBattle/debugHooks.js";
@@ -170,10 +171,28 @@ function handleGlobalEscape(event) {
   }
 }
 
+// Active deterministic seed for engine creation/reset parity.
+let activeBattleSeed = null;
+
+function resolveActiveBattleSeed() {
+  const search = typeof window !== "undefined" ? window.location.search : "";
+  const storage = typeof localStorage !== "undefined" ? localStorage : undefined;
+  const policy = resolveBattleSeed({ search, storage });
+  activeBattleSeed = policy.seed;
+  return policy;
+}
+
 // Initialize engine and subscribe to engine events when available.
 try {
   if (typeof window === "undefined" || !window.__TEST__) {
-    dispatchBattleIntent("engine.create");
+    const policy = resolveActiveBattleSeed();
+    dispatchBattleIntent(
+      "engine.create",
+      buildBootstrapConfig({
+        getStateSnapshot,
+        seed: policy.seed
+      })
+    );
   }
 } catch {}
 
@@ -915,11 +934,14 @@ export async function resetMatch() {
     if (list && list.dataset.selectedIndex) delete list.dataset.selectedIndex;
   } catch {}
   // Re-apply seed for deterministic behavior on match reset
-  initSeed();
+  initSeed({ recreateEngine: false });
   // Perform asynchronous reset work
   const next = (async () => {
     // Read pointsToWin from localStorage BEFORE creating new engine
     const preserveConfig = { forceCreate: true };
+    if (activeBattleSeed !== null) {
+      preserveConfig.seed = activeBattleSeed;
+    }
     const savedPoints = readStoredPointsToWin();
     if (savedPoints.found) {
       preserveConfig.pointsToWin = savedPoints.value;
@@ -1105,23 +1127,33 @@ export async function announceMatchReady({ focusMain = false } = {}) {
  *   else:
  *     clear error and apply value
  */
-function initSeed() {
+function initSeed({ recreateEngine = true } = {}) {
   const input = byId("seed-input");
   const errorEl = byId("seed-error");
-  const policy = resolveSeedPolicy({ search: window.location.search, storage: localStorage });
+  const policy = resolveActiveBattleSeed();
 
-  const apply = (seed) => {
-    setTestMode({ enabled: true, seed });
-    dispatchBattleIntent(
-      "engine.create",
-      buildBootstrapConfig({
-        engineConfig: { seed },
-        getStateSnapshot,
-        seed,
-        forceCreate: true
-      })
-    );
-    persistCliSeed(seed);
+  const apply = (seed, { shouldRecreateEngine = recreateEngine } = {}) => {
+    const normalizedSeed = toPositiveInteger(seed);
+    activeBattleSeed = normalizedSeed;
+    if (normalizedSeed === null) {
+      setTestMode({ enabled: false });
+      persistCliSeed(null);
+      return;
+    }
+
+    setTestMode({ enabled: true, seed: normalizedSeed });
+    if (shouldRecreateEngine) {
+      dispatchBattleIntent(
+        "engine.create",
+        buildBootstrapConfig({
+          engineConfig: { seed: normalizedSeed },
+          getStateSnapshot,
+          seed: normalizedSeed,
+          forceCreate: true
+        })
+      );
+    }
+    persistCliSeed(normalizedSeed);
   };
 
   if (policy.seed !== null) {
@@ -1130,16 +1162,15 @@ function initSeed() {
   }
 
   input?.addEventListener("input", () => {
-    const val = Number(input.value);
-    if (input.value.trim() === "" || Number.isNaN(val)) {
+    const normalizedSeed = toPositiveInteger(input.value);
+    if (normalizedSeed === null) {
       input.value = "";
       if (errorEl) errorEl.textContent = "Invalid seed. Using default.";
-      setTestMode({ enabled: false });
-      persistCliSeed(null);
+      apply(null, { shouldRecreateEngine: false });
       return;
     }
     if (errorEl) errorEl.textContent = "";
-    apply(val);
+    apply(normalizedSeed);
   });
 }
 
