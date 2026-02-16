@@ -33,7 +33,7 @@ afterEach(() => {
 describe("readinessCompat", () => {
   it("exposes legacy readiness globals for Playwright test contexts", async () => {
     setTestEnvironment();
-    window.__PLAYWRIGHT_TEST__ = true;
+    globalThis.__PLAYWRIGHT_TEST__ = true;
 
     const readyPromise = Promise.resolve("ready");
     exposeLegacyReadinessForTests(readyPromise);
