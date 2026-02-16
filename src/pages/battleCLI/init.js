@@ -277,6 +277,7 @@ export async function safeDispatch(eventName, payload) {
     }
   }
 
+  let dispatchError = null;
   try {
     const fn = battleOrchestrator?.dispatchBattleEvent;
     if (isDebugEvent) {
@@ -298,12 +299,7 @@ export async function safeDispatch(eventName, payload) {
     if (isDebugEvent) {
       debugLog(`battleOrchestrator path failed: ${err?.message}`);
     }
-    return {
-      ok: false,
-      eventName,
-      reason: "no_machine",
-      error: err instanceof Error ? err : new Error(String(err))
-    };
+    dispatchError = err instanceof Error ? err : new Error(String(err));
   }
 
   if (isDebugEvent) {
@@ -313,7 +309,8 @@ export async function safeDispatch(eventName, payload) {
   return {
     ok: false,
     eventName,
-    reason: "no_machine"
+    reason: "no_machine",
+    ...(dispatchError ? { error: dispatchError } : {})
   };
 }
 
@@ -1000,6 +997,14 @@ export async function triggerMatchStart() {
 
   let dispatched = false;
   let dispatchFailure = null;
+  const result = await safeDispatch("startClicked");
+  dispatched = result?.ok === true;
+  dispatchFailure = result?.ok === true ? null : result;
+
+  if (dispatched) {
+    return;
+  }
+
   try {
     const result = await safeDispatch("startClicked");
     dispatched = result?.ok === true;
@@ -1009,7 +1014,7 @@ export async function triggerMatchStart() {
     dispatchFailure = {
       ok: false,
       eventName: "startClicked",
-      reason: "no_machine",
+      reason: "dispatch_exception",
       error: error instanceof Error ? error : new Error(String(error))
     };
   }
@@ -1019,15 +1024,15 @@ export async function triggerMatchStart() {
   }
 
   try {
-    console.warn("[CLI] Orchestrator unavailable; start action rejected");
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[CLI] Orchestrator unavailable; start action rejected");
+    }
     emitBattleEvent("battle.unavailable", {
       action: "startClicked",
       reason: dispatchFailure?.reason || "no_machine",
       error: dispatchFailure?.error || null
     });
-  } catch (err) {
-    console.debug("Failed to dispatch startClicked", err);
-  }
+  } catch {}
 }
 
 /**
@@ -1365,11 +1370,11 @@ function pauseTimer(type) {
     selectionInterval = null;
     return remaining;
   } else {
-    const bar = byId("snackbar-container")?.querySelector(".snackbar");
-    const match = bar?.textContent?.match(/Next round in: (\d+)/);
     cooldownTimer = null;
     cooldownInterval = null;
-    return match ? Number(match[1]) : null;
+    const countdown = byId("cli-countdown");
+    const remaining = Number(countdown?.dataset?.remainingTime);
+    return Number.isFinite(remaining) && remaining > 0 ? remaining : null;
   }
 }
 
@@ -1409,24 +1414,66 @@ function resumeTimers() {
     startSelectionCountdown(pausedSelectionRemaining);
   }
   if (document.body?.dataset?.battleState === "roundWait" && pausedCooldownRemaining) {
-    let remaining = pausedCooldownRemaining;
-    showBottomLine(`Next round in: ${remaining}`);
-    try {
-      cooldownInterval = setInterval(() => {
-        remaining -= 1;
-        if (remaining > 0) showBottomLine(`Next round in: ${remaining}`);
-      }, 1000);
-    } catch {}
-    try {
-      cooldownTimer = setTimeout(() => {
-        try {
-          emitBattleEvent("countdownFinished");
-        } catch {}
-      }, remaining * 1000);
-    } catch {}
+    renderRoundWaitCountdown(pausedCooldownRemaining);
   }
   pausedSelectionRemaining = null;
   pausedCooldownRemaining = null;
+}
+
+/**
+ * Render cooldown countdown text from authoritative event payloads.
+ *
+ * @param {number} remainingSeconds
+ * @returns {void}
+ */
+function renderRoundWaitCountdown(remainingSeconds) {
+  const normalized = Math.max(0, Math.round(Number(remainingSeconds) || 0));
+  const countdown = byId("cli-countdown");
+  if (countdown) {
+    countdown.dataset.remainingTime = String(normalized);
+    if (countdown.dataset.status !== "error") {
+      countdown.textContent = normalized > 0 ? `Next round in: ${normalized}` : "";
+    }
+  }
+  showBottomLine(normalized > 0 ? `Next round in: ${normalized}` : "");
+}
+
+/**
+ * Clear cooldown countdown text when an authoritative end event is emitted.
+ *
+ * @returns {void}
+ */
+function clearRoundWaitCountdown() {
+  const countdown = byId("cli-countdown");
+  if (countdown) {
+    delete countdown.dataset.remainingTime;
+    if (countdown.dataset.status !== "error") {
+      countdown.textContent = "";
+    }
+  }
+  clearBottomLine();
+}
+
+/**
+ * Handle cooldown timer tick payloads from core orchestration.
+ *
+ * @param {CustomEvent<{remaining?: number, secondsRemaining?: number, remainingMs?: number}>} e
+ * @returns {void}
+ */
+function handleCooldownTimerTick(e) {
+  if (document.body?.dataset?.battleState !== "roundWait") return;
+  const fromSeconds = Number(e?.detail?.secondsRemaining);
+  const fromRemaining = Number(e?.detail?.remaining);
+  const fromMs = Number(e?.detail?.remainingMs);
+  const remaining = Number.isFinite(fromSeconds)
+    ? fromSeconds
+    : Number.isFinite(fromRemaining)
+      ? fromRemaining
+      : Number.isFinite(fromMs)
+        ? Math.ceil(fromMs / 1000)
+        : NaN;
+  if (!Number.isFinite(remaining)) return;
+  renderRoundWaitCountdown(remaining);
 }
 
 /**
@@ -2982,8 +3029,6 @@ function handleCountdownStart(e) {
   let skipHandled = false;
   const skipEnabled = skipRoundCooldownIfEnabled({
     onSkip: () => {
-      emitBattleEvent("countdownFinished");
-      emitBattleEvent("round.start");
       skipHandled = true;
     }
   });
@@ -2996,32 +3041,20 @@ function handleCountdownStart(e) {
   try {
     updateScoreLine();
   } catch {}
-  const duration = Number(e.detail?.duration) || 0;
-  if (cooldownTimer) clearTimeout(cooldownTimer);
-  if (cooldownInterval) clearInterval(cooldownInterval);
-  cooldownTimer = null;
-  cooldownInterval = null;
-  if (duration > 0) {
-    let remaining = duration;
-    showBottomLine(`Next round in: ${remaining}`);
-    cooldownInterval = setInterval(() => {
-      remaining -= 1;
-      if (remaining > 0) showBottomLine(`Next round in: ${remaining}`);
-    }, 1000);
-    cooldownTimer = setTimeout(() => {
-      emitBattleEvent("countdownFinished");
-    }, duration * 1000);
-  } else {
-    emitBattleEvent("countdownFinished");
-  }
+  const rawDuration = Number(e?.detail?.duration);
+  const rawDurationMs = Number(e?.detail?.durationMs);
+  const duration = Number.isFinite(rawDuration)
+    ? rawDuration
+    : Number.isFinite(rawDurationMs)
+      ? Math.ceil(rawDurationMs / 1000)
+      : 0;
+  renderRoundWaitCountdown(duration);
 }
 
 function handleCountdownFinished() {
-  if (cooldownTimer) clearTimeout(cooldownTimer);
-  if (cooldownInterval) clearInterval(cooldownInterval);
   cooldownTimer = null;
   cooldownInterval = null;
-  clearBottomLine();
+  clearRoundWaitCountdown();
 }
 
 function handleRoundEvaluated(e) {
@@ -3283,6 +3316,11 @@ const battleEventHandlers = {
   statSelectionStalled: handleStatSelectionStalled,
   countdownStart: handleCountdownStart,
   countdownFinished: handleCountdownFinished,
+  "control.countdown.completed": handleCountdownFinished,
+  "cooldown.timer.expired": handleCountdownFinished,
+  countdownTick: handleCooldownTimerTick,
+  nextRoundCountdownTick: handleCooldownTimerTick,
+  "cooldown.timer.tick": handleCooldownTimerTick,
   "round.evaluated": handleRoundEvaluated,
   matchOver: handleMatchOver,
   "battle.unavailable": handleBattleUnavailable

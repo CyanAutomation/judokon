@@ -111,8 +111,10 @@ import {
 import { isDevelopmentEnvironment } from "../helpers/environment.js";
 import { runClassicBattleBootstrapCoordinator } from "../helpers/classicBattle/bootstrapCoordinator.js";
 import { createBattleStore } from "../helpers/classicBattle/roundManager.js";
+import { createBattleInstance } from "../helpers/classicBattle/createBattleInstance.js";
 import { STORE_READY_EVENT } from "../helpers/classicBattleHomeLink.constants.js";
 import { bindControlDelegation } from "../helpers/classicBattle/controlDelegation.js";
+import { exposeLegacyReadinessForTests } from "../helpers/classicBattle/readinessCompat.js";
 
 // =============================================================================
 // Configuration & Constants
@@ -1873,66 +1875,107 @@ const isTestEnvironment =
   (process.env.VITEST === "true" || process.env.NODE_ENV === "test");
 
 /**
- * Initialize the Classic Battle page.
+ * Create a Classic Battle init controller with explicit readiness promise.
  *
- * @summary Delegates deterministic bootstrap orchestration to the coordinator while
- * preserving existing phase ordering and page-level side effects.
- *
- * @returns {Promise<void>} A Promise that resolves when the Classic Battle page has been fully initialized.
  * @pseudocode
- * 1. Reset page-level init error markers before bootstrap starts.
- * 2. Invoke `runClassicBattleBootstrapCoordinator()` with dependency-build, view-wiring, and match-start phase callbacks.
- * 3. In `onStoreCreated`, publish the battle store on `window` and dispatch `STORE_READY_EVENT`.
- * 4. In `finalize`, initialize diagnostics and mark init completion metadata.
- * 5. On failure, preserve existing fatal error behavior and rethrow in test environments.
+ * 1. Build a guarded `readyPromise` and clear stale init error markers.
+ * 2. Run bootstrap coordinator with existing phase ordering callbacks.
+ * 3. Resolve/reject readiness when finalize/error paths complete.
+ * 4. Mirror readiness onto deprecated globals only in test compatibility mode.
+ *
+ * @returns {{ readyPromise: Promise<void>, controller: null, dispose: () => void }}
  */
-export async function init() {
-  console.log("battleClassic: init()");
+export function createBattleClassic() {
+  let resolveReady;
+  let rejectReady;
+  let settled = false;
+  const readyPromise = new Promise((resolve, reject) => {
+    resolveReady = () => {
+      if (settled) return;
+      settled = true;
+      resolve();
+    };
+    rejectReady = (error) => {
+      if (settled) return;
+      settled = true;
+      reject(error);
+    };
+  });
+
   if (typeof window !== "undefined") {
     window.__battleInitError = undefined;
+    exposeLegacyReadinessForTests(readyPromise);
   }
-  try {
-    await runClassicBattleBootstrapCoordinator({
-      createStore: createBattleStore,
-      onStoreCreated: (store) => {
-        if (typeof window !== "undefined") {
-          window.battleStore = store;
-          const StoreReadyEvent = window.CustomEvent || CustomEvent;
-          window.dispatchEvent(new StoreReadyEvent(STORE_READY_EVENT, { detail: { store } }));
-        }
-      },
-      initializeUtilities: initializePhase1_Utilities,
-      initializeUI: initializePhase2_UI,
-      initializeEngine: initializePhase3_Engine,
-      initializeEventHandlers: initializePhase4_EventHandlers,
-      wireStatBindings: wireExistingStatButtons,
-      startMatch: initializeMatchStart,
-      wireControlBindings: wireControlButtons,
-      finalize: () => {
-        // Initialize diagnostic panel (development mode only, Ctrl+Shift+D to toggle)
-        initDiagnosticPanel();
 
-        if (typeof window !== "undefined") {
-          window.__battleInitComplete = true;
-          window.__battleInitError = undefined;
+  const start = async () => {
+    console.log("battleClassic: init()");
+    try {
+      await runClassicBattleBootstrapCoordinator({
+        createStore: createBattleStore,
+        onStoreCreated: (store) => {
+          if (typeof window !== "undefined") {
+            window.battleStore = store;
+            const StoreReadyEvent = window.CustomEvent || CustomEvent;
+            window.dispatchEvent(new StoreReadyEvent(STORE_READY_EVENT, { detail: { store } }));
+          }
+        },
+        initializeUtilities: initializePhase1_Utilities,
+        initializeUI: initializePhase2_UI,
+        initializeEngine: initializePhase3_Engine,
+        initializeEventHandlers: initializePhase4_EventHandlers,
+        wireStatBindings: wireExistingStatButtons,
+        startMatch: initializeMatchStart,
+        wireControlBindings: wireControlButtons,
+        finalize: () => {
+          // Initialize diagnostic panel (development mode only, Ctrl+Shift+D to toggle)
+          initDiagnosticPanel();
+
+          if (typeof window !== "undefined") {
+            window.__battleInitError = undefined;
+          }
+          resolveReady();
+        }
+      });
+    } catch (err) {
+      console.error("battleClassic: bootstrap failed", err);
+      if (typeof window !== "undefined") {
+        if (err instanceof Error) {
+          window.__battleInitError = { name: err.name, message: err.message, stack: err.stack };
+        } else {
+          window.__battleInitError = err;
         }
       }
-    });
-  } catch (err) {
-    console.error("battleClassic: bootstrap failed", err);
-    if (typeof window !== "undefined") {
-      window.__battleInitComplete = false;
-      if (err instanceof Error) {
-        window.__battleInitError = { name: err.name, message: err.message, stack: err.stack };
-      } else {
-        window.__battleInitError = err;
+      rejectReady(err);
+      if (isTestEnvironment) {
+        return;
       }
+      showFatalInitError(err);
     }
-    if (isTestEnvironment) {
-      throw err;
+  };
+
+  void start();
+
+  return {
+    readyPromise,
+    controller: null,
+    dispose: () => {
+      // Reserved for future teardown hooks.
     }
-    showFatalInitError(err);
-  }
+  };
+}
+
+/**
+ * Initialize the Classic Battle page.
+ *
+ * @pseudocode
+ * 1. Create a battle init controller via `createBattleClassic()`.
+ * 2. Await the returned `readyPromise` for deterministic readiness.
+ *
+ * @returns {Promise<void>} Resolves when initialization completes.
+ */
+export async function init() {
+  const battleClassic = createBattleClassic();
+  await battleClassic.readyPromise;
 }
 
 // =============================================================================

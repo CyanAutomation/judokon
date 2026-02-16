@@ -190,14 +190,8 @@ class SnackbarManager {
    * @returns {void}
    */
   updatePositioning() {
-    const active = Array.from(this.activeSnackbars.values()).filter(
-      (snackbar) => snackbar.state !== "Dismissing"
-    );
+    const active = this.getVisibleSnackbarsBySequence({ newestFirst: true });
     if (active.length === 0) return;
-
-    active.sort((a, b) => {
-      return b.sequence - a.sequence;
-    });
 
     active.forEach((snackbar, index) => {
       if (!snackbar.element) return;
@@ -212,6 +206,24 @@ class SnackbarManager {
         snackbar.element.classList.remove("snackbar-bottom");
       }
     });
+  }
+
+  /**
+   * Project visible snackbar entries in deterministic sequence order.
+   *
+   * @pseudocode
+   * 1. Filter out entries already in Dismissing state.
+   * 2. Sort by sequence counter for deterministic ordering.
+   * 3. Return sorted projection for all callers (eviction + positioning).
+   *
+   * @param {{newestFirst?: boolean}} [options] - Sort direction options.
+   * @returns {ActiveSnackbar[]} Ordered visible snackbar entries.
+   */
+  getVisibleSnackbarsBySequence({ newestFirst = false } = {}) {
+    const direction = newestFirst ? -1 : 1;
+    return Array.from(this.activeSnackbars.values())
+      .filter((snackbar) => snackbar.state !== "Dismissing")
+      .sort((a, b) => direction * (a.sequence - b.sequence));
   }
 
   /**
@@ -260,6 +272,9 @@ class SnackbarManager {
     if (!container) {
       return null;
     }
+
+    // Enforce cap before creating a new snackbar (defensive against stale overflow).
+    this.evictOverflow();
 
     // Create snackbar
     const id = this.generateId();
@@ -321,7 +336,7 @@ class SnackbarManager {
     // Track in active map
     this.activeSnackbars.set(id, snackbar);
 
-    // Enforce visible cap via overflow eviction
+    // Enforce visible cap after insertion (3rd message evicts oldest deterministically).
     this.evictOverflow();
 
     // Update positioning
@@ -355,12 +370,13 @@ class SnackbarManager {
    * @returns {void}
    */
   evictOverflow() {
-    const visible = Array.from(this.activeSnackbars.values())
-      .filter((snackbar) => snackbar.state !== "Dismissing")
-      .sort((a, b) => a.sequence - b.sequence);
+    const visible = this.getVisibleSnackbarsBySequence();
 
     while (visible.length > this.maxVisible) {
       const evicted = visible.shift();
+      if (!evicted) {
+        return;
+      }
       this.dismiss(evicted.id, { ignoreMinDuration: true });
     }
   }

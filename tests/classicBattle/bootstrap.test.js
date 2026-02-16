@@ -25,16 +25,16 @@ function getBattleClassicHtml() {
 describe("Classic Battle bootstrap", () => {
   beforeEach(() => {
     document.documentElement.innerHTML = getBattleClassicHtml();
-    delete window.__battleInitComplete;
     delete window.__initCalled;
     delete window.battleStore;
     delete window.battleReadyPromise;
   });
 
   test("initializes scoreboard via setupClassicBattlePage", async () => {
-    const { setupClassicBattlePage } = await import("../../src/helpers/classicBattle/bootstrap.js");
+    const { createBattleClassic } = await import("../../src/helpers/classicBattle/bootstrap.js");
 
-    await setupClassicBattlePage();
+    const battleClassic = createBattleClassic();
+    await battleClassic.readyPromise;
 
     const score = document.getElementById("score-display");
     const round = document.getElementById("round-counter");
@@ -45,22 +45,22 @@ describe("Classic Battle bootstrap", () => {
     expect(score?.textContent || "").toMatch(/Opponent:\s*0/);
     expect(round?.textContent || "").toMatch(/Round\s*\d+/);
     expect(window.__initCalled).toBe(true);
-    expect(window.__battleInitComplete).toBe(true);
   });
 
   test("returns the resolved debug API and exposes readiness promise", async () => {
-    const { setupClassicBattlePage } = await import("../../src/helpers/classicBattle/bootstrap.js");
-    const debugApi = await setupClassicBattlePage();
+    const { createBattleClassic } = await import("../../src/helpers/classicBattle/bootstrap.js");
+    const battleClassic = createBattleClassic();
+    const debugApi = await battleClassic.readyPromise;
 
     expect(debugApi).toBeTruthy();
     expect(debugApi).toBe(window.__classicbattledebugapi);
-    expect(window.battleReadyPromise).toBeInstanceOf(Promise);
-    await expect(window.battleReadyPromise).resolves.toBe(debugApi);
+    await expect(battleClassic.readyPromise).resolves.toBe(debugApi);
   });
 
   test("exposes battle store and debug helpers on window", async () => {
-    const { setupClassicBattlePage } = await import("../../src/helpers/classicBattle/bootstrap.js");
-    await setupClassicBattlePage();
+    const { createBattleClassic } = await import("../../src/helpers/classicBattle/bootstrap.js");
+    const battleClassic = createBattleClassic();
+    await battleClassic.readyPromise;
 
     const store = window.battleStore;
     expect(store).toBeTruthy();

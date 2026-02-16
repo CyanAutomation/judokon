@@ -11,7 +11,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { JSDOM } from "jsdom";
 import { readFileSync } from "fs";
-import { init } from "../../src/pages/battleClassic.init.js";
+import { createBattleClassic } from "../../src/pages/battleClassic.init.js";
 
 // Defer reading HTML file until after Node environment is setup
 let htmlContentInit;
@@ -68,11 +68,8 @@ describe("Classic Battle Initialization", () => {
   });
 
   it("completes initialization and sets up required UI state", async () => {
-    // Execute initialization
-    await init();
-
-    // Verify initialization completion marker is set
-    expect(window.__battleInitComplete).toBe(true);
+    const battleClassic = createBattleClassic();
+    await battleClassic.readyPromise;
 
     // Verify test API is exposed for testing
     expect(window.__TEST_API).toBeDefined();
