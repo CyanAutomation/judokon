@@ -104,4 +104,4 @@ export const handleCommandHistory = (key) => handlers.handleCommandHistory(key);
  * @pseudocode
  * 1. Call the registered `handleIntent` with `intent` and return the outcome.
  */
-export const handleIntent = (intent) => handlers.handleIntent(intent);
+export const handleIntent = (intent) => handlers.handleIntent?.(intent) ?? false;
