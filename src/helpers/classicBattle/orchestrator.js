@@ -72,7 +72,7 @@ function attachEngineEventBridge(engine) {
       availableStats,
       lastRoundIndex: 0
     };
-    const roundIndex = Number(detail?.roundIndex ?? engine?.getRoundsPlayed?.() ?? 0);
+    const roundIndex = Number(detail?.roundIndex ?? detail?.round ?? engine?.getRoundsPlayed?.() ?? 0);
     if (!Number.isFinite(roundIndex) || roundIndex <= bridgeState.lastRoundIndex) {
       return;
     }

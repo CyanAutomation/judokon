@@ -106,11 +106,12 @@ describe("orchestrator canonical event emissions", () => {
     const roundStartedHandler = testState.engineListeners.roundStarted;
     expect(roundStartedHandler).toBeTypeOf("function");
 
-    roundStartedHandler({ roundIndex: 1 });
+    roundStartedHandler({ round: 1 });
 
     expect(canonicalRoundStarted).toHaveBeenCalledTimes(1);
     expect(legacyRoundStarted).toHaveBeenCalledTimes(1);
     expect(canonicalRoundStarted.mock.calls[0][0].detail.roundIndex).toBe(1);
+    expect(canonicalRoundStarted.mock.calls[0][0].detail.round).toBe(1);
   });
 
   it("emits one state-transition taxonomy path without duplicate naming", async () => {
