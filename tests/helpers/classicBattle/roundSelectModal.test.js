@@ -24,6 +24,7 @@ const mocks = vi.hoisted(() => {
     const element = document.createElement("div");
     element.appendChild(content);
     return {
+      dialog: element,
       element,
       open: modal.open,
       close: modal.close,
