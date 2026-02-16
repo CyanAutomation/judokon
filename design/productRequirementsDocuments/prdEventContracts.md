@@ -147,6 +147,13 @@ flowchart TD
 
 **Rationale**: This flowchart encodes the intended versioning policy, enabling test authors and implementers to classify changes algorithmically. The 1-cycle compatibility layer is planned but not yet implemented.
 
+### Event payload immutability contract
+
+- Canonical battle event payloads are treated as immutable snapshots.
+- Emitters must deep-clone payloads before dispatch to avoid exposing live object references to subscribers.
+- In non-production/test environments, dispatch payloads are deep-frozen so accidental subscriber mutation fails fast during development.
+- Subscribers must treat `event.detail` as read-only and derive local mutable copies when transformation is needed.
+
 ### Event naming legend
 
 - **Authoritative UI transition signal:** `control.state.changed` (state progression source of truth).
