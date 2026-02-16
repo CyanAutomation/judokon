@@ -67,6 +67,24 @@ function attachEngineEventBridge(engine) {
     lastRoundIndex: 0
   });
 
+  on.call(engine, "roundStarted", (detail) => {
+    const bridgeState = engineBridgeContext.get(engine) || {
+      availableStats,
+      lastRoundIndex: 0
+    };
+    const roundIndex = Number(detail?.roundIndex ?? engine?.getRoundsPlayed?.() ?? 0);
+    if (!Number.isFinite(roundIndex) || roundIndex <= bridgeState.lastRoundIndex) {
+      return;
+    }
+    bridgeState.lastRoundIndex = roundIndex;
+    engineBridgeContext.set(engine, bridgeState);
+    emitBattleEventWithAliases(EVENT_TYPES.STATE_ROUND_STARTED, {
+      ...detail,
+      roundIndex,
+      availableStats: bridgeState.availableStats
+    });
+  });
+
   on.call(engine, "timerTick", (detail) => {
     const remaining = Number(detail?.remaining) || 0;
     if (detail?.phase === "round") {
@@ -363,6 +381,7 @@ function emitCanonicalRoundStartedFromTransition(to) {
   };
   const roundIndex = Number(engine?.getRoundsPlayed?.() || 0);
   if (!Number.isFinite(roundIndex) || roundIndex <= bridgeState.lastRoundIndex) {
+    return;
   }
   bridgeState.lastRoundIndex = roundIndex;
   engineBridgeContext.set(engine, bridgeState);
