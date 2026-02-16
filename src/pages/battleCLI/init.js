@@ -2511,11 +2511,13 @@ export function handleIntent(intent) {
   if (intent.type === "unmappedKey") return rejectIntent("key.unmapped");
 
   if (intent.type === "selectStatByIndex") {
+  if (intent.type === "selectStatByIndex") {
     if (!isEnabled("statHotkeys")) return "ignored";
     const key = String(intent.index);
     const handled = handleWaitingForPlayerActionKey(key);
     if (handled === "ignored") return "ignored";
-    return handled === false ? rejectIntent("intent.notAllowedInState") : handled;
+    if (handled !== true) return rejectIntent("intent.notAllowedInState");
+    return true;
   }
 
   if (intent.type === "selectFocusedStat") {
