@@ -56,6 +56,9 @@ export const SnackbarPriority = {
 
 class SnackbarManager {
   constructor() {
+    /** @type {number} */
+    this.maxVisible = 2;
+
     /** @type {Map<string, ActiveSnackbar>} */
     this.activeSnackbars = new Map();
 
@@ -186,7 +189,9 @@ class SnackbarManager {
    * @returns {void}
    */
   updatePositioning() {
-    const active = Array.from(this.activeSnackbars.values());
+    const active = Array.from(this.activeSnackbars.values()).filter(
+      (snackbar) => snackbar.state !== "Dismissing"
+    );
     if (active.length === 0) return;
 
     active.sort((a, b) => {
@@ -293,6 +298,7 @@ class SnackbarManager {
       minDuration,
       shownAt: Date.now(),
       sequence: ++this.sequenceCounter,
+      state: "Visible",
       element,
       animationEndHandler: handleAnimationEnd,
       onShow,
@@ -314,6 +320,9 @@ class SnackbarManager {
     // Track in active map
     this.activeSnackbars.set(id, snackbar);
 
+    // Enforce visible cap via overflow eviction
+    this.evictOverflow();
+
     // Update positioning
     this.updatePositioning();
 
@@ -333,6 +342,26 @@ class SnackbarManager {
       update: (newMessage) => this.update(id, newMessage),
       waitForMinDuration: async () => this.waitForMinDuration(id)
     };
+  }
+
+  /**
+   * Enforce the maximum number of visible snackbars.
+   *
+   * @pseudocode
+   * 1. Collect visible snackbars sorted oldest-first.
+   * 2. While count exceeds max, dismiss oldest immediately.
+   *
+   * @returns {void}
+   */
+  evictOverflow() {
+    const visible = Array.from(this.activeSnackbars.values())
+      .filter((snackbar) => snackbar.state !== "Dismissing")
+      .sort((a, b) => a.sequence - b.sequence);
+
+    while (visible.length > this.maxVisible) {
+      const evicted = visible.shift();
+      this.dismiss(evicted.id, { ignoreMinDuration: true });
+    }
   }
 
   /**
@@ -374,13 +403,35 @@ class SnackbarManager {
    * @returns {Promise<void>}
    */
   async remove(id) {
+    await this.dismiss(id, { ignoreMinDuration: false });
+  }
+
+  /**
+   * Dismiss a snackbar by ID.
+   *
+   * @pseudocode
+   * 1. Resolve snackbar from active map.
+   * 2. Ignore duplicate dismissals while already dismissing.
+   * 3. Optionally enforce minimum duration.
+   * 4. Tear down timers/listeners and remove DOM node.
+   * 5. Delete active entry and invoke lifecycle callback.
+   *
+   * @param {string} id - Snackbar ID
+   * @param {{ignoreMinDuration?: boolean}} [options] - Dismiss options
+   * @returns {Promise<void>}
+   */
+  async dismiss(id, { ignoreMinDuration = false } = {}) {
     const snackbar = this.activeSnackbars.get(id);
-    if (!snackbar) {
+    if (!snackbar || snackbar.state === "Dismissing") {
       return;
     }
 
+    snackbar.state = "Dismissing";
+
     // Enforce minimum display duration
-    await this.waitForMinDuration(id);
+    if (!ignoreMinDuration) {
+      await this.waitForMinDuration(id);
+    }
 
     // Clear auto-dismiss timeout
     // Clear auto-dismiss timeout and event listeners
@@ -389,11 +440,6 @@ class SnackbarManager {
     }
     if (snackbar.animationEndHandler && snackbar.element) {
       snackbar.element.removeEventListener("animationend", snackbar.animationEndHandler);
-    }
-
-    // Remove element from DOM
-    if (snackbar.element && snackbar.element.parentNode) {
-      snackbar.element.remove();
     }
 
     // Remove element from DOM
@@ -432,7 +478,7 @@ class SnackbarManager {
    */
   update(id, newMessage) {
     const snackbar = this.activeSnackbars.get(id);
-    if (!snackbar) {
+    if (!snackbar || snackbar.state === "Dismissing") {
       return;
     }
 
@@ -488,7 +534,7 @@ class SnackbarManager {
    */
   async removeAll() {
     const ids = Array.from(this.activeSnackbars.keys());
-    await Promise.all(ids.map((id) => this.remove(id)));
+    await Promise.all(ids.map((id) => this.dismiss(id, { ignoreMinDuration: false })));
   }
 
   /**
@@ -524,6 +570,24 @@ class SnackbarManager {
 
     // Clear state
     this.activeSnackbars.clear();
+  }
+
+  /**
+   * Get ID of newest visible snackbar.
+   *
+   * @pseudocode
+   * 1. Collect visible snackbars.
+   * 2. Sort newest-first by sequence.
+   * 3. Return first ID or null.
+   *
+   * @returns {string|null} Newest visible snackbar ID
+   */
+  getLatestVisibleId() {
+    const latest = Array.from(this.activeSnackbars.values())
+      .filter((snackbar) => snackbar.state !== "Dismissing")
+      .sort((a, b) => b.sequence - a.sequence)[0];
+
+    return latest?.id ?? null;
   }
 
   /**

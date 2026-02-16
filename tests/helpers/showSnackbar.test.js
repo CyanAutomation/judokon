@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import { showSnackbar, updateSnackbar } from "../../src/helpers/showSnackbar.js";
+import { showSnackbar, updateSnackbar, dismissSnackbar } from "../../src/helpers/showSnackbar.js";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 beforeEach(() => {
@@ -49,7 +49,7 @@ describe("showSnackbar", () => {
     expect(second.classList.contains("snackbar-stale")).toBe(false);
   });
 
-  it("keeps earlier messages when new ones arrive", () => {
+  it("evicts oldest message when a third message is shown", () => {
     const container = document.getElementById("snackbar-container");
 
     showSnackbar("First");
@@ -59,18 +59,18 @@ describe("showSnackbar", () => {
     const firstEl = container.children[0];
     const secondEl = container.children[1];
 
-    // Add 3rd message - should keep earlier messages
+    // Add 3rd message - should evict oldest due to max-visible=2
     showSnackbar("Third");
-    expect(container.children).toHaveLength(3);
+    expect(container.children).toHaveLength(2);
 
-    // First should still be present
-    expect(container.contains(firstEl)).toBe(true);
+    // First should be evicted
+    expect(container.contains(firstEl)).toBe(false);
 
     // Second should still be visible and stale
     expect(secondEl.classList.contains("snackbar-top")).toBe(true);
     expect(secondEl.classList.contains("snackbar-stale")).toBe(true);
 
-    const thirdEl = container.children[2];
+    const thirdEl = container.children[1];
     expect(thirdEl.textContent).toBe("Third");
     expect(thirdEl.classList.contains("snackbar-bottom")).toBe(true);
   });
@@ -136,7 +136,7 @@ describe("showSnackbar", () => {
     expect(container.children).toHaveLength(0);
   });
 
-  it("handles rapid succession of messages (stress test)", () => {
+  it("handles rapid succession of messages with max-visible eviction", () => {
     const container = document.getElementById("snackbar-container");
 
     // Rapidly add 5 messages
@@ -146,19 +146,35 @@ describe("showSnackbar", () => {
     showSnackbar("Message 4");
     showSnackbar("Message 5");
 
-    // Should keep all messages (no internal suppression)
-    expect(container.children).toHaveLength(5);
+    // Should keep only latest two messages
+    expect(container.children).toHaveLength(2);
 
     // Last message should be bottom
     const messages = Array.from(container.children).map((el) => el.textContent);
-    expect(messages).toEqual(["Message 1", "Message 2", "Message 3", "Message 4", "Message 5"]);
+    expect(messages).toEqual(["Message 4", "Message 5"]);
 
     // Older messages should have stale class
     expect(container.children[0].classList.contains("snackbar-stale")).toBe(true);
-    expect(container.children[1].classList.contains("snackbar-stale")).toBe(true);
-    expect(container.children[2].classList.contains("snackbar-stale")).toBe(true);
-    expect(container.children[3].classList.contains("snackbar-stale")).toBe(true);
     // Bottom message should not
-    expect(container.children[4].classList.contains("snackbar-stale")).toBe(false);
+    expect(container.children[1].classList.contains("snackbar-stale")).toBe(false);
+  });
+
+  it("updateSnackbar is a no-op when there is no visible snackbar", () => {
+    const container = document.getElementById("snackbar-container");
+    updateSnackbar("Should not create");
+    expect(container.children).toHaveLength(0);
+  });
+
+  it("dismissSnackbar removes targeted snackbar", async () => {
+    const container = document.getElementById("snackbar-container");
+    showSnackbar("First");
+    showSnackbar("Second");
+
+    const firstId = container.children[0]?.dataset?.snackbarId;
+    dismissSnackbar(firstId);
+    await Promise.resolve();
+
+    expect(container.children).toHaveLength(1);
+    expect(container.children[0].textContent).toBe("Second");
   });
 });
