@@ -343,6 +343,7 @@ let battleEventBindingsInstalled = false;
 let removeIntentRejectionFeedback = null;
 let flagsListenersWired = false;
 let flagsListenerCleanupCallbacks = [];
+let engineUnsubscribers = [];
 let toggleVerboseFromFlags = null;
 let applyScanlinesFromFlags = () => {};
 let updateVerboseFromFlags = () => {};
@@ -462,6 +463,15 @@ function wireFlagsListeners() {
   });
   flagsListenersWired = true;
 }
+
+function cleanupEngineSubscriptions() {
+  engineUnsubscribers.forEach((cleanup) => {
+    try {
+      cleanup();
+    } catch {}
+  });
+  engineUnsubscribers = [];
+}
 // state managed in state.js
 
 try {
@@ -527,6 +537,7 @@ try {
       removeIntentRejectionFeedback = null;
       battleEventBindingsInstalled = false;
       cleanupFlagsListeners();
+      cleanupEngineSubscriptions();
       toggleVerboseFromFlags = null;
       applyScanlinesFromFlags = () => {};
       updateVerboseFromFlags = () => {};
@@ -874,6 +885,7 @@ let resetPromise = Promise.resolve();
  * @returns {Promise<void>} A promise that resolves when the reset is complete.
  */
 export async function resetMatch() {
+  cleanupEngineSubscriptions();
   resetBattleEventDedupeState();
   stopSelectionCountdown();
   handleCountdownFinished();
@@ -3605,11 +3617,12 @@ export async function setupFlags() {
  *    a. When a `matchEnded` event occurs, update the round message to display "Match over: [outcome]".
  * 4. Wrap the subscriptions in a `try...catch` block to gracefully handle any errors during event binding.
  *
- * @returns {void}
+ * @returns {() => void} Cleanup callback that removes active engine subscriptions.
  */
 export function subscribeEngine() {
+  cleanupEngineSubscriptions();
   try {
-    subscribeBattleApp("timerTick", ({ remaining, phase }) => {
+    const offTimerTick = subscribeBattleApp("timerTick", ({ remaining, phase }) => {
       if (phase === "round") {
         const el = byId("cli-countdown");
         if (el) {
@@ -3627,14 +3640,26 @@ export function subscribeEngine() {
         }
       }
     });
-    subscribeBattleApp("matchEnded", ({ outcome }) => {
+    const offMatchEnded = subscribeBattleApp("matchEnded", ({ outcome }) => {
       setRoundMessage(`Match over: ${outcome}`);
       const announcementEl = byId("match-announcement");
       if (announcementEl) {
         announcementEl.textContent = `Match over. ${outcome === "playerWin" ? "You win!" : outcome === "opponentWin" ? "Opponent wins." : "It's a draw."}`;
       }
     });
+    engineUnsubscribers = [offTimerTick, offMatchEnded].filter(
+      (cleanup) => typeof cleanup === "function"
+    );
   } catch {}
+  return () => {
+    [offTimerTick, offMatchEnded].forEach((cleanup) => {
+      if (typeof cleanup === "function") {
+        try {
+          cleanup();
+        } catch {}
+      }
+    });
+  };
 }
 
 /**
@@ -3719,6 +3744,7 @@ function handlePageHide() {
  * mark listeners as unwired
  */
 export function unwireEvents() {
+  cleanupEngineSubscriptions();
   uninstallEventBindings();
   if (eventsWired) {
     if (typeof window !== "undefined") {
