@@ -1,5 +1,10 @@
 import { createCountdownTimer, getDefaultTimer } from "../helpers/timerUtils.js";
-import { startCooldown, startRound, handleReplay } from "../helpers/classicBattle/roundManager.js";
+import {
+  startCooldown,
+  startRound,
+  handleReplay,
+  getNextRoundControls
+} from "../helpers/classicBattle/roundManager.js";
 import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
 import {
   disableStatButtons,
@@ -1560,7 +1565,7 @@ function wireControlButtons(store) {
   }
 
   bindControlDelegation(controlRoot, {
-    onNext: (event) => onNextButtonClick(event, undefined, activeStore),
+    onNext: (event) => onNextButtonClick(event, getNextRoundControls(), activeStore),
     onReplay: async () => {
       stopActiveSelectionTimer();
       STATE.isStartingRoundCycle = false;
