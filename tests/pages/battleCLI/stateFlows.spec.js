@@ -100,11 +100,10 @@ describe("battleCLI state flows", () => {
       timers.cleanup();
     });
 
-    it("shows countdown ticks and emits finish", async () => {
+    it("renders cooldown countdown from authoritative tick/finish events", async () => {
       await setupBattleCLI();
       const eventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
       const { emitBattleEvent } = eventsMod;
-      const emitSpy = vi.spyOn(eventsMod, "emitBattleEvent");
 
       // Import the mocked showSnackbar to verify calls
       const { showSnackbar } = await import("../../../src/helpers/showSnackbar.js");
@@ -113,15 +112,53 @@ describe("battleCLI state flows", () => {
       expect(showSnackbar).toHaveBeenCalledWith("Next round in: 2");
 
       showSnackbar.mockClear();
-      await timers.advanceTimersByTimeAsync(1000);
+      emitBattleEvent("cooldown.timer.tick", { remainingMs: 1000 });
       expect(showSnackbar).toHaveBeenCalledWith("Next round in: 1");
 
       showSnackbar.mockClear();
-      await timers.advanceTimersByTimeAsync(1000);
-      expect(emitSpy).toHaveBeenCalledWith("countdownFinished");
+      emitBattleEvent("countdownFinished");
       expect(showSnackbar).toHaveBeenCalledWith("");
+    });
 
-      emitSpy.mockRestore();
+    it("does not locally expire countdown at boundary without authoritative finish", async () => {
+      await setupBattleCLI();
+      const eventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
+      const { emitBattleEvent } = eventsMod;
+      const { showSnackbar } = await import("../../../src/helpers/showSnackbar.js");
+
+      emitBattleEvent("countdownStart", { duration: 1 });
+      showSnackbar.mockClear();
+
+      await timers.advanceTimersByTimeAsync(1500);
+      expect(showSnackbar).not.toHaveBeenCalledWith("");
+
+      emitBattleEvent("cooldown.timer.tick", { remainingMs: 0 });
+      expect(showSnackbar).toHaveBeenCalledWith("");
+    });
+
+    it("uses authoritative countdown state across visibility pause/resume", async () => {
+      await setupBattleCLI();
+      const eventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
+      const { emitBattleEvent } = eventsMod;
+      const { showSnackbar } = await import("../../../src/helpers/showSnackbar.js");
+
+      emitBattleEvent("countdownStart", { duration: 3 });
+      emitBattleEvent("cooldown.timer.tick", { remainingMs: 2000 });
+      showSnackbar.mockClear();
+
+      const hiddenSpy = vi.spyOn(document, "hidden", "get").mockReturnValue(true);
+      document.dispatchEvent(new Event("visibilitychange"));
+      hiddenSpy.mockRestore();
+
+      const visibleSpy = vi.spyOn(document, "hidden", "get").mockReturnValue(false);
+      document.dispatchEvent(new Event("visibilitychange"));
+      visibleSpy.mockRestore();
+
+      expect(showSnackbar).toHaveBeenCalledWith("Next round in: 2");
+
+      showSnackbar.mockClear();
+      emitBattleEvent("countdownFinished");
+      expect(showSnackbar).toHaveBeenCalledWith("");
     });
   });
 
