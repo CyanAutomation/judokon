@@ -114,6 +114,7 @@ import { createBattleInstance } from "../helpers/classicBattle/createBattleInsta
 import { STORE_READY_EVENT } from "../helpers/classicBattleHomeLink.constants.js";
 import { bindControlDelegation } from "../helpers/classicBattle/controlDelegation.js";
 import { exposeLegacyReadinessForTests } from "../helpers/classicBattle/readinessCompat.js";
+import { isOpponentDelayUxEnabled } from "../helpers/classicBattle/flagInfluencePolicy.js";
 
 // =============================================================================
 // Configuration & Constants
@@ -276,7 +277,7 @@ function calculateRemainingOpponentMessageTime() {
 function computeSelectionReadyDelay() {
   let delayForReady = getBaseSelectionReadyDelay();
   try {
-    if (isEnabled("opponentDelayMessage")) {
+    if (isOpponentDelayUxEnabled(isEnabled)) {
       const opponentDelay = getOpponentDelay?.();
       if (Number.isFinite(opponentDelay) && opponentDelay >= 0) {
         const delayWithBuffer = computeDelayWithOpponentBuffer(
