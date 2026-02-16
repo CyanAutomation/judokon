@@ -29,8 +29,9 @@ describe("showSnackbar", () => {
     const first = container.children[0];
     expect(first?.classList.contains("snackbar--active")).toBe(true);
     expect(first?.classList.contains("snackbar-bottom")).toBe(true);
-    expect(first?.getAttribute("role")).toBe("status");
-    expect(first?.getAttribute("aria-atomic")).toBe("false");
+    expect(first?.hasAttribute("role")).toBe(false);
+    expect(first?.hasAttribute("aria-live")).toBe(false);
+    expect(first?.hasAttribute("aria-atomic")).toBe(false);
 
     // Add second message - should stack, not replace
     showSnackbar("Second");
@@ -47,6 +48,18 @@ describe("showSnackbar", () => {
     expect(second.classList.contains("snackbar-bottom")).toBe(true);
     expect(second.classList.contains("snackbar-top")).toBe(false);
     expect(second.classList.contains("snackbar-stale")).toBe(false);
+  });
+
+  it("uses a single live-region level on the snackbar container", () => {
+    const container = document.getElementById("snackbar-container");
+
+    showSnackbar("Live region check");
+
+    const liveRegionChildren = container.querySelectorAll('[role="status"], [aria-live]');
+    expect(container.getAttribute("role")).toBe("status");
+    expect(container.getAttribute("aria-live")).toBe("polite");
+    expect(container.getAttribute("aria-atomic")).toBe("false");
+    expect(liveRegionChildren).toHaveLength(0);
   });
 
   it("evicts oldest message when a third message is shown", () => {
