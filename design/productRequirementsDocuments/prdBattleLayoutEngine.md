@@ -305,6 +305,7 @@ This schema defines the canonical layout payload used by the Layout Engine. It i
 The flowchart below illustrates the intended end-state selection, validation, and application pipeline.
 
 **Implementation cross-links (target path):**
+
 - Loader selection and fallback logic: [`src/helpers/layoutEngine/loadLayout.js`](../../src/helpers/layoutEngine/loadLayout.js)
 - Layout application pipeline: [`src/helpers/layoutEngine/applyLayout.js`](../../src/helpers/layoutEngine/applyLayout.js)
 - Intended module source directory (currently missing `.layout.js` modules): [`src/layouts/`](../../src/layouts/)
@@ -355,6 +356,7 @@ flowchart LR
 The active runtime path currently executes inline fallback loading first, because `.layout.js` modules and a generated registry are not yet available.
 
 **Implementation cross-links (current active path):**
+
 - Active loader path (`loadLayout` + inline fallback parsing): [`src/helpers/layoutEngine/loadLayout.js`](../../src/helpers/layoutEngine/loadLayout.js)
 - Active applier path (`applyLayout` + CSS fallback behavior): [`src/helpers/layoutEngine/applyLayout.js`](../../src/helpers/layoutEngine/applyLayout.js)
 - Current `src/layouts/` state (`types.d.ts` present; no `.layout.js` modules yet): [`src/layouts/`](../../src/layouts/)
