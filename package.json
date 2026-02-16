@@ -41,7 +41,7 @@
     "check:contrast": "node scripts/runPa11y.js",
     "prepare": "husky install",
     "validate:data": "node scripts/validateData.js",
-    "generate:embeddings": "node --max-old-space-size=8192 scripts/generateEmbeddings.js",
+    "generate:embeddings": "node -e \"console.error('RAG npm scripts were retired. See docs/status/archive/rag-workflows.md for archived workflows.'); process.exit(1);\"",
     "pretest": "node scripts/generatePrdIndex.js && node scripts/generateBattleMarkup.mjs",
     "generate:battleMarkup": "node scripts/generateBattleMarkup.mjs",
     "update:codes": "node scripts/updateCodes.mjs",
