@@ -94,3 +94,14 @@ export const handleStatListArrowKey = (key) => handlers.handleStatListArrowKey(k
  * 1. Call the registered `handleCommandHistory` with `key` and return its result.
  */
 export const handleCommandHistory = (key) => handlers.handleCommandHistory(key);
+
+/**
+ * Delegate wrapper for high-level keyboard intents.
+ *
+ * @param {{type: string, [key: string]: any}} intent - Normalized keyboard intent.
+ * @returns {boolean|'ignored'|'rejected'} Handling outcome.
+ *
+ * @pseudocode
+ * 1. Call the registered `handleIntent` with `intent` and return the outcome.
+ */
+export const handleIntent = (intent) => handlers.handleIntent?.(intent) ?? false;
