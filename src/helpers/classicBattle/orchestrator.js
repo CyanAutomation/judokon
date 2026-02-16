@@ -36,6 +36,7 @@ import { STATS, onEngineCreated } from "../BattleEngine.js";
 import { buildClassicBattleStateTable } from "./stateTable.js";
 import { isRoundModificationOverlayEnabled } from "./roundModificationOverlay.js";
 import { EVENT_TYPES } from "./eventCatalog.js";
+import { ensureClassicBattleScheduler } from "./timingScheduler.js";
 
 const bridgedEngines = typeof WeakSet === "function" ? new WeakSet() : new Set();
 const engineBridgeContext = typeof WeakMap === "function" ? new WeakMap() : new Map();
@@ -322,20 +323,16 @@ function applyStartRound(context, store, deps) {
  */
 function resolveMachineContext(overrides, deps) {
   const store = overrides.store ?? deps.store ?? null;
-  const scheduler = overrides.scheduler ?? deps.scheduler ?? null;
+  const scheduler = ensureClassicBattleScheduler(overrides.scheduler ?? deps.scheduler ?? null);
   const startRoundWrapper = overrides.startRoundWrapper ?? deps.startRoundWrapper ?? null;
   const stateTable = overrides.stateTable ?? deps.stateTable ?? null;
 
   if (!store) {
     debugLog("Warning: resolveMachineContext - no store provided");
   }
-  if (!scheduler) {
-    debugLog("Warning: resolveMachineContext - no scheduler provided");
-  }
-
   const context = { ...overrides };
   if (!("store" in context)) context.store = store;
-  if (scheduler && !("scheduler" in context)) context.scheduler = scheduler;
+  if (!("scheduler" in context)) context.scheduler = scheduler;
   if (!("engine" in context)) {
     context.engine = overrides.engine ?? deps.engine ?? store?.engine ?? null;
   }

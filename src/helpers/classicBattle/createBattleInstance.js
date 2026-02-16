@@ -1,6 +1,7 @@
 import { createBattleEventBus, setActiveBattleEventBus } from "./battleEvents.js";
 import { initClassicBattleOrchestrator, disposeClassicBattleOrchestrator } from "./orchestrator.js";
 import { dispatchBattleEvent } from "./eventBus.js";
+import { ensureClassicBattleScheduler } from "./timingScheduler.js";
 
 /**
  * Build an isolated Classic Battle match instance.
@@ -8,7 +9,8 @@ import { dispatchBattleEvent } from "./eventBus.js";
  * @param {{
  *   orchestratorInit?: typeof initClassicBattleOrchestrator,
  *   orchestratorDispose?: typeof disposeClassicBattleOrchestrator,
- *   battleEventBus?: ReturnType<typeof createBattleEventBus>
+ *   battleEventBus?: ReturnType<typeof createBattleEventBus>,
+ *   scheduler?: import('./timingScheduler.js').ClassicBattleScheduler
  * }} [options]
  * @returns {{
  *   machine: import('./stateManager.js').ClassicBattleStateManager|null,
@@ -28,12 +30,17 @@ export function createBattleInstance(options = {}) {
   const orchestratorInit = options.orchestratorInit ?? initClassicBattleOrchestrator;
   const orchestratorDispose = options.orchestratorDispose ?? disposeClassicBattleOrchestrator;
   const eventBus = options.battleEventBus ?? createBattleEventBus();
+  const scheduler = ensureClassicBattleScheduler(options.scheduler);
 
   let machine = null;
 
   async function init(contextOverrides = {}, dependencies = {}, hooks = {}) {
     setActiveBattleEventBus(eventBus);
-    machine = await orchestratorInit(contextOverrides, dependencies, hooks, {
+    const resolvedDependencies = {
+      scheduler,
+      ...(dependencies || {})
+    };
+    machine = await orchestratorInit(contextOverrides, resolvedDependencies, hooks, {
       battleEventBus: eventBus
     });
     return machine;

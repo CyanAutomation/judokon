@@ -1,10 +1,11 @@
-import { onBattleEvent, getBattleEventTarget } from "./battleEvents.js";
+import { onBattleEvent, getBattleEventTarget, emitBattleEvent } from "./battleEvents.js";
 import { handleRoundStartedEvent, handleRoundResolvedEvent } from "./roundUI.js";
 import { showRoundOutcome } from "./uiHelpers.js";
 import { isEnabled } from "../featureFlags.js";
 import { getOpponentDelay } from "./snackbar.js";
 import { getSelectionDelayOverride } from "./selectionDelayCalculator.js";
 import { EVENT_TYPES } from "./eventCatalog.js";
+import { ensureClassicBattleScheduler } from "./timingScheduler.js";
 
 /**
  * Bind round flow UI handlers for engine-driven events.
@@ -16,12 +17,13 @@ import { EVENT_TYPES } from "./eventCatalog.js";
  * @returns {void}
  */
 export function bindRoundFlowController() {
+  const scheduler = ensureClassicBattleScheduler();
   let outcomeSequence = 0;
   let pendingOutcomeTimeoutId = null;
   let cachedOutcome = null;
   const clearPendingOutcomeDelay = () => {
     if (pendingOutcomeTimeoutId) {
-      clearTimeout(pendingOutcomeTimeoutId);
+      scheduler.cancel(pendingOutcomeTimeoutId);
     }
     pendingOutcomeTimeoutId = null;
   };
@@ -56,11 +58,14 @@ export function bindRoundFlowController() {
     }
 
     await new Promise((resolve) => {
-      pendingOutcomeTimeoutId = setTimeout(resolve, delayMs);
+      pendingOutcomeTimeoutId = scheduler.schedule(resolve, delayMs);
     });
     if (sequence !== outcomeSequence) {
       return;
     }
+    try {
+      emitBattleEvent("timer.opponentDelay.expired", { sequence, delayMs });
+    } catch {}
     try {
       showRoundOutcome(message || "", resolvedStat, playerVal, opponentVal);
     } catch {}
