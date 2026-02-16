@@ -277,6 +277,7 @@ export async function safeDispatch(eventName, payload) {
     }
   }
 
+  let dispatchError = null;
   try {
     const fn = battleOrchestrator?.dispatchBattleEvent;
     if (isDebugEvent) {
@@ -298,12 +299,7 @@ export async function safeDispatch(eventName, payload) {
     if (isDebugEvent) {
       debugLog(`battleOrchestrator path failed: ${err?.message}`);
     }
-    return {
-      ok: false,
-      eventName,
-      reason: "no_machine",
-      error: err instanceof Error ? err : new Error(String(err))
-    };
+    dispatchError = err instanceof Error ? err : new Error(String(err));
   }
 
   if (isDebugEvent) {
@@ -313,18 +309,8 @@ export async function safeDispatch(eventName, payload) {
   return {
     ok: false,
     eventName,
-    reason: "no_machine"
-  };
-}
-
-  if (isDebugEvent) {
-    debugLog(`DISPATCH FAILED - no handler found for: ${eventName}`);
-  }
-
-  return {
-    ok: false,
-    eventName,
-    reason: "no_machine"
+    reason: "no_machine",
+    ...(dispatchError ? { error: dispatchError } : {})
   };
 }
 
@@ -1011,27 +997,21 @@ export async function triggerMatchStart() {
 
   let dispatched = false;
   let dispatchFailure = null;
+  const result = await safeDispatch("startClicked");
+  dispatched = result?.ok === true;
+  dispatchFailure = result?.ok === true ? null : result;
+
+  if (dispatched) {
+    return;
+  }
+
   try {
-    const result = await safeDispatch("startClicked");
-    dispatched = result?.ok === true;
-    dispatchFailure = result?.ok === true ? null : result;
-  } catch (error) {
-    dispatched = false;
-    dispatchFailure = {
-      ok: false,
-      eventName: "startClicked",
-  try {
-    if (process.env.NODE_ENV === "development") {
-      console.warn("[CLI] Orchestrator unavailable; start action rejected");
-    }
     emitBattleEvent("battle.unavailable", {
       action: "startClicked",
       reason: dispatchFailure?.reason || "no_machine",
       error: dispatchFailure?.error || null
     });
-  } catch (err) {
-    console.debug("Failed to dispatch startClicked", err);
-  }
+  } catch {}
 }
 
 /**
