@@ -5587,14 +5587,6 @@
         "safeGetElementById": {
           "calls": ["getDocumentRef", "getElementById"],
           "patterns": []
-        },
-        "safeQuerySelectorAll": {
-          "calls": ["getDocumentRef", "querySelectorAll"],
-          "patterns": []
-        },
-        "safeQuerySelector": {
-          "calls": ["getDocumentRef", "querySelector"],
-          "patterns": []
         }
       }
     },
