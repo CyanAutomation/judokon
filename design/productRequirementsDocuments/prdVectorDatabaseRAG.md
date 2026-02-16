@@ -93,13 +93,13 @@ Chunking rules are shared across tooling via [`src/helpers/vectorSearch/chunkCon
 Prepare the embedding model for environments without network access:
 
 ```bash
-npm run rag:prepare:models -- --from-dir /path/to/minilm
+[Retired] See docs/status/archive/rag-workflows.md for previous model hydration instructions.
 ```
 
 Run the same command without `--from-dir` to download the model when online. Validate the offline setup afterward:
 
 ```bash
-RAG_STRICT_OFFLINE=1 npm run rag:validate
+[Retired] Validation command archived in docs/status/archive/rag-workflows.md.
 ```
 
 Use `RAG_ALLOW_LEXICAL_FALLBACK=1` to allow degraded lexical search when the model is missing.
@@ -376,7 +376,7 @@ The `src/helpers/queryRag.js` helper includes opt-in behaviors to make agent usa
 - **Query from the terminal**
 
   ```bash
-  npm run rag:query "How does the battle engine work?"
+  [Retired] Query workflow archived in docs/status/archive/rag-workflows.md.
   ```
 
 ### RAG Decision Workflow
@@ -454,9 +454,9 @@ Track usage against the shared success metrics for RAG-enabled workflows:
 1. **Prepare the MiniLM model** (one-time per machine)
 
    ```bash
-   npm run rag:prepare:models
+   [Retired] See docs/status/archive/rag-workflows.md.
    # or use an existing download
-   npm run rag:prepare:models -- --from-dir /path/to/minilm
+   [Retired] See docs/status/archive/rag-workflows.md for previous model hydration instructions.
    ```
 
    These commands hydrate `models/minilm` with the quantized extractor files used by the query encoder.
@@ -464,7 +464,7 @@ Track usage against the shared success metrics for RAG-enabled workflows:
 2. **Build compact offline assets**
 
    ```bash
-   npm run build:offline-rag
+   [Retired] Offline RAG build flow archived in docs/status/archive/rag-workflows.md.
    ```
 
    The build writes `src/data/offline_rag_vectors.bin` and `src/data/offline_rag_metadata.json` for browser usage without a network connection.
@@ -472,7 +472,7 @@ Track usage against the shared success metrics for RAG-enabled workflows:
 3. **Query in strict offline mode**
 
    ```bash
-   RAG_STRICT_OFFLINE=1 npm run rag:query "How does the battle engine work?"
+   [Retired] Strict offline query example archived in docs/status/archive/rag-workflows.md.
    ```
 
    Set `RAG_ALLOW_LEXICAL_FALLBACK=1` to enable a degraded lexical search path when the MiniLM model is unavailable.

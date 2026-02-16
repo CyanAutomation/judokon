@@ -35,7 +35,7 @@ async function checkRagModel() {
 
   if (!allFilesPresent) {
     console.error(
-      "MiniLM assets are missing under models/minilm. Run `npm run rag:prepare:models` to hydrate them."
+      "MiniLM assets are missing under models/minilm. RAG npm scripts are retired; see docs/status/archive/rag-workflows.md."
     );
     process.exit(1);
   } else {

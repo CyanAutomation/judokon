@@ -458,7 +458,7 @@ export async function handlerEnter(machine) {
 ```bash
 # Data & RAG integrity
 npm run validate:data
-npm run rag:validate
+[Retired] see docs/status/archive/rag-workflows.md
 
 # Code quality
 npx prettier . --check

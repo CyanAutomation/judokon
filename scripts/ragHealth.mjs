@@ -189,16 +189,22 @@ function formatReport(report) {
   if (!allGood) {
     console.log("💡 RECOMMENDATIONS:");
     if (!localModel.available) {
-      console.log("  1. Prepare local model: npm run rag:prepare:models");
-      console.log("  2. Or use --from-dir flag: npm run rag:prepare:models -- --from-dir /path");
+      console.log("  1. RAG npm workflows are retired. See docs/status/archive/rag-workflows.md");
+      console.log(
+        "  2. Archived model hydration details are documented in docs/status/archive/rag-workflows.md"
+      );
     }
     if (!config.valid) {
-      console.log("  1. Check configuration: npm run validate:rag:config");
+      console.log(
+        "  1. RAG config npm validation is retired; see docs/status/archive/rag-workflows.md"
+      );
       console.log("  2. Review scripts/prepareLocalModel.mjs and src/helpers/api/ragExtractor.js");
     }
     if (!query.working) {
       console.log("  1. Check network connectivity");
-      console.log("  2. Verify model files exist: npm run check:rag");
+      console.log(
+        "  2. Verify model files exist under models/minilm and consult docs/status/archive/rag-workflows.md"
+      );
       console.log("  3. Review console logs for detailed errors");
     }
     console.log("");

@@ -47,7 +47,8 @@ function getModelFileThresholds(env = process.env) {
   }));
 }
 
-const MODEL_PREP_COMMAND = "npm run rag:prepare:models -- --from-dir /path/to/minilm";
+const MODEL_PREP_COMMAND =
+  "See docs/status/archive/rag-workflows.md for the retired model hydration workflow.";
 
 function formatBytes(bytes) {
   return `${bytes}B`;
