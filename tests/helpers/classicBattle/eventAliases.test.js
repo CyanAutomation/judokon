@@ -6,6 +6,7 @@ import {
   emitBattleEventWithAliases,
   getMigrationInfo,
   disableAliases,
+  getLegacyEventDeprecation,
   isDeprecatedEventName
 } from "../../../src/helpers/classicBattle/eventAliases.js";
 
@@ -150,6 +151,22 @@ describe("Event Alias System", () => {
 
       // Restore original state
       EVENT_ALIASES["timer.roundExpired"] = originalAliases;
+    });
+  });
+
+  describe("legacy deprecation timeline", () => {
+    it("returns explicit removal schedule for managed legacy aliases", () => {
+      const info = getLegacyEventDeprecation("roundStarted");
+
+      expect(info).toEqual({
+        canonical: "state.roundStarted",
+        deprecatedSince: "2026-02",
+        removalTarget: "2026-06"
+      });
+    });
+
+    it("returns null when alias has no explicit timeline", () => {
+      expect(getLegacyEventDeprecation("roundTimeout")).toBeNull();
     });
   });
 

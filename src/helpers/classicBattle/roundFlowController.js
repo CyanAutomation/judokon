@@ -4,12 +4,13 @@ import { showRoundOutcome } from "./uiHelpers.js";
 import { isEnabled } from "../featureFlags.js";
 import { getOpponentDelay } from "./snackbar.js";
 import { getSelectionDelayOverride } from "./selectionDelayCalculator.js";
+import { EVENT_TYPES } from "./eventCatalog.js";
 
 /**
  * Bind round flow UI handlers for engine-driven events.
  *
  * @pseudocode
- * 1. Listen for `roundStarted` and forward to the round UI handler.
+ * 1. Listen for canonical `state.roundStarted` and forward to the round UI handler.
  * 2. Listen for `round.evaluated`, run UI cleanup, and surface the outcome message.
  *
  * @returns {void}
@@ -65,7 +66,7 @@ export function bindRoundFlowController() {
     } catch {}
   };
 
-  onBattleEvent("roundStarted", (event) => {
+  onBattleEvent(EVENT_TYPES.STATE_ROUND_STARTED, (event) => {
     cachedOutcome = null;
     handleRoundStartedEvent(event).catch(() => {});
   });
@@ -75,7 +76,7 @@ export function bindRoundFlowController() {
     await handleRoundResolvedEvent(event);
   });
 
-  onBattleEvent("control.state.changed", (event) => {
+  onBattleEvent(EVENT_TYPES.STATE_TRANSITIONED, (event) => {
     const toState = event?.detail?.to;
     if (toState !== "roundDisplay" && toState !== "evaluation") {
       return;

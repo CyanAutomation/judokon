@@ -14,7 +14,12 @@ import {
   roundModificationEnter
 } from "./orchestratorHandlers.js";
 import { resetGame as resetGameLocal, startRound as startRoundLocal } from "./roundManager.js";
-import { emitBattleEvent, offBattleEvent, setActiveBattleEventBus } from "./battleEvents.js";
+import {
+  emitBattleEvent,
+  emitBattleEventWithAliases,
+  offBattleEvent,
+  setActiveBattleEventBus
+} from "./battleEvents.js";
 import { setBattleStateGetter, resetEventBus } from "./eventBus.js";
 import { domStateListener, registerStateTransitionListeners } from "./stateTransitionListeners.js";
 import { getStateSnapshot } from "./battleDebug.js";
@@ -30,8 +35,10 @@ import { debugLog } from "./debugLog.js";
 import { STATS, onEngineCreated } from "../BattleEngine.js";
 import { buildClassicBattleStateTable } from "./stateTable.js";
 import { isRoundModificationOverlayEnabled } from "./roundModificationOverlay.js";
+import { EVENT_TYPES } from "./eventCatalog.js";
 
 const bridgedEngines = typeof WeakSet === "function" ? new WeakSet() : new Set();
+const engineBridgeContext = typeof WeakMap === "function" ? new WeakMap() : new Map();
 let hasRegisteredEngineBridge = false;
 
 function attachEngineEventBridge(engine) {
@@ -55,11 +62,9 @@ function attachEngineEventBridge(engine) {
       ? STATS.slice()
       : [];
 
-  on.call(engine, "roundStarted", (detail) => {
-    emitBattleEvent("round.started", {
-      roundIndex: Number(detail?.round) || 0,
-      availableStats
-    });
+  engineBridgeContext.set(engine, {
+    availableStats,
+    lastRoundIndex: 0
   });
 
   on.call(engine, "timerTick", (detail) => {
@@ -77,7 +82,7 @@ function attachEngineEventBridge(engine) {
 
   on.call(engine, "matchEnded", (detail) => {
     // Legacy handler
-    emitBattleEvent("matchOver", detail);
+    emitBattleEventWithAliases(EVENT_TYPES.STATE_MATCH_OVER, detail);
   });
 
   on.call(engine, "matchEnded", (detail) => {
@@ -89,7 +94,7 @@ function attachEngineEventBridge(engine) {
         : outcome === "matchWinOpponent"
           ? "opponent"
           : "none";
-    emitBattleEvent("match.concluded", {
+    emitBattleEventWithAliases(EVENT_TYPES.STATE_MATCH_CONCLUDED, {
       winner,
       scores: {
         player: Number(detail?.playerScore) || 0,
@@ -344,6 +349,30 @@ function resolveMachineContext(overrides, deps) {
  * 4. Emit diagnostic, readiness, and state change events.
  * 5. Mirror timer state and emit resolution events.
  */
+function emitCanonicalRoundStartedFromTransition(to) {
+  if (to !== "roundSelect") {
+    return;
+  }
+  const engine = machine?.context?.engine;
+  if (!engine) {
+    return;
+  }
+  const bridgeState = engineBridgeContext.get(engine) || {
+    availableStats: Array.isArray(STATS) ? STATS.slice() : [],
+    lastRoundIndex: 0
+  };
+  const roundIndex = Number(engine?.getRoundsPlayed?.() || 0);
+  if (!Number.isFinite(roundIndex) || roundIndex <= bridgeState.lastRoundIndex || roundIndex <= 0) {
+    return;
+  }
+  bridgeState.lastRoundIndex = roundIndex;
+  engineBridgeContext.set(engine, bridgeState);
+  emitBattleEventWithAliases(EVENT_TYPES.STATE_ROUND_STARTED, {
+    roundIndex,
+    availableStats: bridgeState.availableStats
+  });
+}
+
 function createTransitionHook(hookSet) {
   return async ({ from, to, event }) => {
     const detail = { from, to, event };
@@ -351,6 +380,7 @@ function createTransitionHook(hookSet) {
     try {
       await hookSet.onStateChange?.(detail);
     } catch {}
+    emitCanonicalRoundStartedFromTransition(to);
     emitDiagnostics(from, to, event);
     emitReadiness(from, to, event);
     emitStateChange(from, to);
@@ -522,7 +552,7 @@ function emitDiagnostics(from, to, event) {
 function emitReadiness(from, to, event) {
   if (to === "matchStart") {
     try {
-      emitBattleEvent("control.readiness.required", { for: "match" });
+      emitBattleEventWithAliases(EVENT_TYPES.CONTROL_READINESS_REQUIRED, { for: "match" });
     } catch {
       // ignore: readiness diagnostics are optional
     }
@@ -530,7 +560,7 @@ function emitReadiness(from, to, event) {
   if (event === "ready") {
     const scope = from === "matchStart" ? "match" : "round";
     try {
-      emitBattleEvent("control.readiness.confirmed", { for: scope });
+      emitBattleEventWithAliases(EVENT_TYPES.CONTROL_READINESS_CONFIRMED, { for: scope });
     } catch {
       // ignore: readiness diagnostics are optional
     }
@@ -566,7 +596,7 @@ function emitStateChange(from, to) {
 
     // Mirror timer state for tests/diagnostics
     exposeTimerStateForDebugging(context.timerState);
-    emitBattleEvent("control.state.changed", {
+    emitBattleEventWithAliases(EVENT_TYPES.STATE_TRANSITIONED, {
       from,
       to,
       context,

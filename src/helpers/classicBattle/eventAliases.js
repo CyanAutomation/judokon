@@ -1,4 +1,8 @@
 import { getBattleEventTarget } from "./battleEvents.js";
+import {
+  EVENT_ALIASES as EVENT_ALIASES_FROM_CATALOG,
+  LEGACY_EVENT_DEPRECATIONS
+} from "./eventCatalog.js";
 
 /**
  * Event Alias System for Backward-Compatible Event Migration
@@ -19,39 +23,7 @@ import { getBattleEventTarget } from "./battleEvents.js";
  * This allows multiple old names to map to the same new name during transition
  */
 export const EVENT_ALIASES = {
-  // Timer events
-  "timer.roundExpired": ["roundTimeout"],
-  "timer.countdownStarted": ["control.countdown.started", "nextRoundCountdownStarted"],
-  "timer.countdownFinished": ["countdownFinished"],
-  "timer.cooldownExpired": ["cooldown.timer.expired"],
-
-  // UI events
-  "ui.statButtonsEnabled": ["statButtons:enable"],
-  "ui.statButtonsDisabled": ["statButtons:disable"],
-  "ui.countdownStarted": ["nextRoundCountdownStarted"],
-  "ui.cardsRevealed": ["cardsRevealed"],
-
-  // State events
-  "state.matchOver": ["matchOver"],
-  "state.roundStarted": ["roundStarted", "round.started"],
-  "state.transitioned": ["control.state.changed"],
-  "state.matchConcluded": ["match.concluded"],
-
-  // Player events
-  "player.statSelected": ["statSelected"],
-  "player.selectionStalled": ["statSelectionStalled"],
-
-  // Scoreboard events
-  "scoreboard.messageShown": ["scoreboardShowMessage"],
-  "scoreboard.messageCleared": ["scoreboardClearMessage"],
-
-  // Debug events
-  "debug.panelUpdated": ["debugPanelUpdate"],
-  "debug.stateSnapshot": ["debug.state.snapshot"],
-
-  // Control events
-  "control.readinessRequired": ["control.readiness.required"],
-  "control.readinessConfirmed": ["control.readiness.confirmed"]
+  ...EVENT_ALIASES_FROM_CATALOG
 };
 
 /**
@@ -158,6 +130,7 @@ export function emitEventWithAliases(eventTarget, eventName, payload, options = 
  */
 export function getMigrationInfo(oldEventName) {
   const newName = REVERSE_EVENT_ALIASES[oldEventName];
+  const timeline = LEGACY_EVENT_DEPRECATIONS[oldEventName];
 
   if (!newName) {
     return {
@@ -171,7 +144,9 @@ export function getMigrationInfo(oldEventName) {
     isDeprecated: true,
     recommendedName: newName,
     migrationNeeded: true,
-    migrationMessage: `Update '${oldEventName}' to '${newName}'`
+    migrationMessage: `Update '${oldEventName}' to '${newName}'`,
+    removalTarget: timeline?.removalTarget,
+    deprecatedSince: timeline?.deprecatedSince
   };
 }
 
@@ -193,6 +168,19 @@ export function disableAliases(aliasesToDisable) {
   }
 }
 
+/**
+ * Get explicit deprecation timeline metadata for a legacy event alias.
+ *
+ * @param {string} eventName - Legacy alias to inspect.
+ * @returns {{canonical: string, deprecatedSince: string, removalTarget: string}|null}
+ *
+ * @pseudocode
+ * 1. Read timeline metadata from `LEGACY_EVENT_DEPRECATIONS`.
+ * 2. Return null when the alias is not explicitly scheduled.
+ */
+export function getLegacyEventDeprecation(eventName) {
+  return LEGACY_EVENT_DEPRECATIONS[eventName] || null;
+}
 /**
  * Development helper to check if event name is deprecated
  *
