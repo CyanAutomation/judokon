@@ -3287,14 +3287,18 @@ function handleBattleState(ev) {
   const currentState = document.body?.dataset?.battleState || "";
   const protectedEntryStates = new Set(["matchStart", "roundWait", "roundPrompt", "roundSelect"]);
   const machine = getMachine();
-  const machineState =
+  const machineSnapshot =
     typeof machine?.getState === "function"
       ? machine.getState()
       : (machine?.state ?? machine?.currentState ?? null);
+  const machineState =
+    machineSnapshot && typeof machineSnapshot === "object" && "value" in machineSnapshot
+      ? machineSnapshot.value
+      : machineSnapshot;
   const isDirectStateInjection =
     currentState === "waitingForMatchStart" &&
     protectedEntryStates.has(String(to || "")) &&
-    machineState !== to;
+    String(machineState ?? "") !== String(to ?? "");
 
   if (isDirectStateInjection) {
     emitBattleEvent("battle.unavailable", {

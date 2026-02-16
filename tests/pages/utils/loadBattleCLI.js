@@ -143,35 +143,18 @@ export async function loadBattleCLI(options = {}) {
         } catch {}
       });
       const getBattleEventTarget = vi.fn(() => battleBus);
-      const createBattleEventBus = vi.fn(() => {
-        const busTarget = new EventTarget();
-        return {
-          on: (type, handler) => busTarget.addEventListener(type, handler),
-          off: (type, handler) => busTarget.removeEventListener(type, handler),
-          emit: (type, detail) => busTarget.dispatchEvent(new CustomEvent(type, { detail })),
-          emitWithAliases: (type, detail) =>
-            busTarget.dispatchEvent(new CustomEvent(type, { detail })),
-          getTarget: () => busTarget,
-          resetDedupeState: () => {},
-          dispose: () => {}
-        };
-      });
-      const __resetBattleEventTarget = vi.fn(() => {
-        // Replace the bus with a fresh one so subsequent tests don't share listeners
-
-        while (true) {
-          // EventTarget does not expose listeners; callers will rebind on next import
-          break;
-        }
-      });
-      const resetBattleEventDedupeState = vi.fn();
       const createBattleEventBus = vi.fn(() => ({
         target: battleBus,
         on: (type, handler) => onBattleEvent(type, handler),
         off: (type, handler) => offBattleEvent(type, handler),
         emit: (type, detail) => emitBattleEvent(type, detail),
+        emitWithAliases: (type, detail) => emitBattleEvent(type, detail),
+        getTarget: () => battleBus,
+        resetDedupeState: () => {},
         dispose: vi.fn()
       }));
+      const __resetBattleEventTarget = vi.fn(() => {});
+      const resetBattleEventDedupeState = vi.fn();
       const setActiveBattleEventBus = vi.fn();
       const getActiveBattleEventBus = vi.fn(() => createBattleEventBus());
       return {
@@ -182,7 +165,6 @@ export async function loadBattleCLI(options = {}) {
         offBattleEvent,
         emitBattleEvent,
         getBattleEventTarget,
-        createBattleEventBus,
         __resetBattleEventTarget,
         resetBattleEventDedupeState
       };
