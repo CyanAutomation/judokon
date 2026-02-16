@@ -126,7 +126,7 @@ graph TD
 
     F -->|Add to queue| G["Queue: [msg1, msg2]"]
 
-    G --> H["Reposition:<br/>msg1 → .snackbar-top<br/>msg2 → .snackbar-bottom"]
+    G --> H["Render projection:<br/>index 0 → .snackbar-top<br/>index 1 → .snackbar-bottom"]
 
     H --> I["Animation:<br/>msg1: translateY(-56px), opacity 0.7<br/>msg2: translateY(0), opacity 1.0"]
 
@@ -138,7 +138,7 @@ graph TD
 
     L --> M["Queue: [msg2]"]
 
-    M --> N["Reposition:<br/>msg2 → .snackbar-bottom<br/>Opacity: 1.0"]
+    M --> N["Render projection:<br/>index 0 → .snackbar-bottom<br/>Opacity: 1.0"]
 
     N --> O["⏱️ msg2 timer<br/>continues"]
 
@@ -155,46 +155,36 @@ graph TD
     style R fill:#lightblue
 ```
 
-**Snackbar Individual Lifecycle State Machine**:
+**Snackbar Individual Behavioral Lifecycle**:
 
 ```mermaid
 stateDiagram-v2
-    [*] -->|showSnackbar(msg)| Creating: Creating
+    [*] --> Created: showSnackbar(msg)
 
-    Creating: 📝 Message object<br/>created with unique ID<br/>Added to queue
+    Created: 📝 Message created<br/>Assigned ID and queued
 
-    Creating --> Queueing: Add to messageQueue
+    Created --> Visible: render projection
 
-    Queueing: ⏳ Awaiting render<br/>(next frame)
+    Visible: 👁️ Displayed to user<br/>Timer active<br/>aria-live announces text
 
-    Queueing --> Rendering: renderQueue() called
+    Visible --> Dismissing: timer
+    Visible --> Dismissing: overflow
+    Visible --> Dismissing: manual dismiss
+    Visible --> Dismissing: update policy
 
-    Rendering: 📋 DOM updated<br/>Position applied<br/>CSS classes set
+    Dismissing: 🔴 Pending removal<br/>Exit animation may run
 
-    Rendering --> FadeIn: Trigger animation
+    Dismissing --> Removed: removal commit
 
-    FadeIn: 👁️ Fade-in 250ms<br/>ease-out<br/>opacity 0 → 1
-
-    FadeIn --> Visible: ✅ Visible
-
-    Visible: 👁️ Message displayed<br/>Timer running (3000ms)<br/>aria-live announces text
-
-    Visible --> Dismissing: Timer expires<br/>OR updateSnackbar()<br/>OR third message arrives
-
-    Dismissing: 🔴 Marked for removal
-
-    Dismissing --> FadeOut: Trigger animation
-
-    FadeOut: 👁️ Fade-out 250ms<br/>ease-in<br/>opacity 1 → 0
-
-    FadeOut --> Removed: Remove from DOM<br/>Remove from queue
+    Removed: ✅ Detached from DOM<br/>Removed from queue
 
     Removed --> [*]
 
     note right of Visible
-        3000ms timer
-        Independent of other
-        snackbars in queue
+        Transition triggers:
+        timer, overflow,
+        manual dismiss,
+        update policy
     end note
 ```
 
