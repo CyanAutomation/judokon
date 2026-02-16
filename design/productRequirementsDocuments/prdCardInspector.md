@@ -74,6 +74,80 @@ This problem is pressing because:
 
 ---
 
+## Feature Workflow Diagrams
+
+### 6.6.1: Card Inspector Initialization Flow
+
+```mermaid
+flowchart TD
+    A[User Opens Settings] -->|Click Toggle| B[Enable Card Inspector]
+    B -->|Save Setting| C[Query All Cards]
+    C -->|Load judoka.json| D[Inject JSON Panels]
+    D -->|Set data-inspector=true| E[Cards Show Details]
+    E -->|Click Collapse| F[Panel Collapses]
+    F -->|Remove Attribute| G[Ready for Next]
+    
+    style A fill:#lightblue
+    style B fill:#lightgreen
+    style C fill:#lightyellow
+    style D fill:#lightblue
+    style E fill:#lightgreen
+    style F fill:#lightsalmon
+    style G fill:#lightgray
+```
+
+**Inspector Initialization Process:**
+The inspector panel lifecycle starts when users enable the toggle in Settings. The feature queries all visible judoka cards, injects formatted JSON panels, and manages panel state through disclosure toggles. Disabling the toggle removes all panels instantly.
+
+### 6.6.2: Panel State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> Hidden
+    Hidden -->|User Clicks Disclosure| Expanding
+    Expanding -->|Animation Ends| Expanded
+    Expanded -->|set data-inspector=true| Expanded
+    Expanded -->|User Clicks Disclosure| Collapsing
+    Collapsing -->|Animation Ends| Hidden
+    Hidden -->|Toggle OFF| Disabled
+    Disabled -->|Toggle ON| Hidden
+    
+    style Hidden fill:#lightyellow
+    style Expanding fill:#lightyellow
+    style Expanded fill:#lightgreen
+    style Collapsing fill:#lightsalmon
+    style Disabled fill:#lightgray
+```
+
+**Panel State Transitions:**
+Each JSON panel operates independently through a state machine managing expansion/collapse and error states. Panels start collapsed, animate smoothly on interaction, and mirror the toggle's enabled/disabled state.
+
+### 6.6.3: Error Handling & Fallback Strategy
+
+```mermaid
+flowchart LR
+    A[Card Data Request] -->|Valid JSON?| B{Check Format}
+    B -->|Yes| C[Format & Display]
+    B -->|No| D[Catch Error]
+    C --> E[Show Panel]
+    D --> F["Show: 'Invalid card data'"]
+    E -->|Click Disclosure| G[Toggle State]
+    F -->|Attempts Remaining| A
+    
+    style A fill:#lightblue
+    style B fill:#lightyellow
+    style C fill:#lightgreen
+    style D fill:#lightsalmon
+    style E fill:#lightgreen
+    style F fill:#lightsalmon
+    style G fill:#lightblue
+```
+
+**Error Handling Process:**
+When card data is corrupted or malformed, the inspector shows a user-friendly fallback message instead of crashing. JSON parsing is wrapped in try/catch to gracefully degrade while allowing other panels to render normally.
+
+---
+
 ## Acceptance Criteria
 
 - Inspector toggle appears in Settings, labeled "Card Inspector", default OFF

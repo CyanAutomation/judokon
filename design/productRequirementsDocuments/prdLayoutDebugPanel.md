@@ -46,6 +46,119 @@ Developers and designers frequently face challenges when diagnosing layout misal
 - Invalid selectors trigger a non-blocking warning.
 - No UI flickering occurs during toggling.
 
+---
+
+## Debug Panel Workflow Diagrams
+
+### 6.12.1: Layout Debug Panel Toggle & Activation
+
+```mermaid
+flowchart TD
+    A[User Opens Settings] -->|Dev User?| B{Authorized?}
+    B -->|No| C[Hide Toggle]
+    B -->|Yes| D[Show Toggle]
+    D -->|Click ON| E[Apply Outlines]
+    E -->|Select body \*| F[Query All Elements]
+    F --> G[Apply 1px Red Dashed]
+    G -->|Inject Styles| H[Visual Feedback]
+    H -->|Show Input| I[Custom Selector Ready]
+    
+    D -->|Click OFF| J[Remove Outlines]
+    J -->|Query Applied| K[Clean DOM]
+    K -->|No Flicker| L[Reset]
+    
+    I -->|User Input| M{Valid Selector?}
+    M -->|Yes| N[Query Matches]
+    M -->|No| O[Show Warning]
+    N --> P{Matches Found?}
+    P -->|Yes| Q[Outline Elements]
+    P -->|No| R[Show Message]
+    
+    style A fill:#lightblue
+    style B fill:#lightyellow
+    style D fill:#lightgreen
+    style E fill:#lightyellow
+    style H fill:#lightgreen
+    style J fill:#lightsalmon
+    style K fill:#lightgreen
+    style M fill:#lightyellow
+    style O fill:#lightsalmon
+    style Q fill:#lightgreen
+    style R fill:#lightyellow
+```
+
+**Panel Activation & Authorization:**
+The layout debug panel only appears for dev users or authorized roles. When enabled, all visible elements receive a 1px dashed red outline instantly. When disabled, all outlines and injected styles are cleaned without browser flicker. Authorization is checked before rendering the toggle.
+
+### 6.12.2: Custom Selector Validation & Error Handling
+
+```mermaid
+flowchart LR
+    A["User Input<br/>CSS Selector"] --> B[Validate Syntax]
+    B -->|Valid| C[Query Elements]
+    B -->|Invalid| D["Warn: Invalid<br/>Selector"]
+    
+    C -->|querySelectorAll| E{Matches?}
+    E -->|Yes| F["Count Matches"]
+    E -->|No| G["Msg: No Elements<br/>Matched"]
+    
+    F -->|>0| H[Apply Outlines]
+    F -->|=0| G
+    
+    H -->|All Match| I["Outline Color:<br/>Red #FF0000"]
+    I --> J["Non-Disruptive:<br/>No Interaction Block"]
+    
+    G --> K[Clear Outlines]
+    D --> K
+    K -->|Ready| L[Accept New Input]
+    
+    style A fill:#lightblue
+    style B fill:#lightyellow
+    style C fill:#lightyellow
+    style D fill:#lightsalmon
+    style E fill:#lightyellow
+    style F fill:#lightyellow
+    style G fill:#lightsalmon
+    style H fill:#lightgreen
+    style I fill:#lightgreen
+    style J fill:#lightgreen
+    style K fill:#lightgray
+```
+
+**Selector Validation Pipeline:**
+Custom CSS selectors are validated for correct syntax before querying the DOM. Invalid selectors trigger non-blocking warnings. Valid selectors query the document and outline all matching elements with 1px red dashed borders that don't interfere with pointer events or UI interaction.
+
+### 6.12.3: Performance & Cleanup on Disable
+
+```mermaid
+stateDiagram-v2
+    [*] --> Disabled
+    Disabled -->|Toggle ON| Enabled
+    Enabled: Apply Styles
+    Enabled: Query Elements
+    Enabled --> CustomInput
+    CustomInput: Accept CSS Input
+    CustomInput -->|Input Change| Refresh
+    Refresh: Re-Query Elements
+    Refresh --> CustomInput
+    Enabled -->|Toggle OFF| Cleaning
+    Cleaning: Remove All Outlines
+    Cleaning: Clear Injected Styles
+    Cleaning: No Memory Leak
+    Cleaning --> Disabled
+    
+    style Disabled fill:#lightgray
+    style Enabled fill:#lightgreen
+    style CustomInput fill:#lightblue
+    style Refresh fill:#lightyellow
+    style Cleaning fill:#lightsalmon
+```
+
+**Performance & Cleanup Management:**
+When disabled, all outlines and injected styles are completely removed with no memory leaks. Rapid toggling is debounced to prevent flicker and ensure only the latest toggle state is respected. Zero performance degradation when the debug panel is off.
+
+---
+
 ## Acceptance Criteria
 
 - Toggling the switch in Settings immediately adds or removes outlines on all visible elements.

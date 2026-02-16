@@ -40,7 +40,135 @@ Designers and developers previously relied on scattered folder structures to fin
 | P2       | Responsive Layout   | Adapts layout for desktop, tablet, and mobile                |
 | P3       | Visual Effects      | Fade-in effect on image transitions                          |
 | P3       | Exit Functionality  | “Close” button with keyboard focus management                |
+---
 
+## Mockup Viewer Workflow Diagrams
+
+### 6.13.1: Image Carousel Navigation Flow
+
+```mermaid
+flowchart TD
+    A[Mockup Viewer Loads] -->|Load Directory| B["Get All Mockup<br/>File List"]
+    B -->|Parse Names| C[Sort Files]
+    C -->|Display| D["Show Sidebar:<br/>All Files"]
+    D -->|Render| E["Display First<br/>Mockup"]
+    E -->|Filename| F["Show Caption"]
+    
+    G[User Navigation] -->|Click Next| H{At End?}
+    G -->|Press Right| H
+    H -->|No| I[Load Next]
+    H -->|Yes| J[Wrap to First]
+    
+    K[User Navigation] -->|Click Prev| L{At Start?}
+    K -->|Press Left| L
+    L -->|No| M[Load Previous]
+    L -->|Yes| N[Wrap to Last]
+    
+    I -->|Preload File| O[Fade In]
+    J -->|Preload File| O
+    M -->|Preload File| O
+    N -->|Preload File| O
+    O -->|Update Caption| P[Ready for Next]
+    
+    style A fill:#lightblue
+    style C fill:#lightyellow
+    style E fill:#lightgreen
+    style F fill:#lightyellow
+    style H fill:#lightyellow
+    style I fill:#lightgreen
+    style J fill:#lightgreen
+    style O fill:#lightgreen
+    style P fill:#lightgreen
+```
+
+**Navigation & Carousel Logic:**
+The viewer loads all mockups from the directory into a sidebar list. Clicking or keyboard navigation (next/previous) cyclically moves through mockups. Adjacent images are preloaded to reduce wait times. Navigation wraps around at ends for seamless browsing.
+
+### 6.13.2: Sidebar Selection & File List Interaction
+
+```mermaid
+stateDiagram-v2
+    [*] --> SidebarReady
+    SidebarReady: File List Visible
+    SidebarReady: 100% Keyboard Nav
+    SidebarReady -->|User Clicks File| Selecting
+    SidebarReady -->|User Tabs| Tabbing
+    
+    Tabbing: Focus Moves
+    Tabbing -->|Enter/Space| Selecting
+    Tabbing --> SidebarReady
+    
+    Selecting: File Highlighted
+    Selecting: Load Image
+    Selecting --> Loading
+    
+    Loading: ~300ms Fade
+    Loading -->|Load Complete| Displaying
+    
+    Displaying: Image Center
+    Displaying: Filename Below
+    Displaying: Ready for Next
+    Displaying -->|Click Different| Selecting
+    Displaying -->|Press Close| Exiting
+    
+    Exiting: Return to Home
+    Exiting --> [*]
+    
+    style SidebarReady fill:#lightgreen
+    style Selecting fill:#lightblue
+    style Loading fill:#lightyellow
+    style Displaying fill:#lightgreen
+    style Exiting fill:#lightsalmon
+```
+
+**Sidebar & File Selection States:**
+The sidebar list remains visible during viewing, allowing direct file selection. Full keyboard navigation (TAB, arrow keys, ENTER/SPACE) ensures accessibility. Selected files fade in over ~300ms. The close button always remains accessible for exiting.
+
+### 6.13.3: Accessibility & Responsive Layout
+
+```mermaid
+flowchart LR
+    A[Viewer Loads] -->|Screen Size| B{Width?}
+    B -->|>600px| C[Desktop Layout]
+    B -->|≤600px| D[Mobile Stack]
+    
+    C -->|Fixed Left| C1[Sidebar]
+    C -->|Center| C2[Image]
+    C1 -->|35%| C3[Zebra Stripe]
+    C2 -->|65%| C4[Centered Image]
+    
+    D -->|Stack| D1[Sidebar Top]
+    D -->|Stack| D2[Image Below]
+    
+    C3 -->|Scroll Independent| C5[Content Scrolls]
+    C4 -->|Scrolls| C5
+    
+    E[Accessibility] -->|ARIA| F[aria-label]
+    E -->|Keyboard| G[TAB/Arrows/Enter]
+    E -->|Focus| H[Visible Focus Ring]
+    E -->|Screen Reader| I[Semantic HTML]
+    
+    F --> J["✅ Accessible"]
+    G --> J
+    H --> J
+    I --> J
+    
+    style A fill:#lightblue
+    style B fill:#lightyellow
+    style C fill:#lightgreen
+    style D fill:#lightgreen
+    style C1 fill:#lightyellow
+    style C2 fill:#lightyellow
+    style D1 fill:#lightyellow
+    style D2 fill:#lightyellow
+    style E fill:#lightblue
+    style J fill:#lightgreen
+```
+
+**Responsive Design & Accessibility:**
+Desktop layout displays sidebar (35%) and image (65%) side-by-side; mobile stacks them vertically. Sidebar scrolls independently from main content. All controls support full keyboard navigation with visible focus states. ARIA labels and semantic HTML ensure screen reader compatibility.
+
+---
 ## Acceptance Criteria
 
 - Given the page loads, when the viewer opens, then the first mockup and its filename are visible.

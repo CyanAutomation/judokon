@@ -38,6 +38,115 @@ Players currently lack a tangible sense of progression and connection to elite j
 
 ---
 
+## Card Component Architecture Diagrams
+
+### 6.11.1: Judoka Card Layout & Component Hierarchy
+
+```mermaid
+graph TD
+    A["Judoka Card Container<br/>2:3 Aspect Ratio"] --> B["Card Border<br/>Rarity Color"]
+    B --> C["Portrait Section<br/>object-fit: cover"]
+    B --> D["Info Section"]
+    C --> C1["Judoka Portrait<br/>Lazy Loaded"]
+    C --> C2["Weight Class Badge<br/>Top-Right"]
+    D --> D1["Header Row"]
+    D --> D2["Stats Grid"]
+    D --> D3["Signature Move"]
+    D1 --> D1a["Name: First+Surname"]
+    D1 --> D1b["Flag Icon"]
+    D2 --> D2a["Power: 0-10"]
+    D2 --> D2b["Speed: 0-10"]
+    D2 --> D2c["Technique: 0-10"]
+    D2 --> D2d["Kumi-kata: 0-10"]
+    D2 --> D2e["Ne-waza: 0-10"]
+    D3 --> D3a["Move Name Text"]
+    
+    style A fill:#lightblue
+    style B fill:#lightyellow
+    style C fill:#lightblue
+    style D fill:#lightblue
+    style C1 fill:#lightyellow
+    style C2 fill:#lightyellow
+    style D1 fill:#lightyellow
+    style D2 fill:#lightyellow
+    style D3 fill:#lightyellow
+```
+
+**Card Structure Breakdown:**
+Each judoka card divides into portrait and info sections within a 2:3 container. The portrait uses lazy loading and object-fit for responsive sizing. The info section layers name, flag, weight class, stats, and signature move with consistent typography and spacing.
+
+### 6.11.2: Rarity-Based Styling & Visual Hierarchy
+
+```mermaid
+graph LR
+    A[Card Rarity] --> B{Type?}
+    B -->|Common| C["Border: Blue<br/>#0066CC"]
+    B -->|Rare| D["Border: Red<br/>#CC0000"]
+    B -->|Legendary| E["Border: Gold<br/>#FFD700"]
+    
+    C --> F["Background<br/>Subtle Tint"]
+    D --> F
+    E --> F
+    
+    F --> G["Stats Display<br/>Readable Layout"]
+    G --> H["Portrait<br/>High Contrast"]
+    H --> I["Name & Move<br/>Clear Font"]
+    
+    J["Animation on Load"] --> K["Slide + Fade<br/>400ms Duration"]
+    K --> L["respects<br/>Reduce Motion"]
+    
+    style A fill:#lightblue
+    style B fill:#lightyellow
+    style C fill:#lightgreen
+    style D fill:#lightgreen
+    style E fill:#lightgreen
+    style G fill:#lightgreen
+    style H fill:#lightgreen
+    style I fill:#lightgreen
+    style K fill:#lightyellow
+    style L fill:#lightyellow
+```
+
+**Rarity Visual System:**
+Rarity determines the card border color (blue/red/gold), which establishes the visual hierarchy and collectibility feel. All text maintains WCAG AA contrast (≥4.5:1) for accessibility. Slide animations complete within 400ms and respect user motion preferences for comfortable viewing.
+
+### 6.11.3: Responsive Design & Scaling Constraints
+
+```mermaid
+stateDiagram-v2
+    [*] --> Mobile
+    Mobile: Max Width 100%
+    Mobile: Stack Layout
+    Mobile --> Tablet
+    
+    Tablet: Width 50-70%
+    Tablet: Full Layout
+    Tablet --> Desktop
+    
+    Desktop: Width 300px
+    Desktop: 2:3 Ratio
+    Desktop --> Hover
+    
+    Hover: Scale ≤1.05x
+    Hover: No Clipping
+    Hover -->|Scaled| Focus
+    
+    Focus: Visible Focus Ring
+    Focus: Keyboard Accessible
+    Focus --> [*]
+    
+    style Mobile fill:#lightyellow
+    style Tablet fill:#lightyellow
+    style Desktop fill:#lightgreen
+    style Hover fill:#lightblue
+    style Focus fill:#lightgreen
+```
+
+**Responsive Scaling & Accessibility:**
+Cards maintain 2:3 aspect ratio across all device sizes. Hover/focus scaling stays ≤1.05x to prevent clipping in scroll containers. Cards scale proportionally on mobile, tablet, and desktop while preserving readability and interaction targets (minimum 44px tap areas).
+
+---
+
 ## Acceptance Criteria
 
 - Given a player draws or browses a judoka card, when the card is displayed, then it shows the correct portrait, stats, nationality flag, rarity border, and signature move.

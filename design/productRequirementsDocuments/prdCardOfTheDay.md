@@ -45,6 +45,98 @@ Currently, the JU-DO-KON! landing screen lacks dynamic content, making repeat vi
 
 ---
 
+## Feature Workflow Diagrams
+
+### 6.7.1: Card of the Day Selection & Rotation Logic
+
+```mermaid
+flowchart TD
+    A[Landing Screen Loads] -->|Check Setting| B{Toggle Enabled?}
+    B -->|No| C[Skip Feature]
+    B -->|Yes| D{Manual Override?}
+    D -->|Yes| E[Use Override cardID]
+    D -->|No| F[Generate Date Seed]
+    F -->|Hash Today's Date| G[Select from Card Pool]
+    E --> H[Load Card JSON]
+    G --> H
+    H -->|Validate ID| I{Valid Card?}
+    I -->|Yes| J[Render Card]
+    I -->|No| K[Show Placeholder]
+    J -->|Add Animation| L[Display on Landing]
+    K -->|Add Animation| L
+    L -->|Tomorrow| A
+    
+    style A fill:#lightblue
+    style B fill:#lightyellow
+    style D fill:#lightyellow
+    style F fill:#lightgreen
+    style H fill:#lightblue
+    style J fill:#lightgreen
+    style K fill:#lightsalmon
+    style L fill:#lightgreen
+```
+
+**Daily Rotation Process:**
+The system uses a deterministic seed (today's date hash) to select a different featured card each day. Manual override allows admins to pin specific cards for campaigns. The feature validates card IDs before rendering and falls back to placeholder if needed.
+
+### 6.7.2: Navigation & Clickthrough Interaction
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle
+    Idle -->|showCardOfTheDay=true| Rendering
+    Rendering -->|Card Loaded| Displayed
+    Displayed -->|User Hovers| Highlighted
+    Highlighted -->|User Clicks| Navigating
+    Navigating -->|Profile/Modal Loads| Viewing
+    Viewing -->|User Closes| Idle
+    Idle -->|showCardOfTheDay=false| Hidden
+    Hidden -->|Toggle ON| Idle
+    
+    style Idle fill:#lightyellow
+    style Rendering fill:#lightyellow
+    style Displayed fill:#lightgreen
+    style Highlighted fill:#lightblue
+    style Navigating fill:#lightgreen
+    style Viewing fill:#lightgreen
+    style Hidden fill:#lightgray
+```
+
+**Card Display & Interaction States:**
+The featured card cycles through display, hover, and navigation states. Visual feedback (subtle glow/animation) distinguishes it from static elements. Clicking navigates to the card's full profile or modal without leaving the landing screen.
+
+### 6.7.3: Setting & Fallback Strategy
+
+```mermaid
+flowchart LR
+    A[User Settings Check] -->|showCardOfTheDay| B{Toggle Value}
+    B -->|true| C[Load Feature]
+    B -->|false| D[Hide Feature]
+    C -->|Check Config| E{Override Set?}
+    E -->|Yes| F[Use featuredCardID]
+    E -->|No| G[Use Rotation Logic]
+    F -->|Validate ID| H{ID Valid?}
+    G -->|Generate Seed| H
+    H -->|Yes| I[Render Card]
+    H -->|No| J[Display Placeholder]
+    D -->|Clear UI| K[No Visual Gap]
+    
+    style A fill:#lightblue
+    style B fill:#lightyellow
+    style C fill:#lightgreen
+    style D fill:#lightgray
+    style F fill:#lightblue
+    style G fill:#lightyellow
+    style I fill:#lightgreen
+    style J fill:#lightsalmon
+    style K fill:#lightgray
+```
+
+**Settings & Fallback Management:**
+The feature gracefully handles disabled state, invalid card IDs, and missing configuration. All loading errors show fallback content without breaking the landing screen layout or causing visual gaps.
+
+---
+
 ## Acceptance Criteria
 
 - `showCardOfTheDay` toggle appears under General Settings and can be turned on/off without reloading the page.

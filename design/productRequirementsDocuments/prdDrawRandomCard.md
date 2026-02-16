@@ -137,6 +137,106 @@ instantly without movement.
 
 ---
 
+## Feature Workflow Diagrams
+
+### 6.10.1: Random Card Draw State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> IDLE
+    IDLE -->|User Taps Draw| DRAWING
+    DRAWING: Button Disabled
+    DRAWING: Show Loading
+    DRAWING --> SUCCESS: Card Ready
+    DRAWING --> ERROR: Random Failed
+    SUCCESS: Animation Playing
+    SUCCESS -->|Animation Ends| IDLE
+    ERROR: Fallback Shown
+    ERROR -->|User Retry| IDLE
+    ERROR -->|Exit| [*]
+    IDLE -->|Exit| [*]
+    
+    style IDLE fill:#lightgreen
+    style DRAWING fill:#lightyellow
+    style SUCCESS fill:#lightgreen
+    style ERROR fill:#lightsalmon
+```
+
+**Draw Button State Lifecycle:**
+The draw mechanism operates through a 4-state machine: IDLE (button ready), DRAWING (disabled/loading), SUCCESS (animation playing), and ERROR (fallback card shown). This ensures preventing double-taps and maintaining UI consistency throughout the card reveal process.
+
+### 6.10.2: Card Generation & Selection Flow
+
+```mermaid
+flowchart TD
+    A[User Taps Draw] -->|Trigger generateRandomCard| B[Load Active Set]
+    B -->|Filter isActive=true| C{Cards Available?}
+    C -->|Yes| D[Use crypto.getRandomValues]
+    C -->|No| E[Load Fallback]
+    D --> F[Random Index Select]
+    F --> G[Get Card JSON]
+    E --> G
+    G -->|generateJudokaCardHTML| H[Build DOM]
+    H --> I[Apply animate-card]
+    I -->|Check Reduce Motion| J{Motion Disabled?}
+    J -->|Yes| K[Display Instantly]
+    J -->|No| L[Play Animation]
+    K --> M[Reveal Complete]
+    L --> M
+    
+    style A fill:#lightblue
+    style B fill:#lightyellow
+    style C fill:#lightyellow
+    style D fill:#lightyellow
+    style F fill:#lightgreen
+    style G fill:#lightblue
+    style H fill:#lightyellow
+    style I fill:#lightyellow
+    style J fill:#lightyellow
+    style K fill:#lightgreen
+    style L fill:#lightgreen
+    style M fill:#lightgreen
+```
+
+**Card Generation Pipeline:**
+The system loads the active card set (excluding hidden cards), uses cryptographically secure randomness to select a card, generates HTML from the judoka.json entry, and applies reveal animations while respecting Reduced Motion preferences. Fallback card (id=0) loads on any selection failure.
+
+### 6.10.3: Animation & Accessibility Handling
+
+```mermaid
+flowchart LR
+    A[Card Ready] --> B{Reduce Motion?}
+    B -->|Disabled| C["Play Animation<br/>Fade + Slide"]
+    B -->|Enabled| D[Display Instantly]
+    C -->|400ms Duration| E[Animation Ends]
+    D --> E
+    E --> F{Debounce OK?}
+    F -->|Yes| G[Allow Next Draw]
+    F -->|No| H[Wait Debounce]
+    H --> G
+    
+    I[Error Occurs] -->|Parse Failure| J[Show Fallback]
+    I -->|Empty Set| J
+    J --> K[Error Toast]
+    K --> G
+    
+    style A fill:#lightblue
+    style B fill:#lightyellow
+    style C fill:#lightgreen
+    style D fill:#lightgreen
+    style E fill:#lightgreen
+    style F fill:#lightyellow
+    style G fill:#lightgreen
+    style I fill:#lightsalmon
+    style J fill:#lightsalmon
+    style K fill:#lightsalmon
+```
+
+**Animation & Debounce Protection:**
+Reveal animations (fade + slide, 400ms) respect system Reduced Motion settings for accessibility. Debouncing prevents rapid repeated taps from triggering multiple draws simultaneously. Error handling shows fallback card without crashing, logs failures for debugging, and re-enables the draw button for retry.
+
+---
+
 ## Acceptance Criteria
 
 - When “Draw Card” is triggered, a random card from the active set is displayed.

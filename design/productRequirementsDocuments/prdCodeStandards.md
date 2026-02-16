@@ -18,6 +18,113 @@ Inconsistent code standards lead to unclear public API contracts, brittle tests,
 - As a code reviewer, I want clear rules about public API documentation so I can enforce them consistently.
 - As an AI agent, I want a machine-readable list of constraints (e.g., no `await import()` in hot paths).
 
+## Standards Enforcement Diagrams
+
+### 6.9.1: Code Review Standards Validation Pipeline
+
+```mermaid
+flowchart TD
+    A[PR Submitted] -->|Hook| B[Lint Check]
+    B -->|eslint| C{Errors?}
+    C -->|Yes| D[Fail: Fix Lint]
+    C -->|No| E[JSDoc Check]
+    E -->|@pseudocode| F{Complete?}
+    F -->|No| G[Fail: Add Docs]
+    F -->|Yes| H[Hot-Path Check]
+    H -->|await import| I{Violations?}
+    I -->|Yes| J[Fail: Use Static]
+    I -->|No| K[Test Coverage]
+    K -->|Happy+Edge| L{≥80%?}
+    L -->|No| M[Fail: Add Tests]
+    L -->|Yes| N[PASS: Merge]
+    
+    style A fill:#lightblue
+    style B fill:#lightyellow
+    style E fill:#lightyellow
+    style H fill:#lightyellow
+    style K fill:#lightyellow
+    style D fill:#lightsalmon
+    style G fill:#lightsalmon
+    style J fill:#lightsalmon
+    style M fill:#lightsalmon
+    style N fill:#lightgreen
+```
+
+**Standards Validation Pipeline:**
+Every PR submission triggers automated checks: linting for syntax/style, JSDoc for public API documentation (@pseudocode tags), import policy for hot paths (no dynamic imports), and test coverage requirements. All checks must pass before merge.
+
+### 6.9.2: Public API Documentation Requirements
+
+```mermaid
+graph LR
+    A["Public Function"] --> B["Requires JSDoc"]
+    B --> C["@param Docs"]
+    B --> D["@returns Type"]
+    B --> E["@pseudocode"]
+    B --> F["Side-Effects"]
+    
+    C -->|Type+Desc| G["Complete Spec"]
+    D -->|Return Type| G
+    E -->|Algorithm| G
+    F -->|State Changes| G
+    
+    G --> H["CI Validation"]
+    H -->|Pass| I["✅ Ready"]
+    H -->|Fail| J["❌ Missing Tags"]
+    
+    style A fill:#lightblue
+    style B fill:#lightgreen
+    style C fill:#lightyellow
+    style D fill:#lightyellow
+    style E fill:#lightyellow
+    style F fill:#lightyellow
+    style G fill:#lightgreen
+    style I fill:#lightgreen
+    style J fill:#lightsalmon
+```
+
+**API Documentation Checklist:**
+All public functions (exported from modules) must include complete JSDoc with @pseudocode blocks describing the algorithm and @param/@returns documenting inputs/outputs. Side-effects and state mutations must be explicitly documented for clarity and maintainability.
+
+### 6.9.3: Hot-Path Import Policy & Rule Enforcement
+
+```mermaid
+flowchart TD
+    A["Check Import Pattern"] --> B{Static or Await?}
+    B -->|Static Import| C{Hot Path?}
+    B -->|Await Import| D{Hot Path?}
+    
+    C -->|Yes| E["✅ Allowed"]
+    C -->|No| F["✅ Allowed"]
+    
+    D -->|Yes| G["❌ BLOCKED"] 
+    D -->|No| H{Has Preload?}
+    
+    H -->|Yes| I["⚠️ Review"]
+    H -->|No| J["✅ Allowed"]
+    
+    G --> K["Fail: Use Static"]
+    I --> L["Document Rationale"]
+    
+    style A fill:#lightblue
+    style B fill:#lightyellow
+    style C fill:#lightyellow
+    style D fill:#lightyellow
+    style E fill:#lightgreen
+    style F fill:#lightgreen
+    style G fill:#lightsalmon
+    style H fill:#lightyellow
+    style I fill:#lightyellow
+    style J fill:#lightgreen
+    style K fill:#lightsalmon
+    style L fill:#lightyellow
+```
+
+**Hot-Path Import Restrictions:**
+Hot-path files (battle engine, stat selection, render loops) must use static imports to guarantee deterministic load times. Dynamic imports are blocked on hot paths; optional heavy modules use preload strategies instead. This ensures consistent <300ms performance targets.
+
+---
+
 ## Prioritized Functional Requirements
 
 P1 - Public API Documentation Rule: All public functions must include `@pseudocode` in JSDoc and a short description of side-effects.
