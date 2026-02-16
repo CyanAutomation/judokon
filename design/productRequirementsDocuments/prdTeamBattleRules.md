@@ -40,6 +40,39 @@ Players enjoy forming teams of favorite judoka, but rules vary between modes and
 
 ---
 
+## Canonical Team Battle Variant Overlay Diagram
+
+> **Diagram source of truth:** Keep this Mermaid diagram canonical in this file (`prdTeamBattleRules.md`) and mirror it unchanged in `prdTeamBattleMale.md`, `prdTeamBattleFemale.md`, and `prdTeamBattleMixed.md` to prevent drift.
+
+```mermaid
+graph LR
+    Base["Base Team Battle Rules\nSource: prdTeamBattleRules.md"]
+    SharedFlow["Shared bout flow\nSequential 1v1 bouts + 1 point per win"]
+    SharedWin["Shared win condition\nFirst team to reach team-size score wins"]
+
+    Base --> SharedFlow
+    Base --> SharedWin
+
+    Male["Team Battle (Male)\nMode ID: 4\nEntry page: teamBattleMale.html"]
+    Female["Team Battle (Female)\nMode ID: 5\nEntry page: teamBattleFemale.html"]
+    Mixed["Team Battle (Mixed)\nMode ID: 6\nEntry page: teamBattleMixed.html"]
+
+    SharedFlow --> Male
+    SharedFlow --> Female
+    SharedFlow --> Mixed
+    SharedWin --> Male
+    SharedWin --> Female
+    SharedWin --> Mixed
+
+    MaleRoster["Roster constraint: male only\nTeam size: 5"]
+    FemaleRoster["Roster constraint: female only\nTeam size: 5"]
+    MixedRoster["Roster constraint: male + female allowed\nTeam size: 6"]
+
+    Male --> MaleRoster
+    Female --> FemaleRoster
+    Mixed --> MixedRoster
+```
+
 ## Team Battle Bout Sequence & Scoring
 
 ```mermaid
