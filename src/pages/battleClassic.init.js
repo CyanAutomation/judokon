@@ -1565,7 +1565,10 @@ function wireControlButtons(store) {
   }
 
   bindControlDelegation(controlRoot, {
-    onNext: (event) => onNextButtonClick(event, getNextRoundControls(), activeStore),
+    onNext: (event) => {
+      const controls = getNextRoundControls();
+      return onNextButtonClick(event, controls, activeStore);
+    },
     onReplay: async () => {
       stopActiveSelectionTimer();
       STATE.isStartingRoundCycle = false;
