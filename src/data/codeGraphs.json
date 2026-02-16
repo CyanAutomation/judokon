@@ -3585,27 +3585,6 @@
         }
       }
     },
-    "src/helpers/snippetFormatter.js": {
-      "imports": ["./utils.js"],
-      "functions": {
-        "highlightTerms": {
-          "calls": ["escapeHTML", "isArray", "map", "replace", "join"],
-          "patterns": []
-        },
-        "createSnippetElement": {
-          "calls": [
-            "createElement",
-            "add",
-            "trimEnd",
-            "slice",
-            "highlightTerms",
-            "appendChild",
-            "setAttribute"
-          ],
-          "patterns": ["factory"]
-        }
-      }
-    },
     "src/helpers/signatureMove.js": {
       "imports": [],
       "functions": {

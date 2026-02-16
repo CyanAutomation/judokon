@@ -1,4 +1,10 @@
-import { escapeHTML } from "./utils.js";
+/**
+ * Archived experimental helper.
+ *
+ * This file is intentionally stored outside runtime paths and is not imported by the app.
+ */
+
+import { escapeHTML } from "../../../src/helpers/utils.js";
 
 /**
  * Maximum number of characters to show before truncating match text.
