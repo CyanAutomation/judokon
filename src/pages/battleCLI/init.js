@@ -2530,10 +2530,11 @@ export function handleIntent(intent) {
       return handled || rejectIntent("intent.notAllowedInState");
     }
     if (intent.control === "continue") {
-      const handled = handleRoundOverKey("enter");
-      if (handled) return true;
+      const roundDisplayHandled = handleRoundOverKey("enter");
+      if (roundDisplayHandled) return true;
       const cooldownHandled = handleCooldownKey("enter");
-      return cooldownHandled || rejectIntent("intent.notAllowedInState");
+      if (cooldownHandled) return true;
+      return rejectIntent("intent.notAllowedInState");
     }
     return rejectIntent("intent.unknownControl");
   }
