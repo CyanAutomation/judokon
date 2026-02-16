@@ -62,11 +62,15 @@ vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
   })
 }));
 
-vi.mock("../../../src/config/constants.js", () => ({
-  BATTLE_EVENTS: {},
-  ROUND_DURATION_SECONDS: 1,
-  STAT_SELECTION_DURATION_SECONDS: 1
-}));
+vi.mock("../../../src/helpers/constants.js", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    BATTLE_EVENTS: {},
+    ROUND_DURATION_SECONDS: 1,
+    STAT_SELECTION_DURATION_SECONDS: 1
+  };
+});
 
 vi.mock("../../../src/helpers/dataUtils.js", async (importOriginal) => {
   const actual = await importOriginal();
