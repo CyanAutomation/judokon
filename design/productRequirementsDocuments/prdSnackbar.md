@@ -37,7 +37,7 @@ This inconsistency led to confusion, missed information, and reduced trust in th
 3. **Stacking:** If a new snackbar is triggered while one is visible, it stacks below the existing message (max 2 concurrent). The older message moves up with reduced opacity.
 4. **Overflow:** When a 3rd message arrives, the oldest message first enters `Dismissing`, runs the standard fade-out, then is removed from the queue.
 5. **Dismissal Policy:** Each snackbar has an independent 3000ms auto-dismiss timer; no manual close button is provided to reduce interaction overhead.
-6. **Accessibility:** Screen readers announce each snackbar text independently via ARIA live region with `role="status"` and `aria-atomic="false"`.
+6. **Accessibility:** Screen readers announce snackbar updates through a single container live region (`#snackbar-container`) using `role="status"`, `aria-live="polite"`, and `aria-atomic="false"`; child snackbar items remain semantically neutral.
 
 ## Visual & UX Reference
 
@@ -51,22 +51,22 @@ This inconsistency led to confusion, missed information, and reduced trust in th
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature                  | Description                                                                          |
-| -------- | ------------------------ | ------------------------------------------------------------------------------------ |
-| P1       | Show Snackbar            | Display a temporary message at the bottom of the screen with fade-in/out animation.  |
-| P1       | Update Snackbar          | Change the current snackbar's text and restart its timers if already shown.          |
-| P1       | Accessibility Compliance | Snackbar uses ARIA live region and `role="status"` for screen readers.               |
-| P1       | Configurable Duration    | Snackbar auto-dismisses after a default **3s** and supports **1–10s** range.         |
-| P2       | Message Stacking         | Max 2 snackbars visible concurrently; older messages pushed up with reduced opacity. |
-| P2       | Theming and Contrast     | Snackbar colors adapt to theme and pass contrast checks (≥4.5:1 ratio).              |
-| P2       | Localization Support     | Snackbar text supports multi-language strings and right-to-left layouts.             |
+| Priority | Feature                  | Description                                                                                                             |
+| -------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| P1       | Show Snackbar            | Display a temporary message at the bottom of the screen with fade-in/out animation.                                     |
+| P1       | Update Snackbar          | Change the current snackbar's text and restart its timers if already shown.                                             |
+| P1       | Accessibility Compliance | Snackbar uses a single live region at `#snackbar-container` (`role="status"`, `aria-live="polite"`) for screen readers. |
+| P1       | Configurable Duration    | Snackbar auto-dismisses after a default **3s** and supports **1–10s** range.                                            |
+| P2       | Message Stacking         | Max 2 snackbars visible concurrently; older messages pushed up with reduced opacity.                                    |
+| P2       | Theming and Contrast     | Snackbar colors adapt to theme and pass contrast checks (≥4.5:1 ratio).                                                 |
+| P2       | Localization Support     | Snackbar text supports multi-language strings and right-to-left layouts.                                                |
 
 ## Acceptance Criteria (Given/When/Then)
 
 1. **Given** the player triggers an action that requires confirmation, **when** the action completes, **then** a snackbar appears promptly and fades out after the configured duration (default **3s**).
 2. **Given** a snackbar is already visible, **when** a new snackbar is triggered, **then** the new message stacks below and the existing message moves up with reduced opacity (max 2 concurrent).
 3. **Given** two snackbars are visible, **when** a third is triggered, **then** the oldest message enters `Dismissing`, completes the standard fade-out, and is removed while the queue shifts to keep only two visible snackbars.
-4. **Given** the snackbar is displayed, **when** viewed by a screen reader, **then** it is announced using ARIA live region with role="status" and aria-atomic="false".
+4. **Given** the snackbar is displayed, **when** viewed by a screen reader, **then** announcements come from the container live region (`#snackbar-container`) while child snackbar nodes do not define their own `role` or `aria-live`.
 5. **Given** the snackbar text is displayed, **then** it passes WCAG 2.1 AA contrast checks in all supported themes.
 6. **Given** the app is in a right-to-left language mode, **then** snackbar text and layout adjust accordingly.
 7. **Given** the snackbar is triggered by an error, **then** the error message is displayed in the snackbar.
@@ -165,7 +165,7 @@ stateDiagram-v2
 
     Created --> Visible: render projection
 
-    Visible: 👁️ Displayed to user<br/>Timer active<br/>aria-live announces text
+    Visible: 👁️ Displayed to user<br/>Timer active<br/>container aria-live announces text
 
     Visible --> Dismissing: timer
     Visible --> Dismissing: overflow eviction
@@ -204,12 +204,12 @@ Additional deterministic rules:
 
 **Same-Frame Resolution Examples**:
 
-| Same-frame event set | Priority-applied order | Expected result |
-| --- | --- | --- |
-| `dismissSnackbar(B)`, `timerExpired(B)` | `dismissSnackbar(B)` → `timerExpired(B)` ignored | `B` transitions to `Dismissing` once; no duplicate removal side effects. |
-| `showSnackbar(C)` with queue `[A,B]`, `timerExpired(A)` | overflow eviction (`A`) → timer expiry (`A`) ignored | Queue becomes `[B,C]`; `A` is dismissed only once. |
-| `showSnackbar(C)` with queue `[A,B]`, `dismissSnackbar(B)` | `dismissSnackbar(B)` → overflow eviction | `B` enters `Dismissing`; overflow then evicts `A`; visible queue resolves to `[C]` after removals settle. |
-| `updateSnackbar("X")` with no visible items | update target lookup fails | No-op; queue remains empty. |
+| Same-frame event set                                       | Priority-applied order                               | Expected result                                                                                           |
+| ---------------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `dismissSnackbar(B)`, `timerExpired(B)`                    | `dismissSnackbar(B)` → `timerExpired(B)` ignored     | `B` transitions to `Dismissing` once; no duplicate removal side effects.                                  |
+| `showSnackbar(C)` with queue `[A,B]`, `timerExpired(A)`    | overflow eviction (`A`) → timer expiry (`A`) ignored | Queue becomes `[B,C]`; `A` is dismissed only once.                                                        |
+| `showSnackbar(C)` with queue `[A,B]`, `dismissSnackbar(B)` | `dismissSnackbar(B)` → overflow eviction             | `B` enters `Dismissing`; overflow then evicts `A`; visible queue resolves to `[C]` after removals settle. |
+| `updateSnackbar("X")` with no visible items                | update target lookup fails                           | No-op; queue remains empty.                                                                               |
 
 **Multi-Message Stacking Behavior**:
 
@@ -259,8 +259,6 @@ graph LR
   <div
     class="snackbar snackbar-bottom"
     id="snackbar-msg-1"
-    role="status"
-    aria-live="polite"
     data-message-id="msg-1"
     data-dismissal-timer="3000"
   >
@@ -271,8 +269,6 @@ graph LR
   <div
     class="snackbar snackbar-top"
     id="snackbar-msg-2"
-    role="status"
-    aria-live="polite"
     data-message-id="msg-2"
     data-dismissal-timer="3000"
   >
@@ -373,18 +369,18 @@ dismissSnackbar(messageId);
 
 **Performance & Accessibility SLAs**:
 
-| Metric                     | Target         | Notes                                   |
-| -------------------------- | -------------- | --------------------------------------- |
-| Fade-in Animation          | 250ms          | ease-out easing                         |
-| Fade-out Animation         | 250ms          | ease-in easing                          |
-| Auto-dismiss Duration      | 3000ms         | Default; configurable 1-10s             |
+| Metric                     | Target         | Notes                                                 |
+| -------------------------- | -------------- | ----------------------------------------------------- |
+| Fade-in Animation          | 250ms          | ease-out easing                                       |
+| Fade-out Animation         | 250ms          | ease-in easing                                        |
+| Auto-dismiss Duration      | 3000ms         | Default; configurable 1-10s                           |
 | Queue Max Size             | 2 visible      | 3rd message evicts oldest via `Dismissing` + fade-out |
-| Reposition Animation       | 300ms          | msg1 slides up when msg2 shows          |
-| Screen Reader Announcement | <100ms         | aria-live="polite" delays non-interrupt |
-| Mobile Safe Zone           | 16px+          | Above system navigation bars            |
-| Text Contrast              | ≥4.5:1         | WCAG AA compliance                      |
-| Reduced Motion             | 100%           | prefers-reduced-motion respected        |
-| DOM Container Ready        | Before scripts | Prevents duplicate nodes                |
+| Reposition Animation       | 300ms          | msg1 slides up when msg2 shows                        |
+| Screen Reader Announcement | <100ms         | aria-live="polite" delays non-interrupt               |
+| Mobile Safe Zone           | 16px+          | Above system navigation bars                          |
+| Text Contrast              | ≥4.5:1         | WCAG AA compliance                                    |
+| Reduced Motion             | 100%           | prefers-reduced-motion respected                      |
+| DOM Container Ready        | Before scripts | Prevents duplicate nodes                              |
 
 **Z-Index Stack**:
 
@@ -421,7 +417,7 @@ Pages that surface snackbars must render a persistent container near the end of
 `<body>` before any script that might trigger notifications during load:
 
 ```html
-<div id="snackbar-container" role="status" aria-live="polite"></div>
+<div id="snackbar-container" role="status" aria-live="polite" aria-atomic="false"></div>
 ```
 
 If the container is missing at runtime, the helper will create a fallback with
@@ -466,7 +462,7 @@ automatic positioning, and graceful overflow handling (3rd message evicts oldest
   - [x] 3.4 Implement independent timers per message with cleanup on dismissal
   - [x] 3.5 Expose optional `duration` parameter in `showSnackbar()` (default 3000ms)
 - [x] 4.0 Accessibility & Localization
-  - [x] 4.1 Ensure ARIA attributes work with screen readers (role="status", aria-atomic="false", aria-live="polite")
+  - [x] 4.1 Ensure a single ARIA live region on `#snackbar-container` (role="status", aria-atomic="false", aria-live="polite") and neutral child snackbar items
   - [x] 4.2 Test WCAG 2.1 AA contrast compliance
   - [ ] 4.3 Implement localization and right-to-left text support
   - [ ] 4.4 Add fallback text for missing localization keys

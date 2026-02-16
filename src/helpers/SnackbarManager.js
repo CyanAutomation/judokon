@@ -118,6 +118,11 @@ class SnackbarManager {
       container.id = "snackbar-container";
       doc.body?.appendChild(container);
     }
+
+    container.setAttribute("role", "status");
+    container.setAttribute("aria-live", "polite");
+    container.setAttribute("aria-atomic", "false");
+
     return container;
   }
 
@@ -147,7 +152,7 @@ class SnackbarManager {
    * 1. Create div element
    * 2. Set classes and attributes
    * 3. Set text content
-   * 4. Set accessibility attributes
+   * 4. Keep element semantics neutral (container owns live region)
    * 5. Return element
    *
    * @param {string} id - Snackbar ID
@@ -168,11 +173,6 @@ class SnackbarManager {
     if (type) {
       element.dataset.snackbarType = type;
     }
-
-    // Accessibility
-    element.setAttribute("role", "status");
-    element.setAttribute("aria-atomic", "false");
-    element.setAttribute("aria-live", priority === SnackbarPriority.HIGH ? "assertive" : "polite");
 
     return element;
   }
