@@ -1,4 +1,4 @@
-# Snackbar Notifications PRD (Updated)
+# Snackbar Notifications PRD
 
 ## Overview
 
