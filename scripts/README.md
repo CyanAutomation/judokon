@@ -9,7 +9,7 @@ Repository automation scripts for build, validation, and maintenance tasks.
 Contributors and maintainers running scripted project operations.
 
 ## Key Commands
-- `npm run build:offline-rag` — generate offline RAG vector + metadata assets.
+- RAG npm workflows are retired. See `docs/status/archive/rag-workflows.md` for archived instructions.
 
 ## Canonical Docs
 - See canonical contributor workflow: [`CONTRIBUTING.md`](../CONTRIBUTING.md).

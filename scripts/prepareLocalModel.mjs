@@ -303,7 +303,7 @@ export async function prepareLocalModel(options = {}) {
     const msg = String(err?.message || err).toLowerCase();
     throw new Error(
       `Unable to hydrate model via transformers (${msg}). ` +
-        `If running offline, place files via: npm run rag:prepare:models -- --from-dir <path-with-minilm>`
+        `If running offline, see docs/status/archive/rag-workflows.md for the retired model hydration workflow`
     );
   }
 
