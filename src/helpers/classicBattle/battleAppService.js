@@ -55,8 +55,8 @@ export function dispatchIntent(intent, payload = {}) {
  * @pseudocode
  * validate event name and handler types
  * resolve the facade on() method; return noop when unavailable
- * call on() in try/catch and track successful subscription
- * return cleanup callback that only calls off() when subscription succeeded
+ * call on() in try/catch and return noop when registration fails
+ * return cleanup callback that safely delegates to off()
  */
 export function subscribe(eventName, handler) {
   if (typeof eventName !== "string" || typeof handler !== "function") {
@@ -66,17 +66,15 @@ export function subscribe(eventName, handler) {
   if (!onMethod) {
     return () => {};
   }
-  let subscribed = false;
   try {
     onMethod(eventName, handler);
-    subscribed = true;
   } catch {
     return () => {};
   }
   return () => {
-    if (subscribed) {
+    try {
       getFacadeMethod("off")?.(eventName, handler);
-    }
+    } catch {}
   };
 }
 
