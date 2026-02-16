@@ -206,6 +206,30 @@ class SnackbarManager {
         snackbar.element.classList.remove("snackbar-bottom");
       }
     });
+
+    this.syncContainerPriority();
+  }
+
+  /**
+   * Sync container live-region urgency from active snackbar priorities.
+   *
+   * @pseudocode
+   * 1. Resolve snackbar container from document.
+   * 2. Determine whether any visible snackbar is HIGH priority.
+   * 3. Set container aria-live to assertive for HIGH, otherwise polite.
+   *
+   * @returns {void}
+   */
+  syncContainerPriority() {
+    const doc = this.getDocument();
+    if (!doc) return;
+
+    const container = doc.getElementById("snackbar-container");
+    if (!container) return;
+
+    const visible = this.getVisibleSnackbarsBySequence();
+    const hasHighPriority = visible.some((snackbar) => snackbar.priority === SnackbarPriority.HIGH);
+    container.setAttribute("aria-live", hasHighPriority ? "assertive" : "polite");
   }
 
   /**
@@ -525,10 +549,7 @@ class SnackbarManager {
     if (nextPriority && nextPriority !== snackbar.priority) {
       snackbar.priority = nextPriority;
       snackbar.element.dataset.snackbarPriority = nextPriority;
-      snackbar.element.setAttribute(
-        "aria-live",
-        nextPriority === SnackbarPriority.HIGH ? "assertive" : "polite"
-      );
+      this.syncContainerPriority();
     }
 
     // Restart animation
@@ -587,6 +608,8 @@ class SnackbarManager {
 
     // Clear state
     this.activeSnackbars.clear();
+
+    this.syncContainerPriority();
   }
 
   /**

@@ -53,8 +53,12 @@ describe("SnackbarManager", () => {
       const element = document.querySelector(".snackbar");
       expect(element).toBeDefined();
       expect(element.textContent).toBe("Test message");
-      expect(element.getAttribute("role")).toBe("status");
-      expect(element.getAttribute("aria-live")).toBe("polite");
+      expect(element.getAttribute("role")).toBeNull();
+      expect(element.getAttribute("aria-live")).toBeNull();
+
+      const container = document.getElementById("snackbar-container");
+      expect(container?.getAttribute("role")).toBe("status");
+      expect(container?.getAttribute("aria-live")).toBe("polite");
     });
 
     it("should display snackbar with HIGH priority", () => {
@@ -67,7 +71,10 @@ describe("SnackbarManager", () => {
       expect(diagnostics.active[0].priority).toBe(SnackbarPriority.HIGH);
 
       const element = document.querySelector(".snackbar");
-      expect(element.getAttribute("aria-live")).toBe("assertive");
+      expect(element.getAttribute("aria-live")).toBeNull();
+
+      const container = document.getElementById("snackbar-container");
+      expect(container?.getAttribute("aria-live")).toBe("assertive");
     });
   });
 
@@ -226,7 +233,27 @@ describe("SnackbarManager", () => {
       expect(element.textContent).toBe("Metadata updated");
       expect(element.dataset.snackbarPriority).toBe(SnackbarPriority.HIGH);
       expect(element.dataset.snackbarType).toBe("warning");
-      expect(element.getAttribute("aria-live")).toBe("assertive");
+      expect(element.getAttribute("aria-live")).toBeNull();
+
+      const container = document.getElementById("snackbar-container");
+      expect(container?.getAttribute("aria-live")).toBe("assertive");
+    });
+
+    it("should downgrade container aria-live when HIGH priority updates to NORMAL", () => {
+      const controller = snackbarManager.show({
+        text: "Priority message",
+        priority: SnackbarPriority.HIGH,
+        ttl: 0
+      });
+
+      const container = document.getElementById("snackbar-container");
+      expect(container?.getAttribute("aria-live")).toBe("assertive");
+
+      controller.update({
+        priority: SnackbarPriority.NORMAL
+      });
+
+      expect(container?.getAttribute("aria-live")).toBe("polite");
     });
   });
 
