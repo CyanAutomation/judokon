@@ -338,7 +338,7 @@ describe("battleCLI onKeyDown", () => {
   it("dispatches continue in roundDisplay state", () => {
     document.body.dataset.battleState = "roundDisplay";
     onKeyDown(new KeyboardEvent("keydown", { key: "Enter" }));
-    expect(emitSpy).toHaveBeenCalledWith("outcomeConfirmed", undefined);
+    expect(emitSpy).toHaveBeenCalledWith("outcomeConfirmed");
   });
 
   it("dispatches ready in cooldown state for Enter and Space", () => {

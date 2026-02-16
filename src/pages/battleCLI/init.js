@@ -2511,8 +2511,10 @@ export function handleIntent(intent) {
   if (intent.type === "unmappedKey") return rejectIntent("key.unmapped");
 
   if (intent.type === "selectStatByIndex") {
-  if (intent.type === "selectStatByIndex") {
     if (!isEnabled("statHotkeys")) return "ignored";
+    if (store?.selectionMade || selectionApplying) {
+      return rejectIntent("intent.notAllowedInState");
+    }
     const key = String(intent.index);
     const handled = handleWaitingForPlayerActionKey(key);
     if (handled === "ignored") return "ignored";
@@ -2521,6 +2523,9 @@ export function handleIntent(intent) {
   }
 
   if (intent.type === "selectFocusedStat") {
+    if (store?.selectionMade || selectionApplying) {
+      return rejectIntent("intent.notAllowedInState");
+    }
     const stat = resolveFocusedStatFromIntent(intent);
     if (!stat) return rejectIntent("intent.missingTarget");
     __scheduleMicrotask(() => selectStat(stat));
@@ -2529,14 +2534,18 @@ export function handleIntent(intent) {
 
   if (intent.type === "activateFocusedControl") {
     if (intent.control === "start") {
-      const handled = handleWaitingForMatchStartKey("enter");
-      return handled || rejectIntent("intent.notAllowedInState");
+      if (state !== "waitingForMatchStart") {
+        return rejectIntent("intent.notAllowedInState");
+      }
+      return handleWaitingForMatchStartKey("enter") || rejectIntent("intent.notAllowedInState");
     }
     if (intent.control === "continue") {
-      const roundDisplayHandled = handleRoundOverKey("enter");
-      if (roundDisplayHandled) return true;
-      const cooldownHandled = handleCooldownKey("enter");
-      if (cooldownHandled) return true;
+      if (state === "roundDisplay") {
+        return handleRoundOverKey("enter") || rejectIntent("intent.notAllowedInState");
+      }
+      if (state === "roundWait") {
+        return handleCooldownKey("enter") || rejectIntent("intent.notAllowedInState");
+      }
       return rejectIntent("intent.notAllowedInState");
     }
     return rejectIntent("intent.unknownControl");
