@@ -65,6 +65,39 @@ Players who prefer women-only competition need a dedicated mode that mirrors the
 
 ---
 
+## Canonical Team Battle Variant Overlay Diagram
+
+> **Diagram source of truth:** This diagram is canonical in [PRD: Team Battle Rules](prdTeamBattleRules.md#canonical-team-battle-variant-overlay-diagram). Keep this copy identical across Team Battle variant PRDs to prevent drift.
+
+```mermaid
+graph LR
+    Base["Base Team Battle Rules\nSource: prdTeamBattleRules.md"]
+    SharedFlow["Shared bout flow\nSequential 1v1 bouts + 1 point per win"]
+    SharedWin["Shared win condition\nFirst team to reach team-size score wins"]
+
+    Base --> SharedFlow
+    Base --> SharedWin
+
+    Male["Team Battle (Male)\nMode ID: 4\nEntry page: teamBattleMale.html"]
+    Female["Team Battle (Female)\nMode ID: 5\nEntry page: teamBattleFemale.html"]
+    Mixed["Team Battle (Mixed)\nMode ID: 6\nEntry page: teamBattleMixed.html"]
+
+    SharedFlow --> Male
+    SharedFlow --> Female
+    SharedFlow --> Mixed
+    SharedWin --> Male
+    SharedWin --> Female
+    SharedWin --> Mixed
+
+    MaleRoster["Roster constraint: male only\nTeam size: 5"]
+    FemaleRoster["Roster constraint: female only\nTeam size: 5"]
+    MixedRoster["Roster constraint: male + female allowed\nTeam size: 6"]
+
+    Male --> MaleRoster
+    Female --> FemaleRoster
+    Mixed --> MixedRoster
+```
+
 ## Related Features
 
 - [PRD: Team Battle (Male)](prdTeamBattleMale.md)
