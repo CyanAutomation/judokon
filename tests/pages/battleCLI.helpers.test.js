@@ -279,6 +279,7 @@ describe("Battle CLI helpers", () => {
       expect(roundMessage.textContent).toBe(roundMessageAfterUnwire);
       expect(announcement.textContent).toBe(announcementAfterUnwire);
 
+      cleanupA();
       cleanupC();
     });
   });
