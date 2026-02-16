@@ -81,22 +81,6 @@ export async function loadGameModes() {
   return data;
 }
 
-/**
- * Persist an array of game modes to storage.
- *
- * @pseudocode
- * 1. Call `getSchema()` to lazily load the schema.
- * 2. Validate the provided `modes` with the schema.
- * 3. Serialize the array and store it under `GAMEMODES_KEY`.
- *
- * @param {import("./types.js").GameMode[]} modes - Array of game mode objects.
- * @returns {Promise<void>} Promise that resolves when saving completes.
- */
-export async function saveGameModes(modes) {
-  await validateWithSchema(modes, await getSchema());
-  setItem(GAMEMODES_KEY, modes);
-}
-
 function cloneNavigationItems(items) {
   if (items === null || items === undefined) {
     return [];
