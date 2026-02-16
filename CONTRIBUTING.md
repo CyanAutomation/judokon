@@ -13,14 +13,14 @@ The project ships directly as static ES modules without a build step.
 
 ### Terminal Safety
 
-When running terminal searches like `grep` or `find`, exclude `client_embeddings.json` and `offline_rag_metadata.json` to prevent output overflow. See [AGENTS.md](./AGENTS.md#terminal-safety) for details.
+When running terminal searches like `grep` or `find`, use targeted paths and exclude large generated artifacts when present. Historical RAG files (`client_embeddings.json`, `offline_rag_metadata.json`) should only appear in archive workflows. See [AGENTS.md](./AGENTS.md#terminal-safety) for details.
 
 ### Code Navigation Workflow
 
 Use targeted lookups before edits:
 
 ```bash
-rg -n "<symbol-or-topic>" src tests docs -g "!client_embeddings.json"
+rg -n "<symbol-or-topic>" src tests docs
 rg --files src tests docs | rg "<feature-or-file-name>"
 ```
 
