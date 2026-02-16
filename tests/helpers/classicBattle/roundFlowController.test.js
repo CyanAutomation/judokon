@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useCanonicalTimers } from "../../setup/fakeTimers.js";
+import { EVENT_TYPES } from "../../../src/helpers/classicBattle/eventCatalog.js";
 
 const handlerRegistry = new Map();
 
@@ -67,7 +68,7 @@ describe("roundFlowController", () => {
     bindRoundFlowController();
 
     const evaluated = handlerRegistry.get("round.evaluated");
-    const stateChanged = handlerRegistry.get("state.transitioned");
+    const stateChanged = handlerRegistry.get(EVENT_TYPES.STATE_TRANSITIONED);
 
     await evaluated({
       detail: { message: "Player wins", stat: "speed", playerVal: 9, opponentVal: 7 }
