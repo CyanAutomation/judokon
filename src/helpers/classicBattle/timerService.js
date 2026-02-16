@@ -603,8 +603,7 @@ export async function startTimer(onExpiredSelect, store = null, dependencies = {
     scheduler = null
   } = dependencies;
 
-  const activeScheduler = ensureClassicBattleScheduler(scheduler);
-  void activeScheduler;
+  const { duration, synced, restore } = await resolveDuration(scoreboardApi);
 
   const { duration, synced, restore } = await resolveDuration(scoreboardApi);
 
