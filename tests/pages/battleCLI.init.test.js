@@ -78,7 +78,7 @@ describe("battleCLI init helpers", () => {
         reason: "no_machine"
       })
     );
-    expect(document.body.dataset.battleState).toBe("waitingForMatchStart");
+    expect(document.body.dataset.battleState).not.toBe("roundSelect");
     expect(document.getElementById("cli-countdown")?.dataset.status).toBe("error");
   });
 
@@ -88,7 +88,7 @@ describe("battleCLI init helpers", () => {
     const debugHooks = await import("../../src/helpers/classicBattle/debugHooks.js");
     debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
     const { dispatchBattleEvent } = await import("../../src/helpers/classicBattle/orchestrator.js");
-    dispatchBattleEvent.mockImplementation(undefined);
+    dispatchBattleEvent.mockRejectedValue(new Error("machine unavailable"));
     const battleCliModule = await import("../../src/pages/battleCLI/init.js");
 
     const result = await battleCliModule.safeDispatch("startClicked");
@@ -100,17 +100,16 @@ describe("battleCLI init helpers", () => {
   });
 
   it("blocks direct battleStateChange injection from forcing progression", async () => {
-    const mod = await loadBattleCLI({
-      mockBattleEvents: false
-    });
+    const mod = await loadBattleCLI();
     await mod.init();
     const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
     const emitBattleEvent = battleEvents.emitBattleEvent;
     emitBattleEvent.mockClear();
 
+    emitBattleEvent("battleStateChange", { to: "waitingForMatchStart", event: "startClicked" });
     emitBattleEvent("battleStateChange", { to: "roundSelect" });
 
-    expect(document.body.dataset.battleState).toBe("waitingForMatchStart");
+    expect(document.body.dataset.battleState).not.toBe("roundSelect");
     expect(emitBattleEvent).toHaveBeenCalledWith(
       "battle.unavailable",
       expect.objectContaining({

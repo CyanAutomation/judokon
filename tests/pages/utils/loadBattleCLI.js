@@ -152,7 +152,19 @@ export async function loadBattleCLI(options = {}) {
         }
       });
       const resetBattleEventDedupeState = vi.fn();
+      const createBattleEventBus = vi.fn(() => ({
+        target: battleBus,
+        on: (type, handler) => onBattleEvent(type, handler),
+        off: (type, handler) => offBattleEvent(type, handler),
+        emit: (type, detail) => emitBattleEvent(type, detail),
+        dispose: vi.fn()
+      }));
+      const setActiveBattleEventBus = vi.fn();
+      const getActiveBattleEventBus = vi.fn(() => createBattleEventBus());
       return {
+        createBattleEventBus,
+        setActiveBattleEventBus,
+        getActiveBattleEventBus,
         onBattleEvent,
         offBattleEvent,
         emitBattleEvent,
