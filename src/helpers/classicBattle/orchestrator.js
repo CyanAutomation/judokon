@@ -14,7 +14,7 @@ import {
   roundModificationEnter
 } from "./orchestratorHandlers.js";
 import { resetGame as resetGameLocal, startRound as startRoundLocal } from "./roundManager.js";
-import { emitBattleEvent, offBattleEvent } from "./battleEvents.js";
+import { emitBattleEvent, offBattleEvent, setActiveBattleEventBus } from "./battleEvents.js";
 import { setBattleStateGetter, resetEventBus } from "./eventBus.js";
 import { domStateListener, registerStateTransitionListeners } from "./stateTransitionListeners.js";
 import { getStateSnapshot } from "./battleDebug.js";
@@ -375,7 +375,8 @@ function createTransitionHook(hookSet) {
 export async function initClassicBattleOrchestrator(
   contextOverrides = {},
   dependencies = {},
-  hooks = {}
+  hooks = {},
+  options = {}
 ) {
   debugLog("initClassicBattleOrchestrator() called");
   registerBridgeOnEngineCreated();
@@ -401,6 +402,11 @@ export async function initClassicBattleOrchestrator(
     const overrides = normalizeContextOverrides(contextOverrides);
     const deps = normalizeDependencies(dependencies);
     const hookSet = normalizeHooks(hooks);
+    const battleEventBus = options?.battleEventBus;
+
+    if (battleEventBus) {
+      setActiveBattleEventBus(battleEventBus);
+    }
 
     const { context } = resolveMachineContext(overrides, deps);
     const overlayRequested = isRoundModificationOverlayEnabled(context);

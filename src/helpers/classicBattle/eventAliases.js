@@ -89,8 +89,8 @@ function shouldWarnDeprecated(warnDeprecated) {
  * 2. Map deprecated names to standardized names and warn when needed.
  * 3. Delegate to `emitEventWithAliases` to fan out to aliases.
  */
-export function emitBattleEventWithAliases(eventName, payload, options = {}) {
-  const target = getBattleEventTarget();
+export function emitBattleEventWithAliases(eventName, payload, options = {}, eventTarget = null) {
+  const target = eventTarget ?? getBattleEventTarget();
   const standardizedName = REVERSE_EVENT_ALIASES[eventName];
 
   if (standardizedName) {
