@@ -21,8 +21,6 @@ import {
   getBattleEventTarget,
   resetBattleEventDedupeState
 } from "../../helpers/classicBattle/battleEvents.js";
-import { STATS } from "../../helpers/BattleEngine.js";
-import * as engineFacade from "../../helpers/BattleEngine.js";
 import statNamesData from "../../data/statNames.js";
 import { fetchJson } from "../../helpers/dataUtils.js";
 import { createModal } from "../../components/Modal.js";
@@ -44,10 +42,21 @@ import { getStateSnapshot } from "../../helpers/classicBattle/battleDebug.js";
 import { autoSelectStat } from "../../helpers/classicBattle/autoSelectStat.js";
 import { createRoundTimer } from "../../helpers/timers/createRoundTimer.js";
 import { setTestMode } from "../../helpers/testModeUtils.js";
-import { wrap } from "../../helpers/storage.js";
-import { BATTLE_POINTS_TO_WIN } from "../../config/storageKeys.js";
+import {
+  dispatchIntent as dispatchBattleIntent,
+  subscribe as subscribeBattleApp,
+  getSnapshot as getBattleSnapshot,
+  STATS
+} from "../../helpers/classicBattle/battleAppService.js";
+import {
+  buildBootstrapConfig,
+  readStoredPointsToWin,
+  resolveSeedPolicy,
+  persistCliSeed
+} from "../../helpers/classicBattle/bootstrapPolicy.js";
 import { POINTS_TO_WIN_OPTIONS } from "../../config/battleDefaults.js";
 import * as debugHooks from "../../helpers/classicBattle/debugHooks.js";
+import { BATTLE_POINTS_TO_WIN } from "../../config/storageKeys.js";
 import {
   setAutoContinue,
   getAutoContinue
@@ -163,11 +172,8 @@ function handleGlobalEscape(event) {
 
 // Initialize engine and subscribe to engine events when available.
 try {
-  if (
-    (typeof window === "undefined" || !window.__TEST__) &&
-    typeof engineFacade.createBattleEngine === "function"
-  ) {
-    engineFacade.createBattleEngine();
+  if (typeof window === "undefined" || !window.__TEST__) {
+    dispatchBattleIntent("engine.create");
   }
 } catch {}
 
@@ -196,29 +202,6 @@ function disposeClassicBattleOrchestrator() {
  * 4. Parse to number and validate as finite positive integer.
  * 5. Return `{ found: true, value }` for valid values, otherwise `{ found: false }`.
  */
-function safeGetPointsToWinFromStorage() {
-  try {
-    if (typeof localStorage === "undefined") {
-      return { found: false };
-    }
-    const rawValue = localStorage.getItem(BATTLE_POINTS_TO_WIN);
-    if (rawValue === null || rawValue === "") {
-      return { found: false };
-    }
-    const parsedValue = Number(rawValue);
-    const isValid =
-      Number.isFinite(parsedValue) && Number.isInteger(parsedValue) && parsedValue > 0;
-    if (!isValid) {
-      return { found: false };
-    }
-    return { found: true, value: parsedValue };
-  } catch (error) {
-    return {
-      found: false,
-      error: error instanceof Error ? error : new Error(String(error))
-    };
-  }
-}
 
 /**
  * Safely dispatch an event to the classic battle machine.
@@ -419,7 +402,7 @@ function handleFeatureFlagsChange(event) {
       verboseEnabled = !!isEnabled("cliVerbose");
     } catch {}
     const round = Number(byId("cli-root")?.dataset.round || 0);
-    updateRoundHeader(round, engineFacade.getPointsToWin?.());
+    updateRoundHeader(round, getBattleSnapshot().pointsToWin);
     updateVerboseFromFlags();
   }
   if (!flag || flag === "battleStateBadge") {
@@ -904,7 +887,7 @@ export async function resetMatch() {
     } catch {}
   }
   // Perform synchronous UI reset to prevent glitches
-  updateRoundHeader(0, engineFacade.getPointsToWin?.());
+  updateRoundHeader(0, getBattleSnapshot().pointsToWin);
   updateScoreLine();
   setRoundMessage("");
   try {
@@ -925,7 +908,7 @@ export async function resetMatch() {
   const next = (async () => {
     // Read pointsToWin from localStorage BEFORE creating new engine
     const preserveConfig = { forceCreate: true };
-    const savedPoints = safeGetPointsToWinFromStorage();
+    const savedPoints = readStoredPointsToWin();
     if (savedPoints.found) {
       preserveConfig.pointsToWin = savedPoints.value;
     }
@@ -1111,43 +1094,29 @@ export async function announceMatchReady({ focusMain = false } = {}) {
 function initSeed() {
   const input = byId("seed-input");
   const errorEl = byId("seed-error");
-  let seedParam = null;
-  let storedSeed = null;
-  try {
-    const params = new URLSearchParams(window.location.search);
-    seedParam = params.get("seed");
-    storedSeed = localStorage.getItem("battleCLI.seed");
-  } catch {}
-  const apply = (n) => {
-    setTestMode({ enabled: true, seed: n });
-    try {
-      localStorage.setItem("battleCLI.seed", String(n));
-    } catch {}
+  const policy = resolveSeedPolicy({ search: window.location.search, storage: localStorage });
+
+  const apply = (seed) => {
+    setTestMode({ enabled: true, seed });
+    dispatchBattleIntent(
+      "engine.create",
+      buildBootstrapConfig({ engineConfig: { seed }, seed, forceCreate: true })
+    );
+    persistCliSeed(seed);
   };
-  // Only auto-enable test mode when an explicit seed query param is provided.
-  if (seedParam !== null && seedParam !== "") {
-    const num = Number(seedParam);
-    if (!Number.isNaN(num)) {
-      apply(num);
-      if (input) input.value = String(num);
-    }
-  } else if (storedSeed) {
-    const num = Number(storedSeed);
-    if (!Number.isNaN(num)) {
-      // Apply stored seed to the engine for persistence.
-      apply(num);
-      if (input) input.value = String(num);
-    }
+
+  if (policy.seed !== null) {
+    apply(policy.seed);
+    if (input) input.value = String(policy.seed);
   }
+
   input?.addEventListener("input", () => {
     const val = Number(input.value);
     if (input.value.trim() === "" || Number.isNaN(val)) {
       input.value = "";
       if (errorEl) errorEl.textContent = "Invalid seed. Using default.";
       setTestMode({ enabled: false });
-      try {
-        localStorage.removeItem("battleCLI.seed");
-      } catch {}
+      persistCliSeed(null);
       return;
     }
     if (errorEl) errorEl.textContent = "";
@@ -2323,17 +2292,16 @@ export function restorePointsToWin() {
       .map((option) => Number(option.value))
       .filter((value) => Number.isFinite(value));
     const validTargets = new Set([...POINTS_TO_WIN_OPTIONS, ...optionValues]);
-    const storage = wrap(BATTLE_POINTS_TO_WIN, { fallback: "none" });
-    const savedPoints = safeGetPointsToWinFromStorage();
+    const savedPoints = readStoredPointsToWin();
     if (savedPoints.error) {
       console.warn("Failed to restore pointsToWin from localStorage:", savedPoints.error);
     }
     if (savedPoints.found && validTargets.has(savedPoints.value)) {
-      engineFacade.setPointsToWin?.(savedPoints.value);
+      dispatchBattleIntent("engine.setPointsToWin", { value: savedPoints.value });
       select.value = String(savedPoints.value);
     }
     const round = Number(byId("cli-root")?.dataset.round || 0);
-    updateRoundHeader(round, engineFacade.getPointsToWin?.());
+    updateRoundHeader(round, getBattleSnapshot().pointsToWin);
     let current = Number(select.value);
     select.addEventListener("change", async () => {
       const val = Number(select.value);
@@ -2410,11 +2378,13 @@ export function restorePointsToWin() {
         })
           .then(async (confirmed) => {
             if (confirmed) {
-              storage.set(val);
+              try {
+                localStorage.setItem(BATTLE_POINTS_TO_WIN, String(val));
+              } catch {}
               try {
                 await resetMatch();
               } catch {}
-              engineFacade.setPointsToWin?.(val);
+              dispatchBattleIntent("engine.setPointsToWin", { value: val });
               updateRoundHeader(0, val);
               try {
                 await announceMatchReady({ focusMain: true });
@@ -2450,7 +2420,7 @@ async function startRoundWrapper() {
   renderHiddenPlayerStats(currentPlayerJudoka);
   setRoundMessage("");
   showBottomLine("Select your move");
-  updateRoundHeader(roundNumber, engineFacade.getPointsToWin?.());
+  updateRoundHeader(roundNumber, getBattleSnapshot().pointsToWin);
 }
 
 // Deprecated internal alias retained for backward-compat within module
@@ -3101,7 +3071,7 @@ function handleRoundEvaluated(e) {
     let opponentScore = scores?.opponent;
     try {
       if (playerScore === undefined || opponentScore === undefined) {
-        const gs = engineFacade.getScores?.();
+        const gs = getBattleSnapshot().scores;
         if (gs) {
           if (playerScore === undefined) playerScore = gs.playerScore;
           if (opponentScore === undefined) opponentScore = gs.opponentScore;
@@ -3517,11 +3487,8 @@ export async function setupFlags() {
     let target;
     let hasStoredTarget = false;
     try {
-      const getter = engineFacade.getPointsToWin;
-      if (typeof getter === "function") {
-        target = getter();
-        hasStoredTarget = true;
-      }
+      target = getBattleSnapshot().pointsToWin;
+      hasStoredTarget = true;
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
         console.debug("Failed to get points to win:", error);
@@ -3558,9 +3525,8 @@ export async function setupFlags() {
     }
 
     try {
-      const setter = engineFacade.setPointsToWin;
-      if (hasStoredTarget && typeof setter === "function") {
-        setter(target);
+      if (hasStoredTarget) {
+        dispatchBattleIntent("engine.setPointsToWin", { value: target });
       }
     } catch {}
   };
@@ -3638,33 +3604,31 @@ export async function setupFlags() {
  */
 export function subscribeEngine() {
   try {
-    if (typeof engineFacade.on === "function") {
-      engineFacade.on("timerTick", ({ remaining, phase }) => {
-        if (phase === "round") {
-          const el = byId("cli-countdown");
-          if (el) {
-            // Respect any short-lived UI freeze requested by the outer CLI helper
-            try {
-              const freezeUntil = window.__battleCLIinit?.__freezeUntil || 0;
-              if (freezeUntil && Date.now() < freezeUntil) {
-                return;
-              }
-            } catch {}
-            el.dataset.remainingTime = String(remaining);
-            if (el.dataset.status !== "error") {
-              el.textContent = `Time remaining: ${remaining}`;
+    subscribeBattleApp("timerTick", ({ remaining, phase }) => {
+      if (phase === "round") {
+        const el = byId("cli-countdown");
+        if (el) {
+          // Respect any short-lived UI freeze requested by the outer CLI helper
+          try {
+            const freezeUntil = window.__battleCLIinit?.__freezeUntil || 0;
+            if (freezeUntil && Date.now() < freezeUntil) {
+              return;
             }
+          } catch {}
+          el.dataset.remainingTime = String(remaining);
+          if (el.dataset.status !== "error") {
+            el.textContent = `Time remaining: ${remaining}`;
           }
         }
-      });
-      engineFacade.on("matchEnded", ({ outcome }) => {
-        setRoundMessage(`Match over: ${outcome}`);
-        const announcementEl = byId("match-announcement");
-        if (announcementEl) {
-          announcementEl.textContent = `Match over. ${outcome === "playerWin" ? "You win!" : outcome === "opponentWin" ? "Opponent wins." : "It's a draw."}`;
-        }
-      });
-    }
+      }
+    });
+    subscribeBattleApp("matchEnded", ({ outcome }) => {
+      setRoundMessage(`Match over: ${outcome}`);
+      const announcementEl = byId("match-announcement");
+      if (announcementEl) {
+        announcementEl.textContent = `Match over. ${outcome === "playerWin" ? "You win!" : outcome === "opponentWin" ? "Opponent wins." : "It's a draw."}`;
+      }
+    });
   } catch {}
 }
 
@@ -3906,9 +3870,7 @@ export async function init() {
 
   // Assign the engine to the store for debug access
   try {
-    if (typeof engineFacade.getEngine === "function") {
-      store.engine = engineFacade.getEngine();
-    }
+    store.engine = dispatchBattleIntent("engine.get");
   } catch {}
 
   await resetMatch();

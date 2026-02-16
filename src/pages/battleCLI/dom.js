@@ -1,4 +1,4 @@
-import * as engineFacade from "../../helpers/BattleEngine.js";
+import { getSnapshot as getBattleSnapshot } from "../../helpers/classicBattle/battleAppService.js";
 
 // Phase 4: Simplified scoreboard helpers - now primarily rely on shared Scoreboard adapter
 // Dynamic import kept for fallback scenarios only
@@ -87,10 +87,7 @@ export function updateRoundHeader(round, target) {
   let resolvedTarget = target;
   if (resolvedTarget === undefined || resolvedTarget === null || resolvedTarget === "") {
     try {
-      const getter = engineFacade.getPointsToWin;
-      if (typeof getter === "function") {
-        resolvedTarget = getter();
-      }
+      resolvedTarget = getBattleSnapshot().pointsToWin;
     } catch {}
   }
   if (resolvedTarget === undefined || resolvedTarget === null || resolvedTarget === "") {
@@ -170,13 +167,8 @@ export function setRoundMessage(text) {
  * Fallback: CLI element for visual consistency
  */
 export function updateScoreLine(scoreOverride) {
-  let getScores;
-  try {
-    ({ getScores } = engineFacade);
-  } catch {}
-  const resolvedScores =
-    scoreOverride ??
-    (typeof getScores === "function" ? getScores() : { playerScore: 0, opponentScore: 0 });
+  const resolvedScores = scoreOverride ??
+    getBattleSnapshot().scores ?? { playerScore: 0, opponentScore: 0 };
   const { playerScore, opponentScore } = resolvedScores;
 
   // Phase 3: Primary update via shared Scoreboard component

@@ -21,14 +21,12 @@ import { updateScore, updateRoundCounter } from "../helpers/setupScoreboard.js";
 import { setupScoreboard } from "../helpers/setupScoreboard.js";
 import { syncScoreboardDisplay } from "../helpers/classicBattle/scoreDisplay.js";
 import {
-  createBattleEngine,
-  STATS,
-  on as onEngine,
-  getRoundsPlayed,
-  isMatchEnded,
-  getScores,
-  getPointsToWin
-} from "../helpers/BattleEngine.js";
+  dispatchIntent as dispatchBattleIntent,
+  subscribe as subscribeBattleApp,
+  getSnapshot as getBattleSnapshot,
+  STATS
+} from "../helpers/classicBattle/battleAppService.js";
+import { buildBootstrapConfig } from "../helpers/classicBattle/bootstrapPolicy.js";
 import { getStateSnapshot } from "../helpers/classicBattle/battleDebug.js";
 import { resolveRoundStartPolicy } from "../helpers/classicBattle/roundSelectModal.js";
 import { startTimer, onNextButtonClick } from "../helpers/classicBattle/timerService.js";
@@ -588,22 +586,15 @@ async function confirmMatchOutcome(store, result) {
   let engineScores = null;
   let enginePointsToWin = null;
   try {
-    if (!matchEnded && typeof isMatchEnded === "function" && isMatchEnded()) {
+    const battleSnapshot = getBattleSnapshot();
+    if (!matchEnded && battleSnapshot.matchEnded) {
       matchEnded = true;
       snapshot = snapshot || {};
     }
-    if (typeof getScores === "function") {
-      try {
-        engineScores = getScores();
-      } catch {}
-    }
-    if (typeof getPointsToWin === "function") {
-      try {
-        const candidate = Number(getPointsToWin());
-        if (Number.isFinite(candidate)) {
-          enginePointsToWin = candidate;
-        }
-      } catch {}
+    engineScores = battleSnapshot.scores;
+    const candidate = Number(battleSnapshot.pointsToWin);
+    if (Number.isFinite(candidate)) {
+      enginePointsToWin = candidate;
     }
   } catch (err) {
     console.debug("battleClassic: checking match end failed", err);
@@ -704,7 +695,7 @@ async function applySelectionResult(
   if (store && typeof store === "object") {
     let engineRounds = null;
     try {
-      const value = getRoundsPlayed();
+      const value = getBattleSnapshot().roundsPlayed;
       if (value !== null && value !== undefined) {
         const numericValue = Number(value);
         engineRounds = Number.isFinite(numericValue) ? numericValue : null;
@@ -724,7 +715,7 @@ async function applySelectionResult(
     if (typeof window !== "undefined" && window.__DEBUG_ROUNDS_SYNC) {
       try {
         console.log("[DEBUG] applySelectionResult sync:", {
-          getRoundsPlayed: getRoundsPlayed(),
+          getRoundsPlayed: getBattleSnapshot().roundsPlayed,
           engineRounds,
           storeRoundsBefore: store.roundsPlayed,
           matchEnded,
@@ -1516,7 +1507,7 @@ function wireGlobalBattleEvents(store) {
     } catch {}
   });
 
-  onEngine?.("matchEnded", (detail) => {
+  subscribeBattleApp("matchEnded", (detail) => {
     try {
       const outcome = String(detail?.outcome || "");
       if (outcome === "quit") return;
@@ -1658,7 +1649,7 @@ async function handleRoundStartEvent(store, evt) {
     }
   }
 
-  if (typeof isMatchEnded === "function" && isMatchEnded()) return;
+  if (getBattleSnapshot().matchEnded) return;
 }
 
 function wireRoundCycleEvents(store) {
@@ -1821,10 +1812,13 @@ async function initializePhase2_UI() {
 async function initializePhase3_Engine(store) {
   console.log("battleClassic: initializePhase3_Engine");
   const engineConfig = window.__ENGINE_CONFIG || {};
-  createBattleEngine({
-    ...engineConfig,
-    debugHooks: { getStateSnapshot, ...(engineConfig.debugHooks ?? {}) }
-  });
+  dispatchBattleIntent(
+    "engine.create",
+    buildBootstrapConfig({
+      engineConfig,
+      getStateSnapshot
+    })
+  );
   registerBridgeOnEngineCreated();
 
   const shouldDeferOrchestrator =
