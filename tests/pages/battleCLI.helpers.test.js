@@ -9,9 +9,18 @@ function createEngineStub({ pointsToWin = 10, scores } = {}) {
     playerScore: 0,
     opponentScore: 0
   };
+  const listeners = new Map();
   return {
     on: vi.fn((eventName, handler) => {
-      bus.addEventListener(eventName, (event) => handler(event.detail));
+      const wrapped = (event) => handler(event.detail);
+      listeners.set(handler, { eventName, wrapped });
+      bus.addEventListener(eventName, wrapped);
+    }),
+    off: vi.fn((eventName, handler) => {
+      const entry = listeners.get(handler);
+      if (!entry) return;
+      bus.removeEventListener(eventName, entry.wrapped);
+      listeners.delete(handler);
     }),
     emit(eventName, detail) {
       bus.dispatchEvent(new CustomEvent(eventName, { detail }));
@@ -34,6 +43,7 @@ function mockEngineFacade(overrides) {
     getScores: overrides.getScores,
     stopTimer: overrides.stopTimer,
     on: overrides.on,
+    off: overrides.off,
     emit: overrides.emit,
     getEngine: overrides.getEngine
   }));
@@ -114,6 +124,7 @@ describe("Battle CLI helpers", () => {
     it("toggles verbose UI when the engine facade is unavailable", async () => {
       const engineStub = {
         on: undefined,
+        off: undefined,
         emit: undefined,
         setPointsToWin: undefined,
         getPointsToWin: undefined,
@@ -212,6 +223,63 @@ describe("Battle CLI helpers", () => {
       engineStub.emit("matchEnded", { outcome: "playerWin" });
       expect(roundMessage.textContent).toBe("Match over: playerWin");
       expect(announcement.textContent).toBe("Match over. You win!");
+    });
+  });
+
+  describe("subscribeEngine cleanup", () => {
+    it("avoids duplicate timerTick and matchEnded reactions across subscribe/unwire cycles", async () => {
+      const engineStub = createEngineStub();
+      mockEngineFacade(engineStub);
+
+      const mod = await loadBattleCLI({ mockBattleEngine: false });
+      await mod.init();
+      const { subscribeEngine, unwireEvents } = await import("../../src/pages/battleCLI/init.js");
+
+      const countdown = document.getElementById("cli-countdown");
+      const roundMessage = document.getElementById("round-message");
+      const announcement = document.getElementById("match-announcement");
+
+      const cleanupA = subscribeEngine();
+      const cleanupB = subscribeEngine();
+      expect(typeof cleanupA).toBe("function");
+      expect(typeof cleanupB).toBe("function");
+
+      engineStub.emit("timerTick", { remaining: 4, phase: "round" });
+      engineStub.emit("matchEnded", { outcome: "playerWin" });
+      expect(countdown.textContent).toBe("Time remaining: 4");
+      expect(roundMessage.textContent).toBe("Match over: playerWin");
+      expect(announcement.textContent).toBe("Match over. You win!");
+
+      cleanupB();
+      const countdownAfterCleanup = countdown.textContent;
+      const roundMessageAfterCleanup = roundMessage.textContent;
+      const announcementAfterCleanup = announcement.textContent;
+
+      engineStub.emit("timerTick", { remaining: 3, phase: "round" });
+      engineStub.emit("matchEnded", { outcome: "opponentWin" });
+      expect(countdown.textContent).toBe(countdownAfterCleanup);
+      expect(roundMessage.textContent).toBe(roundMessageAfterCleanup);
+      expect(announcement.textContent).toBe(announcementAfterCleanup);
+
+      const cleanupC = subscribeEngine();
+      engineStub.emit("timerTick", { remaining: 2, phase: "round" });
+      engineStub.emit("matchEnded", { outcome: "opponentWin" });
+      expect(countdown.textContent).toBe("Time remaining: 2");
+      expect(roundMessage.textContent).toBe("Match over: opponentWin");
+      expect(announcement.textContent).toBe("Match over. Opponent wins.");
+
+      unwireEvents();
+      const countdownAfterUnwire = countdown.textContent;
+      const roundMessageAfterUnwire = roundMessage.textContent;
+      const announcementAfterUnwire = announcement.textContent;
+
+      engineStub.emit("timerTick", { remaining: 1, phase: "round" });
+      engineStub.emit("matchEnded", { outcome: "playerWin" });
+      expect(countdown.textContent).toBe(countdownAfterUnwire);
+      expect(roundMessage.textContent).toBe(roundMessageAfterUnwire);
+      expect(announcement.textContent).toBe(announcementAfterUnwire);
+
+      cleanupC();
     });
   });
 
