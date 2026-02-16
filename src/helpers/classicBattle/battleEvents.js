@@ -204,12 +204,13 @@ export function createBattleEventBus(options = {}) {
 
   const bus = {
     on(type, handler) {
-      target.addEventListener(type, handler);
       trackListener(type, handler);
+      target.addEventListener(type, handler);
     },
     off(type, handler) {
       target.removeEventListener(type, handler);
       untrackListener(type, handler);
+    },
     },
     emit(type, detail) {
       try {
