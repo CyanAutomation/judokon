@@ -28,6 +28,7 @@ import { getNextRoundControls } from "./roundManager.js";
 import { guard } from "./guard.js";
 import { safeGetSnapshot } from "./timerUtils.js";
 import { forceAutoSelectAndDispatch } from "./autoSelectHandlers.js";
+import { ensureClassicBattleScheduler } from "./timingScheduler.js";
 
 // Track timeout for cooldown warning to avoid duplicates.
 let cooldownWarningTimeoutId = null;
@@ -262,6 +263,9 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
   nextClickInFlight = true;
   try {
     if (controls) {
+      try {
+        controls?.timer?.stop?.();
+      } catch {}
       emitBattleEvent("skipCooldown", { source: "next-button" });
 
       if (cooldownWarningTimeoutId !== null) {
@@ -429,6 +433,7 @@ export function configureTimerCallbacks(
   timer?.on?.("tick", (remaining) => {
     try {
       const remainingSeconds = Math.max(0, Number(remaining) || 0);
+      emitEvent?.("timer.selection.tick", { remainingMs: remainingSeconds * 1000 });
       emitEvent?.("round.timer.tick", { remainingMs: remainingSeconds * 1000 });
     } catch {}
   });
@@ -514,6 +519,7 @@ export function handleTimerExpiration({
     } catch {}
 
     try {
+      emitEvent?.("timer.selection.expired");
       emitEvent?.("round.timer.expired");
     } catch {}
 
@@ -593,8 +599,12 @@ export async function startTimer(onExpiredSelect, store = null, dependencies = {
     showSnack = showSnackbar,
     translate = t,
     startRound = engineStartRound,
-    resolveDuration = resolveRoundTimerDuration
+    resolveDuration = resolveRoundTimerDuration,
+    scheduler = null
   } = dependencies;
+
+  const activeScheduler = ensureClassicBattleScheduler(scheduler);
+  void activeScheduler;
 
   const { duration, synced, restore } = await resolveDuration(scoreboardApi);
 

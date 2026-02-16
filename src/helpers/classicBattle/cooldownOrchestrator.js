@@ -20,6 +20,7 @@ import {
   DEFAULT_PROMPT_POLL_INTERVAL_MS
 } from "./opponentPromptWaiter.js";
 import { isOpponentPromptReady } from "./opponentPromptTracker.js";
+import { ensureClassicBattleScheduler } from "./timingScheduler.js";
 
 const ERROR_SCOPE = "classicBattle.roundManager";
 
@@ -253,10 +254,8 @@ export function initializeCooldownTelemetry({ schedulerProvided }) {
  * 2. Otherwise fall back to the shared real scheduler.
  */
 export function resolveActiveScheduler(candidate) {
-  if (candidate && typeof candidate.setTimeout === "function") {
-    return candidate;
-  }
-  return realScheduler;
+  void realScheduler;
+  return ensureClassicBattleScheduler(candidate);
 }
 
 /**
@@ -930,6 +929,7 @@ export function instantiateCooldownTimer(
         const remainingSeconds = Math.max(0, Number(remaining) || 0);
         // Cooldown ticks are display-only; avoid state transitions here.
         bus.emit("display.timer.tick", { secondsRemaining: remainingSeconds });
+        bus.emit("timer.cooldown.tick", { remainingMs: remainingSeconds * 1000 });
         bus.emit("cooldown.timer.tick", { remainingMs: remainingSeconds * 1000 });
       },
       { suppressInProduction: true }
@@ -989,22 +989,26 @@ export function createExpirationDispatcher({
   const { bus, expirationOptions } = runtime;
   const originalResolveReady =
     typeof controls.resolveReady === "function" ? controls.resolveReady : null;
+  runtime.expirationHandled = runtime.expirationHandled === true;
   const finalizeExpiration = (alreadyDispatchedReady = getReadyDispatched()) => {
+    if (runtime.expirationHandled) {
+      return Promise.resolve(false);
+    }
     if (runtime.finalizePromise) {
       return runtime.finalizePromise;
     }
+    runtime.expirationHandled = true;
     const runPromise = handleExpiration(controls, btn, {
       ...expirationOptions,
       alreadyDispatchedReady
     })
       .then((result) => {
-        if (result !== false) {
-          runtime.finalizePromise = null;
-        }
+        runtime.finalizePromise = null;
         return result;
       })
       .catch((error) => {
         runtime.finalizePromise = null;
+        runtime.expirationHandled = false;
         throw error;
       });
     runtime.finalizePromise = runPromise;
@@ -1049,6 +1053,7 @@ export function createExpirationDispatcher({
     safeRound(
       "wireCooldownTimer.onExpired.emitCompletion",
       () => {
+        bus.emit("timer.cooldown.expired");
         bus.emit("cooldown.timer.expired");
         bus.emit("control.countdown.completed");
       },
@@ -1098,6 +1103,7 @@ export function registerSkipHandlerForTimer({ runtime, controls, btn, handleExpi
       safeRound(
         "wireCooldownTimer.skip.emitCompletion",
         () => {
+          bus.emit("timer.cooldown.expired");
           bus.emit("cooldown.timer.expired");
           bus.emit("control.countdown.completed");
         },

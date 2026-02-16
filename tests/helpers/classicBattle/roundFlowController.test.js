@@ -7,6 +7,7 @@ const handlerRegistry = new Map();
 const onBattleEventMock = vi.fn((type, handler) => {
   handlerRegistry.set(type, handler);
 });
+const emitBattleEventMock = vi.fn();
 
 const getSelectionDelayOverrideMock = vi.fn(() => 25);
 const getOpponentDelayMock = vi.fn(() => 5);
@@ -17,6 +18,7 @@ const handleRoundResolvedEventMock = vi.fn(async () => {});
 
 vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
   onBattleEvent: onBattleEventMock,
+  emitBattleEvent: emitBattleEventMock,
   getBattleEventTarget: vi.fn(() => new EventTarget())
 }));
 
@@ -52,6 +54,7 @@ describe("roundFlowController", () => {
     getOpponentDelayMock.mockClear();
     isEnabledMock.mockClear();
     showRoundOutcomeMock.mockClear();
+    emitBattleEventMock.mockClear();
     handleRoundStartedEventMock.mockClear();
     handleRoundResolvedEventMock.mockClear();
   });
@@ -82,5 +85,34 @@ describe("roundFlowController", () => {
     await vi.advanceTimersByTimeAsync(1);
     expect(getSelectionDelayOverrideMock).toHaveBeenCalledTimes(1);
     expect(showRoundOutcomeMock).toHaveBeenCalledWith("Player wins", "speed", 9, 7);
+    expect(emitBattleEventMock).toHaveBeenCalledWith("timer.opponentDelay.expired", {
+      sequence: 1,
+      delayMs: 25
+    });
+  });
+
+  it("cancels stale opponent-delay outcome when a newer result arrives", async () => {
+    const { bindRoundFlowController } = await import(
+      "../../../src/helpers/classicBattle/roundFlowController.js"
+    );
+
+    bindRoundFlowController();
+
+    const evaluated = handlerRegistry.get("round.evaluated");
+    const stateChanged = handlerRegistry.get(EVENT_TYPES.STATE_TRANSITIONED);
+
+    await evaluated({ detail: { message: "old", stat: "speed", playerVal: 2, opponentVal: 1 } });
+    stateChanged({ detail: { to: "roundDisplay" } });
+    await vi.advanceTimersByTimeAsync(10);
+
+    await evaluated({ detail: { message: "new", stat: "power", playerVal: 5, opponentVal: 1 } });
+    stateChanged({ detail: { to: "roundDisplay" } });
+
+    await vi.advanceTimersByTimeAsync(15);
+    expect(showRoundOutcomeMock).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(10);
+    expect(showRoundOutcomeMock).toHaveBeenCalledTimes(1);
+    expect(showRoundOutcomeMock).toHaveBeenCalledWith("new", "power", 5, 1);
   });
 });
