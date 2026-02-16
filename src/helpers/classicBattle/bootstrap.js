@@ -167,7 +167,7 @@ export async function setupClassicBattlePage() {
       }
     }
   }
-  startPromise.catch(() => {});
+  return readyDebugApi;
   return readyDebugApi;
 }
 
