@@ -115,8 +115,11 @@ describe("battleCLI init helpers", () => {
     }
     emitBattleEvent.mockClear();
 
-    // Use the regular event path to establish the guard precondition.
+    // Establish the guard precondition via the runtime event path so the test
+    // exercises the same listener wiring used in production.
     emitBattleEvent("battleStateChange", { to: "waitingForMatchStart", event: "startClicked" });
+    expect(document.body.dataset.battleState).toBe("waitingForMatchStart");
+
     emitBattleEvent("battleStateChange", { to: "roundSelect" });
 
     expect(document.body.dataset.battleState).not.toBe("roundSelect");
