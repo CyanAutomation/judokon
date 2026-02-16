@@ -1100,7 +1100,12 @@ function initSeed() {
     setTestMode({ enabled: true, seed });
     dispatchBattleIntent(
       "engine.create",
-      buildBootstrapConfig({ engineConfig: { seed }, seed, forceCreate: true })
+      buildBootstrapConfig({
+        engineConfig: { seed },
+        getStateSnapshot,
+        seed,
+        forceCreate: true
+      })
     );
     persistCliSeed(seed);
   };

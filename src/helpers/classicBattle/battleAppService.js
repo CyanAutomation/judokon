@@ -27,6 +27,17 @@ const INTENT_HANDLERS = Object.freeze({
   "battle.interruptMatch": (payload = {}) => getFacadeMethod("interruptMatch")?.(payload.reason)
 });
 
+/**
+ * Route app-level battle intents to the engine facade.
+ *
+ * @param {string} intent - Intent key that maps to a facade action.
+ * @param {Record<string, unknown>} [payload={}] - Optional payload forwarded to the mapped action.
+ * @returns {unknown} Handler return value from the facade.
+ * @pseudocode
+ * lookup handler from frozen intent map
+ * if handler is missing, throw unsupported-intent error
+ * invoke handler with payload and return facade result
+ */
 export function dispatchIntent(intent, payload = {}) {
   const handler = INTENT_HANDLERS[intent];
   if (typeof handler !== "function") {
@@ -35,6 +46,18 @@ export function dispatchIntent(intent, payload = {}) {
   return handler(payload);
 }
 
+/**
+ * Subscribe to engine events through the facade and return safe cleanup.
+ *
+ * @param {string} eventName - Event name to subscribe to.
+ * @param {(payload?: unknown) => void} handler - Listener callback.
+ * @returns {() => void} Cleanup callback that unregisters only successful subscriptions.
+ * @pseudocode
+ * validate event name and handler types
+ * resolve the facade on() method; return noop when unavailable
+ * call on() in try/catch and track successful subscription
+ * return cleanup callback that only calls off() when subscription succeeded
+ */
 export function subscribe(eventName, handler) {
   if (typeof eventName !== "string" || typeof handler !== "function") {
     return () => {};
@@ -43,16 +66,30 @@ export function subscribe(eventName, handler) {
   if (!onMethod) {
     return () => {};
   }
+  let subscribed = false;
   try {
     onMethod(eventName, handler);
+    subscribed = true;
   } catch {
     return () => {};
   }
   return () => {
-    getFacadeMethod("off")?.(eventName, handler);
+    if (subscribed) {
+      getFacadeMethod("off")?.(eventName, handler);
+    }
   };
 }
 
+/**
+ * Read immutable battle state snapshots from the facade.
+ *
+ * @returns {{pointsToWin: unknown, scores: Readonly<Record<string, number>>, roundsPlayed: number, matchEnded: boolean, timerState: Readonly<Record<string, unknown>>, currentStats: Readonly<Record<string, unknown>>}} Immutable state snapshot.
+ * @pseudocode
+ * read points, score, rounds, match state, timer, and current stats from facade
+ * apply safe defaults when methods are missing
+ * clone nested objects and freeze them
+ * return frozen aggregate snapshot object
+ */
 export function getSnapshot() {
   const pointsToWin = getFacadeMethod("getPointsToWin")?.();
   const scores = getFacadeMethod("getScores")?.() ?? { playerScore: 0, opponentScore: 0 };
@@ -71,4 +108,9 @@ export function getSnapshot() {
   });
 }
 
+/**
+ * Re-exported battle stat identifiers for surface modules.
+ *
+ * @type {Readonly<Record<string, string>>}
+ */
 export { STATS };
