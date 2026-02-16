@@ -62,6 +62,11 @@ let latestPersistedRevision = 0;
  * @template T
  * @param {() => Promise<T> | T} task
  * @returns {Promise<T>}
+ *
+ * @pseudocode
+ * 1. Create a promise (`run`) by appending `task` onto the current `writeQueue` chain.
+ * 2. Reassign `writeQueue` to `run.catch(() => {})` so task failures do not break future queueing.
+ * 3. Return `run` so callers can await the specific queued task result/failure.
  */
 function enqueueWriteTask(task) {
   const run = writeQueue.then(task);
@@ -73,6 +78,10 @@ function enqueueWriteTask(task) {
  * Issue a monotonic revision token for a queued settings payload.
  *
  * @returns {number}
+ *
+ * @pseudocode
+ * 1. Increment `latestQueuedRevision` by one.
+ * 2. Return the incremented value as the new revision token.
  */
 function issueWriteRevision() {
   latestQueuedRevision += 1;
@@ -85,6 +94,11 @@ function issueWriteRevision() {
  * @param {import("../config/settingsDefaults.js").Settings} settings
  * @param {number} revision
  * @returns {boolean}
+ *
+ * @pseudocode
+ * 1. Mark revision as stale when it is less than `latestQueuedRevision` or not greater than `latestPersistedRevision`.
+ * 2. If stale, return `false` immediately without persisting.
+ * 3. Otherwise write to `localStorage` (when available), update cached settings, set `latestPersistedRevision`, and return `true`.
  */
 function persistSettingsIfCurrent(settings, revision) {
   const isStale = revision < latestQueuedRevision || revision <= latestPersistedRevision;
