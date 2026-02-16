@@ -90,6 +90,135 @@ JU-DO-KON! relies on a centralized tooltip system for in-game guidance, but ther
 
 ---
 
+## Tooltip Viewer Navigation Diagrams
+
+### 6.17.1: Tooltip Loading & Preview Rendering Pipeline
+
+```mermaid
+flowchart TD
+    A[Viewer Initializes] -->|Load tooltips.json| B[Parse JSON]
+    B -->|Valid?| C{Check Status}
+    C -->|Valid| D[Extract Key-Value]
+    C -->|Invalid| E["Show Parse Error<br/>Line/Column Number"]
+    
+    D -->|Sort Keys| F[Populate Sidebar]
+    F -->|Default Select| G[First Key]
+    G -->|Render Preview| H[Show Markdown]
+    H -->|Check Format| I{Valid Markdown?}
+    I -->|Yes| J[Pretty Display]
+    I -->|No| K["Warn:<br/>Malformed MD"]
+    
+    J -->|Check Content| L{Empty/Bad?}
+    K --> L
+    L -->|Yes| M["Flag with<br/>Red Icon"]
+    L -->|No| N["✅ Standard"]
+    
+    E -->|Error Badge| O["User Sees<br/>Error"]
+    M -->|Visual| P[Display]
+    N -->|Visual| P
+    
+    style A fill:#lightblue
+    style B fill:#lightyellow
+    style D fill:#lightgreen
+    style F fill:#lightgreen
+    style H fill:#lightgreen
+    style I fill:#lightyellow
+    style K fill:#lightsalmon
+    style M fill:#lightsalmon
+    style N fill:#lightgreen
+    style P fill:#lightgreen
+```
+
+**Tooltip Loading & Preview:**
+The viewer loads tooltips.json and parses all entries. If JSON is invalid, line/column numbers help with debugging. Sidebar lists all keys sorted alphabetically. Defaults select the first key. Preview pane renders markdown with warning badges for malformed or empty entries. All states update without page reload.
+
+### 6.17.2: Sidebar Search & Filter Interaction
+
+```mermaid
+stateDiagram-v2
+    [*] --> SidebarVisible
+    SidebarVisible: All Keys Listed
+    SidebarVisible: Zebra Striped
+    SidebarVisible: ~300px Truncate
+    SidebarVisible --> SearchReady
+    
+    SearchReady: Input Ready
+    SearchReady: Debounced
+    SearchReady -->|Type Text| Searching
+    
+    Searching: Filter Keys
+    Searching: Match Key\|Body
+    Searching: Update Results
+    Searching -->|Matches| Filtered
+    Searching -->|No Match| Empty
+    
+    Filtered: Show Matches
+    Filtered: Category Highlight
+    Filtered -->|Click File| Selecting
+    
+    Empty: "No Results"
+    Empty -->|Clear Search| SearchReady
+    
+    Selecting: Highlight Row
+    Selecting: Load Preview
+    Selecting -->|Update Preview| SidebarVisible
+    
+    SidebarVisible --> [*]
+    
+    style SidebarVisible fill:#lightgreen
+    style SearchReady fill:#lightblue
+    style Searching fill:#lightyellow
+    style Filtered fill:#lightgreen
+    style Selecting fill:#lightblue
+```
+
+**Search & Filter Workflow:**
+Debounced search input filters tooltip keys and body text in real-time. Category highlighting groups results by prefix (stat, ui, mode). Sidebar uses zebra striping for readability. Click or keyboard navigation (arrows/enter) selects tooltips and updates the preview pane.
+
+### 6.17.3: Preview Panel & Copy/Export Features
+
+```mermaid
+flowchart LR
+    A[Key Selected] -->|Render| B["Display Markdown<br/>+ Raw Text"]
+    B -->|Long Value?| C{Length>300px?}
+    C -->|Yes| D["Truncate+<br/>Add Disclosure"]
+    C -->|No| E["Full Display"]
+    
+    D -->|Click Details| F["Expand<br/>Full Value"]
+    E --> G["Show Content"]
+    F --> G
+    
+    G -->|Copy Key| H["Copy to<br/>Clipboard"]
+    G -->|Copy Body| I["Copy<br/>Content"]
+    
+    H -->|Show Toast| J["✅ Copied!"]
+    I -->|Show Toast| J
+    
+    J -->|Highlight| K{Dark Mode?}
+    K -->|Yes| L["Bright Color<br/>#Link"]
+    K -->|No| M["Standard Color"]
+    
+    L --> N[WCAG AA]
+    M --> N
+    
+    N -->|Ready| O["Next Tooltip"]
+    
+    style A fill:#lightblue
+    style B fill:#lightgreen
+    style D fill:#lightyellow
+    style G fill:#lightgreen
+    style H fill:#lightyellow
+    style I fill:#lightyellow
+    style J fill:#lightgreen
+    style L fill:#lightyellow
+    style N fill:#lightgreen
+```
+
+**Preview & Copy-to-Clipboard:**
+The preview pane displays selected tooltip in both rendered markdown and raw text. Long values (>300px) are truncated with native `<details>/<summary>` disclosure toggle. Copy buttons for key and body text show instant feedback (toast message). In dark mode, selected keys use bright --link-color for WCAG AA contrast.
+
+---
+
 ## Acceptance Criteria
 
 - Loads and displays all tooltip entries from `tooltips.json` in a searchable, scrollable list.

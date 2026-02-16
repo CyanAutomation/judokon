@@ -68,10 +68,7 @@ describe("battleCLI onKeyDown", () => {
     vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
     dispatchSpy = mockDispatchSpy;
     emitSpy = mockEmitSpy;
-    ({
-      onKeyDown,
-      battleCLI: __test
-    } = await import("../../src/pages/index.js"));
+    ({ onKeyDown, battleCLI: __test } = await import("../../src/pages/index.js"));
     __test.ensureCliDomForTest({ reset: true });
     document.body.className = "";
     document.body.dataset.battleState = "";
@@ -337,7 +334,7 @@ describe("battleCLI onKeyDown", () => {
   it("dispatches continue in roundDisplay state", () => {
     document.body.dataset.battleState = "roundDisplay";
     onKeyDown(new KeyboardEvent("keydown", { key: "Enter" }));
-    expect(emitSpy).toHaveBeenCalledWith("outcomeConfirmed");
+    expect(emitSpy).toHaveBeenCalledWith("outcomeConfirmed", undefined);
   });
 
   it("dispatches ready in cooldown state for Enter and Space", () => {

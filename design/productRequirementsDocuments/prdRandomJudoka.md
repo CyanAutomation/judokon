@@ -57,6 +57,120 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 ---
 
+## Random Judoka Draw Diagrams
+
+### 6.16.1: Draw Button State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> IDLE
+    IDLE: Button Enabled
+    IDLE: "Draw" Label
+    IDLE --> DRAWING: User Taps Button
+    
+    DRAWING: Button Disabled
+    DRAWING: Show Loading
+    DRAWING: Debounce Active
+    DRAWING --> SUCCESS: Card Generated
+    DRAWING --> ERROR: Random Failed
+    
+    SUCCESS: Animation Playing
+    SUCCESS: Card Revealing
+    SUCCESS --> IDLE: Animation Ends
+    
+    ERROR: Fallback Shown
+    ERROR: Show Message
+    ERROR --> IDLE: User Retry Click
+    
+    IDLE --> [*]
+    
+    style IDLE fill:#lightgreen
+    style DRAWING fill:#lightyellow
+    style SUCCESS fill:#lightgreen
+    style ERROR fill:#lightsalmon
+```
+
+**Draw Button Lifecycle:**
+The draw button operates through a 4-state cycle: IDLE (ready to tap), DRAWING (disabled/loading), SUCCESS (animation playing), ERROR (fallback shown). Debouncing prevents rapid repeated taps. Button remains disabled during animation to prevent double-draws.
+
+### 6.16.2: Card Generation with History Tracking
+
+```mermaid
+flowchart TD
+    A[User Taps Draw] -->|Check Active List| B{Cards Available?}
+    B -->|Yes| C[Generator Active]
+    B -->|No| D[Use Fallback]
+    
+    C -->|crypto.getRandomValues| E[Random Index]
+    E -->|Select Card| F[Get judoka.json]
+    D -->|Load id=0| F
+    
+    F -->|generateJudokaCardHTML| G[Render DOM]
+    G -->|Apply Animation| H{Reduce Motion?}
+    H -->|Disabled| I[Play Fade+Slide]
+    H -->|Enabled| J[Display Instant]
+    
+    I -->|400ms Duration| K[Reveal Complete]
+    J -->|No Wait| K
+    
+    K -->|Add to History| L["Update History<br/>Panel"]
+    L -->|Store Card ID| M[Remember Draw]
+    M -->|Ready| N[Next Tap OK]
+    
+    L -->|Reset After 24h| O{Time Passed?}
+    O -->|Yes| P[Clear History]
+    
+    style A fill:#lightblue
+    style C fill:#lightyellow
+    style F fill:#lightblue
+    style G fill:#lightyellow
+    style K fill:#lightgreen
+    style L fill:#lightgreen
+    style M fill:#lightgreen
+    style N fill:#lightgreen
+```
+
+**Card Generation & History Management:**
+The system selects from active judoka (skipping hidden entries), generates HTML, applies reveal animations (respecting Reduce Motion), and tracks drawn cards in the history panel. Each successful draw stores the card ID for reference. History auto-clears after 24 hours.
+
+### 6.16.3: Error Handling & Fallback Strategy
+
+```mermaid
+flowchart LR
+    A{Draw Attempted} -->|Success| B["✅ Card Ready"]
+    A -->|Fail| C{Error Type?}
+    
+    C -->|Empty List| D["No Cards<br/>Available"]
+    C -->|Load Error| E["Parse/API<br/>Failed"]
+    C -->|Random Fail| F["Selection<br/>Failed"]
+    
+    D -->|Fallback| G["Load id=0<br/>Default Card"]
+    E -->|Fallback| G
+    F -->|Fallback| G
+    
+    G -->|Display| H["Show Fallback<br/>Card"]
+    H -->|Log Error| I["Browser Console"]
+    I -->|Ready| J["✅ User Can Retry"]
+    
+    B -->|Render| K[Success]
+    J -->|Render| L[Fallback Mode]
+    
+    style B fill:#lightgreen
+    style C fill:#lightyellow
+    style D fill:#lightsalmon
+    style E fill:#lightsalmon
+    style F fill:#lightsalmon
+    style G fill:#lightsalmon
+    style J fill:#lightgreen
+    style K fill:#lightgreen
+    style L fill:#lightsalmon
+```
+
+**Robust Error Handling:**
+Any draw failure (empty card list, parse error, random selection failure) triggers the fallback card (judoka id=0). Errors are logged to console for debugging. Users can immediately retry without page reload. The system never displays a broken state.
+
+---
+
 ## Acceptance Criteria
 
 - A random judoka is displayed on each visit (≥95% of sessions).

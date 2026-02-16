@@ -59,6 +59,122 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 
 ---
 
+## Text Conversion Workflow Diagrams
+
+### 6.15.1: Pseudo-Japanese Conversion Pipeline
+
+```mermaid
+flowchart TD
+    A["User Sees Quote<br/>English Default"] --> B{Conversion Ready?}
+    B -->|Yes| C[Load JSON Map]
+    B -->|No| D[Load Fallback]
+    
+    C -->|Parse Mapping| E[Clean Input]
+    E -->|Remove Unsupported| F[Map Characters]
+    F -->|Character-by-Char| G{All Mapped?}
+    
+    G -->|Yes| H[Build Pseudo-JP]
+    G -->|No| I{Substitute?}
+    I -->|Yes| J["Random Pseudo<br/>Char"]
+    I -->|No| K[Skip Character]
+    
+    J --> H
+    K --> H
+    H -->|Validate| L{Valid Output?}
+    L -->|Yes| M[Display Converted]
+    L -->|No| D
+    
+    D -->|Static Fallback| N{Fallback Set?}
+    N -->|Yes| O[Show Fallback]
+    N -->|No| P[Show English]
+    
+    style A fill:#lightblue
+    style C fill:#lightyellow
+    style E fill:#lightyellow
+    style F fill:#lightyellow
+    style H fill:#lightgreen
+    style M fill:#lightgreen
+    style O fill:#lightsalmon
+    style P fill:#lightgray
+```
+
+**Conversion Pipeline:**
+The system loads a local JSON mapping file to convert English text character-by-character to pseudo-Japanese aesthetics. Unsupported characters are substituted with random pseudo-Japanese alternatives. If local conversion fails, pre-converted static fallback text displays. Validation ensures conversion accuracy before display.
+
+### 6.15.2: Toggle & Language State Management
+
+```mermaid
+stateDiagram-v2
+    [*] --> English
+    English: Quote in English
+    English: Default Display
+    English -->|User Clicks Toggle| Transitioning
+    
+    Transitioning: Fade Out 150ms
+    Transitioning -->|Toggle Complete| Pseudo
+    
+    Pseudo: Quote in Pseudo-JP
+    Pseudo: Font: Mincho/Gothic
+    Pseudo -->|User Clicks Toggle| Transitioning
+    
+    Transitioning -->|Conversion Error| Error
+    Error: Fallback Active
+    Error -->|Retry| English
+    Error -->|Close| [*]
+    
+    English --> [*]
+    Pseudo --> [*]
+    
+    style English fill:#lightgreen
+    style Pseudo fill:#lightgreen
+    style Transitioning fill:#lightyellow
+    style Error fill:#lightsalmon
+```
+
+**Language Toggle State Machine:**
+Quotes toggle between English and pseudo-Japanese within 200ms. Fading animation (150ms) smooths the transition and respects user motion preferences. Error states fall back to English or static pseudo-Japanese while allowing retry.
+
+### 6.15.3: Fallback Strategy & Error Handling
+
+```mermaid
+flowchart LR
+    A[Quote Ready] -->|Try| B["Local JSON<br/>Conversion"]
+    B -->|Success| C["✅ Use Result"]
+    B -->|Fail| D{API Available?}
+    
+    D -->|Test Only| E["Validate API<br/>Against Local"]
+    D -->|No| F["Use Static<br/>Fallback"]
+    
+    E -->|Match| G["✓ Accurate"]
+    E -->|Mismatch| H["⚠️ Review<br/>Log Error"]
+    
+    G -->|Production| I[Use Local]
+    H -->|Log Data| J[Investigation]
+    F -->|Empty/Null| K["Show English<br/>Quote"]
+    F -->|Has Value| L["Show Fallback<br/>Pseudo-JP"]
+    
+    C --> M[Display]
+    I --> M
+    L --> M
+    K --> M
+    
+    style A fill:#lightblue
+    style B fill:#lightyellow
+    style C fill:#lightgreen
+    style D fill:#lightyellow
+    style F fill:#lightsalmon
+    style G fill:#lightgreen
+    style H fill:#lightyellow
+    style K fill:#lightgray
+    style L fill:#lightsalmon
+    style M fill:#lightgreen
+```
+
+**Multi-Layer Fallback System:**
+System tries local JSON mapping first (fastest). During testing, API validation confirms accuracy. If local fails, static pre-converted text displays. If fallback unavailable, English quote shows. All failures log errors for investigation without disrupting user experience.
+
+---
+
 ## Acceptance Criteria
 
 - Input text is converted locally using a JSON mapping file.

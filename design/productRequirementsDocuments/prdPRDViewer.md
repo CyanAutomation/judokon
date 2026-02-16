@@ -68,6 +68,128 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
 ---
 
+## PRD Viewer Navigation Diagrams
+
+### 6.14.1: PRD Loading & Markdown Rendering Pipeline
+
+```mermaid
+flowchart TD
+    A[Viewer Initializes] -->|Query Param| B{“?doc=” Set?}
+    B -->|Yes| C{File Valid?}
+    B -->|No| D[Load First PRD]
+    
+    C -->|Yes| E[Load Specific]
+    C -->|No| D
+    
+    E -->|Fetch Markdown| F[Show Spinner]
+    D -->|Fetch Markdown| F
+    
+    F -->|Parse Markdown| G[Convert to HTML]
+    G -->|Render Headings| H[Format Tables]
+    H -->|Format Code| I[Syntax Highlight]
+    I -->|Remove Spinner| J[Display Content]
+    
+    J -->|Extract Tasks| K[Count Tasks]
+    K -->|Calculate %| L[Show Summary]
+    
+    M[Load Failure] -->|404/Parse Error| N[Show Error]
+    N -->|Continue Nav| O[Load Next]
+    
+    style A fill:#lightblue
+    style F fill:#lightyellow
+    style G fill:#lightyellow
+    style J fill:#lightgreen
+    style L fill:#lightgreen
+    style M fill:#lightsalmon
+    style N fill:#lightsalmon
+    style O fill:#lightblue
+```
+
+**PRD Loading & Rendering:**
+The viewer fetches markdown files from the PRD directory, converts them to styled HTML with proper formatting for headings, tables, and code blocks. If loading fails, an error message shows but navigation continues. Task summaries extract and display completion percentages from each PRD.
+
+### 6.14.2: Navigation Controls & Keyboard Shortcuts
+
+```mermaid
+stateDiagram-v2
+    [*] --> Viewing
+    Viewing: Display PRD
+    Viewing: Sidebar Visible
+    Viewing: Ready for Input
+    
+    Viewing -->|Sidebar Click| Selecting
+    Viewing -->|Right Arrow| Next
+    Viewing -->|Left Arrow| Previous
+    Viewing -->|Swipe Right| Previous
+    Viewing -->|Swipe Left| Next
+    
+    Selecting: File Highlighted
+    Selecting -->|Update URL| UrlSync
+    Previous: Load Prev PRD
+    Previous --> UrlSync
+    Next: Load Next PRD
+    Next --> UrlSync
+    
+    UrlSync: Push History
+    UrlSync: Update ?doc=
+    UrlSync -->|Render| Viewing
+    
+    Viewing -->|Click Home| Exiting
+    Exiting: Navigate to \\n    Exiting --> [*]
+    
+    style Viewing fill:#lightgreen
+    style Selecting fill:#lightblue
+    style Previous fill:#lightblue
+    style Next fill:#lightblue
+    style UrlSync fill:#lightyellow
+    style Exiting fill:#lightsalmon
+```
+
+**Navigation Input Methods:**
+Users navigate via sidebar selection, keyboard arrows (left/right), touch swipes with 30px threshold, or direct URL query parameters. All navigation methods update the URL and history so browser back/forward work correctly. Sidebar selection is synced with the active PRD for visual feedback.
+
+### 6.14.3: Responsive Layout & Accessibility Features
+
+```mermaid
+graph TD
+    A[Viewer Layout] --> B[Header]
+    B --> B1[Logo Link]
+    B --> B2[Title]
+    B --> B3[Task Summary]
+    
+    A --> C[Main Content]
+    C --> C1[Sidebar]
+    C --> C2[PRD Content]
+    
+    C1 -->|Fixed Left| C1a[PRD List]
+    C1a -->|Zebra Stripe| C1b[Alternating Colors]
+    C1a -->|Independent| C1c[Scroll Only]
+    
+    C2 -->|Scrollable| C2a[Markdown HTML]
+    C2a -->|Fade In| C2b[Animate on Load]
+    
+    D[Accessibility] --> E{Screen Size}
+    E -->|Desktop| F[Side-by-Side]
+    E -->|Tablet| G[Sidebar Top]
+    E -->|Mobile| G
+    
+    H[Keyboard] -->|Tab| I[Focus Management]
+    H -->|Enter/Space| J[Select Document]
+    H -->|Esc| K[Return Home]
+    
+    style C1 fill:#lightblue
+    style C2 fill:#lightgreen
+    style F fill:#lightblue
+    style G fill:#lightyellow
+    style I fill:#lightgreen
+    style J fill:#lightgreen
+```
+
+**Layout & Accessibility Standards:**
+Desktop displays fixed sidebar and scrollable content; mobile stacks them. All text meets WCAG AA contrast ratios. Sidebar uses zebra striping with --color-surface and --color-tertiary tokens. Full keyboard navigation (TAB, arrows, ENTER, ESC) with visible focus states. Animations respect Reduce Motion preferences. Logo link provides quick exit to homepage.
+
+---
+
 ## Acceptance Criteria
 
 - Given the PRD Viewer is opened, when loading the markdown files in `design/productRequirementsDocuments/`, then all files are loaded and displayed in sequence. **(Implemented)**
