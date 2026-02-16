@@ -106,6 +106,7 @@ describe("battleCLI init helpers", () => {
     const emitBattleEvent = battleEvents.emitBattleEvent;
     emitBattleEvent.mockClear();
 
+    document.body.dataset.battleState = "waitingForMatchStart";
     emitBattleEvent("battleStateChange", { to: "waitingForMatchStart", event: "startClicked" });
     emitBattleEvent("battleStateChange", { to: "roundSelect" });
 
