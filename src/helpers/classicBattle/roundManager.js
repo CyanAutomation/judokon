@@ -16,6 +16,7 @@ import logger from "../logger.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
+import { buildBootstrapConfig } from "./bootstrapPolicy.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { createEventBus } from "./eventBusUtils.js";
 import { updateDebugPanel } from "./debugPanel.js";
@@ -23,11 +24,6 @@ import { setNextButtonFinalizedState } from "./uiHelpers.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
 import { SESSION_PROJECTION_FIELDS, VIEW_PROJECTION_FIELDS } from "./stateOwnership.js";
-
-const buildEngineConfig = (config = {}) => ({
-  ...config,
-  debugHooks: { getStateSnapshot, ...(config.debugHooks ?? {}) }
-});
 
 // Guard & storage utilities
 import { enterStoreGuard, getHiddenStoreValue, setHiddenStoreValue } from "./storeGuard.js";
@@ -211,7 +207,7 @@ export async function handleReplay(store) {
       }
     }
 
-    createBattleEngine(buildEngineConfig({ forceCreate: true }));
+    createBattleEngine(buildBootstrapConfig({ getStateSnapshot, forceCreate: true }));
   };
 
   safeRound("handleReplay.resetEngine", resetEngine, { suppressInProduction: true });
@@ -1262,7 +1258,9 @@ export function _resetForTest(store, preserveConfig = {}) {
           safeRound(
             "_resetForTest.createEngineForVitest",
             () => {
-              createBattleEngine(buildEngineConfig(preserveConfig));
+              createBattleEngine(
+                buildBootstrapConfig({ engineConfig: preserveConfig, getStateSnapshot })
+              );
             },
             { suppressInProduction: true }
           ),
@@ -1273,7 +1271,10 @@ export function _resetForTest(store, preserveConfig = {}) {
     // In production, always create a fresh engine with preserved config
     safeRound(
       "_resetForTest.createEngine",
-      () => createBattleEngine(buildEngineConfig(preserveConfig)),
+      () =>
+        createBattleEngine(
+          buildBootstrapConfig({ engineConfig: preserveConfig, getStateSnapshot })
+        ),
       {
         suppressInProduction: true,
         rethrow: true

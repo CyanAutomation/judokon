@@ -12,7 +12,7 @@ import createClassicBattleDebugAPI from "./setupTestHelpers.js";
 import { onDomReady } from "../domReady.js";
 import { resolveRoundStartPolicy } from "./roundSelectModal.js";
 import { isEnabled } from "../featureFlags.js";
-import * as engineFacade from "../BattleEngine.js";
+import { dispatchIntent as dispatchBattleIntent } from "./battleAppService.js";
 import { registerBridgeOnEngineCreated } from "./orchestrator.js";
 import { setupScoreboard } from "../setupScoreboard.js";
 // Test API exposure for Playwright and unit tests
@@ -44,7 +44,7 @@ function canAccessWindow() {
  */
 export function createBattleClassic() {
   try {
-    engineFacade.createBattleEngine?.();
+    dispatchBattleIntent("engine.create");
     registerBridgeOnEngineCreated();
   } catch (err) {
     if (typeof console !== "undefined" && typeof console.warn === "function") {

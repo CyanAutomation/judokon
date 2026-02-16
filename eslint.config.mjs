@@ -62,6 +62,28 @@ export default defineConfig([
       "no-empty": ["error", { allowEmptyCatch: false }]
     }
   },
+
+  {
+    files: ["src/pages/**/*.js", "src/helpers/classicBattle/bootstrap.js"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: [
+                "**/helpers/BattleEngine.js",
+                "../BattleEngine.js",
+                "../../helpers/BattleEngine.js"
+              ],
+              message:
+                "Surface modules must use classicBattle/battleAppService.js instead of importing BattleEngine directly."
+            }
+          ]
+        }
+      ]
+    }
+  },
   // YAML support (GitHub Actions, config files)
   // Use plugin-provided flat configs for sensible defaults
   ymlPlugin.configs["flat/standard"],
