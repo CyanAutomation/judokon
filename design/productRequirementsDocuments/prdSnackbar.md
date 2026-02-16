@@ -188,6 +188,29 @@ stateDiagram-v2
     end note
 ```
 
+**Mutation Priority Rules (Normative)**:
+
+When multiple mutations for snackbar state are eligible in the same frame, the implementation **MUST** apply them in this strict order:
+
+1. **Explicit `dismissSnackbar(id)`**
+2. **Overflow eviction** triggered while enqueueing beyond the visible limit
+3. **Timer expiry**
+
+Additional deterministic rules:
+
+- Once an item enters **`Dismissing`**, the system **MUST ignore** all subsequent updates targeting that item.
+- `updateSnackbar()` **MUST target only the latest still-visible item**.
+- If the `updateSnackbar()` target is absent, the operation **MUST be a no-op** (it must not create a new snackbar).
+
+**Same-Frame Resolution Examples**:
+
+| Same-frame event set | Priority-applied order | Expected result |
+| --- | --- | --- |
+| `dismissSnackbar(B)`, `timerExpired(B)` | `dismissSnackbar(B)` → `timerExpired(B)` ignored | `B` transitions to `Dismissing` once; no duplicate removal side effects. |
+| `showSnackbar(C)` with queue `[A,B]`, `timerExpired(A)` | overflow eviction (`A`) → timer expiry (`A`) ignored | Queue becomes `[B,C]`; `A` is dismissed only once. |
+| `showSnackbar(C)` with queue `[A,B]`, `dismissSnackbar(B)` | `dismissSnackbar(B)` → overflow eviction | `B` enters `Dismissing`; overflow then evicts `A`; visible queue resolves to `[C]` after removals settle. |
+| `updateSnackbar("X")` with no visible items | update target lookup fails | No-op; queue remains empty. |
+
 **Multi-Message Stacking Behavior**:
 
 ```
