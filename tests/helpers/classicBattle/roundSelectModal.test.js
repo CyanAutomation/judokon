@@ -269,4 +269,68 @@ describe("resolveRoundStartPolicy", () => {
       selectionMode: "fallback-imposed"
     });
   });
+
+  it("runs shared cleanup when modal closes without a selection", async () => {
+    const onStart = vi.fn();
+    const tooltipArtifact = document.createElement("div");
+    tooltipArtifact.dataset.testid = "tooltip-artifact";
+    const cleanupSpy = vi.fn(() => {
+      tooltipArtifact.remove();
+    });
+    mocks.initTooltips.mockImplementation(() => {
+      document.body.appendChild(tooltipArtifact);
+      return Promise.resolve(cleanupSpy);
+    });
+
+    const addSpy = vi.spyOn(document, "addEventListener");
+
+    await resolveRoundStartPolicy(onStart);
+    await Promise.resolve();
+    expect(document.querySelector('[data-testid="tooltip-artifact"]')).not.toBeNull();
+
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const keydownRegistration = addSpy.mock.calls.find(([name]) => name === "keydown");
+    expect(keydownRegistration?.[1]).toBeTypeOf("function");
+    expect(cleanupSpy).toHaveBeenCalledTimes(1);
+    expect(document.querySelector('[data-testid="tooltip-artifact"]')).toBeNull();
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "1", bubbles: true }));
+    expect(mocks.setPointsToWin).not.toHaveBeenCalled();
+    expect(onStart).not.toHaveBeenCalled();
+  });
+
+  it("routes backdrop close through the same cleanup path", async () => {
+    const onStart = vi.fn();
+    const cleanupSpy = vi.fn();
+    mocks.initTooltips.mockResolvedValue(cleanupSpy);
+
+    await resolveRoundStartPolicy(onStart);
+    await Promise.resolve();
+
+    const modalElement = document.body.lastElementChild;
+    expect(modalElement).not.toBeNull();
+
+    modalElement?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    expect(cleanupSpy).toHaveBeenCalledTimes(1);
+    expect(mocks.modal.close).toHaveBeenCalled();
+    expect(onStart).not.toHaveBeenCalled();
+  });
+
+  it("routes Escape cancel through the same cleanup path", async () => {
+    const onStart = vi.fn();
+    const cleanupSpy = vi.fn();
+    mocks.initTooltips.mockResolvedValue(cleanupSpy);
+
+    await resolveRoundStartPolicy(onStart);
+    await Promise.resolve();
+
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+
+    expect(cleanupSpy).toHaveBeenCalledTimes(1);
+    expect(mocks.modal.close).toHaveBeenCalled();
+    expect(onStart).not.toHaveBeenCalled();
+  });
 });

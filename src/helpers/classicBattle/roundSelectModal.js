@@ -364,6 +364,103 @@ function createCleanupRegistry() {
 }
 
 /**
+ * Wrap a cleanup callback so it executes at most once.
+ *
+ * @param {Function} callback - Cleanup callback.
+ * @returns {Function} Idempotent cleanup wrapper.
+ */
+function createIdempotentCleanup(callback) {
+  let hasRun = false;
+  return () => {
+    if (hasRun) {
+      return;
+    }
+    hasRun = true;
+    try {
+      callback?.();
+    } catch {}
+  };
+}
+
+/**
+ * Register close/cancel/backdrop/Escape hooks that share one cleanup path.
+ *
+ * @param {{modal: object, cleanupRegistry: {keyboard: Function, tooltips: Function}}} params
+ * @returns {void}
+ */
+function registerModalLifecycleCleanup({ modal, cleanupRegistry }) {
+  const dialog = modal?.dialog ?? modal?.element;
+
+  const runCleanup = createIdempotentCleanup(() => {
+    cleanupRegistry.keyboard();
+    cleanupRegistry.tooltips();
+    try {
+      dialog?.removeEventListener?.("close", handleClose);
+      dialog?.removeEventListener?.("cancel", handleCancel);
+      dialog?.removeEventListener?.("click", handleBackdropClick);
+      dialog?.removeEventListener?.("keydown", handleEscapeKey);
+    } catch {}
+  });
+
+  const requestClose = () => {
+    try {
+      modal?.close?.();
+    } catch {}
+    runCleanup();
+  };
+
+  const handleClose = () => {
+    runCleanup();
+  };
+
+  const handleCancel = (event) => {
+    try {
+      event?.preventDefault?.();
+    } catch {}
+    requestClose();
+  };
+
+  const handleBackdropClick = (event) => {
+    if (event?.target === dialog) {
+      requestClose();
+    }
+  };
+
+  const handleEscapeKey = (event) => {
+    if (event?.key === "Escape") {
+      try {
+        event.preventDefault();
+      } catch {}
+      requestClose();
+    }
+  };
+
+  const originalClose = typeof modal?.close === "function" ? modal.close.bind(modal) : null;
+  if (originalClose) {
+    modal.close = (...args) => {
+      const result = originalClose(...args);
+      runCleanup();
+      return result;
+    };
+  }
+
+  const originalDestroy = typeof modal?.destroy === "function" ? modal.destroy.bind(modal) : null;
+  if (originalDestroy) {
+    modal.destroy = (...args) => {
+      runCleanup();
+      return originalDestroy(...args);
+    };
+  }
+
+  try {
+    dialog?.addEventListener?.("close", handleClose);
+    dialog?.addEventListener?.("cancel", handleCancel);
+    dialog?.addEventListener?.("click", handleBackdropClick);
+    dialog?.addEventListener?.("keydown", handleEscapeKey);
+  } catch {}
+}
+
+/**
  * Create and wire round selection buttons with click handlers.
  *
  * @pseudocode
@@ -462,7 +559,7 @@ function handleEnterKey(event, buttons) {
   }
 }
 
-function setupKeyboardNavigation(modalElement, buttons) {
+function setupKeyboardNavigation(modalElement, buttons, modal) {
   const handleKeyDown = (event) => {
     const keyHandlers = {
       1: () => handleNumberKey(event, buttons, 0),
@@ -470,7 +567,11 @@ function setupKeyboardNavigation(modalElement, buttons) {
       3: () => handleNumberKey(event, buttons, 2),
       ArrowUp: () => handleArrowNavigation(event, buttons, -1),
       ArrowDown: () => handleArrowNavigation(event, buttons, 1),
-      Enter: () => handleEnterKey(event, buttons)
+      Enter: () => handleEnterKey(event, buttons),
+      Escape: () => {
+        event.preventDefault();
+        modal?.close?.();
+      }
     };
 
     const handler = keyHandlers[event.key];
@@ -501,11 +602,17 @@ function setupKeyboardNavigation(modalElement, buttons) {
  */
 function setupTooltipLifecycle(modalElement) {
   let cleanupFn = () => {};
+  let cleanupRequested = false;
 
   const ready = initTooltips(modalElement, modalElement)
     .then((fn) => {
       if (typeof fn === "function") {
         cleanupFn = fn;
+        if (cleanupRequested) {
+          try {
+            cleanupFn();
+          } catch {}
+        }
       }
     })
     .catch((err) => {
@@ -518,6 +625,7 @@ function setupTooltipLifecycle(modalElement) {
 
   return {
     cleanup: () => {
+      cleanupRequested = true;
       try {
         cleanupFn();
       } catch {}
@@ -567,11 +675,12 @@ async function handleRoundSelect({ value, modal, cleanupRegistry, onSelect, emit
  */
 function loadRoundSelectModal({ onSelect, defaultValue }) {
   const { modal, buttonContainer } = createRoundSelectModal();
+  const cleanupRegistry = createCleanupRegistry();
+  registerModalLifecycleCleanup({ modal, cleanupRegistry });
 
   const positioner = new RoundSelectPositioner(modal);
   positioner.apply();
 
-  const cleanupRegistry = createCleanupRegistry();
   const { buttons, defaultButton } = wireRoundSelectionButtons({
     modal,
     container: buttonContainer,
@@ -583,10 +692,12 @@ function loadRoundSelectModal({ onSelect, defaultValue }) {
   const modalElement = modal.element;
   document.body.appendChild(modalElement);
 
-  cleanupRegistry.keyboard = setupKeyboardNavigation(modal.dialog, buttons);
+  cleanupRegistry.keyboard = createIdempotentCleanup(
+    setupKeyboardNavigation(modal.dialog, buttons, modal)
+  );
 
   const tooltipLifecycle = setupTooltipLifecycle(modalElement);
-  cleanupRegistry.tooltips = tooltipLifecycle.cleanup;
+  cleanupRegistry.tooltips = createIdempotentCleanup(tooltipLifecycle.cleanup);
 
   modal.open();
   try {
