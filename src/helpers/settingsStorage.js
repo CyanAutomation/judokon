@@ -52,12 +52,56 @@ const IS_TEST =
   (process.env.VITEST || process.env.NODE_ENV === "test");
 const SAVE_DELAY_MS = IS_TEST ? 10 : 100;
 
+let writeQueue = Promise.resolve();
+let latestQueuedRevision = 0;
+let latestPersistedRevision = 0;
+
+/**
+ * Queue a settings write task so writes execute in a deterministic order.
+ *
+ * @template T
+ * @param {() => Promise<T> | T} task
+ * @returns {Promise<T>}
+ */
+function enqueueWriteTask(task) {
+  const run = writeQueue.then(task);
+  writeQueue = run.catch(() => {});
+  return run;
+}
+
+/**
+ * Issue a monotonic revision token for a queued settings payload.
+ *
+ * @returns {number}
+ */
+function issueWriteRevision() {
+  latestQueuedRevision += 1;
+  return latestQueuedRevision;
+}
+
+/**
+ * Persist settings only when the payload revision is still current.
+ *
+ * @param {import("../config/settingsDefaults.js").Settings} settings
+ * @param {number} revision
+ * @returns {boolean}
+ */
+function persistSettingsIfCurrent(settings, revision) {
+  const isStale = revision < latestQueuedRevision || revision <= latestPersistedRevision;
+  if (isStale) {
+    return false;
+  }
+
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  }
+  setCachedSettings(settings);
+  latestPersistedRevision = revision;
+  return true;
+}
+
 const debouncedSave = debounce(
-  (settings) => {
-    if (typeof localStorage !== "undefined") {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-    }
-  },
+  ({ settings, revision }) => enqueueWriteTask(() => persistSettingsIfCurrent(settings, revision)),
   SAVE_DELAY_MS,
   { setTimeout: (...args) => setTimer(...args), clearTimeout: (...args) => clearTimer(...args) }
 );
@@ -159,9 +203,8 @@ export function saveSettings(settings) {
     return Promise.reject(new Error("localStorage unavailable"));
   }
 
-  return debouncedSave(settings).then(() => {
-    setCachedSettings(settings);
-  });
+  const revision = issueWriteRevision();
+  return debouncedSave({ settings, revision }).then(() => {});
 }
 
 /**
@@ -217,8 +260,6 @@ export async function loadSettings() {
  * @param {*} value - Value to assign to the setting.
  * @returns {Promise<import("../config/settingsDefaults.js").Settings>} Updated settings object.
  */
-let updateQueue = Promise.resolve();
-
 /**
  * Update a single setting and persist the result safely.
  *
@@ -247,22 +288,16 @@ let updateQueue = Promise.resolve();
  * @returns {Promise<import("../config/settingsDefaults.js").Settings>} Updated settings object.
  */
 export function updateSetting(key, value) {
-  const task = async () => {
+  return enqueueWriteTask(async () => {
     await getSettingsSchema();
     const current =
       typeof localStorage !== "undefined" ? await loadSettings() : getCachedSettings();
     const updated = { ...current, [key]: value };
     await validateWithSchema(updated, await getSettingsSchema());
-    if (typeof localStorage !== "undefined") {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
-    }
-    setCachedSettings(updated);
+    const revision = issueWriteRevision();
+    persistSettingsIfCurrent(updated, revision);
     return updated;
-  };
-
-  const run = updateQueue.then(task);
-  updateQueue = run.catch(() => {});
-  return run;
+  });
 }
 
 /**
@@ -280,6 +315,7 @@ export function resetSettings() {
   if (typeof debouncedSave.cancel === "function") {
     debouncedSave.cancel();
   }
+  const revision = issueWriteRevision();
   try {
     if (typeof localStorage !== "undefined") {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(DEFAULT_SETTINGS));
@@ -290,5 +326,6 @@ export function resetSettings() {
   }
   // Update in-memory cache synchronously
   setCachedSettings(DEFAULT_SETTINGS);
+  latestPersistedRevision = revision;
   return getCachedSettings();
 }
