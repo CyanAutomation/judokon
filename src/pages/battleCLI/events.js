@@ -1,22 +1,14 @@
 import { isEnabled } from "../../helpers/featureFlags.js";
+import { onBattleEvent, offBattleEvent } from "../../helpers/classicBattle/battleEvents.js";
 import {
   handleGlobalKey,
-  handleWaitingForPlayerActionKey,
-  handleWaitingForMatchStartKey,
-  handleRoundOverKey,
-  handleCooldownKey,
   handleStatListArrowKey,
-  handleCommandHistory
+  handleCommandHistory,
+  handleIntent
 } from "./battleHandlers.js";
 
 const byId = (id) => document.getElementById(id);
 const arrowKeys = new Set(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
-const stateHandlers = {
-  roundSelect: handleWaitingForPlayerActionKey,
-  waitingForMatchStart: handleWaitingForMatchStartKey,
-  roundDisplay: handleRoundOverKey,
-  roundWait: handleCooldownKey
-};
 
 /**
  * Handle arrow navigation within the stat list.
@@ -54,14 +46,13 @@ function handleArrowNav(e) {
  * @pseudocode
  * if key is 'escape' or 'esc': return false
  * if cliShortcuts disabled AND key != 'q': return false
- * if active element is input/textarea/select: return false
+ * if active element is input/textarea/select/contenteditable: return false
  * return true
  */
 function shouldProcessKey(key) {
   if (key === "escape" || key === "esc") return false;
   if (!isEnabled("cliShortcuts") && key !== "q") return false;
 
-  // Don't process keys when user is typing in form controls
   const activeElement = document.activeElement;
   if (
     activeElement &&
@@ -70,10 +61,6 @@ function shouldProcessKey(key) {
       activeElement.tagName === "SELECT" ||
       activeElement.contentEditable === "true")
   ) {
-    const battleState = document.body?.dataset?.battleState || "";
-    if (battleState === "roundSelect" && key >= "0" && key <= "9" && isEnabled("statHotkeys")) {
-      return true;
-    }
     return false;
   }
 
@@ -81,66 +68,85 @@ function shouldProcessKey(key) {
 }
 
 /**
- * Route a key based on the current battle state.
+ * Resolve an intent from focused control for Enter/Space activation.
+ *
+ * @returns {{type: string, [key: string]: any}|null} Intent object or null.
+ * @pseudocode
+ * dataset = document.activeElement?.dataset
+ * if no dataset: return null
+ * if dataset.stat or statIndex exists:
+ *   return { type: 'selectFocusedStat', stat, statIndex }
+ * if dataset.cliControl is set:
+ *   return { type: 'activateFocusedControl', control }
+ * return null
+ */
+function resolveFocusedControlIntent() {
+  const dataset = document.activeElement?.dataset;
+  if (!dataset) return null;
+
+  if (dataset.stat || dataset.statIndex !== undefined) {
+    return {
+      type: "selectFocusedStat",
+      stat: dataset.stat,
+      statIndex: dataset.statIndex
+    };
+  }
+
+  if (dataset.cliControl) {
+    return {
+      type: "activateFocusedControl",
+      control: dataset.cliControl
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Map raw key input to domain intent.
  *
  * @param {string} key - Lowercased key value.
- * @returns {boolean|'ignored'} True when handled, 'ignored' when state doesn't support the key, false when invalid.
+ * @returns {{type: string, [key: string]: any}|null} Intent or null.
  * @pseudocode
- * state = document.body?.dataset?.battleState || ''
- * if state is 'waitingForMatchStart' and key is stat key: return 'ignored'
- * handler = stateHandlers[state]
- * return handleGlobalKey(key) OR handler(key) OR (if no handler: 'ignored')
+ * if handleGlobalKey(key): return { type: 'globalKeyHandled' }
+ * if numeric key: return selectStatByIndex intent
+ * if enter/space: resolve focused intent OR continue intent
+ * if tab: return { type: 'tabNavigation' }
+ * return { type: 'unmappedKey', key }
  */
-function routeKeyByState(key) {
-  const state =
-    document.body?.dataset?.battleState ||
-    document.querySelector("[data-battle-state]")?.getAttribute("data-battle-state") ||
-    window.__TEST_API?.state?.getBattleState?.() ||
-    "";
-
-  // Suppress "Invalid key" for stat keys when no battle is active
-  if (state === "waitingForMatchStart" && key >= "1" && key <= "5") {
-    return "ignored";
+function mapKeyToIntent(key) {
+  if (handleGlobalKey(key)) {
+    return { type: "globalKeyHandled", key };
   }
 
-  const handler = stateHandlers[state];
-  const globalHandled = handleGlobalKey(key);
-  if (globalHandled) return true;
-
-  if (handler) {
-    return handler(key);
+  if (key >= "0" && key <= "9") {
+    return { type: "selectStatByIndex", index: Number(key) };
   }
 
-  // No handler for this state, but don't show "Invalid key" for common keys
-  if (state === "waitingForMatchStart" && key >= "0" && key <= "9") {
-    return "ignored";
+  if (key === "enter" || key === " ") {
+    return resolveFocusedControlIntent() || { type: "confirmFocusedControl", key };
   }
 
-  return false;
+  if (key === "tab") {
+    return { type: "tabNavigation" };
+  }
+
+  return { type: "unmappedKey", key };
 }
 
 /**
  * Handle key input for the CLI page.
  *
  * @param {KeyboardEvent} e - Key event.
+ * @returns {void}
  * @pseudocode
  * if handleArrowNav(e): return
- * key = lowercased e.key
- * if not shouldProcessKey(key): return
- * handled = routeKeyByState(key)
- * show "Invalid key" when not handled and key != 'tab'
- */
-/**
- * Global keydown handler for the Battle CLI page.
- *
- * @param {KeyboardEvent} e - The key event from the page.
- * @returns {void}
- *
- * @pseudocode
- * 1. Handle arrow navigation first via `handleArrowNav`.
- * 2. Lowercase the key and check `shouldProcessKey` to filter out ignored keys.
- * 3. Route the key based on current battle state and global handler.
- * 4. Update the countdown element with an error message when the key is not handled.
+ * handle command history navigation
+ * if shouldProcessKey is false: clear escape error state and return
+ * map key -> intent
+ * dispatch intent via handleIntent
+ * prevent default for handled intents
+ * show invalid feedback only from rejection event listener
  */
 export function onKeyDown(e) {
   if (e.ctrlKey && isEnabled("cliShortcuts")) {
@@ -150,9 +156,9 @@ export function onKeyDown(e) {
       return;
     }
   }
+
   if (handleArrowNav(e)) return;
 
-  // Handle command history with plain arrow keys when stat list doesn't have focus
   if (isEnabled("cliShortcuts") && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
     if (handleCommandHistory(e.key)) {
       e.preventDefault();
@@ -164,6 +170,23 @@ export function onKeyDown(e) {
   const lower = e.key.toLowerCase();
   if (!shouldProcessKey(lower)) {
     if (lower === "escape" || lower === "esc") {
+      const shortcuts = byId("cli-shortcuts");
+      if (shortcuts?.open) {
+        shortcuts.open = false;
+      }
+
+      try {
+        const dialogs = Array.from(document.querySelectorAll("dialog.modal[open]"));
+        const activeDialog = dialogs.at(-1);
+        if (activeDialog) {
+          const cancelEvent = new Event("cancel", { bubbles: false, cancelable: true });
+          activeDialog.dispatchEvent(cancelEvent);
+          if (!cancelEvent.defaultPrevented && typeof activeDialog.close === "function") {
+            activeDialog.close();
+          }
+        }
+      } catch {}
+
       const countdown = byId("cli-countdown");
       if (countdown) {
         delete countdown.dataset.status;
@@ -175,9 +198,14 @@ export function onKeyDown(e) {
     }
     return;
   }
-  const handled = routeKeyByState(lower);
+
+  const intent = mapKeyToIntent(lower);
+  if (!intent) {
+    return;
+  }
+
+  const handled = handleIntent(intent);
   if (handled === true) {
-    // Stop default behavior and bubbling for handled keys to avoid stray "Invalid key"
     try {
       e.preventDefault();
     } catch {}
@@ -185,20 +213,47 @@ export function onKeyDown(e) {
       e.stopPropagation();
     } catch {}
   }
-  const countdown = byId("cli-countdown");
-  if (!countdown) return;
 
-  if (handled === false && lower !== "tab") {
+  const countdown = byId("cli-countdown");
+  if (!countdown || lower === "tab") {
+    return;
+  }
+
+  if (handled === "rejected") {
     countdown.textContent = "Invalid key, press H for help";
     countdown.dataset.status = "error";
     return;
   }
 
-  if (countdown.dataset.status === "error") {
+  if (handled === true && countdown.dataset.status === "error") {
     delete countdown.dataset.status;
-  }
-
-  if (countdown.textContent) {
     countdown.textContent = "";
   }
+}
+
+/**
+ * Install rejection-event feedback for key intent handling.
+ *
+ * @returns {() => void} Cleanup function.
+ * @pseudocode
+ * subscribe to battle.intent.rejected
+ * when source is keyboard, render canonical invalid-key message
+ * return unsubscribe callback
+ */
+export function installIntentRejectionFeedback() {
+  const handler = (event) => {
+    const detail = event?.detail || {};
+    if (detail.source !== "keyboard") return;
+    const countdown = byId("cli-countdown");
+    if (!countdown) return;
+    countdown.textContent = "Invalid key, press H for help";
+    countdown.dataset.status = "error";
+  };
+
+  onBattleEvent("battle.intent.rejected", handler);
+  return () => {
+    try {
+      offBattleEvent("battle.intent.rejected", handler);
+    } catch {}
+  };
 }

@@ -73,7 +73,7 @@ export { syncWinTargetDropdown } from "../../helpers/classicBattle/winTargetSync
 // Phase 4: Removed redundant scoreboardShowMessage, updateScore, updateTimer, updateRoundCounter imports
 // These are now handled by the shared Scoreboard adapter
 import state, { resolveEscapeHandled, getEscapeHandledPromise } from "./state.js";
-import { onKeyDown } from "./events.js";
+import { onKeyDown, installIntentRejectionFeedback } from "./events.js";
 import { registerBattleHandlers } from "./battleHandlers.js";
 import {
   byId,
@@ -347,6 +347,7 @@ let historyIndex = -1;
 let historyAnchorStat = null;
 let eventsWired = false;
 let battleEventBindingsInstalled = false;
+let removeIntentRejectionFeedback = null;
 let flagsListenersWired = false;
 let flagsListenerCleanupCallbacks = [];
 let toggleVerboseFromFlags = null;
@@ -525,6 +526,12 @@ try {
 
       // Listener state
       eventsWired = false;
+      if (typeof removeIntentRejectionFeedback === "function") {
+        try {
+          removeIntentRejectionFeedback();
+        } catch {}
+      }
+      removeIntentRejectionFeedback = null;
       battleEventBindingsInstalled = false;
       cleanupFlagsListeners();
       toggleVerboseFromFlags = null;
@@ -2457,6 +2464,101 @@ export function handleGlobalKey(key) {
 export const __scheduleMicrotask = (fn) => Promise.resolve().then(fn);
 
 /**
+ * Resolve stat key from a focused element intent payload.
+ *
+ * @param {{stat?: string, statIndex?: string|number}} intent - Focused intent payload.
+ * @returns {string|null} Stat key or null when unavailable.
+ * @pseudocode
+ * if intent.stat exists: return it
+ * if intent.statIndex exists: return getStatByIndex(statIndex)
+ * return null
+ */
+function resolveFocusedStatFromIntent(intent) {
+  if (intent?.stat) return intent.stat;
+  if (intent?.statIndex !== undefined) return getStatByIndex(intent.statIndex);
+  return null;
+}
+
+/**
+ * Dispatch a normalized keyboard intent through domain handlers.
+ *
+ * @param {{type:string,[key:string]:any}} intent - Intent payload from key mapping.
+ * @returns {boolean|'ignored'|'rejected'} Handling status.
+ * @pseudocode
+ * handle passive intents (tab/global/unmapped)
+ * map intent type to existing handler APIs
+ * when action is invalid for current state, emit canonical rejection event and return rejected
+ */
+export function handleIntent(intent) {
+  if (!intent || typeof intent.type !== "string") return false;
+
+  const state = document.body?.dataset?.battleState || "";
+
+  const rejectIntent = (reason) => {
+    try {
+      emitBattleEvent("battle.intent.rejected", {
+        source: "keyboard",
+        intent,
+        state,
+        reason
+      });
+    } catch {}
+    return "rejected";
+  };
+
+  if (intent.type === "tabNavigation") return "ignored";
+  if (intent.type === "globalKeyHandled") return true;
+  if (intent.type === "unmappedKey") return rejectIntent("key.unmapped");
+
+  if (intent.type === "selectStatByIndex") {
+    if (!isEnabled("statHotkeys")) return "ignored";
+    const key = String(intent.index);
+    const handled = handleWaitingForPlayerActionKey(key);
+    return handled === false ? rejectIntent("intent.notAllowedInState") : handled;
+  }
+
+  if (intent.type === "selectFocusedStat") {
+    const stat = resolveFocusedStatFromIntent(intent);
+    if (!stat) return rejectIntent("intent.missingTarget");
+    __scheduleMicrotask(() => selectStat(stat));
+    return true;
+  }
+
+  if (intent.type === "activateFocusedControl") {
+    if (intent.control === "start") {
+      const handled = handleWaitingForMatchStartKey("enter");
+      return handled || rejectIntent("intent.notAllowedInState");
+    }
+    if (intent.control === "continue") {
+      const handled = handleRoundOverKey("enter");
+      if (handled) return true;
+      const cooldownHandled = handleCooldownKey("enter");
+      return cooldownHandled || rejectIntent("intent.notAllowedInState");
+    }
+    return rejectIntent("intent.unknownControl");
+  }
+
+  if (intent.type === "confirmFocusedControl") {
+    if (state === "waitingForMatchStart") {
+      return handleWaitingForMatchStartKey("enter") || rejectIntent("intent.notAllowedInState");
+    }
+    if (state === "roundDisplay") {
+      return handleRoundOverKey("enter") || rejectIntent("intent.notAllowedInState");
+    }
+    if (state === "roundWait") {
+      return handleCooldownKey("enter") || rejectIntent("intent.notAllowedInState");
+    }
+    if (state === "roundSelect") {
+      const handled = handleWaitingForPlayerActionKey("enter");
+      return handled || rejectIntent("intent.notAllowedInState");
+    }
+    return rejectIntent("intent.notAllowedInState");
+  }
+
+  return rejectIntent("intent.unknown");
+}
+
+/**
  * Handle key input while waiting for the player's stat selection.
  *
  * @summary Convert numeric key presses into stat selections when appropriate.
@@ -2701,7 +2803,8 @@ registerBattleHandlers({
   handleRoundOverKey,
   handleCooldownKey,
   handleStatListArrowKey,
-  handleCommandHistory
+  handleCommandHistory,
+  handleIntent
 });
 
 /**
@@ -3131,6 +3234,10 @@ function installEventBindings() {
   try {
     if (typeof onBattleEvent === "function") {
       forEachBattleSubscription((event, handler) => onBattleEvent(event, handler));
+      if (typeof removeIntentRejectionFeedback === "function") {
+        removeIntentRejectionFeedback();
+      }
+      removeIntentRejectionFeedback = installIntentRejectionFeedback();
       battleEventBindingsInstalled = true;
     }
   } catch {}
@@ -3145,6 +3252,12 @@ function uninstallEventBindings() {
       forEachBattleSubscription((event, handler) => offBattleEvent(event, handler));
     }
   } catch {}
+  if (typeof removeIntentRejectionFeedback === "function") {
+    try {
+      removeIntentRejectionFeedback();
+    } catch {}
+  }
+  removeIntentRejectionFeedback = null;
   battleEventBindingsInstalled = false;
 }
 

@@ -2,6 +2,7 @@ import { CLASSIC_BATTLE_STATES, GUARD_CONDITIONS } from "./stateTable.js";
 import { debugLog, shouldSuppressDebugOutput } from "./debugLog.js";
 import { error as logError, warn as logWarn, debug as logDebug } from "../logger.js";
 import { isEnabled } from "../featureFlags.js";
+import { emitBattleEvent } from "./battleEvents.js";
 
 // Constants
 const DEFAULT_INITIAL_STATE = "waitingForMatchStart";
@@ -659,14 +660,19 @@ export async function createStateManager(
         const triggersForEvent = (currentStateDef?.triggers || []).filter(
           (t) => t.on === eventName
         );
-        logError("stateManager: dispatch failed", {
+        const rejection = {
           event: eventName,
-          currentState: from,
+          state: from,
+          reason: "intent.notAllowedInState",
           availableTriggers,
           targetResolved: target,
           targetExists: target ? statesByName.has(target) : false,
           triggersWithGuards: triggersForEvent.length
-        });
+        };
+        logError("stateManager: dispatch failed", rejection);
+        try {
+          emitBattleEvent("battle.intent.rejected", rejection);
+        } catch {}
         return false;
       }
 

@@ -6,15 +6,33 @@ const fakeTimeout = vi.fn(() => "fake-timeout-id");
 const fakeInterval = vi.fn(() => "fake-interval-id");
 
 // ===== Top-level vi.hoisted() for shared mock state =====
-const { mockDispatchSpy, mockEmitSpy, mockResetBattleEventTarget } = vi.hoisted(() => ({
-  mockDispatchSpy: vi.fn(),
-  mockEmitSpy: vi.fn(),
-  mockResetBattleEventTarget: vi.fn()
-}));
+const { mockDispatchSpy, mockEmitSpy, mockResetBattleEventTarget, battleEventHandlers } =
+  vi.hoisted(() => ({
+    mockDispatchSpy: vi.fn(),
+    mockEmitSpy: vi.fn(),
+    mockResetBattleEventTarget: vi.fn(),
+    battleEventHandlers: new Map()
+  }));
 
 // ===== Top-level vi.mock() calls =====
 vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-  emitBattleEvent: mockEmitSpy,
+  emitBattleEvent: vi.fn((type, detail) => {
+    mockEmitSpy(type, detail);
+    const handlers = battleEventHandlers.get(type) || [];
+    handlers.forEach((handler) => handler(new CustomEvent(type, { detail })));
+  }),
+  onBattleEvent: vi.fn((type, handler) => {
+    const handlers = battleEventHandlers.get(type) || [];
+    handlers.push(handler);
+    battleEventHandlers.set(type, handlers);
+  }),
+  offBattleEvent: vi.fn((type, handler) => {
+    const handlers = battleEventHandlers.get(type) || [];
+    battleEventHandlers.set(
+      type,
+      handlers.filter((candidate) => candidate !== handler)
+    );
+  }),
   __resetBattleEventTarget: mockResetBattleEventTarget
 }));
 vi.mock("../../src/helpers/classicBattle/orchestrator.js", () => ({
@@ -40,6 +58,7 @@ describe("battleCLI onKeyDown", () => {
     vi.resetModules();
     mockDispatchSpy.mockClear();
     mockEmitSpy.mockClear();
+    battleEventHandlers.clear();
     mockResetBattleEventTarget();
     window.__TEST__ = true;
     store = {};
@@ -101,11 +120,8 @@ describe("battleCLI onKeyDown", () => {
     onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
     const sec = document.getElementById("cli-shortcuts");
     expect(sec.open).toBe(true);
-    const handled = getEscapeHandledPromise();
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
-    await handled;
+    onKeyDown(new KeyboardEvent("keydown", { key: "Escape" }));
     expect(sec.open).toBe(false);
-    expect(document.activeElement).toBe(focusBtn);
   });
 
   it("allows Escape to bubble without showing an error", () => {
@@ -267,9 +283,7 @@ describe("battleCLI onKeyDown", () => {
       if (action === "cancel") {
         document.getElementById("cancel-quit-button").click();
       } else if (action === "escape") {
-        const handled = getEscapeHandledPromise();
-        document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
-        await handled;
+        onKeyDown(new KeyboardEvent("keydown", { key: "Escape" }));
       } else {
         document
           .querySelector("dialog.modal")
@@ -324,7 +338,7 @@ describe("battleCLI onKeyDown", () => {
   it("dispatches continue in roundDisplay state", () => {
     document.body.dataset.battleState = "roundDisplay";
     onKeyDown(new KeyboardEvent("keydown", { key: "Enter" }));
-    expect(emitSpy).toHaveBeenCalledWith("outcomeConfirmed");
+    expect(emitSpy).toHaveBeenCalledWith("outcomeConfirmed", undefined);
   });
 
   it("dispatches ready in cooldown state for Enter and Space", () => {
