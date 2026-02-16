@@ -317,6 +317,17 @@ export async function safeDispatch(eventName, payload) {
   };
 }
 
+  if (isDebugEvent) {
+    debugLog(`DISPATCH FAILED - no handler found for: ${eventName}`);
+  }
+
+  return {
+    ok: false,
+    eventName,
+    reason: "no_machine"
+  };
+}
+
 /**
  * Retrieve the current classic battle machine via the debug hooks channel.
  *
@@ -1009,17 +1020,10 @@ export async function triggerMatchStart() {
     dispatchFailure = {
       ok: false,
       eventName: "startClicked",
-      reason: "no_machine",
-      error: error instanceof Error ? error : new Error(String(error))
-    };
-  }
-
-  if (dispatched) {
-    return;
-  }
-
   try {
-    console.warn("[CLI] Orchestrator unavailable; start action rejected");
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[CLI] Orchestrator unavailable; start action rejected");
+    }
     emitBattleEvent("battle.unavailable", {
       action: "startClicked",
       reason: dispatchFailure?.reason || "no_machine",
