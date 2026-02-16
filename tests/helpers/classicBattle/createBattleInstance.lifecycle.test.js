@@ -19,6 +19,9 @@ describe("createBattleInstance lifecycle", () => {
     await first.init({}, {});
     emitBattleEvent("lifecycle.test", { cycle: "first" });
     first.dispose();
+    emitBattleEvent("lifecycle.test", { cycle: "after-first-dispose" });
+
+    expect(observed).toEqual(["first"]);
 
     const second = createBattleInstance({ orchestratorInit, orchestratorDispose });
     await second.init({}, {});

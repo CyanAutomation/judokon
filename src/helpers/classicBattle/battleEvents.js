@@ -151,11 +151,36 @@ function buildSemanticDetailKey(detail) {
 export function createBattleEventBus(options = {}) {
   const target = options.target instanceof EventTarget ? options.target : new EventTarget();
   const lastSeenEventKeys = new Map();
+  const listenerRegistry = new Map();
 
   tuneMaxListenersIfNode(target);
 
   function resetDedupeState() {
     lastSeenEventKeys.clear();
+  }
+
+  function trackListener(type, handler) {
+    const listeners = listenerRegistry.get(type) ?? new Set();
+    listeners.add(handler);
+    listenerRegistry.set(type, listeners);
+  }
+
+  function untrackListener(type, handler) {
+    const listeners = listenerRegistry.get(type);
+    if (!listeners) return;
+    listeners.delete(handler);
+    if (listeners.size === 0) {
+      listenerRegistry.delete(type);
+    }
+  }
+
+  function clearTrackedListeners() {
+    for (const [type, listeners] of listenerRegistry.entries()) {
+      for (const handler of listeners) {
+        target.removeEventListener(type, handler);
+      }
+    }
+    listenerRegistry.clear();
   }
 
   function shouldSuppressDuplicateValueEvent(type, detail) {
@@ -180,9 +205,11 @@ export function createBattleEventBus(options = {}) {
   const bus = {
     on(type, handler) {
       target.addEventListener(type, handler);
+      trackListener(type, handler);
     },
     off(type, handler) {
       target.removeEventListener(type, handler);
+      untrackListener(type, handler);
     },
     emit(type, detail) {
       try {
@@ -211,6 +238,12 @@ export function createBattleEventBus(options = {}) {
     },
     resetDedupeState,
     dispose() {
+      if (typeof target?.removeAllListeners === "function") {
+        target.removeAllListeners();
+        listenerRegistry.clear();
+      } else {
+        clearTrackedListeners();
+      }
       resetDedupeState();
     }
   };
