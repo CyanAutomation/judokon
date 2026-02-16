@@ -603,9 +603,13 @@ class SnackbarManager {
    * @returns {void}
    */
   clearAll() {
-    // Clear all timeouts and remove elements
-    this.activeSnackbars.forEach((snackbar) => {
-      this.finalizeSnackbarCleanup(snackbar.id, snackbar);
+    // Snapshot IDs before cleanup because finalize removes map entries.
+    const ids = Array.from(this.activeSnackbars.keys());
+    ids.forEach((id) => {
+      const snackbar = this.activeSnackbars.get(id);
+      if (snackbar) {
+        this.finalizeSnackbarCleanup(id, snackbar);
+      }
     });
 
     this.syncContainerPriority();
