@@ -375,7 +375,7 @@ Additional rarity colour mapping keeps game identity distinct:
 - Guarantee colour contrast of 4.5:1 across all themes and surface immediate visual feedback for toggles.
 - Enforce consistent UX: settings auto-save via `updateSetting()`, reload with persisted values, and integrate with existing error feedback flows.
 - Include a clearly labelled `.settings-item` link to `changeLog.html` before the error container for transparency.
-- Provide a `Links` fieldset grouping supplemental pages (`changeLog.html`, `prdViewer.html`, `mockupViewer.html`, `tooltipViewer.html`, `vectorSearch.html`) arranged with `.settings-links-list` (3-column desktop, single column <768px, sequential tabindex such as 99+).
+- Provide a `Links` fieldset grouping supplemental pages (`changeLog.html`, `prdViewer.html`, `mockupViewer.html`, `tooltipViewer.html`) arranged with `.settings-links-list` (3-column desktop, single column <768px, sequential tabindex such as 99+).
 
 **Feature Flags & Agent Observability:**
 
@@ -444,7 +444,7 @@ grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js" \
   npm run check:jsdoc && npx prettier . --check && npx eslint . && npm run check:contrast
   ```
 
-- **Full validation (including RAG preflight):**
+- **Full validation:**
 
   ```bash
   npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast
@@ -463,7 +463,7 @@ grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js" \
 - **ESLint fails:** Run `npx eslint . --fix` for autofixable lint errors.
 - **Playwright fails:** Ensure the application server is available on `localhost:5000` (`npm start`).
 - **Tests fail with `localStorage` errors:** Clear browser `localStorage` manually before re-running.
-- **Archived RAG workflow needed:** See `docs/status/archive/rag-workflows.md` for retired RAG command history.
+- **Historical RAG context needed:** See `docs/status/archive/rag-deprecation.md` and `docs/status/archive/rag-workflows.md` for retired workflow history.
 - **General performance:** Parallelize tests where possible and avoid running `npm run test:style` unless necessary.
 
 ---
@@ -518,7 +518,7 @@ grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js" \
 - ESLint configuration for automated checking
 - Prettier integration for consistent formatting
 - CI/CD pipeline for quality validation
-- RAG system integration for AI agent access
+- Archived RAG documentation retained only for historical reference
 
 **Open Questions:**
 

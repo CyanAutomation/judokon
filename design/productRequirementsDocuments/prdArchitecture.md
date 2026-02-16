@@ -34,11 +34,6 @@ flowchart TB
         Cards["cards.json"]
     end
 
-    subgraph AI["AI & Search"]
-        RAG["RAG/Vector Search<br/>(vectorSearch/)"]
-        MiniLM["MiniLM Models"]
-    end
-
     subgraph Utils["Utilities & Testing"]
         Nav["Navigation<br/>Components"]
         Comp["UI Components<br/>(Card, Tooltip, etc.)"]
@@ -70,11 +65,6 @@ flowchart TB
     Nav -->|routes UI| CBattle
     Nav -->|routes UI| CLI
 
-    %% RAG integration
-    CBattle -->|queries| RAG
-    RAG -->|local embeddings| MiniLM
-    RAG -->|results| CBattle
-
     %% Testing
     CBattle -->|validates| Test
     CLI -->|validates| Test
@@ -91,7 +81,6 @@ flowchart TB
     class CBattle,CLI ui
     class Judoka,Tooltips,Cards,Data data
     class Test test
-    class RAG,MiniLM,AI ai
 ```
 
 > ✅ **Status: VERIFIED** — Architecture diagram shows core components and event flow matching implementation in `src/helpers/battleEngineFacade.js`, `src/pages/battleClassic.html`, and `src/pages/battleCLI/init.js`
@@ -102,7 +91,6 @@ flowchart TB
 > - Classic Battle UI and CLI both consume events from Engine and delegate actions via Facade
 > - Data Layer feeds both UI surfaces independently
 > - Components (Card, Tooltip, Navigation) are wired into UI surfaces
-> - RAG/Vector Search is auxiliary, integrated into Battle UI for advanced search
 > - Test fixtures validate all three layers (Engine, UI, CLI)
 
 > **Related diagrams**: See [prdBattleEngine.md](prdBattleEngine.md) for state machine details; [prdEventContracts.md](prdEventContracts.md) for event naming and payloads; [prdBattleClassic.md](prdBattleClassic.md) for Classic Battle initialization sequence
@@ -113,7 +101,6 @@ flowchart TB
 - Classic Battle UI (`src/pages/battleJudoka.html`, `src/helpers/classicBattle.js`): rendering, stat buttons, timers; consumes Battle Engine events and emits UI events.
 - CLI (`src/pages/battleCLI.html`): text-mode presentation layered above the same engine and state machine.
 - Data Layer (`src/data/*`): static assets (judoka.json, card data) and any canonical schema artifacts.
-- RAG/Vector Search (`src/helpers/vectorSearch` / `minilm` models): search and query expansion responsibilities.
 - Test Orchestration / Fixtures (`playwright/`, `tests/`): helpers and promises used to detect engine/UI readiness.
 
 ## Public Contracts Inventory (starter)
@@ -165,7 +152,6 @@ Versioning recommendation: use `major.minor` for contracts (e.g., event v1 → v
 | ---------------------- | ----------------------------------------------------------------------------- |
 | Determinism (testMode) | Engine decisions reproducible with seeded RNG                                 |
 | Selection latency      | UI selection handlers respond within 16ms JS main-thread budget (no blocking) |
-| Vector search          | Local dev response <250ms; production targets differ by infra                 |
 | Accessibility          | Keyboard navigation for primary flows, ARIA labels for key controls           |
 
 ## User Stories
@@ -175,7 +161,7 @@ Versioning recommendation: use `major.minor` for contracts (e.g., event v1 → v
 
 ## Prioritized Functional Requirements
 
-P1 - Component Boundary Diagram: Provide a high-level diagram listing components and responsibilities (Battle Engine, UI, RAG/VectorSearch, CLI, Data Layer).
+P1 - Component Boundary Diagram: Provide a high-level diagram listing components and responsibilities (Battle Engine, UI, CLI, Data Layer).
 
 Acceptance Criteria:
 
@@ -202,7 +188,7 @@ Acceptance Criteria:
 ## Non-Functional Requirements / Design Considerations
 
 - Determinism: Battle engine decisions must be reproducible in test mode.
-- Latency: Vector search responses should be < 250ms in local development (where applicable).
+- Latency: Battle-critical UI interactions should stay responsive within the documented frame budget.
 - Observability: Key actions should emit events for tracing and testing.
 
 ## Telemetry / Monitoring
@@ -233,7 +219,7 @@ Safety/availability checks:
 
 ## Appendix / Next actions
 
-- Action: Owners of Battle Engine, Classic Battle UI, and Vector Search should populate the canonical inventory section in this PRD with full contract entries and reference schemas/diagrams.
+- Action: Owners of Battle Engine and Classic Battle UI should populate the canonical inventory section in this PRD with full contract entries and reference schemas/diagrams.
 
 ### Appendix: Project Architecture Overview (agent quick-reference)
 
@@ -255,10 +241,6 @@ Core battle logic lives in `helpers/battleEngine.js` with no DOM access. UI scri
 ##### helpers/navigation
 
 Navigation behavior is composed from focused modules such as `helpers/navigationBar.js` and `helpers/setupBottomNavbar.js`, with page-level orchestrators wiring URL state and menu rendering. Prefer these entry points when extending responsive navigation flows.
-
-##### helpers/vector search
-
-Vector-search pages import DOM-free utilities from `helpers/api/vectorSearchPage.js` for match selection, tag formatting, and MiniLM extractor loading so that page scripts stay focused on DOM wiring.
 
 ##### helpers/country service
 

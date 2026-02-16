@@ -103,7 +103,7 @@ For full contribution guidelines, see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ### Terminal Safety
 
-When running terminal searches like `grep` or `find`, exclude `client_embeddings.json` and `offline_rag_metadata.json` to prevent output overflow. See [AGENTS.md](./AGENTS.md#terminal-safety) for details.
+When running terminal searches like `grep` or `find`, use targeted paths and ignore large generated artifacts. Historical RAG files may still appear in archive contexts; exclude them when present to prevent output overflow. See [AGENTS.md](./AGENTS.md#terminal-safety) for details.
 
 ---
 
@@ -218,7 +218,7 @@ The battle engine exposes a lightweight event emitter. Subscribe via
 Prefer targeted local search to understand existing behavior before editing:
 
 ```bash
-rg -n "battle engine|scoreboard|featureFlags" src tests docs -g "!client_embeddings.json"
+rg -n "battle engine|scoreboard|featureFlags" src tests docs
 rg --files src tests docs | rg "classicBattle|settings|tooltips"
 ```
 
