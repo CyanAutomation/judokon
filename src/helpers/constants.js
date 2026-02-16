@@ -8,7 +8,7 @@
  * @pseudocode
  * 1. Derive the base path to JSON data files with `resolveDataDir`.
  * 2. Define carousel swipe threshold and spinner delay.
- * 3. Set fade and removal durations for settings error popups.
+ * 3. Configure snackbar fade/removal durations.
  * 4. Establish Classic Battle win conditions and maximum rounds.
  */
 /**
@@ -97,36 +97,6 @@ export const CAROUSEL_SWIPE_THRESHOLD = 40;
  * 3. If the timer expires before the loading operation completes, display the loading spinner.
  */
 export const SPINNER_DELAY_MS = 2000;
-
-/**
- * Duration in milliseconds before the settings error popup begins to fade out.
- *
- * @summary This constant controls the visual duration of a settings-related
- * error message before it starts its fade-out animation.
- *
- * @constant {number}
- * @returns {number}
- * @pseudocode
- * 1. When a settings error popup is displayed, a timer is started.
- * 2. After `SETTINGS_FADE_MS` milliseconds, the popup's opacity begins to decrease, initiating its fade-out effect.
- */
-export const SETTINGS_FADE_MS = 1800;
-
-/**
- * Duration in milliseconds before removing the settings error popup
- * from the DOM.
- *
- * @summary This constant specifies the total time, from display to complete
- * removal, for a settings-related error message. It includes any fade-out
- * animation duration.
- *
- * @constant {number}
- * @returns {number}
- * @pseudocode
- * 1. After a settings error popup is displayed, a timer is set for `SETTINGS_REMOVE_MS`.
- * 2. Upon timer expiration, the popup element is completely removed from the Document Object Model (DOM).
- */
-export const SETTINGS_REMOVE_MS = 2000;
 
 /**
  * Duration in milliseconds before the snackbar begins fading out.
