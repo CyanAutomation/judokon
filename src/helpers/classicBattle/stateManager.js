@@ -3,6 +3,7 @@ import { debugLog, shouldSuppressDebugOutput } from "./debugLog.js";
 import { error as logError, warn as logWarn, debug as logDebug } from "../logger.js";
 import { isEnabled } from "../featureFlags.js";
 import { emitBattleEvent } from "./battleEvents.js";
+import { reconcileProjectionAuthority } from "./stateOwnership.js";
 
 // Constants
 const DEFAULT_INITIAL_STATE = "waitingForMatchStart";
@@ -130,6 +131,27 @@ function initializeStateTable(stateTable) {
  * @param {object} stateDef - State definition.
  * @returns {string[]} Array of event names.
  */
+
+function assertProjectionAuthority(machine, toState, eventName) {
+  const store = machine?.context?.store;
+  const { corrected } = reconcileProjectionAuthority(store, toState);
+  if (!corrected.length) {
+    return;
+  }
+
+  const violation = {
+    event: eventName,
+    state: toState,
+    reason: "projection.desync.rejected",
+    corrected
+  };
+
+  logWarn("Projection desync rejected in orchestrator transition", violation);
+  try {
+    emitBattleEvent("battle.intent.rejected", violation);
+  } catch {}
+}
+
 function getAvailableTriggers(stateDef) {
   return (stateDef?.triggers || []).map((t) => t.on);
 }
@@ -444,6 +466,7 @@ async function executeTransition(
 
   // Update state
   updateCurrentState(toState);
+  assertProjectionAuthority(machine, toState, eventName);
 
   // Call transition hook
   try {

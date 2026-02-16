@@ -298,6 +298,12 @@ export async function safeDispatch(eventName, payload) {
     if (isDebugEvent) {
       debugLog(`battleOrchestrator path failed: ${err?.message}`);
     }
+    return {
+      ok: false,
+      eventName,
+      reason: "no_machine",
+      error: err instanceof Error ? err : new Error(String(err))
+    };
   }
 
   if (isDebugEvent) {

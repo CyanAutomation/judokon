@@ -22,6 +22,7 @@ import { updateDebugPanel } from "./debugPanel.js";
 import { setNextButtonFinalizedState } from "./uiHelpers.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
+import { SESSION_PROJECTION_FIELDS, VIEW_PROJECTION_FIELDS } from "./stateOwnership.js";
 
 const buildEngineConfig = (config = {}) => ({
   ...config,
@@ -103,7 +104,7 @@ const SELECTION_IN_FLIGHT_GUARD = Symbol.for("classicBattle.selectionInFlight");
  * @returns {object} The battle state store.
  */
 export function createBattleStore() {
-  return {
+  const viewProjection = {
     selectionMade: false,
     roundReadyForInput: false,
     stallTimeoutMs: 35000,
@@ -115,7 +116,10 @@ export function createBattleStore() {
     playerChoice: null,
     playerCardEl: null,
     opponentCardEl: null,
-    statButtonEls: null,
+    statButtonEls: null
+  };
+
+  const sessionProjection = {
     currentPlayerJudoka: null,
     currentOpponentJudoka: null,
     lastPlayerStats: null,
@@ -125,6 +129,21 @@ export function createBattleStore() {
     pendingOpponentFromDeck: null,
     usedOpponentIds: new Set(),
     roundsPlayed: 0
+  };
+
+  return {
+    ...viewProjection,
+    ...sessionProjection,
+    projection: {
+      view: viewProjection,
+      session: sessionProjection,
+      ownership: {
+        authority: "orchestrator-engine",
+        notes: "Store fields are projection-only. Domain progression is owned by state machine.",
+        viewFields: [...VIEW_PROJECTION_FIELDS],
+        sessionFields: [...SESSION_PROJECTION_FIELDS]
+      }
+    }
   };
 }
 
