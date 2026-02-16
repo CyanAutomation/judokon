@@ -1,16 +1,28 @@
 # Missing Mermaid Diagrams Implementation Plan
 
 **Date Started**: February 14, 2026  
-**Status**: 🔄 IN PROGRESS  
-**Total Diagrams to Implement**: 49  
-**Diagrams Completed**: 31 / 49  
-**Current Phase**: Phase 6 (Remaining Utilities) - IN PROGRESS (5/17) | Next: Final Phases
+**Status**: 🔄 IN PROGRESS (script-verified inventory refreshed February 16, 2026)  
+**Total PRD Files in Scope**: 61  
+**PRD Files with ≥1 Mermaid Block**: 39 / 61  
+**Total Mermaid Blocks**: 95  
+**Current Phase**: Inventory reconciliation complete; implementation-plan phase data below is historical and pending refresh
 
 ---
 
+## Last Verified by Script
+
+- **Script**: `scripts/computeMermaidInventory.mjs`
+- **Command**: `node scripts/computeMermaidInventory.mjs`
+- **Verified scope**: `design/productRequirementsDocuments/*.md`
+- **Latest output snapshot**:
+  - `totalPrdFiles`: 61
+  - `filesWithMermaid`: 39
+  - `filesWithoutMermaid`: 22
+  - `totalMermaidBlocks`: 95
+
 ## Executive Summary
 
-This document tracks the systematic implementation of 49 missing Mermaid diagrams across PRD files. Currently, 8 PRD files contain 16 diagrams; 49 files lack diagrams and are candidates for implementation.
+This document tracks the systematic implementation plan for Mermaid diagrams across PRD files. A scripted inventory now confirms 61 PRD files in scope, with 39 files containing Mermaid and 22 files still without Mermaid blocks.
 
 **Approach**:
 
@@ -21,13 +33,13 @@ This document tracks the systematic implementation of 49 missing Mermaid diagram
 
 **Success Criteria**:
 
-- ✅ All 49 diagrams implemented with valid Mermaid syntax
+- 🎯 Historical target: all planned missing-diagram work items implemented with valid Mermaid syntax
 - ✅ Each diagram verified against implementation code OR PRD requirements
 - ✅ Test coverage references added (format: `**Test Coverage**: Verified by: [path.js](path)`)
 - ✅ Status badges used consistently (✅ VERIFIED / 🟠 ASPIRATIONAL / ⚠️ PENDING)
 - ✅ No syntax errors or render failures
 - ✅ Cross-references between related diagrams included
-- ✅ Final audit: grep confirms all 57 PRDs contain Mermaid diagrams (8 existing + 49 new)
+- 🔄 Final audit (current): script confirms 39/61 PRD files contain Mermaid blocks (95 total blocks)
 
 ---
 
@@ -223,7 +235,7 @@ sequenceDiagram
 
 ## Verification Checklist (Global)
 
-After each phase completes, verify:
+After each phase completes, verify (and reconcile with script inventory):
 
 - [ ] All diagrams in phase rendered successfully (copy each into <https://mermaid.live>)
 - [ ] All test coverage links point to valid files (use grep to spot-check paths)
@@ -232,19 +244,19 @@ After each phase completes, verify:
 - [ ] All cross-references use correct markdown link format
 - [ ] Phase status updated in tracking table (◻️ → 🔄 → ✅)
 
-**Final Verification** (all 49 diagrams complete):
+**Final Verification** (current scripted baseline and future completion target):
 
 ````bash
 # Verify all PRD files now have Mermaid diagrams
 grep -r "^\`\`\`mermaid" design/productRequirementsDocuments/*.md | wc -l
-# Expected output: 65 (16 existing + 49 new = 65 total ```mermaid blocks)
+# Current output: 95 (script baseline as of Feb 16, 2026)
 
 # Verify no PRD with duplicate diagrams
 for file in design/productRequirementsDocuments/*.md; do
   count=$(grep -c "^\`\`\`mermaid" "$file")
   if [ $count -gt 1 ]; then echo "$file: $count diagrams"; fi
 done
-# Expected: No output (all PRDs have ≤1 diagram per file, or intentional multiples documented)
+# Note: multiple diagrams per PRD are currently expected in several files
 
 # Verify test links validity (sample random 10)
 # Manually check: [tests/path.js](tests/path.js) links resolve
