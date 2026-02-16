@@ -117,10 +117,11 @@ function bindReplayClickListener(store) {
  * Remove delegated replay handling and release module state.
  *
  * @pseudocode
- * 1. If interrupt cleanup exists, execute it and clear the reference.
- * 2. Exit when there is no bound replay click listener.
- * 3. Remove the capture-phase replay click listener.
- * 4. Reset listener/state flags so a new store can bind cleanly.
+ * 1. Remove stat button event bindings and clear listener references.
+ * 2. If orientation or interrupt cleanup exists, execute and clear references.
+ * 3. Exit when there is no bound replay click listener.
+ * 4. Remove the capture-phase replay click listener.
+ * 5. Reset listener/state flags so a new store can bind cleanly.
  *
  * @returns {void}
  */
