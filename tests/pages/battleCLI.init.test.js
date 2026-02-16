@@ -100,7 +100,9 @@ describe("battleCLI init helpers", () => {
   });
 
   it("blocks direct battleStateChange injection from forcing progression", async () => {
-    const mod = await loadBattleCLI();
+    const mod = await loadBattleCLI({
+      mockBattleEvents: false
+    });
     await mod.init();
     const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
     const emitBattleEvent = battleEvents.emitBattleEvent;
