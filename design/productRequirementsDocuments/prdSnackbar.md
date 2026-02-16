@@ -173,7 +173,7 @@ stateDiagram-v2
 
     Rendering --> FadeIn: Trigger animation
 
-    FadeIn: 👁️ Fade-in 250ms<br/>ease-out<br/>opacity: 0 → 1
+    FadeIn: 👁️ Fade-in 250ms<br/>ease-out<br/>opacity 0 → 1
 
     FadeIn --> Visible: ✅ Visible
 
@@ -185,7 +185,7 @@ stateDiagram-v2
 
     Dismissing --> FadeOut: Trigger animation
 
-    FadeOut: 👁️ Fade-out 250ms<br/>ease-in<br/>opacity: 1 → 0
+    FadeOut: 👁️ Fade-out 250ms<br/>ease-in<br/>opacity 1 → 0
 
     FadeOut --> Removed: Remove from DOM<br/>Remove from queue
 
