@@ -61,9 +61,8 @@ describe("Classic Battle quit flow", () => {
     expect(quitButtonAfter).toBeTruthy();
     expect(quitButtonAfter).not.toBe(quitButtonBefore); // Button IS replaced (via resetBattleUI)
 
-    // TIMING ASSERTION: Verify handler was attached to the FINAL instance (after replacement)
-    // This is the critical fix - wireControlButtons() runs AFTER initializeMatchStart()
-    expect(quitButtonAfter.__controlBound).toBe(true);
+    // Delegated control routing marker is preserved on the replacement button instance.
+    expect(quitButtonAfter.dataset.action).toBe("quit");
 
     const quit = quitButtonAfter; // Use the final button instance
     quit.click();

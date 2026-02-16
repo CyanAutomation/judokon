@@ -43,14 +43,11 @@ describe("resetBattleUI helpers", () => {
 
     helpers.resetNextButton();
 
-    const timerSvc = await import("../../src/helpers/classicBattle/timerService.js");
-
     const newBtn = document.querySelector('[data-role="next-round"]');
     expect(newBtn).not.toBe(btn);
     expect(newBtn.disabled).toBe(true);
     expect(newBtn.dataset.nextReady).toBeUndefined();
-    newBtn.dispatchEvent(new MouseEvent("click"));
-    expect(timerSvc.onNextButtonClick).toHaveBeenCalledTimes(1);
+    expect(newBtn.dataset.action).toBe("next");
   });
 
   it("resetQuitButton replaces quit button", () => {

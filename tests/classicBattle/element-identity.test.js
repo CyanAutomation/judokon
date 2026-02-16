@@ -43,11 +43,10 @@ describe("Classic Battle element identity preservation", () => {
     // Note: Replay button may or may not be replaced depending on initialization flow
     expect(nextAfter).not.toBe(nextBefore); // Replaced via resetNextButton()
 
-    // Critical: Verify handlers were attached to FINAL instances (after replacement)
-    // This validates the fix - wireControlButtons() runs AFTER initializeMatchStart()
-    expect(quitAfter.__controlBound).toBe(true);
-    expect(replayAfter.__controlBound).toBe(true);
-    expect(nextAfter.__controlBound).toBe(true);
+    // Delegated routing markers must survive replacement on final button instances.
+    expect(quitAfter.dataset.action).toBe("quit");
+    expect(replayAfter.dataset.action).toBe("replay");
+    expect(nextAfter.dataset.action).toBe("next");
   });
 
   test("stat buttons use event delegation pattern", async () => {
@@ -88,32 +87,23 @@ describe("Classic Battle element identity preservation", () => {
     expect(scoreDisplayAfter).toBe(scoreDisplayBefore);
   });
 
-  test("handler attachment timing prevents lost event handlers", async () => {
+  test("delegated control routing survives button replacement", async () => {
     document.documentElement.innerHTML = getHtmlContent();
 
     const { initClassicBattleTest } = await import("../helpers/initClassicBattleTest.js");
     await initClassicBattleTest({ afterMock: true });
 
+    const quitBefore = document.getElementById("quit-button");
     const mod = await import("../../src/pages/battleClassic.init.js");
     await mod.init();
 
-    // After init completes, all control buttons should have handlers
-    const quit = document.getElementById("quit-button");
-    const replay = document.getElementById("replay-button");
-    const next = document.getElementById("next-button");
+    const quitAfter = document.getElementById("quit-button");
+    expect(quitAfter).not.toBe(quitBefore);
+    expect(quitAfter.dataset.action).toBe("quit");
 
-    expect(quit.__controlBound).toBe(true);
-    expect(replay.__controlBound).toBe(true);
-    expect(next.__controlBound).toBe(true);
-
-    // Verify handlers are actually functional (not just markers)
-    // Click should create the expected promise/modal
-    quit.click();
-
-    // Wait for handler to execute
+    quitAfter.click();
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    // If handler is attached correctly, promise should be created
     expect(window.quitConfirmButtonPromise).toBeTruthy();
   });
 });

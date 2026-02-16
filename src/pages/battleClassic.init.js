@@ -107,6 +107,7 @@ import { isDevelopmentEnvironment } from "../helpers/environment.js";
 import { runClassicBattleBootstrapCoordinator } from "../helpers/classicBattle/bootstrapCoordinator.js";
 import { createBattleStore } from "../helpers/classicBattle/roundManager.js";
 import { STORE_READY_EVENT } from "../helpers/classicBattleHomeLink.constants.js";
+import { bindControlDelegation } from "../helpers/classicBattle/controlDelegation.js";
 
 // =============================================================================
 // Configuration & Constants
@@ -1536,16 +1537,31 @@ function resolveControlStore(store) {
 }
 
 function wireControlButtons(store) {
+  const activeStore = resolveControlStore(store);
+  const controlRoot =
+    getDocumentRef()?.getElementById("battle-area") ??
+    getDocumentRef()?.querySelector("main.battle-page") ??
+    getDocumentRef()?.body ??
+    null;
+
   const nextBtn = getNextButton();
-  if (nextBtn && !nextBtn.__controlBound) {
-    nextBtn.addEventListener("click", onNextButtonClick);
-    nextBtn.__controlBound = true;
+  if (nextBtn) {
+    nextBtn.dataset.action = "next";
   }
 
   const replayBtn = getReplayButton();
-  if (replayBtn && !replayBtn.__controlBound) {
-    replayBtn.addEventListener("click", async () => {
-      const activeStore = resolveControlStore(store);
+  if (replayBtn) {
+    replayBtn.dataset.action = "replay";
+  }
+
+  const quitBtn = getQuitButton();
+  if (quitBtn) {
+    quitBtn.dataset.action = "quit";
+  }
+
+  bindControlDelegation(controlRoot, {
+    onNext: (event) => onNextButtonClick(event, undefined, activeStore),
+    onReplay: async () => {
       stopActiveSelectionTimer();
       STATE.isStartingRoundCycle = false;
       resetOpponentPromptTimestamp();
@@ -1564,20 +1580,14 @@ function wireControlButtons(store) {
       await waitForStatButtonsReady();
       updateScore(0, 0);
       updateRoundCounter(1);
-    });
-    replayBtn.__controlBound = true;
-  }
-
-  const quitBtn = getQuitButton();
-  if (quitBtn && !quitBtn.__controlBound) {
-    quitBtn.addEventListener("click", () => {
+    },
+    onQuit: (_event, actionTarget) => {
       stopActiveSelectionTimer();
-      quitMatch(resolveControlStore(store), quitBtn);
-    });
-    quitBtn.__controlBound = true;
-  }
+      quitMatch(activeStore, actionTarget);
+    }
+  });
 
-  bindHomeButton(resolveControlStore(store));
+  bindHomeButton(activeStore);
 }
 
 async function handleRoundStartEvent(store, evt) {
