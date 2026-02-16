@@ -115,8 +115,7 @@ describe("battleCLI init helpers", () => {
     }
     emitBattleEvent.mockClear();
 
-    // Direct DOM manipulation required: establishes known state for guard testing
-    document.body.dataset.battleState = "waitingForMatchStart";
+    // Use the regular event path to establish the guard precondition.
     emitBattleEvent("battleStateChange", { to: "waitingForMatchStart", event: "startClicked" });
     emitBattleEvent("battleStateChange", { to: "roundSelect" });
 
