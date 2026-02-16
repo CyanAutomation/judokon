@@ -1,3 +1,9 @@
+/**
+ * Archived experimental helper.
+ *
+ * This file is intentionally stored outside runtime paths and is not imported by the app.
+ */
+
 import { escapeHTML } from "./utils.js";
 
 /**
