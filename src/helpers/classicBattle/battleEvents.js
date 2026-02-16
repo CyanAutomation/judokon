@@ -211,7 +211,6 @@ export function createBattleEventBus(options = {}) {
       target.removeEventListener(type, handler);
       untrackListener(type, handler);
     },
-    },
     emit(type, detail) {
       try {
         if (shouldSuppressDuplicateValueEvent(type, detail)) {
