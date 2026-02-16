@@ -120,7 +120,7 @@ describe("battleCLI state flows", () => {
       expect(showSnackbar).toHaveBeenCalledWith("");
     });
 
-    it("does not locally expire countdown at boundary without authoritative finish", async () => {
+    it("does not locally expire countdown from time advancement alone", async () => {
       await setupBattleCLI();
       const eventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
       const { emitBattleEvent } = eventsMod;
@@ -130,10 +130,7 @@ describe("battleCLI state flows", () => {
       showSnackbar.mockClear();
 
       await timers.advanceTimersByTimeAsync(1500);
-      expect(showSnackbar).not.toHaveBeenCalledWith("");
-
-      emitBattleEvent("cooldown.timer.tick", { remainingMs: 0 });
-      expect(showSnackbar).toHaveBeenCalledWith("");
+      expect(showSnackbar).not.toHaveBeenCalled();
     });
 
     it("uses authoritative countdown state across visibility pause/resume", async () => {

@@ -11,11 +11,20 @@ function shouldExposeLegacyReadiness() {
     return false;
   }
 
+  if (
+    globalThis.__TEST__ ||
+    globalThis.__VITEST__ ||
+    globalThis.__PLAYWRIGHT__ ||
+    globalThis.__PLAYWRIGHT_TEST__
+  ) {
+    return true;
+  }
+
   if (typeof process !== "undefined") {
     return process.env?.VITEST === "true" || process.env?.NODE_ENV === "test";
   }
 
-  return Boolean(globalThis.__TEST__);
+  return false;
 }
 
 /**

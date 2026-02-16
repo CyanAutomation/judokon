@@ -62,6 +62,8 @@ describe("battleCLI init helpers", () => {
     dispatchBattleEvent.mockRejectedValue(new Error("machine unavailable"));
     const battleCliModule = await import("../../src/pages/battleCLI/init.js");
 
+    const initialBattleState = document.body.dataset.battleState;
+
     await withMutedConsole(async () => {
       await battleCliModule.triggerMatchStart();
     });
@@ -78,7 +80,7 @@ describe("battleCLI init helpers", () => {
         reason: "no_machine"
       })
     );
-    expect(document.body.dataset.battleState).not.toBe("roundSelect");
+    expect(document.body.dataset.battleState).toBe(initialBattleState);
     expect(document.getElementById("cli-countdown")?.dataset.status).toBe("error");
   });
 
@@ -88,7 +90,9 @@ describe("battleCLI init helpers", () => {
     const debugHooks = await import("../../src/helpers/classicBattle/debugHooks.js");
     debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
     const { dispatchBattleEvent } = await import("../../src/helpers/classicBattle/orchestrator.js");
-    dispatchBattleEvent.mockRejectedValue(new Error("machine unavailable"));
+    dispatchBattleEvent.mockImplementation(() => {
+      throw new Error("machine unavailable");
+    });
     const battleCliModule = await import("../../src/pages/battleCLI/init.js");
 
     const result = await battleCliModule.safeDispatch("startClicked");
@@ -103,7 +107,12 @@ describe("battleCLI init helpers", () => {
     const mod = await loadBattleCLI();
     await mod.init();
     const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
+    const debugHooks = await import("../../src/helpers/classicBattle/debugHooks.js");
+    debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
     const emitBattleEvent = battleEvents.emitBattleEvent;
+    if (!vi.isMockFunction(emitBattleEvent)) {
+      throw new Error("emitBattleEvent mock unavailable");
+    }
     emitBattleEvent.mockClear();
 
     // Direct DOM manipulation required: establishes known state for guard testing
