@@ -101,6 +101,7 @@ import { resolveRoundForTest as resolveRoundForTestHelper } from "./testSupport.
 const hasDocument = typeof document !== "undefined";
 const getSafeDocument = () => (hasDocument ? document : null);
 const getActiveElement = () => getSafeDocument()?.activeElement ?? null;
+let seedInputListener = null;
 
 function handleShortcutsToggle(event) {
   const target = event?.currentTarget;
@@ -1161,7 +1162,11 @@ function initSeed({ recreateEngine = true } = {}) {
     if (input) input.value = String(policy.seed);
   }
 
-  input?.addEventListener("input", () => {
+  if (input && seedInputListener) {
+    input.removeEventListener("input", seedInputListener);
+  }
+
+  seedInputListener = () => {
     const normalizedSeed = toPositiveInteger(input.value);
     if (normalizedSeed === null) {
       input.value = "";
@@ -1171,7 +1176,9 @@ function initSeed({ recreateEngine = true } = {}) {
     }
     if (errorEl) errorEl.textContent = "";
     apply(normalizedSeed);
-  });
+  };
+
+  input?.addEventListener("input", seedInputListener);
 }
 
 /**

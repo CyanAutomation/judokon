@@ -66,4 +66,24 @@ describe("battleCLI seed validation", () => {
     expect(localStorage.getItem("battleCLI.seed")).toBe("4");
     expect(window.__testMode).toBe(true);
   });
+
+  it("does not register duplicate seed listeners after reset", async () => {
+    const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
+    const mod = await loadBattleCLI({
+      url: "http://localhost/battleCLI.html?seed=3",
+      html: seedHtml
+    });
+    await mod.init();
+    const { resetMatch } = await import("../../src/pages/battleCLI/init.js");
+    await resetMatch();
+
+    const input = document.getElementById("seed-input");
+    const before = setItemSpy.mock.calls.filter(([key]) => key === "battleCLI.seed").length;
+    input.value = "77";
+    input.dispatchEvent(new Event("input"));
+    const after = setItemSpy.mock.calls.filter(([key]) => key === "battleCLI.seed").length;
+
+    expect(after - before).toBe(1);
+    setItemSpy.mockRestore();
+  });
 });
