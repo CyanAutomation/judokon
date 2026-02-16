@@ -1008,7 +1008,7 @@ export async function triggerMatchStart() {
   try {
     const result = await safeDispatch("startClicked");
     dispatched = result?.ok === true;
-    dispatchFailure = result?.ok === true ? null : result;
+    dispatchFailure = result;
   } catch (error) {
     dispatched = false;
     dispatchFailure = {
@@ -3277,13 +3277,18 @@ function logStateChange(from, to) {
 }
 
 function handleBattleState(ev) {
-  const { from, to, event } = ev.detail || {};
+  const { from, to } = ev.detail || {};
   const currentState = document.body?.dataset?.battleState || "";
   const protectedEntryStates = new Set(["matchStart", "roundWait", "roundPrompt", "roundSelect"]);
+  const machine = getMachine();
+  const machineState =
+    typeof machine?.getState === "function"
+      ? machine.getState()
+      : (machine?.state ?? machine?.currentState ?? null);
   const isDirectStateInjection =
     currentState === "waitingForMatchStart" &&
     protectedEntryStates.has(String(to || "")) &&
-    event !== "startClicked";
+    machineState !== to;
 
   if (isDirectStateInjection) {
     emitBattleEvent("battle.unavailable", {
