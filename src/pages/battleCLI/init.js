@@ -13,6 +13,7 @@ import {
   resetGame
 } from "../../helpers/classicBattle/roundManager.js";
 import * as battleOrchestrator from "../../helpers/classicBattle/orchestrator.js";
+import { createBattleInstance } from "../../helpers/classicBattle/createBattleInstance.js";
 import {
   onBattleEvent,
   offBattleEvent,
@@ -184,12 +185,15 @@ try {
 // Engine event wiring is installed during init() to avoid touching mocked
 // module exports during unit tests that import this module.
 
+let battleInstance = null;
+
 function disposeClassicBattleOrchestrator() {
   try {
-    battleOrchestrator?.disposeClassicBattleOrchestrator?.();
+    battleInstance?.dispose?.();
   } catch {
     /* ignore: orchestrator may not be initialized */
   }
+  battleInstance = null;
 }
 
 /**
@@ -918,10 +922,8 @@ export async function resetMatch() {
   // Initialize orchestrator after sync work without blocking callers
   resetPromise = next.then(async () => {
     try {
-      const orchestrator = await battleOrchestrator.initClassicBattleOrchestrator?.(
-        store,
-        startRoundWrapper
-      );
+      battleInstance = createBattleInstance();
+      const orchestrator = await battleInstance.init(store, startRoundWrapper);
       if (orchestrator) {
         store.orchestrator = orchestrator;
       }
@@ -3638,6 +3640,7 @@ export async function init() {
   parseUrlFlags();
   await setupFlags();
   subscribeEngine();
+  battleInstance = createBattleInstance();
 
   // Assign the engine to the store for debug access
   try {

@@ -70,10 +70,7 @@ import {
   getQuitButton
 } from "../helpers/classicBattle/UIElements.js";
 import { getCurrentTimestamp, clearScheduled } from "../helpers/classicBattle/timerSchedule.js";
-import {
-  initClassicBattleOrchestrator,
-  registerBridgeOnEngineCreated
-} from "../helpers/classicBattle/orchestrator.js";
+import { registerBridgeOnEngineCreated } from "../helpers/classicBattle/orchestrator.js";
 import { setBattleStateSnapshot } from "../helpers/classicBattle/eventBus.js";
 import { getDocumentRef } from "../helpers/documentHelper.js";
 
@@ -1817,10 +1814,13 @@ async function initializePhase3_Engine(store) {
     (typeof process !== "undefined" && process.env?.VITEST === "true") ||
     (typeof globalThis !== "undefined" && Boolean(globalThis.__TEST__));
 
+  store.battleInstance = createBattleInstance();
+
   if (shouldDeferOrchestrator) {
     store.orchestrator = null;
     // Store the promise to allow tests to await orchestrator initialization if needed
-    store.orchestratorPromise = initClassicBattleOrchestrator(store, startRound)
+    store.orchestratorPromise = store.battleInstance
+      .init(store, startRound)
       .then((orchestrator) => {
         store.orchestrator = orchestrator;
         return orchestrator;
@@ -1836,7 +1836,7 @@ async function initializePhase3_Engine(store) {
     return;
   }
 
-  store.orchestrator = await initClassicBattleOrchestrator(store, startRound);
+  store.orchestrator = await store.battleInstance.init(store, startRound);
 }
 
 async function initializePhase4_EventHandlers(store) {

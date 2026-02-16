@@ -20,6 +20,7 @@ import { exposeClassicBattleTestAPI } from "../testing/exposeClassicBattleTestAp
 import { setBattleStateBadgeEnabled, bindUIHelperEventHandlers } from "./uiHelpers.js";
 import { bindRoundUIEventHandlersDynamic } from "./roundUI.js";
 import { bindRoundFlowControllerOnce } from "./roundFlowController.js";
+import { getBattleEventTarget } from "./battleEvents.js";
 import { waitForOpponentCard } from "../opponentCardWait.js";
 
 /**
@@ -116,7 +117,7 @@ export async function setupClassicBattlePage() {
           initComplete: true,
           bootstrapComplete: true,
           handlersRegistered: true,
-          eventSystemReady: !!globalThis.__classicBattleEventTarget,
+          eventSystemReady: !!getBattleEventTarget(),
           controllerReady: !!controller,
           viewReady: !!view,
           storeReady: !!controller?.battleStore,

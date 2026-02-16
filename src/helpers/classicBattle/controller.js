@@ -1,6 +1,6 @@
 import { createBattleStore, startRound } from "./roundManager.js";
 import { shouldClearSelectionForNextRound } from "./selectionHandler.js";
-import { initClassicBattleOrchestrator } from "./orchestrator.js";
+import { createBattleInstance } from "./createBattleInstance.js";
 import { applyRoundUI, handleRoundStartedEvent } from "./roundUI.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "../featureFlags.js";
 import { setTestMode } from "../testModeUtils.js";
@@ -32,6 +32,7 @@ export class ClassicBattleController extends EventTarget {
     this.store.waitForOutcomeConfirmation = false;
     this.waitForOpponentCard = waitForOpponentCard;
     this.timerControls = { startCoolDown, pauseTimer, resumeTimer };
+    this.battleInstance = null;
   }
 
   /** @returns {ReturnType<typeof createBattleStore>} */
@@ -59,9 +60,8 @@ export class ClassicBattleController extends EventTarget {
     this.#bindEngineRoundStarted(this.store.engine);
 
     // Initialize orchestrator and assign it to the store
-    this.store.orchestrator = await initClassicBattleOrchestrator(this.store, () =>
-      this.startRound()
-    );
+    this.battleInstance = createBattleInstance();
+    this.store.orchestrator = await this.battleInstance.init(this.store, () => this.startRound());
   }
 
   /**

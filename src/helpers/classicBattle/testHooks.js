@@ -1,4 +1,4 @@
-import { emitBattleEvent, __resetBattleEventTarget } from "./battleEvents.js";
+import { emitBattleEvent, __resetBattleEventTarget, getBattleEventTarget } from "./battleEvents.js";
 import { stopTimer } from "../BattleEngine.js";
 import * as roundUIModule from "./roundUI.js";
 import * as uiServiceModule from "./uiService.js";
@@ -445,13 +445,7 @@ export async function triggerStallPromptNow(store, options = {}) {
  * @returns {void}
  */
 export function initializeTestBindingsLight() {
-  // Inline event target setup (from battleEvents.js)
-  const EVENT_TARGET_KEY = "__classicBattleEventTarget";
-  if (!globalThis[EVENT_TARGET_KEY]) {
-    const t = new EventTarget();
-    globalThis[EVENT_TARGET_KEY] = t;
-    // Skip Node.js tuning for simplicity in tests
-  }
+  const target = getBattleEventTarget();
 
   // Inline promise setup (from promises.js)
   function setupPromise(key, eventName) {
@@ -473,8 +467,7 @@ export function initializeTestBindingsLight() {
       return p;
     }
     let promise = reset();
-    // Add event listener to the global target
-    const target = globalThis[EVENT_TARGET_KEY];
+    // Add event listener to the current battle target
     target.addEventListener(eventName, () => {
       try {
         try {
