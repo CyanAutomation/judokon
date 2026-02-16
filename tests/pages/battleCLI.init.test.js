@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { withMutedConsole } from "../utils/console.js";
 import { BATTLE_POINTS_TO_WIN } from "../../src/config/storageKeys.js";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
-import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 describe("battleCLI init helpers", () => {
   beforeEach(() => {
@@ -48,49 +47,77 @@ describe("battleCLI init helpers", () => {
     expect(dispatchBattleEvent).toHaveBeenCalledWith("startClicked");
   });
 
-  it("progresses battle states manually when the orchestrator is unavailable", async () => {
-    const timers = useCanonicalTimers();
-    try {
-      const mod = await loadBattleCLI();
-      await mod.init();
-      const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
-      const emitBattleEvent = battleEvents.emitBattleEvent;
-      if (!vi.isMockFunction(emitBattleEvent)) {
-        throw new Error("emitBattleEvent mock unavailable");
-      }
-      emitBattleEvent.mockClear();
-      const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
-      const initialTimerCalls = setTimeoutSpy.mock.calls.length;
-      const debugHooks = await import("../../src/helpers/classicBattle/debugHooks.js");
-      debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
-      const { dispatchBattleEvent } = await import(
-        "../../src/helpers/classicBattle/orchestrator.js"
-      );
-      dispatchBattleEvent.mockResolvedValue(false);
-      const battleCliModule = await import("../../src/pages/battleCLI/init.js");
-      const { MANUAL_FALLBACK_DELAY_MS } = battleCliModule;
-      await withMutedConsole(async () => {
-        const startPromise = battleCliModule.triggerMatchStart();
-        await timers.runAllTimersAsync();
-        await startPromise;
-      });
-      const stateChangeCalls = emitBattleEvent.mock.calls
-        .filter(([type]) => type === "battleStateChange")
-        .map(([, detail]) => detail?.to ?? null);
-      expect(stateChangeCalls).toEqual(["matchStart", "roundWait", "roundPrompt", "roundSelect"]);
-      const manualTimerCalls = setTimeoutSpy.mock.calls.slice(initialTimerCalls);
-      const fallbackTimers = manualTimerCalls
-        .filter(([, delay]) => delay === MANUAL_FALLBACK_DELAY_MS)
-        .slice(0, 3);
-      expect(fallbackTimers).toHaveLength(3);
-      expect(fallbackTimers.map(([, delay]) => delay)).toEqual([
-        MANUAL_FALLBACK_DELAY_MS,
-        MANUAL_FALLBACK_DELAY_MS,
-        MANUAL_FALLBACK_DELAY_MS
-      ]);
-    } finally {
-      timers.cleanup();
+  it("emits battle.unavailable and does not manually progress state when the orchestrator is unavailable", async () => {
+    const mod = await loadBattleCLI();
+    await mod.init();
+    const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
+    const emitBattleEvent = battleEvents.emitBattleEvent;
+    if (!vi.isMockFunction(emitBattleEvent)) {
+      throw new Error("emitBattleEvent mock unavailable");
     }
+    emitBattleEvent.mockClear();
+    const debugHooks = await import("../../src/helpers/classicBattle/debugHooks.js");
+    debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
+    const { dispatchBattleEvent } = await import("../../src/helpers/classicBattle/orchestrator.js");
+    dispatchBattleEvent.mockRejectedValue(new Error("machine unavailable"));
+    const battleCliModule = await import("../../src/pages/battleCLI/init.js");
+
+    await withMutedConsole(async () => {
+      await battleCliModule.triggerMatchStart();
+    });
+
+    const stateChangeCalls = emitBattleEvent.mock.calls
+      .filter(([type]) => type === "battleStateChange")
+      .map(([, detail]) => detail?.to ?? null);
+    expect(stateChangeCalls).toEqual([]);
+
+    expect(emitBattleEvent).toHaveBeenCalledWith(
+      "battle.unavailable",
+      expect.objectContaining({
+        action: "startClicked",
+        reason: "no_machine"
+      })
+    );
+    expect(document.body.dataset.battleState).toBe("waitingForMatchStart");
+    expect(document.getElementById("cli-countdown")?.dataset.status).toBe("error");
+  });
+
+  it("returns explicit failure contract when safeDispatch has no machine", async () => {
+    const mod = await loadBattleCLI();
+    await mod.init();
+    const debugHooks = await import("../../src/helpers/classicBattle/debugHooks.js");
+    debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
+    const { dispatchBattleEvent } = await import("../../src/helpers/classicBattle/orchestrator.js");
+    dispatchBattleEvent.mockImplementation(undefined);
+    const battleCliModule = await import("../../src/pages/battleCLI/init.js");
+
+    const result = await battleCliModule.safeDispatch("startClicked");
+    expect(result).toMatchObject({
+      ok: false,
+      eventName: "startClicked",
+      reason: "no_machine"
+    });
+  });
+
+  it("blocks direct battleStateChange injection from forcing progression", async () => {
+    const mod = await loadBattleCLI();
+    await mod.init();
+    const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
+    const emitBattleEvent = battleEvents.emitBattleEvent;
+    emitBattleEvent.mockClear();
+
+    emitBattleEvent("battleStateChange", { to: "roundSelect" });
+
+    expect(document.body.dataset.battleState).toBe("waitingForMatchStart");
+    expect(emitBattleEvent).toHaveBeenCalledWith(
+      "battle.unavailable",
+      expect.objectContaining({
+        action: "stateTransition",
+        reason: "state_injection_blocked",
+        attemptedTo: "roundSelect"
+      })
+    );
+    expect(document.getElementById("cli-countdown")?.dataset.status).toBe("error");
   });
 
   it("renders stats list", async () => {

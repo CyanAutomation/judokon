@@ -160,18 +160,6 @@ function handleGlobalEscape(event) {
   }
 }
 
-/**
- * Delay between manual fallback state transitions when the orchestrator is unavailable.
- *
- * @summary This constant defines the delay in milliseconds between manual fallback state transitions when the orchestrator is unavailable.
- *
- * @constant {number}
- * @pseudocode
- * 1. When the orchestrator is unavailable, the CLI will manually transition between battle states.
- * 2. This constant defines the delay between each of those transitions.
- */
-export const MANUAL_FALLBACK_DELAY_MS = 50;
-
 // Initialize engine and subscribe to engine events when available.
 try {
   if (
@@ -236,11 +224,12 @@ function safeGetPointsToWinFromStorage() {
  *
  * @param {string} eventName
  * @param {*} [payload]
- * @returns {Promise<*>} Resolves with the dispatch result when handled, or `undefined` if no handler is available.
+ * @returns {Promise<{ok: boolean, eventName: string, via?: "debugHooks.machine"|"orchestrator", result?: *, reason?: "no_machine", error?: Error}>}
  * @pseudocode
  * 1. Try debugHooks channel first to get the live machine and call `dispatch`.
  * 2. Fallback to orchestrator's `dispatchBattleEvent` if available (when not mocked).
- * 3. Swallow any errors to keep CLI responsive during tests.
+ * 3. Return explicit failure contract when no dispatch handler is available.
+ * 4. Return error contract when a dispatch handler throws.
  */
 export async function safeDispatch(eventName, payload) {
   // DEBUG: Store dispatch attempts to understand why stat selection fails
@@ -273,9 +262,14 @@ export async function safeDispatch(eventName, payload) {
       if (isDebugEvent) {
         debugLog("Using debugHooks machine dispatch");
       }
-      return payload === undefined
-        ? await m.dispatch(eventName)
-        : await m.dispatch(eventName, payload);
+      const result =
+        payload === undefined ? await m.dispatch(eventName) : await m.dispatch(eventName, payload);
+      return {
+        ok: true,
+        eventName,
+        via: "debugHooks.machine",
+        result
+      };
     }
   } catch (err) {
     if (isDebugEvent) {
@@ -292,17 +286,35 @@ export async function safeDispatch(eventName, payload) {
       if (isDebugEvent) {
         debugLog("Using battleOrchestrator dispatch");
       }
-      return payload === undefined ? await fn(eventName) : await fn(eventName, payload);
+      const result = payload === undefined ? await fn(eventName) : await fn(eventName, payload);
+      return {
+        ok: true,
+        eventName,
+        via: "orchestrator",
+        result
+      };
     }
   } catch (err) {
     if (isDebugEvent) {
       debugLog(`battleOrchestrator path failed: ${err?.message}`);
     }
+    return {
+      ok: false,
+      eventName,
+      reason: "no_machine",
+      error: err instanceof Error ? err : new Error(String(err))
+    };
   }
 
   if (isDebugEvent) {
     debugLog(`DISPATCH FAILED - no handler found for: ${eventName}`);
   }
+
+  return {
+    ok: false,
+    eventName,
+    reason: "no_machine"
+  };
 }
 
 /**
@@ -966,7 +978,7 @@ async function startCallback() {
  * emit `startClicked`
  * try dispatch via debug machine
  * else try safeDispatch
- * if dispatch fails → emit manual battleStateChange fallback sequence
+ * if dispatch fails → emit battle unavailable event and show error feedback
  */
 export async function triggerMatchStart() {
   try {
@@ -987,11 +999,19 @@ export async function triggerMatchStart() {
   } catch {}
 
   let dispatched = false;
+  let dispatchFailure = null;
   try {
     const result = await safeDispatch("startClicked");
-    dispatched = result !== undefined ? Boolean(result) : !!result;
-  } catch {
+    dispatched = result?.ok === true;
+    dispatchFailure = result?.ok === true ? null : result;
+  } catch (error) {
     dispatched = false;
+    dispatchFailure = {
+      ok: false,
+      eventName: "startClicked",
+      reason: "no_machine",
+      error: error instanceof Error ? error : new Error(String(error))
+    };
   }
 
   if (dispatched) {
@@ -999,18 +1019,37 @@ export async function triggerMatchStart() {
   }
 
   try {
-    console.warn("[CLI] Orchestrator unavailable, using manual state progression");
-    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-    emitBattleEvent("battleStateChange", { to: "matchStart" });
-    await wait(MANUAL_FALLBACK_DELAY_MS);
-    emitBattleEvent("battleStateChange", { to: "roundWait" });
-    await wait(MANUAL_FALLBACK_DELAY_MS);
-    emitBattleEvent("battleStateChange", { to: "roundPrompt" });
-    await wait(MANUAL_FALLBACK_DELAY_MS);
-    emitBattleEvent("battleStateChange", { to: "roundSelect" });
+    console.warn("[CLI] Orchestrator unavailable; start action rejected");
+    emitBattleEvent("battle.unavailable", {
+      action: "startClicked",
+      reason: dispatchFailure?.reason || "no_machine",
+      error: dispatchFailure?.error || null
+    });
   } catch (err) {
     console.debug("Failed to dispatch startClicked", err);
   }
+}
+
+/**
+ * Render unavailable-battle feedback without mutating battle state.
+ *
+ * @param {CustomEvent} event - Battle unavailable event.
+ * @returns {void}
+ * @pseudocode
+ * 1. Read action/reason from event detail.
+ * 2. Mark countdown region with an error message when available.
+ * 3. Show snackbar guidance to retry or reset.
+ */
+function handleBattleUnavailable(event) {
+  const detail = event?.detail || {};
+  const action = detail.action || "action";
+  const reason = detail.reason || "no_machine";
+  const countdown = byId("cli-countdown");
+  if (countdown) {
+    countdown.textContent = "Battle unavailable. Press R to reset.";
+    countdown.dataset.status = "error";
+  }
+  showSnackbar(`Battle unavailable (${action}: ${reason}). Press R to reset.`);
 }
 
 /**
@@ -3205,7 +3244,23 @@ function logStateChange(from, to) {
 }
 
 function handleBattleState(ev) {
-  const { from, to } = ev.detail || {};
+  const { from, to, event } = ev.detail || {};
+  const currentState = document.body?.dataset?.battleState || "";
+  const protectedEntryStates = new Set(["matchStart", "roundWait", "roundPrompt", "roundSelect"]);
+  const isDirectStateInjection =
+    currentState === "waitingForMatchStart" &&
+    protectedEntryStates.has(String(to || "")) &&
+    event !== "startClicked";
+
+  if (isDirectStateInjection) {
+    emitBattleEvent("battle.unavailable", {
+      action: "stateTransition",
+      reason: "state_injection_blocked",
+      attemptedTo: to
+    });
+    return;
+  }
+
   if (hasDocument && to) {
     try {
       document.body.dataset.battleState = String(to);
@@ -3224,7 +3279,8 @@ const battleEventHandlers = {
   countdownStart: handleCountdownStart,
   countdownFinished: handleCountdownFinished,
   "round.evaluated": handleRoundEvaluated,
-  matchOver: handleMatchOver
+  matchOver: handleMatchOver,
+  "battle.unavailable": handleBattleUnavailable
 };
 
 const battleStateHandlers = {
