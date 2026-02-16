@@ -18,6 +18,7 @@ import {
   onBattleEvent,
   offBattleEvent,
   emitBattleEvent,
+  getBattleEventTarget,
   resetBattleEventDedupeState
 } from "../../helpers/classicBattle/battleEvents.js";
 import { STATS } from "../../helpers/BattleEngine.js";
@@ -3025,11 +3026,37 @@ function handleStatSelectionStalled() {
   }
 }
 
+/**
+ * Check whether timerService countdown handlers are bound to the active battle event target.
+ *
+ * @returns {boolean} True when timerService is already responsible for skip cooldown emissions.
+ * @pseudocode
+ * 1. Read the timerService binding registry from `globalThis.__cbCountdownBoundTargets`.
+ * 2. Resolve the active battle event target.
+ * 3. Return whether the registry contains the active target.
+ */
+function isTimerServiceCountdownHandlerBound() {
+  try {
+    const boundTargets = globalThis.__cbCountdownBoundTargets;
+    const target = getBattleEventTarget?.();
+    if (!(boundTargets instanceof WeakSet) || !target) {
+      return false;
+    }
+    return boundTargets.has(target);
+  } catch {
+    return false;
+  }
+}
+
 function handleCountdownStart(e) {
   let skipHandled = false;
+  const shouldEmitSkipFallbackEvents = !isTimerServiceCountdownHandlerBound();
   const skipEnabled = skipRoundCooldownIfEnabled({
     onSkip: () => {
       skipHandled = true;
+      if (!shouldEmitSkipFallbackEvents) {
+        return;
+      }
       try {
         emitBattleEvent("countdownFinished");
       } catch {}
