@@ -3,6 +3,7 @@ import { debugLog, shouldSuppressDebugOutput } from "./debugLog.js";
 import { error as logError, warn as logWarn, debug as logDebug } from "../logger.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { reconcileProjectionAuthority } from "./stateOwnership.js";
+import { isEnabled } from "../featureFlags.js";
 
 // Constants
 const DEFAULT_INITIAL_STATE = "waitingForMatchStart";
@@ -24,7 +25,7 @@ function isRoundModifyEnabled(context, guardOverrides) {
     return context.flags.roundModify === true;
   }
 
-  return false;
+  return Boolean(isEnabled("roundModify"));
 }
 
 function isWinConditionMet(context) {
