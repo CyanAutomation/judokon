@@ -23,6 +23,17 @@ import { walk } from "estree-walker";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 
+const DEPRECATED_GRAPH_GLOBS = [
+  "playwright/vector-search.spec.js",
+  "src/helpers/api/ragExtractor.js",
+  "src/helpers/api/vectorSearchPage.js",
+  "src/helpers/vectorSearch*.js",
+  "src/helpers/vectorSearch/**/*.js",
+  "tests/helpers/vectorSearch*.test.js",
+  "tests/helpers/vectorSearchPage/**/*.js",
+  "tests/vectorSearch/**/*.js"
+];
+
 function getCallName(node) {
   if (node.type === "Identifier") return node.name;
   if (node.type === "MemberExpression") return getCallName(node.property);
@@ -90,7 +101,7 @@ async function analyzeFile(relativePath) {
 async function generate() {
   const files = await glob("{src,scripts,tests,playwright}/**/*.js", {
     cwd: rootDir,
-    ignore: ["**/node_modules/**"]
+    ignore: ["**/node_modules/**", ...DEPRECATED_GRAPH_GLOBS]
   });
 
   const modules = {};

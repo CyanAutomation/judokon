@@ -10,6 +10,7 @@ Contributors and maintainers running scripted project operations.
 
 ## Key Commands
 - RAG npm workflows are retired. See `docs/status/archive/rag-workflows.md` for archived instructions.
+- Live architecture snapshots (`src/data/codeGraphs.json`) exclude deprecated RAG/vector-search modules via `scripts/generateCodeGraphs.js` ignore globs; historical references remain in `docs/status/archive/`.
 
 ## Canonical Docs
 - See canonical contributor workflow: [`CONTRIBUTING.md`](../CONTRIBUTING.md).

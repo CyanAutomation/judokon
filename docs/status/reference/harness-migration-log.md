@@ -9,14 +9,18 @@
 ## Status Snapshot
 
 - Migration program established to replace deprecated in-hook mocking with Vitest 3.x compatible patterns.
-- Session-based migration batches were executed for classic battle, CLI battle, vector search, and timer/controller helper tests.
+- Session-based migration batches were executed for classic battle, CLI battle, and timer/controller helper tests.
 - Project status moved from foundational setup to repeated batch execution and verification cycles.
+
+## Archived Historical Scope
+
+- Historical migration coverage for deprecated vector-search tests is retained in archived status documents only and excluded from active current-state tracking.
 
 ## Session Milestones (Condensed)
 
 1. **Foundation**: Introduced `createSimpleHarness()` and deprecation path for legacy harness flows.
 2. **Pattern rollout**: Applied unit/integration split strategy to targeted failing files.
-3. **Batch migrations**: Multiple rapid sessions migrated timer, event alias, controller, CLI, and vector-search-related tests.
+3. **Batch migrations**: Multiple rapid sessions migrated timer, event alias, controller, and CLI helper tests.
 4. **Validation loops**: Repeated targeted vitest execution and suite checks after each migration batch.
 5. **Documentation updates**: Added architecture notes and examples for ongoing contributor alignment.
 
