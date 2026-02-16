@@ -48,6 +48,7 @@ export const SnackbarPriority = {
  * @property {number} shownAt - Timestamp when displayed
  * @property {number} sequence - Monotonic sequence number for deterministic ordering
  * @property {HTMLElement} element - DOM element
+ * @property {"Visible"|"Dismissing"} state - Lifecycle state
  * @property {number} [autoDismissId] - Timeout ID for auto-dismiss
  * @property {(event: AnimationEvent) => void} [animationEndHandler] - Animation end handler
  * @property {Function} [onShow] - Show callback
