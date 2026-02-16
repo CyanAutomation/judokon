@@ -109,19 +109,17 @@ describe("classicBattle battle control state", () => {
     expect(btn.dataset.nextReady).toBe("true");
   });
 
-  it("resetBattleUI replaces Next button and reattaches click handler", async () => {
-    const timerSvc = await import("../../../src/helpers/classicBattle/timerService.js");
-    const onNextButtonClickSpy = vi.spyOn(timerSvc, "onNextButtonClick"); // Spy on the imported mock
+  it("resetBattleUI replaces Next button and preserves delegated action routing", async () => {
     const { resetBattleUI } = await import("../../../src/helpers/classicBattle/uiHelpers.js");
     const btn = document.querySelector('[data-role="next-round"]');
     btn.dataset.nextReady = "true";
+    btn.dataset.action = "next";
     resetBattleUI();
     const cloned = document.querySelector('[data-role="next-round"]');
     expect(cloned).not.toBe(btn);
     expect(cloned.disabled).toBe(true);
     expect(cloned.dataset.nextReady).toBeUndefined();
-    cloned.dispatchEvent(new MouseEvent("click"));
-    expect(onNextButtonClickSpy).toHaveBeenCalledTimes(1);
+    expect(cloned.dataset.action).toBe("next");
   });
 
   it("quit button triggers quitMatch", async () => {
