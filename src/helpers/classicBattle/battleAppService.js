@@ -39,7 +39,15 @@ export function subscribe(eventName, handler) {
   if (typeof eventName !== "string" || typeof handler !== "function") {
     return () => {};
   }
-  getFacadeMethod("on")?.(eventName, handler);
+  const onMethod = getFacadeMethod("on");
+  if (!onMethod) {
+    return () => {};
+  }
+  try {
+    onMethod(eventName, handler);
+  } catch {
+    return () => {};
+  }
   return () => {
     getFacadeMethod("off")?.(eventName, handler);
   };
