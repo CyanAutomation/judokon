@@ -75,6 +75,57 @@ describe("showSnackbar", () => {
     expect(thirdEl.classList.contains("snackbar-bottom")).toBe(true);
   });
 
+  it("keeps only two visible snackbars for 3 rapid messages", () => {
+    const container = document.getElementById("snackbar-container");
+
+    showSnackbar("Rapid 1");
+    showSnackbar("Rapid 2");
+    showSnackbar("Rapid 3");
+
+    expect(container.children).toHaveLength(2);
+    expect(Array.from(container.children).map((el) => el.textContent)).toEqual([
+      "Rapid 2",
+      "Rapid 3"
+    ]);
+  });
+
+  it("does not alter remaining snackbar timers after overflow eviction", async () => {
+    const container = document.getElementById("snackbar-container");
+
+    showSnackbar({ text: "First", ttl: 1000 });
+    const firstEl = container.children[0];
+
+    await vi.advanceTimersByTimeAsync(100);
+
+    showSnackbar({ text: "Second", ttl: 900 });
+    const secondEl = container.children[1];
+
+    await vi.advanceTimersByTimeAsync(100);
+
+    showSnackbar({ text: "Third", ttl: 1000 });
+    const thirdEl = container.children[1];
+
+    expect(container.contains(firstEl)).toBe(false);
+    expect(container.contains(secondEl)).toBe(true);
+    expect(container.contains(thirdEl)).toBe(true);
+
+    // Second should expire based on its own timer; third should remain.
+    await vi.advanceTimersByTimeAsync(700);
+    dispatchAnimationEnd(secondEl);
+    await Promise.resolve();
+
+    expect(container.contains(secondEl)).toBe(false);
+    expect(container.contains(thirdEl)).toBe(true);
+    expect(container.children).toHaveLength(1);
+
+    // Third should expire later on its own timer.
+    await vi.advanceTimersByTimeAsync(200);
+    dispatchAnimationEnd(thirdEl);
+    await Promise.resolve();
+
+    expect(container.children).toHaveLength(0);
+  });
+
   it("each snackbar has independent auto-dismiss timer (3000ms)", async () => {
     const container = document.getElementById("snackbar-container");
 

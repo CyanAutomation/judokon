@@ -35,7 +35,7 @@ This inconsistency led to confusion, missed information, and reduced trust in th
 1. **Trigger:** Player performs an action (save, load, update) or the system detects an event (error, offline mode).
 2. **System Response:** Snackbar appears within promptly following the trigger.
 3. **Stacking:** If a new snackbar is triggered while one is visible, it stacks below the existing message (max 2 concurrent). The older message moves up with reduced opacity.
-4. **Overflow:** When a 3rd message arrives, the oldest message is dismissed and removed from the queue.
+4. **Overflow:** When a 3rd message arrives, the oldest message first enters `Dismissing`, runs the standard fade-out, then is removed from the queue.
 5. **Dismissal Policy:** Each snackbar has an independent 3000ms auto-dismiss timer; no manual close button is provided to reduce interaction overhead.
 6. **Accessibility:** Screen readers announce each snackbar text independently via ARIA live region with `role="status"` and `aria-atomic="false"`.
 
@@ -65,7 +65,7 @@ This inconsistency led to confusion, missed information, and reduced trust in th
 
 1. **Given** the player triggers an action that requires confirmation, **when** the action completes, **then** a snackbar appears promptly and fades out after the configured duration (default **3s**).
 2. **Given** a snackbar is already visible, **when** a new snackbar is triggered, **then** the new message stacks below and the existing message moves up with reduced opacity (max 2 concurrent).
-3. **Given** two snackbars are visible, **when** a third is triggered, **then** the oldest message is dismissed and the queue shifts.
+3. **Given** two snackbars are visible, **when** a third is triggered, **then** the oldest message enters `Dismissing`, completes the standard fade-out, and is removed while the queue shifts to keep only two visible snackbars.
 4. **Given** the snackbar is displayed, **when** viewed by a screen reader, **then** it is announced using ARIA live region with role="status" and aria-atomic="false".
 5. **Given** the snackbar text is displayed, **then** it passes WCAG 2.1 AA contrast checks in all supported themes.
 6. **Given** the app is in a right-to-left language mode, **then** snackbar text and layout adjust accordingly.
@@ -168,11 +168,11 @@ stateDiagram-v2
     Visible: 👁️ Displayed to user<br/>Timer active<br/>aria-live announces text
 
     Visible --> Dismissing: timer
-    Visible --> Dismissing: overflow
+    Visible --> Dismissing: overflow eviction
     Visible --> Dismissing: manual dismiss
     Visible --> Dismissing: update policy
 
-    Dismissing: 🔴 Pending removal<br/>Exit animation may run
+    Dismissing: 🔴 Pending removal<br/>Exit animation runs (250ms fade-out)
 
     Dismissing --> Removed: removal commit
 
@@ -182,7 +182,7 @@ stateDiagram-v2
 
     note right of Visible
         Transition triggers:
-        timer, overflow,
+        timer, overflow eviction,
         manual dismiss,
         update policy
     end note
@@ -231,15 +231,17 @@ Stack:     [msg1]         [msg1 @ top      [msg2 @ bottom    []
 
 ```mermaid
 graph LR
-    A["Queue: [msg1, msg2]<br/>3rd message arrives"] -->|removeOldest| B["Remove msg1<br/>from queue"]
+    A["Queue: [msg1, msg2]<br/>3rd message arrives"] -->|overflow eviction| B["msg1 enters Dismissing<br/>start fade-out 250ms"]
 
-    B --> C["Queue: [msg2, msg3]"]
+    B --> C["Queue (visible): [msg2, msg3]<br/>msg1 marked pending removal"]
 
     C --> D["msg2 → .snackbar-top<br/>msg3 → .snackbar-bottom"]
 
-    D --> E["✅ Max 2 visible<br/>Oldest auto-dismissed"]
+    D --> E["Fade-out completes<br/>msg1 removal commit"]
 
-    style E fill:#lightgreen
+    E --> F["✅ Max 2 visible<br/>Overflow honors fade-out policy"]
+
+    style F fill:#lightgreen
 ```
 
 **Snackbar DOM Structure & Accessibility**:
@@ -376,7 +378,7 @@ dismissSnackbar(messageId);
 | Fade-in Animation          | 250ms          | ease-out easing                         |
 | Fade-out Animation         | 250ms          | ease-in easing                          |
 | Auto-dismiss Duration      | 3000ms         | Default; configurable 1-10s             |
-| Queue Max Size             | 2 visible      | 3rd message auto-removes oldest         |
+| Queue Max Size             | 2 visible      | 3rd message evicts oldest via `Dismissing` + fade-out |
 | Reposition Animation       | 300ms          | msg1 slides up when msg2 shows          |
 | Screen Reader Announcement | <100ms         | aria-live="polite" delays non-interrupt |
 | Mobile Safe Zone           | 16px+          | Above system navigation bars            |
@@ -445,7 +447,7 @@ updateSnackbar("Round 1: Player's turn");
 ```
 
 The queue-based architecture supports concurrent messages with independent timers,
-automatic positioning, and graceful overflow handling (3rd message dismisses oldest).
+automatic positioning, and graceful overflow handling (3rd message evicts oldest through the same `Dismissing` + fade-out lifecycle).
 
 ## Tasks
 
