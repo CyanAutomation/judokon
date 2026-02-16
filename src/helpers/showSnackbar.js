@@ -4,6 +4,7 @@
  *
  * LEGACY API COMPATIBILITY:
  * - Maintains original showSnackbar(message) and updateSnackbar(message) signatures
+ * - Exposes dismissSnackbar(id) for targeted dismissal
  * - Delegates to SnackbarManager for unified snackbar rendering
  * - All snackbars created via this API use NORMAL priority
  * - Auto-dismiss after 3000ms to match legacy behavior
@@ -16,9 +17,9 @@
  *
  * @pseudocode
  * 1. Import SnackbarManager singleton for unified snackbar rendering.
- * 2. Track last shown snackbar controller for updateSnackbar() support.
- * 3. showSnackbar() delegates to manager.show() with NORMAL priority.
- * 4. updateSnackbar() calls controller.update() on last shown snackbar.
+ * 2. showSnackbar() delegates to manager.show() with NORMAL priority.
+ * 3. updateSnackbar() mutates only the latest visible snackbar.
+ * 4. dismissSnackbar(id) delegates to manager.dismiss(id).
  *
  * @param {string|{text: string, type?: string, priority?: string, ttl?: number}} message - Message payload.
  * @see {@link ./SnackbarManager.js} Unified snackbar lifecycle manager
@@ -28,9 +29,6 @@
 
 import snackbarManager, { SnackbarPriority } from "./SnackbarManager.js";
 
-// Track last shown snackbar for updateSnackbar() compatibility
-let lastSnackbarController = null;
-
 /**
  * Show a transient snackbar message at the bottom of the page.
  * Delegates to SnackbarManager with NORMAL priority and 3000ms auto-dismiss.
@@ -38,8 +36,7 @@ let lastSnackbarController = null;
  * @pseudocode
  * 1. Delegate to snackbarManager.show() with NORMAL priority.
  * 2. Configure 3000ms TTL to match legacy behavior.
- * 3. Store controller reference for updateSnackbar() support.
- * 4. Return void to maintain API compatibility.
+ * 3. Return void to maintain API compatibility.
  *
  * @param {string|{text: string, type?: string, priority?: string, ttl?: number}} message - Message payload.
  * @returns {void}
@@ -54,7 +51,7 @@ export function showSnackbar(message) {
           priority: message?.priority,
           ttl: message?.ttl
         };
-  lastSnackbarController = snackbarManager.show({
+  snackbarManager.show({
     ...payload,
     priority: payload.priority ?? SnackbarPriority.NORMAL,
     minDuration: 0,
@@ -63,28 +60,38 @@ export function showSnackbar(message) {
 }
 
 /**
- * Update the current snackbar text and restart its timers.
- * If no snackbar is active, creates a new one.
+ * Update the latest visible snackbar text and restart its timers.
+ * If no snackbar is active, this is a no-op.
  *
  * @pseudocode
- * 1. If last controller exists and is active, call update() method.
- * 2. Otherwise create new snackbar via showSnackbar().
- * 3. Return void to maintain API compatibility.
+ * 1. Resolve the latest visible snackbar ID from SnackbarManager.
+ * 2. Return immediately when no visible snackbar exists.
+ * 3. Delegate text/type/priority mutation to manager.update(id, message).
  *
  * @param {string|{text: string, type?: string, priority?: string}} message - New message payload.
  * @returns {void}
  */
 export function updateSnackbar(message) {
-  if (lastSnackbarController) {
-    try {
-      lastSnackbarController.update(message);
-      return;
-    } catch {
-      // Controller may be dismissed, fall through to create new
-    }
+  const latestId = snackbarManager.getLatestVisibleId();
+  if (!latestId) {
+    return;
   }
 
-  showSnackbar(message);
+  snackbarManager.update(latestId, message);
+}
+
+/**
+ * Dismiss a snackbar by ID.
+ *
+ * @pseudocode
+ * 1. Delegate to SnackbarManager.dismiss(id).
+ * 2. Return void for compatibility with helper usage.
+ *
+ * @param {string} id - Snackbar identifier.
+ * @returns {void}
+ */
+export function dismissSnackbar(id) {
+  void snackbarManager.dismiss(id);
 }
 
 // Expose snackbar helpers globally for tests and early callers.
@@ -95,6 +102,9 @@ try {
     } catch {}
     try {
       window.updateSnackbar = updateSnackbar;
+    } catch {}
+    try {
+      window.dismissSnackbar = dismissSnackbar;
     } catch {}
   }
 } catch {}

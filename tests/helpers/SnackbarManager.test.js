@@ -149,18 +149,25 @@ describe("SnackbarManager", () => {
   });
 
   describe("Concurrent Messages", () => {
-    it("should keep all messages without internal suppression", () => {
+    it("should evict oldest message when visible limit is exceeded", () => {
       snackbarManager.show("Message 1");
       snackbarManager.show("Message 2");
       snackbarManager.show("Message 3");
 
       const diagnostics = snackbarManager.getDiagnostics();
-      expect(diagnostics.activeCount).toBe(3);
-      expect(diagnostics.active.map((s) => s.text)).toEqual([
-        "Message 1",
-        "Message 2",
-        "Message 3"
-      ]);
+      expect(diagnostics.activeCount).toBe(2);
+      expect(diagnostics.active.map((s) => s.text)).toEqual(["Message 2", "Message 3"]);
+    });
+
+    it("should expose dismiss API and ignore duplicate dismissals", async () => {
+      const onDismiss = vi.fn();
+      const controller = snackbarManager.show({ text: "Message", ttl: 0, onDismiss });
+
+      await snackbarManager.dismiss(controller.id);
+      await snackbarManager.dismiss(controller.id);
+
+      expect(snackbarManager.getDiagnostics().activeCount).toBe(0);
+      expect(onDismiss).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -347,8 +354,8 @@ describe("SnackbarManager", () => {
 
       const diagnostics = snackbarManager.getDiagnostics();
 
-      expect(diagnostics.activeCount).toBe(3);
-      expect(diagnostics.active).toHaveLength(3);
+      expect(diagnostics.activeCount).toBe(2);
+      expect(diagnostics.active).toHaveLength(2);
     });
   });
 
