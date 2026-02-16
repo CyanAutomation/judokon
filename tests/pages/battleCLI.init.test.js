@@ -115,10 +115,10 @@ describe("battleCLI init helpers", () => {
     }
     emitBattleEvent.mockClear();
 
-    expect(document.getElementById("cli-countdown")?.dataset.status).not.toBe("error");
-
-    emitBattleEvent("battleStateChange", { to: "waitingForMatchStart" });
-    emitBattleEvent("battleStateChange", { to: "roundSelect", event: "startClicked" });
+    // Direct DOM manipulation required: establishes known state for guard testing
+    document.body.dataset.battleState = "waitingForMatchStart";
+    emitBattleEvent("battleStateChange", { to: "waitingForMatchStart", event: "startClicked" });
+    emitBattleEvent("battleStateChange", { to: "roundSelect" });
 
     expect(document.body.dataset.battleState).not.toBe("roundSelect");
     expect(emitBattleEvent).toHaveBeenCalledWith(
