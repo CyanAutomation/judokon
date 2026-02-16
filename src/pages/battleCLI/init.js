@@ -2514,6 +2514,7 @@ export function handleIntent(intent) {
     if (!isEnabled("statHotkeys")) return "ignored";
     const key = String(intent.index);
     const handled = handleWaitingForPlayerActionKey(key);
+    if (handled === "ignored") return "ignored";
     return handled === false ? rejectIntent("intent.notAllowedInState") : handled;
   }
 
