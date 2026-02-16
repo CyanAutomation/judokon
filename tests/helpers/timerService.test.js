@@ -157,4 +157,52 @@ describe("timerService", () => {
     expect(btn.dataset.nextReady).toBe("true");
     expect(btn.disabled).toBe(false);
   });
+
+  it("keeps timeout dispatch core behavior identical with autoSelect flag on/off", async () => {
+    const { handleTimerExpiration } = await import(
+      "../../src/helpers/classicBattle/timerService.js"
+    );
+
+    const runScenario = async (autoSelectEnabled) => {
+      const emitted = [];
+      const dispatched = [];
+      const selected = [];
+      const autoSelectCalls = [];
+      const onExpired = handleTimerExpiration({
+        duration: 2,
+        onExpiredSelect: async (stat, opts) => {
+          selected.push({ stat, opts });
+        },
+        store: { selectionMade: false },
+        scoreboardApi: { clearTimer: vi.fn() },
+        isFeatureEnabled: () => autoSelectEnabled,
+        resolveAutoSelectUx: () => autoSelectEnabled,
+        autoSelect: async (onSelect) => {
+          autoSelectCalls.push("called");
+          await onSelect("a", { delayOpponentMessage: true });
+        },
+        emitEvent: (eventName) => emitted.push(eventName),
+        dispatchEvent: async (eventName) => {
+          dispatched.push(eventName);
+        },
+        setSkip: vi.fn()
+      });
+
+      await onExpired();
+
+      return { emitted, dispatched, selected, autoSelectCalls };
+    };
+
+    const enabled = await runScenario(true);
+    const disabled = await runScenario(false);
+
+    expect(enabled.dispatched).toEqual(["timeout"]);
+    expect(disabled.dispatched).toEqual(["timeout"]);
+
+    expect(enabled.selected).toHaveLength(1);
+    expect(disabled.selected).toHaveLength(1);
+
+    expect(enabled.emitted).toContain("timer.selection.autoselect.intent");
+    expect(disabled.emitted).not.toContain("timer.selection.autoselect.intent");
+  });
 });

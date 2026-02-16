@@ -25,12 +25,10 @@
  * @typedef {Object} BattleStateTrigger
  * @property {string} on - Event name that triggers transition
  * @property {string} target - Target state name
- * @property {string} [guard] - Optional condition (e.g., "autoSelectEnabled", "FF_ROUND_MODIFY")
+ * @property {string} [guard] - Optional condition (e.g., "FF_ROUND_MODIFY")
  * @property {string} [note] - Clarification for complex logic
  *
  * Expected guard conditions:
- * - autoSelectEnabled: boolean, checks FF_AUTO_SELECT feature flag
- * - !autoSelectEnabled: negation of above
  * - FF_ROUND_MODIFY: boolean, admin-only feature flag
  * - playerScore >= winTarget || opponentScore >= winTarget: score comparison
  *
@@ -42,14 +40,10 @@
  * Use these to avoid typos and enable refactoring across the codebase.
  *
  * @typedef {Object} ClassicBattleGuards
- * @property {string} AUTO_SELECT_ENABLED - Check if FF_AUTO_SELECT feature flag is enabled
- * @property {string} AUTO_SELECT_DISABLED - Check if FF_AUTO_SELECT feature flag is disabled
  * @property {string} FF_ROUND_MODIFY - Admin-only feature flag for round modification
  * @property {string} WIN_CONDITION_MET - Evaluate if either player has reached the win target
  */
 export const GUARD_CONDITIONS = {
-  AUTO_SELECT_ENABLED: "autoSelectEnabled",
-  AUTO_SELECT_DISABLED: "!autoSelectEnabled",
   FF_ROUND_MODIFY: "FF_ROUND_MODIFY",
   WIN_CONDITION_MET: "playerScore >= winTarget || opponentScore >= winTarget"
 };
@@ -202,14 +196,7 @@ export const CLASSIC_BATTLE_STATES = [
       {
         on: "timeout",
         target: "roundResolve",
-        guard: GUARD_CONDITIONS.AUTO_SELECT_ENABLED,
-        note: "If FF_AUTO_SELECT is ON, engine auto-picks a stat on timeout."
-      },
-      {
-        on: "timeout",
-        target: "interruptRound",
-        guard: GUARD_CONDITIONS.AUTO_SELECT_DISABLED,
-        note: "If FF_AUTO_SELECT is OFF, treat timeout as an interrupt path."
+        note: "Timeout always enters round resolution; flags may only affect optional UX intents."
       },
       { on: "interrupt", target: "interruptRound" }
     ]

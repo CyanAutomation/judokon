@@ -14,10 +14,8 @@ import "./commonMocks.js";
  * if either player has reached the match win target.
  *
  * @pseudocode
- * 1. Test autoSelectEnabled guard (feature flag-based).
  * 2. Test FF_ROUND_MODIFY guard (admin flag).
  * 3. Test WIN_CONDITION_MET guard with various score scenarios.
- * 4. Test negated guards.
  * 5. Test matchPointReached -> matchDecision transition with guard.
  */
 
@@ -315,20 +313,8 @@ describe("stateManager guard evaluation", () => {
     });
   });
 
-  describe("autoSelectEnabled guard", () => {
-    it("should handle autoSelectEnabled guard (feature flag)", async () => {
-      // This test verifies the guard mechanism works for feature flags
-      // Actual feature flag behavior is tested elsewhere
-      context = {};
-      machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
-
-      expect(machine.getState()).toBe("waitingForMatchStart");
-      // The autoSelectEnabled guard is tested via timeout event in roundSelect state
-    });
-  });
-
-  describe("context-driven guard configuration", () => {
-    it("should route timeout to roundResolve when autoSelect flag is enabled in context", async () => {
+  describe("context-driven core transition behavior", () => {
+    it("routes timeout to roundResolve with autoSelect flag enabled", async () => {
       context = { flags: { autoSelect: true } };
       machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
 
@@ -344,7 +330,7 @@ describe("stateManager guard evaluation", () => {
       expect(machine.getState()).toBe("roundResolve");
     });
 
-    it("should route timeout to interruptRound when autoSelect flag is disabled in context", async () => {
+    it("routes timeout to roundResolve with autoSelect flag disabled", async () => {
       context = { flags: { autoSelect: false } };
       machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
 
@@ -355,7 +341,7 @@ describe("stateManager guard evaluation", () => {
 
       const result = await machine.dispatch("timeout");
       expect(result).toBe(true);
-      expect(machine.getState()).toBe("interruptRound");
+      expect(machine.getState()).toBe("roundResolve");
     });
 
     it("should allow roundModifyFlag branch when roundModify flag is enabled in context", async () => {
@@ -380,27 +366,32 @@ describe("stateManager guard evaluation", () => {
       expect(machine.getState()).toBe("roundModification");
     });
 
-    it("should respect explicit guardOverrides when provided to createStateManager", async () => {
-      context = { flags: { autoSelect: false } };
-      const guardOverrides = { autoSelectEnabled: true };
-      machine = await createStateManager(
-        {},
-        context,
-        undefined,
-        CLASSIC_BATTLE_STATES,
-        guardOverrides
-      );
+    it("keeps core timeout transition identical with flags enabled or disabled", async () => {
+      const resolveTimeoutSequence = async (flags) => {
+        const transitions = [];
+        const trackedMachine = await createStateManager(
+          {},
+          { flags },
+          ({ from, to, event }) => transitions.push({ from, to, event }),
+          CLASSIC_BATTLE_STATES
+        );
 
-      await machine.dispatch("startClicked");
-      await machine.dispatch("ready");
-      await machine.dispatch("ready");
-      await machine.dispatch("cardsRevealed");
+        await trackedMachine.dispatch("startClicked");
+        await trackedMachine.dispatch("ready");
+        await trackedMachine.dispatch("ready");
+        await trackedMachine.dispatch("cardsRevealed");
+        await trackedMachine.dispatch("timeout");
 
-      const result = await machine.dispatch("timeout");
-      expect(result).toBe(true);
-      expect(machine.getState()).toBe("roundResolve");
+        return transitions
+          .filter((entry) => entry.from && entry.event !== "init")
+          .map((entry) => `${entry.from}->${entry.to}:${entry.event}`);
+      };
 
-      expect(machine.getState()).toBe("roundResolve");
+      const enabledSequence = await resolveTimeoutSequence({ autoSelect: true });
+      const disabledSequence = await resolveTimeoutSequence({ autoSelect: false });
+
+      expect(enabledSequence).toEqual(disabledSequence);
+      expect(enabledSequence).toContain("roundSelect->roundResolve:timeout");
     });
   });
 
@@ -413,17 +404,6 @@ describe("stateManager guard evaluation", () => {
 
       expect(machine.getState()).toBe("waitingForMatchStart");
       // The FF_ROUND_MODIFY guard is tested via roundModifyFlag event in interruptRound state
-    });
-  });
-
-  describe("guard negation", () => {
-    it("should handle negated autoSelectEnabled guard", async () => {
-      // The negated guard !autoSelectEnabled is used for timeout->interruptRound transition
-      // This verifies the negation logic works correctly
-      context = {};
-      machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
-
-      expect(machine.getState()).toBe("waitingForMatchStart");
     });
   });
 

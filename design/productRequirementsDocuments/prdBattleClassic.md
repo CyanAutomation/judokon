@@ -274,12 +274,12 @@ When headless mode is active, rounds resolve back-to-back, dramatically increasi
 - Orchestrator initialization preloads timer utilities and UI services, builds the state handler map, then attaches listeners before exposing the machine.
 - Round selection modal must use shared `Modal` and `Button` components for consistent accessibility.
 - Card reveal and result animations should use hardware-accelerated CSS for smooth performance on low-end devices.
-- Stat selection timer (30s) must be displayed in `#next-round-timer`; if the timer expires, a random stat is auto-selected. This auto-select behavior is controlled by a feature flag `autoSelect` (enabled by default). The timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see prdBattleScoreboard.md).
+- Stat selection timer (30s) must be displayed in `#next-round-timer`; if the timer expires, round flow still transitions into core resolution and a deterministic stat fallback is applied when needed. The `autoSelect` feature flag may influence optional UX intents (e.g., delay/telemetry messaging) but must not alter core state transitions. The timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see prdBattleScoreboard.md).
 - Stat selection timer halts immediately once the player picks a stat.
 - Detect timer drift by comparing engine state with real time; if drift exceeds 2s, display "Waiting…" and restart the countdown.
 - Opponent stat selection runs entirely on the client. After the player picks a stat (or the timer auto-chooses), the opponent's choice is revealed after a short artificial delay to mimic turn-taking.
-- When `opponentDelayMessage` is enabled, the "Opponent is choosing..." prompt is delayed to pace the reveal and avoid immediately showing the opponent phase. This delay is applied after stat selection and before the opponent stat is surfaced (see `src/helpers/classicBattle/uiEventHandlers.js`).
-- The selection flow propagates the delay flag through the stat selection handlers so `opponentDelayMessage` timing is consistent across manual picks and auto-selection (see `src/helpers/classicBattle/uiHelpers.js` and `src/helpers/classicBattle/uiEventHandlers.js`).
+- When `opponentDelayMessage` is enabled, the "Opponent is choosing..." prompt is delayed to pace the reveal and avoid immediately showing the opponent phase. This delay is a UI-only pacing policy applied after stat selection and before the opponent stat is surfaced (see `src/helpers/classicBattle/uiEventHandlers.js`).
+- The selection flow may propagate delay intent metadata through stat selection handlers so `opponentDelayMessage` timing is consistent across manual picks and auto-selection, but reducers/state tables remain flag-agnostic for core states (see `src/helpers/classicBattle/uiHelpers.js` and `src/helpers/classicBattle/uiEventHandlers.js`).
 - During this delay, the Scoreboard displays "Opponent is choosing..." in `#round-message` to reinforce turn flow.
 - The cooldown timer between rounds begins only after round results are shown in the Scoreboard and is displayed using one persistent snackbar that updates its text each second.
 - The debug panel is available when the `enableTestMode` feature flag is enabled, appears above the player and opponent cards, and includes a copy button for exporting its text.
@@ -294,18 +294,18 @@ When headless mode is active, rounds resolve back-to-back, dramatically increasi
 
 ## Functional Requirements
 
-| Priority | Feature                | Requirement                                                                                      |
-| -------- | ---------------------- | ------------------------------------------------------------------------------------------------ |
-| **P1**   | Random Card Draw       | Each player draws one unique card per round. No duplicates within a round.                       |
-| **P1**   | Stat Selection         | Player chooses from visible stats; buttons disabled after selection.                             |
-| **P1**   | Stat Selection Timer   | 30 s countdown; auto-selects on expiry if `autoSelect = true`. Pauses on tab sleep/inactivity.   |
-| **P1**   | Scoring & Results      | +1 point for win, 0 for tie/loss; update `#score-display`. Show “You picked: X” + outcome.       |
-| **P1**   | End Conditions         | End when player reaches target (3/5/10) or after 25 rounds.                                      |
-| **P1**   | Scoreboard Integration | Use shared Scoreboard component for all messages, counters, timers, and accessibility.           |
-| **P2**   | Opponent AI            | Difficulty settings: Easy = random; Medium = ≥ average stat; Hard = highest stat. Default: Easy. |
-| **P2**   | Quit Flow              | Quit button and header logo prompt confirmation; if confirmed, end match and return home.        |
-| **P2**   | Next Button            | Skips cooldown/timer when pressed; otherwise auto-progress after timer ends.                     |
-| **P3**   | Debug/Testing Mode     | With `enableTestMode`, expose debug panel, seed injection, and state progress list.              |
+| Priority | Feature                | Requirement                                                                                                                                                                                |
+| -------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **P1**   | Random Card Draw       | Each player draws one unique card per round. No duplicates within a round.                                                                                                                 |
+| **P1**   | Stat Selection         | Player chooses from visible stats; buttons disabled after selection.                                                                                                                       |
+| **P1**   | Stat Selection Timer   | 30 s countdown; timeout always proceeds to core round resolution with deterministic selection fallback. Feature flags may only affect optional UX intents. Pauses on tab sleep/inactivity. |
+| **P1**   | Scoring & Results      | +1 point for win, 0 for tie/loss; update `#score-display`. Show “You picked: X” + outcome.                                                                                                 |
+| **P1**   | End Conditions         | End when player reaches target (3/5/10) or after 25 rounds.                                                                                                                                |
+| **P1**   | Scoreboard Integration | Use shared Scoreboard component for all messages, counters, timers, and accessibility.                                                                                                     |
+| **P2**   | Opponent AI            | Difficulty settings: Easy = random; Medium = ≥ average stat; Hard = highest stat. Default: Easy.                                                                                           |
+| **P2**   | Quit Flow              | Quit button and header logo prompt confirmation; if confirmed, end match and return home.                                                                                                  |
+| **P2**   | Next Button            | Skips cooldown/timer when pressed; otherwise auto-progress after timer ends.                                                                                                               |
+| **P3**   | Debug/Testing Mode     | With `enableTestMode`, expose debug panel, seed injection, and state progress list.                                                                                                        |
 
 **Quit confirmation flow behavior:** The header logo/home link (`data-testid="home-link"`) is intercepted during Classic Battle to open the quit confirmation modal instead of navigating away immediately. Implementation anchors: `src/helpers/classicBattle/quitModal.js` (modal flow) and `src/helpers/setupClassicBattleHomeLink.js` (home navigation handling).
 

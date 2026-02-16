@@ -7,6 +7,7 @@ import { setSkipHandler } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
 import { emitBattleEvent, onBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import { isEnabled } from "../featureFlags.js";
+import { isAutoSelectUxEnabled } from "./flagInfluencePolicy.js";
 import { skipRoundCooldownIfEnabled } from "./uiHelpers.js";
 import { logTimerOperation, createComponentLogger } from "./debugLogger.js";
 import { resetSelectionFinalized } from "./selectionState.js";
@@ -28,7 +29,6 @@ import { getNextRoundControls } from "./roundManager.js";
 import { guard } from "./guard.js";
 import { safeGetSnapshot } from "./timerUtils.js";
 import { forceAutoSelectAndDispatch } from "./autoSelectHandlers.js";
-import { ensureClassicBattleScheduler } from "./timingScheduler.js";
 
 // Track timeout for cooldown warning to avoid duplicates.
 let cooldownWarningTimeoutId = null;
@@ -381,7 +381,9 @@ export function primeTimerDisplay({
   } catch {}
 
   void root;
-  void scoreboardApi;
+  try {
+    scoreboardApi?.updateTimer?.(duration);
+  } catch {}
 }
 
 /**
@@ -421,8 +423,12 @@ export function configureTimerCallbacks(
 ) {
   const tickHandler = (remaining) => {
     // Timer ticks are display-only; they must not trigger state transitions.
+    const remainingSeconds = Math.max(0, Number(remaining) || 0);
     try {
-      emitEvent?.("display.timer.tick", { secondsRemaining: Number(remaining) || 0 });
+      scoreboardApi?.updateTimer?.(remainingSeconds);
+    } catch {}
+    try {
+      emitEvent?.("display.timer.tick", { secondsRemaining: remainingSeconds });
     } catch {}
   };
 
@@ -481,6 +487,7 @@ export function configureTimerCallbacks(
  *   store?: { selectionMade?: boolean } | null,
  *   scoreboardApi?: { clearTimer?: () => void },
  *   isFeatureEnabled?: (flag: string) => boolean,
+ *   resolveAutoSelectUx?: (isFeatureEnabled?: ((flag: string) => boolean) | boolean) => boolean,
  *   autoSelect?: typeof autoSelectStat,
  *   emitEvent?: typeof emitBattleEvent,
  *   dispatchEvent?: typeof dispatchBattleEvent,
@@ -491,8 +498,8 @@ export function configureTimerCallbacks(
  * @pseudocode
  * 1. Clear the skip handler and scoreboard timer, then emit diagnostic events.
  * 2. If a selection already exists, exit early.
- * 3. Emit `roundTimeout`, optionally auto-select when enabled, and dispatch `timeout`.
- * 4. When auto-select disabled, resolve via fallback stat selection.
+ * 3. Emit `roundTimeout`, dispatch `timeout`, then perform stat selection fallback.
+ * 4. Optionally emit auto-select UX intents when enabled without changing core transitions.
  */
 export function handleTimerExpiration({
   duration,
@@ -503,7 +510,8 @@ export function handleTimerExpiration({
   autoSelect = autoSelectStat,
   emitEvent = emitBattleEvent,
   dispatchEvent = dispatchBattleEvent,
-  setSkip = setSkipHandler
+  setSkip = setSkipHandler,
+  resolveAutoSelectUx = isAutoSelectUxEnabled
 }) {
   return async () => {
     logTimerOperation("expired", "selectionTimer", duration, {
@@ -539,32 +547,34 @@ export function handleTimerExpiration({
       emitEvent?.("roundTimeout");
     } catch {}
 
-    const featureCheck =
-      typeof isFeatureEnabled === "function"
-        ? isFeatureEnabled("autoSelect")
-        : Boolean(isFeatureEnabled);
-    const selecting = featureCheck
-      ? (async () => {
-          try {
-            await autoSelect?.(
-              onExpiredSelect,
-              typeof process !== "undefined" && process.env && process.env.VITEST ? 0 : undefined
-            );
-          } catch {}
-        })()
-      : Promise.resolve();
+    const autoSelectUxEnabled =
+      typeof resolveAutoSelectUx === "function"
+        ? resolveAutoSelectUx(isFeatureEnabled)
+        : Boolean(resolveAutoSelectUx);
+
+    if (autoSelectUxEnabled) {
+      try {
+        emitEvent?.("timer.selection.autoselect.intent");
+      } catch {}
+    }
 
     try {
       await dispatchEvent?.("timeout");
     } catch {}
 
-    await selecting;
-
-    if (!featureCheck) {
+    if (autoSelectUxEnabled) {
       try {
-        await onExpiredSelect("speed", { delayOpponentMessage: true });
+        await autoSelect?.(
+          onExpiredSelect,
+          typeof process !== "undefined" && process.env && process.env.VITEST ? 0 : undefined
+        );
+        return;
       } catch {}
     }
+
+    try {
+      await onExpiredSelect("speed", { delayOpponentMessage: true });
+    } catch {}
   };
 }
 
@@ -578,9 +588,9 @@ export function handleTimerExpiration({
  *    - On drift trigger auto-select logic and dispatch the outcome event.
  * 3. Register a skip handler that stops the timer and triggers `onExpired`.
  * 4. When expired:
- *    - Dispatch "timeout" to let the state machine interrupt the round.
- *    - If `isEnabled('autoSelect')`, concurrently call `autoSelectStat` to
- *      pick a stat and invoke `onExpiredSelect` with `delayOpponentMessage`.
+ *    - Dispatch "timeout" to let the state machine continue core resolution flow.
+ *    - Optionally emit auto-select UX intent and attempt `autoSelectStat`.
+ *    - Always fall back to deterministic stat selection when auto-select UX is unavailable.
  *
  * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => Promise<void>} onExpiredSelect
  * - Callback to handle stat auto-selection.
@@ -599,11 +609,8 @@ export async function startTimer(onExpiredSelect, store = null, dependencies = {
     showSnack = showSnackbar,
     translate = t,
     startRound = engineStartRound,
-    resolveDuration = resolveRoundTimerDuration,
-    scheduler = null
+    resolveDuration = resolveRoundTimerDuration
   } = dependencies;
-
-  const { duration, synced, restore } = await resolveDuration(scoreboardApi);
 
   const { duration, synced, restore } = await resolveDuration(scoreboardApi);
 

@@ -1,7 +1,6 @@
 import { CLASSIC_BATTLE_STATES, GUARD_CONDITIONS } from "./stateTable.js";
 import { debugLog, shouldSuppressDebugOutput } from "./debugLog.js";
 import { error as logError, warn as logWarn, debug as logDebug } from "../logger.js";
-import { isEnabled } from "../featureFlags.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { reconcileProjectionAuthority } from "./stateOwnership.js";
 
@@ -13,44 +12,19 @@ const VALIDATION_WARN_ENABLED = true;
 // Helper Functions
 // ============================================================================
 
-/**
- * Resolve a feature-flag-based guard with overrides.
- *
- * @param {object} args - Guard resolver parameters.
- * @param {string} args.guardName - Guard name for overrides (e.g., "autoSelectEnabled").
- * @param {string} args.featureFlagKey - Feature flag key (e.g., "autoSelect").
- * @param {object} args.context - Machine context for flag overrides.
- * @param {Record<string, boolean>} args.guardOverrides - Explicit overrides.
- * @returns {boolean} True if guard passes.
- */
-function resolveGuardToggle({ guardName, featureFlagKey, context, guardOverrides }) {
-  if (guardOverrides && Object.prototype.hasOwnProperty.call(guardOverrides, guardName)) {
-    return !!guardOverrides[guardName];
-  }
-
-  if (context?.flags && featureFlagKey in context.flags) {
-    return !!context.flags[featureFlagKey];
-  }
-
-  return isEnabled(featureFlagKey) === true;
-}
-
-function isAutoSelectEnabled(context, guardOverrides) {
-  return resolveGuardToggle({
-    guardName: GUARD_CONDITIONS.AUTO_SELECT_ENABLED,
-    featureFlagKey: "autoSelect",
-    context,
-    guardOverrides
-  });
-}
-
 function isRoundModifyEnabled(context, guardOverrides) {
-  return resolveGuardToggle({
-    guardName: GUARD_CONDITIONS.FF_ROUND_MODIFY,
-    featureFlagKey: "roundModify",
-    context,
-    guardOverrides
-  });
+  if (
+    guardOverrides &&
+    Object.prototype.hasOwnProperty.call(guardOverrides, GUARD_CONDITIONS.FF_ROUND_MODIFY)
+  ) {
+    return !!guardOverrides[GUARD_CONDITIONS.FF_ROUND_MODIFY];
+  }
+
+  if (context?.flags && Object.prototype.hasOwnProperty.call(context.flags, "roundModify")) {
+    return context.flags.roundModify === true;
+  }
+
+  return false;
 }
 
 function isWinConditionMet(context) {
@@ -87,10 +61,6 @@ function evaluateGuard(guardCondition, context, guardOverrides) {
   if (!guardCondition) return true;
 
   switch (guardCondition) {
-    case GUARD_CONDITIONS.AUTO_SELECT_ENABLED:
-      return isAutoSelectEnabled(context, guardOverrides);
-    case GUARD_CONDITIONS.AUTO_SELECT_DISABLED:
-      return !isAutoSelectEnabled(context, guardOverrides);
     case GUARD_CONDITIONS.FF_ROUND_MODIFY:
       return isRoundModifyEnabled(context, guardOverrides);
     case GUARD_CONDITIONS.WIN_CONDITION_MET:
@@ -338,11 +308,9 @@ function resolveRoundPromptTransition(eventName) {
   return null;
 }
 
-function resolveRoundSelectTransition(eventName, context, guardOverrides) {
+function resolveRoundSelectTransition(eventName) {
   if (eventName === "statSelected") return "roundResolve";
-  if (eventName === "timeout") {
-    return isAutoSelectEnabled(context, guardOverrides) ? "roundResolve" : "interruptRound";
-  }
+  if (eventName === "timeout") return "roundResolve";
   if (eventName === "interrupt") return "interruptRound";
   return null;
 }
@@ -392,7 +360,7 @@ function resolveInterruptMatchTransition(eventName) {
   return null;
 }
 
-function resolveClassicBattleTransition(currentState, eventName, _context, guardOverrides) {
+function resolveClassicBattleTransition(currentState, eventName, _context) {
   switch (currentState) {
     case "waitingForMatchStart":
       return resolveWaitingForMatchStartTransition(eventName);
@@ -403,7 +371,7 @@ function resolveClassicBattleTransition(currentState, eventName, _context, guard
     case "roundPrompt":
       return resolveRoundPromptTransition(eventName);
     case "roundSelect":
-      return resolveRoundSelectTransition(eventName, _context, guardOverrides);
+      return resolveRoundSelectTransition(eventName);
     case "roundResolve":
       return resolveRoundResolveTransition(eventName);
     case "roundDisplay":
