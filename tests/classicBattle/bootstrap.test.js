@@ -28,6 +28,7 @@ describe("Classic Battle bootstrap", () => {
     delete window.__battleInitComplete;
     delete window.__initCalled;
     delete window.battleStore;
+    delete window.battleReadyPromise;
   });
 
   test("initializes scoreboard via setupClassicBattlePage", async () => {
@@ -45,6 +46,16 @@ describe("Classic Battle bootstrap", () => {
     expect(round?.textContent || "").toMatch(/Round\s*\d+/);
     expect(window.__initCalled).toBe(true);
     expect(window.__battleInitComplete).toBe(true);
+  });
+
+  test("returns the resolved debug API and exposes readiness promise", async () => {
+    const { setupClassicBattlePage } = await import("../../src/helpers/classicBattle/bootstrap.js");
+    const debugApi = await setupClassicBattlePage();
+
+    expect(debugApi).toBeTruthy();
+    expect(debugApi).toBe(window.__classicbattledebugapi);
+    expect(window.battleReadyPromise).toBeInstanceOf(Promise);
+    await expect(window.battleReadyPromise).resolves.toBe(debugApi);
   });
 
   test("exposes battle store and debug helpers on window", async () => {

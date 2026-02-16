@@ -56,10 +56,34 @@ export async function setupClassicBattlePage() {
   const controller = new ClassicBattleController({ waitForOpponentCard });
   let resolveStart;
   let rejectStart;
+  let hasSettledStart = false;
   const startPromise = new Promise((resolve, reject) => {
-    resolveStart = resolve;
-    rejectStart = reject;
+    resolveStart = (value) => {
+      if (hasSettledStart) {
+        return;
+      }
+      hasSettledStart = true;
+      resolve(value);
+    };
+    rejectStart = (error) => {
+      if (hasSettledStart) {
+        return;
+      }
+      hasSettledStart = true;
+      reject(error);
+    };
   });
+
+  if (canAccessWindow()) {
+    try {
+      // Single source of truth for full Classic Battle readiness.
+      window.battleReadyPromise = startPromise;
+    } catch (err) {
+      if (typeof console !== "undefined" && typeof console.warn === "function") {
+        console.warn("[classicBattle.bootstrap] Failed to expose battleReadyPromise:", err);
+      }
+    }
+  }
 
   if (canAccessWindow()) {
     try {
@@ -105,7 +129,7 @@ export async function setupClassicBattlePage() {
       setupScoreboardWithControls(controller);
       debugApi = createClassicBattleDebugAPI(view);
       exposeDebugAPIToWindow(debugApi);
-      resolveStart();
+      resolveStart(debugApi);
     } catch (err) {
       rejectStart(err);
     }
@@ -125,21 +149,26 @@ export async function setupClassicBattlePage() {
     }
   }
 
-  await resolveRoundStartPolicy(startCallback);
+  try {
+    await resolveRoundStartPolicy(startCallback);
+  } catch (error) {
+    rejectStart(error);
+    throw error;
+  }
+
+  const readyDebugApi = await startPromise;
 
   if (canAccessWindow()) {
     try {
       window.__battleInitComplete = true;
-      // Mark initialization complete for debugging/testing purposes
-      window.battleReadyPromise = startPromise;
     } catch (err) {
       if (typeof console !== "undefined" && typeof console.warn === "function") {
         console.warn("[classicBattle.bootstrap] Failed to expose readiness markers:", err);
       }
     }
   }
-  startPromise.catch(() => {});
-  return debugApi;
+  return readyDebugApi;
+  return readyDebugApi;
 }
 
 /**
