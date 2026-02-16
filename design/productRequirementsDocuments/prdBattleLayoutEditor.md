@@ -77,24 +77,24 @@ graph TD
     C -->|Success| D["🎨 Render Editor UI<br/>Canvas + Inspector"]
     C -->|Fail| E["❌ Show error<br/>Use default layout"]
     D --> F["🖼️ Display live preview<br/>iframe (battle scene)"]
-
+    
     F --> G["✏️ User Edits<br/>Drag/Resize regions"]
     G -->|Change detected| H["🔄 Update property<br/>inspector values"]
     H -->|Valid| I["✅ Apply to preview<br/>postMessage"]
     H -->|Invalid| J["❌ Validation error<br/>Show in red"]
     J --> G
     I -->|Preview updates| F
-
+    
     G -->|Save draft| K["💾 Auto-save to<br/>localStorage<br/>layoutEditor:<modeId>"]
     G -->|Export| L{Export Format}
     L -->|JSON| M["📄 Layout.json<br/>Download file"]
     L -->|ASCII| N["🔤 ASCII preview<br/>Copy/Download"]
     L -->|Reset| O["🔄 Restore default<br/>Reload from disk"]
-
+    
     M --> P["✅ Complete"]
     N --> P
     O --> D
-
+    
     style A fill:lightgreen
     style D fill:lightblue
     style F fill:lightblue
@@ -104,7 +104,6 @@ graph TD
 ```
 
 **Workflow Stages:**
-
 - **Import**: Load existing `.layout.js` via ESM import or use default
 - **Edit**: Drag/resize components; validation in real-time
 - **Preview**: Live iframe shows layout as it would appear in battle
@@ -118,17 +117,17 @@ graph TD
 ```mermaid
 graph TB
     A["📐 Layout Editor Page<br/>layoutEditor.html"]
-
+    
     A --> B["🎮 Header"]
     B --> C["Mode Selector<br/>Classic/Quick"]
     B --> D["Reset Button<br/>restore default"]
     B --> E["Theme Toggle<br/>Light/Dark"]
-
+    
     A --> F["🖼️ Main Canvas Area<br/>60x24 grid"]
     F --> G["📏 Grid Overlay<br/>faint lines, 1unit snap"]
     F --> H["📦 Component Boxes<br/>draggable, resizable"]
     H --> I["🎯 Selected box:<br/>resize handles + coords"]
-
+    
     A --> J["📋 Property Inspector<br/>right panel"]
     J --> K["Region ID (text)"]
     J --> L["X position (number)"]
@@ -138,14 +137,14 @@ graph TB
     J --> P["Z-index (number)"]
     K --> Q["Live update<br/>on edit"]
     Q --> R["Validate against<br/>schema"]
-
+    
     A --> S["🔤 ASCII Preview<br/>side/modal"]
     S --> T["Legend:<br/>S=Scoreboard, A=Arena"]
     S --> U["Copy button"]
     S --> V["Download button"]
-
+    
     A --> W["🐛 Console Pane<br/>errors & logs"]
-
+    
     style A fill:lightgreen
     style F fill:lightblue
     style J fill:lightblue
@@ -154,7 +153,6 @@ graph TB
 ```
 
 **Component Hierarchy:**
-
 - **Header**: Mode selection, reset, theme
 - **Canvas**: Grid + draggable region boxes with selection handles
 - **Inspector**: Editable region properties (ID, x, y, w, h, z)
@@ -168,33 +166,33 @@ graph TB
 ```mermaid
 graph LR
     A["📥 Input"] -->|Load| B{Source Type}
-
+    
     B -->|ESM Module| C["🔗 Dynamic import<br/>.layout.js"]
     B -->|JSON File| D["📄 Parse JSON<br/>.layout.json"]
     B -->|ASCII Text| E["🔤 ASCII parser<br/>reconstruct coords"]
     B -->|localStorage| F["💾 Restore draft<br/>layoutEditor:key"]
-
+    
     C --> G["✅ Normalize<br/>to Object"]
     D --> G
     E --> G
     F --> G
-
+    
     G --> H["🔍 Validate<br/>schema v1"]
     H -->|Valid| I["📐 Editor State<br/>grid + regions"]
     H -->|Invalid| J["❌ Show errors<br/>highlight fields"]
-
+    
     I --> K{Export Mode}
     J --> L["⚠️ Correction needed"]
     L --> G
-
+    
     K -->|→ JSON| M["📄 layout.json<br/>{id, grid, regions}"]
     K -->|→ ASCII| N["🔤 ASCII layout<br/>grid representation"]
     K -->|→ ESM| O["📜 .layout.js<br/>export default"]
-
+    
     M --> P["💾 Download<br/>or Copy"]
     N --> P
     O --> P
-
+    
     style A fill:lightgreen
     style G fill:lightblue
     style I fill:lightblue
@@ -204,14 +202,12 @@ graph LR
 ```
 
 **Input Formats:**
-
 - ESM `.layout.js` module (dynamic import)
 - JSON `.layout.json` file (parse)
 - ASCII text (reconstruct from visual)
 - localStorage draft (recover unsaved work)
 
 **Output Formats:**
-
 - JSON: structuring for runtime import
 - ASCII: documentation and CI snapshots
 - ESM: ready-to-use `.layout.js` module
@@ -233,32 +229,30 @@ sequenceDiagram
     Engine->>IFrame: Layout applied ✅
     IFrame->>Editor: postMessage({type: 'ACK_LAYOUT_APPLIED'})
     Note over Editor: Update preview status
-
+    
     rect rgb(200, 220, 255)
         Editor->>Editor: User drags region
         Editor->>Editor: Update coords in memory
         Editor->>Editor: Validate new position
         Editor->>IFrame: postMessage({type: 'LOAD_LAYOUT',<br/>updated_layout})
         IFrame->>Engine: applyLayout with new coords
-
+        
         loop 60 FPS
             Engine-->>IFrame: Re-render battle scene
         end
     end
-
+    
     IFrame->>Editor: Confirm layout render complete
     Note over Editor: Preview shows latest layout
 ```
 
 **Message Protocol:**
-
 - **Type**: LOAD_LAYOUT (send layout to iframe)
 - **Payload**: Full layout object with grid, regions, metadata
 - **Response**: ACK_LAYOUT_APPLIED (iframe confirms update)
 - **Frequency**: On each change (debounced <16ms for 60fps)
 
 **Sandbox Permissions:**
-
 ```
 allow-scripts (run JavaScript)
 allow-same-origin (access Layout Engine)
@@ -282,13 +276,13 @@ stateDiagram-v2
     RegionSelected --> RegionResizing: Grab corner handle
     RegionResizing --> RegionResizing: Drag corner
     RegionResizing --> RegionSelected: Release = confirm
-
+    
     RegionSelected --> InspectorEdit: Edit property field
     InspectorEdit --> PropertyUpdated: Enter new value
     PropertyUpdated --> RegionSelected: Validation pass
     PropertyUpdated --> ValidationError: Invalid value
     ValidationError --> InspectorEdit: Show error red
-
+    
     RegionSelected --> Deselected: Click elsewhere
     Deselected --> Ready
 
@@ -312,7 +306,6 @@ stateDiagram-v2
 ```
 
 **Editing States:**
-
 - **Ready**: Awaiting user interaction
 - **RegionSelected**: Region highlighted with handles visible
 - **Dragging**: Moving region with grid snap and live preview
