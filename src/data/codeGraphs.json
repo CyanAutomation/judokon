@@ -2877,10 +2877,6 @@
         }
       }
     },
-    "src/helpers/carouselScroll.js": {
-      "imports": [],
-      "functions": {}
-    },
     "src/helpers/carouselBuilder.js": {
       "imports": [
         "./utils.js",
