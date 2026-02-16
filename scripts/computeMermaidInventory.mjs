@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-import { readdir, readFile } from 'node:fs/promises';
-import path from 'node:path';
+import { readdir, readFile } from "node:fs/promises";
+import path from "node:path";
 
-const targetDir = path.join('design', 'productRequirementsDocuments');
+const targetDir = path.join("design", "productRequirementsDocuments");
 const mermaidFence = /^```mermaid\s*$/gm;
 
 const entries = await readdir(targetDir, { withFileTypes: true });
 const files = entries
-  .filter((entry) => entry.isFile() && entry.name.endsWith('.md'))
+  .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
   .map((entry) => path.join(targetDir, entry.name))
   .sort();
 
@@ -16,7 +16,7 @@ let totalMermaidBlocks = 0;
 const perFile = [];
 
 for (const filePath of files) {
-  const content = await readFile(filePath, 'utf8');
+  const content = await readFile(filePath, "utf8");
   const blockCount = (content.match(mermaidFence) || []).length;
   if (blockCount > 0) {
     filesWithMermaid += 1;

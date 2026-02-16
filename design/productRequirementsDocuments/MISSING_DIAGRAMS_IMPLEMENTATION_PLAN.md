@@ -246,7 +246,7 @@ After each phase completes, verify (and reconcile with script inventory):
 
 **Final Verification** (current scripted baseline and future completion target):
 
-````bash
+```bash
 # Verify all PRD files now have Mermaid diagrams
 grep -r "^\`\`\`mermaid" design/productRequirementsDocuments/*.md | wc -l
 # Current output: 95 (script baseline as of Feb 16, 2026)
@@ -261,7 +261,7 @@ done
 # Verify test links validity (sample random 10)
 # Manually check: [tests/path.js](tests/path.js) links resolve
 git ls-files tests/ | head -20  # Verify test files exist
-````
+```
 
 ---
 
