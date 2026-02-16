@@ -116,7 +116,7 @@ Snackbars are deliberately positioned BELOW modals and tooltips in the z-index h
 graph TD
     A["🔔 showSnackbar called<br/>message: 'Action saved'"] -->|Add to queue| B["Queue: [msg1]"]
 
-    B --> C["Render msg1<br/>Position: .snackbar-bottom<br/>Opacity: 1.0"]
+    B --> C["Render msg1<br/>Position: .snackbar-bottom<br/>Opacity 1.0"]
 
     C --> D["▶️ Fade-in 250ms<br/>ease-out"]
 
