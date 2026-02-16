@@ -3652,7 +3652,13 @@ export function subscribeEngine() {
     );
   } catch {}
   return () => {
-    cleanupEngineSubscriptions();
+    [offTimerTick, offMatchEnded].forEach((cleanup) => {
+      if (typeof cleanup === "function") {
+        try {
+          cleanup();
+        } catch {}
+      }
+    });
   };
 }
 
