@@ -72,6 +72,7 @@ import {
 import { getCurrentTimestamp, clearScheduled } from "../helpers/classicBattle/timerSchedule.js";
 import { registerBridgeOnEngineCreated } from "../helpers/classicBattle/orchestrator.js";
 import { setBattleStateSnapshot } from "../helpers/classicBattle/eventBus.js";
+import { EVENT_TYPES } from "../helpers/classicBattle/eventCatalog.js";
 import { getDocumentRef } from "../helpers/documentHelper.js";
 
 import { showSelectionPrompt, getOpponentDelay } from "../helpers/classicBattle/snackbar.js";
@@ -1664,14 +1665,14 @@ async function handleRoundStartEvent(store, evt) {
 function wireRoundCycleEvents(store) {
   onBattleEvent("round.start", (evt) => handleRoundStartEvent(store, evt));
   onBattleEvent("ready", (evt) => handleRoundStartEvent(store, evt));
-  onBattleEvent("roundStarted", async () => {
+  onBattleEvent(EVENT_TYPES.STATE_ROUND_STARTED, async () => {
     if (STATE.isStartingRoundCycle) return;
     try {
       await startRoundCycle(store, { skipStartRound: true });
     } catch (err) {
       console.error("battleClassic: startRoundCycle roundStarted handler failed", err);
       if (err instanceof JudokaDataLoadError) {
-        recordJudokaLoadFailureTelemetry("event.roundStarted.startRoundCycle");
+        recordJudokaLoadFailureTelemetry("event.state.roundStarted.startRoundCycle");
       } else {
         showFatalInitError(err);
       }

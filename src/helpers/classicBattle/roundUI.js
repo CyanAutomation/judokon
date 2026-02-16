@@ -8,7 +8,13 @@ import { dismissCountdownSnackbar } from "../CooldownRenderer.js";
 import { attachCountdownCoordinator } from "./countdownCoordinator.js";
 import { handleStatSelection } from "./selectionHandler.js";
 import * as roundManagerModule from "./roundManager.js";
-import { onBattleEvent, emitBattleEvent, getBattleEventTarget } from "./battleEvents.js";
+import {
+  onBattleEvent,
+  emitBattleEvent,
+  emitBattleEventWithAliases,
+  getBattleEventTarget
+} from "./battleEvents.js";
+import { EVENT_TYPES } from "./eventCatalog.js";
 import { battleLog } from "./battleLogger.js";
 import {
   validateRoundStartedEvent,
@@ -389,7 +395,7 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000, options 
         : Number.isFinite(roundNumber)
           ? Math.max(0, roundNumber - 1)
           : 0;
-      emitBattleEvent("control.state.changed", {
+      emitBattleEventWithAliases(EVENT_TYPES.STATE_TRANSITIONED, {
         from: null,
         to: "roundSelect",
         context: { roundIndex },
@@ -805,7 +811,7 @@ export function bindRoundResolved() {
 export function bindRoundUIEventHandlers() {
   bindRoundStarted();
   bindRoundResolved();
-  onBattleEvent("control.state.changed", (event) => {
+  onBattleEvent(EVENT_TYPES.STATE_TRANSITIONED, (event) => {
     const { source, to } = event?.detail || {};
     if (source !== "roundUI.applyRoundUI" || to !== "roundSelect") return;
     emitBattleEvent("statButtons:enable");
@@ -911,7 +917,7 @@ export function bindRoundUIEventHandlersDynamic() {
     } catch {}
     handleStatSelectedEvent(event);
   });
-  onBattleEvent("control.state.changed", (event) => {
+  onBattleEvent(EVENT_TYPES.STATE_TRANSITIONED, (event) => {
     const { source, to } = event?.detail || {};
     if (source !== "roundUI.applyRoundUI" || to !== "roundSelect") return;
     emitBattleEvent("statButtons:enable");

@@ -67,7 +67,7 @@ describe("roundFlowController", () => {
     bindRoundFlowController();
 
     const evaluated = handlerRegistry.get("round.evaluated");
-    const stateChanged = handlerRegistry.get("control.state.changed");
+    const stateChanged = handlerRegistry.get("state.transitioned");
 
     await evaluated({
       detail: { message: "Player wins", stat: "speed", playerVal: 9, opponentVal: 7 }
