@@ -117,7 +117,7 @@ flowchart TD
 - Female mode: 5 fighters (first to 5 points wins)
 - Mixed mode: 6 fighters (first to 6 points wins)
 
-**Test Coverage**: Verified by: [tests/battles-regressions/team/](tests/battles-regressions/team/) — validates bout sequence, scoring logic, and win conditions; [tests/helpers/teamBattleRules.test.js](tests/helpers/teamBattleRules.test.js) — unit tests for score calculation and tie handling
+**Test Coverage**: Current related coverage exists in shared battle regression scaffolding: [../../tests/battles-regressions/README.md](../../tests/battles-regressions/README.md) and [../../tests/battles-regressions/shared/configuration/loadSettings.test.js](../../tests/battles-regressions/shared/configuration/loadSettings.test.js). **Coverage gap (aspirational):** Dedicated Team Battle bout-sequence/scoring regression and `teamBattleRules` unit tests are not yet present in `tests/`.
 
 **Related diagrams**: See [prdBattleClassic.md](prdBattleClassic.md) for 1v1 bout logic (stat selection, comparison, outcome); [prdGameModes.md](prdGameModes.md#team-battle-modes) for team mode selection and entry points
 

@@ -168,7 +168,7 @@ flowchart TD
 
 **Key Difference from Classic Battle**: No player choice. All selections (judoka, stat) are random and determined atomically per round. Cooldown is fixed 3s and non-interactive (no Next button to skip).
 
-**Test Coverage**: Verified by: [tests/battles-regressions/bandit/](tests/battles-regressions/bandit/) — integration tests for round loop, cooldown enforcement, and match progression; [playwright/](playwright/) — E2E tests for button interaction and snackbar display
+**Test Coverage**: Current battle-mode E2E coverage exists under [../../playwright/](../../playwright/) (including [../../playwright/battle-classic/](../../playwright/battle-classic/) for battle-loop/snackbar patterns). **Coverage gap (aspirational):** Dedicated Bandit regression tests for round loop, cooldown enforcement, and match progression are not yet present in `tests/` or `playwright/`.
 
 **Related diagrams**: See [prdBattleClassic.md](prdBattleClassic.md) for classic round flow (more complex with player choice); [prdBattleEngine.md](prdBattleEngine.md) for shared engine; [prdSnackbar.md](prdSnackbar.md) for message display
 

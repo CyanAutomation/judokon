@@ -136,7 +136,7 @@ flowchart LR
 
 > **Why this order matters**: During Phase 5 (`initializeMatchStart`), the round selection modal is shown. If the Quit or Next buttons are wired before this phase, their event handlers will be lost when the DOM elements are replaced by the modal. Therefore, these buttons must be wired AFTER Phase 5.
 
-**Test Coverage**: Verified by: [tests/battleClassic/quit-flow.test.js](tests/battleClassic/quit-flow.test.js) — validates quit button handler persistence; [tests/battleClassic/element-identity.test.js](tests/battleClassic/element-identity.test.js) — ensures buttons maintain identity across DOM replacements
+**Test Coverage**: Verified by: [../../tests/classicBattle/quit-flow.test.js](../../tests/classicBattle/quit-flow.test.js) — validates quit button handler persistence; [../../tests/classicBattle/element-identity.test.js](../../tests/classicBattle/element-identity.test.js) — ensures buttons maintain identity across DOM replacements
 
 ### Round UI Flow
 
