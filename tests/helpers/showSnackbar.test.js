@@ -241,4 +241,55 @@ describe("showSnackbar", () => {
     expect(container.children).toHaveLength(1);
     expect(container.children[0].textContent).toBe("Second");
   });
+
+  it("handles timer + manual remove in the same tick without double cleanup", async () => {
+    const container = document.getElementById("snackbar-container");
+
+    showSnackbar({ text: "race", ttl: 1 });
+    const bar = container.firstElementChild;
+    const id = bar?.dataset?.snackbarId;
+
+    const removeSpy = vi.spyOn(bar, "remove");
+
+    await vi.advanceTimersByTimeAsync(1);
+    dismissSnackbar(id);
+    await Promise.resolve();
+
+    expect(removeSpy).toHaveBeenCalledTimes(1);
+    expect(container.children).toHaveLength(0);
+  });
+
+  it("handles overflow + timer collision deterministically", async () => {
+    const container = document.getElementById("snackbar-container");
+
+    showSnackbar({ text: "First", ttl: 20 });
+    const first = container.firstElementChild;
+
+    await vi.advanceTimersByTimeAsync(20);
+    showSnackbar({ text: "Second", ttl: 3000 });
+    showSnackbar({ text: "Third", ttl: 3000 });
+    await Promise.resolve();
+
+    expect(container.contains(first)).toBe(false);
+    expect(container.children).toHaveLength(2);
+    expect(Array.from(container.children).map((el) => el.textContent)).toEqual(["Second", "Third"]);
+  });
+
+  it("ignores updates while snackbar is dismissing", async () => {
+    const container = document.getElementById("snackbar-container");
+
+    showSnackbar({ text: "Persistent", minDuration: 50, ttl: 0 });
+    const bar = container.firstElementChild;
+    const id = bar?.dataset?.snackbarId;
+
+    dismissSnackbar(id);
+    updateSnackbar("Should be ignored");
+
+    expect(bar.textContent).toBe("Persistent");
+
+    await vi.advanceTimersByTimeAsync(50);
+    await Promise.resolve();
+
+    expect(container.children).toHaveLength(0);
+  });
 });

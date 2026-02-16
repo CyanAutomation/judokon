@@ -48,7 +48,7 @@ export const SnackbarPriority = {
  * @property {number} shownAt - Timestamp when displayed
  * @property {number} sequence - Monotonic sequence number for deterministic ordering
  * @property {HTMLElement} element - DOM element
- * @property {"Visible"|"Dismissing"} state - Lifecycle state
+ * @property {"visible"|"dismissing"|"removed"} state - Lifecycle status
  * @property {number} [autoDismissId] - Timeout ID for auto-dismiss
  * @property {(event: AnimationEvent) => void} [animationEndHandler] - Animation end handler
  * @property {Function} [onShow] - Show callback
@@ -71,6 +71,47 @@ class SnackbarManager {
 
     /** @type {boolean} */
     this.disabled = false;
+  }
+
+  /**
+   * Finalize snackbar cleanup and teardown.
+   *
+   * @pseudocode
+   * 1. Clear active auto-dismiss timeout.
+   * 2. Remove animation listeners from the element.
+   * 3. Remove snackbar element from the DOM.
+   * 4. Mark status removed and delete from active map.
+   * 5. Invoke onDismiss callback with guarded error handling.
+   *
+   * @param {string} id - Snackbar ID.
+   * @param {ActiveSnackbar} snackbar - Snackbar entry to teardown.
+   * @returns {void}
+   */
+  finalizeSnackbarCleanup(id, snackbar) {
+    if (snackbar.autoDismissId) {
+      clearTimeout(snackbar.autoDismissId);
+      snackbar.autoDismissId = undefined;
+    }
+
+    if (snackbar.animationEndHandler && snackbar.element) {
+      snackbar.element.removeEventListener("animationend", snackbar.animationEndHandler);
+      snackbar.animationEndHandler = undefined;
+    }
+
+    if (snackbar.element && snackbar.element.parentNode) {
+      snackbar.element.remove();
+    }
+
+    snackbar.state = "removed";
+    this.activeSnackbars.delete(id);
+
+    if (snackbar.onDismiss) {
+      try {
+        snackbar.onDismiss();
+      } catch (error) {
+        console.error("[SnackbarManager] onDismiss callback error:", error);
+      }
+    }
   }
 
   /**
@@ -236,7 +277,7 @@ class SnackbarManager {
    * Project visible snackbar entries in deterministic sequence order.
    *
    * @pseudocode
-   * 1. Filter out entries already in Dismissing state.
+   * 1. Filter out entries that are not visible.
    * 2. Sort by sequence counter for deterministic ordering.
    * 3. Return sorted projection for all callers (eviction + positioning).
    *
@@ -246,7 +287,7 @@ class SnackbarManager {
   getVisibleSnackbarsBySequence({ newestFirst = false } = {}) {
     const direction = newestFirst ? -1 : 1;
     return Array.from(this.activeSnackbars.values())
-      .filter((snackbar) => snackbar.state !== "Dismissing")
+      .filter((snackbar) => snackbar.state === "visible")
       .sort((a, b) => direction * (a.sequence - b.sequence));
   }
 
@@ -338,7 +379,7 @@ class SnackbarManager {
       minDuration,
       shownAt: Date.now(),
       sequence: ++this.sequenceCounter,
-      state: "Visible",
+      state: "visible",
       element,
       animationEndHandler: handleAnimationEnd,
       onShow,
@@ -463,45 +504,21 @@ class SnackbarManager {
    */
   async dismiss(id, { ignoreMinDuration = false } = {}) {
     const snackbar = this.activeSnackbars.get(id);
-    if (!snackbar || snackbar.state === "Dismissing") {
+    if (!snackbar || snackbar.state === "dismissing" || snackbar.state === "removed") {
       return;
     }
 
-    snackbar.state = "Dismissing";
+    snackbar.state = "dismissing";
 
     // Enforce minimum display duration
     if (!ignoreMinDuration) {
       await this.waitForMinDuration(id);
     }
 
-    // Clear auto-dismiss timeout
-    // Clear auto-dismiss timeout and event listeners
-    if (snackbar.autoDismissId) {
-      clearTimeout(snackbar.autoDismissId);
-    }
-    if (snackbar.animationEndHandler && snackbar.element) {
-      snackbar.element.removeEventListener("animationend", snackbar.animationEndHandler);
-    }
-
-    // Remove element from DOM
-    if (snackbar.element && snackbar.element.parentNode) {
-      snackbar.element.remove();
-    }
-
-    // Remove from active map
-    this.activeSnackbars.delete(id);
+    this.finalizeSnackbarCleanup(id, snackbar);
 
     // Update positioning
     this.updatePositioning();
-
-    // Call onDismiss callback
-    if (snackbar.onDismiss) {
-      try {
-        snackbar.onDismiss();
-      } catch (error) {
-        console.error("[SnackbarManager] onDismiss callback error:", error);
-      }
-    }
   }
 
   /**
@@ -519,7 +536,7 @@ class SnackbarManager {
    */
   update(id, newMessage) {
     const snackbar = this.activeSnackbars.get(id);
-    if (!snackbar || snackbar.state === "Dismissing") {
+    if (!snackbar || snackbar.state === "dismissing" || snackbar.state === "removed") {
       return;
     }
 
@@ -588,26 +605,8 @@ class SnackbarManager {
   clearAll() {
     // Clear all timeouts and remove elements
     this.activeSnackbars.forEach((snackbar) => {
-      if (snackbar.autoDismissId) {
-        clearTimeout(snackbar.autoDismissId);
-      }
-      if (snackbar.animationEndHandler && snackbar.element) {
-        snackbar.element.removeEventListener("animationend", snackbar.animationEndHandler);
-      }
-      if (snackbar.element && snackbar.element.parentNode) {
-        snackbar.element.remove();
-      }
-      if (snackbar.onDismiss) {
-        try {
-          snackbar.onDismiss();
-        } catch (error) {
-          console.error("[SnackbarManager] onDismiss callback error:", error);
-        }
-      }
+      this.finalizeSnackbarCleanup(snackbar.id, snackbar);
     });
-
-    // Clear state
-    this.activeSnackbars.clear();
 
     this.syncContainerPriority();
   }
@@ -624,7 +623,7 @@ class SnackbarManager {
    */
   getLatestVisibleId() {
     const latest = Array.from(this.activeSnackbars.values())
-      .filter((snackbar) => snackbar.state !== "Dismissing")
+      .filter((snackbar) => snackbar.state === "visible")
       .sort((a, b) => b.sequence - a.sequence)[0];
 
     return latest?.id ?? null;
