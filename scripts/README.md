@@ -14,4 +14,4 @@ Contributors and maintainers running scripted project operations.
 ## Canonical Docs
 - See canonical contributor workflow: [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 - See canonical validation command catalog: [`prdDevelopmentStandards.md`](../design/productRequirementsDocuments/prdDevelopmentStandards.md).
-- Script-specific detail for offline RAG generation lives in [`buildOfflineRag.mjs`](./buildOfflineRag.mjs).
+- Historical RAG script details are archived in [`docs/status/archive/rag-workflows.md`](../docs/status/archive/rag-workflows.md).
