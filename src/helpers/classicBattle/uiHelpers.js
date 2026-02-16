@@ -982,7 +982,7 @@ export function removeBackdrops(store) {
  * @pseudocode
  * 1. Query `#next-button` and return early if missing.
  * 2. Clone the node, disable the clone and remove `data-next-ready`.
- * 3. Attach `onNextButtonClick` to the clone and replace the original in the DOM.
+ * 3. Preserve the `data-action="next"` routing hint on the clone and replace the original.
  *
  * @returns {void}
  */
@@ -995,7 +995,7 @@ export function resetNextButton() {
     const clone = nextBtn.cloneNode(true);
     clone.disabled = true;
     delete clone.dataset.nextReady;
-    clone.addEventListener("click", onNextButtonClick);
+    clone.dataset.action = "next";
     nextBtn.replaceWith(clone);
   }
 }
@@ -1006,7 +1006,7 @@ export function resetNextButton() {
  * @pseudocode
  * 1. Query `#next-button` and return early if missing.
  * 2. Clone the node, disable the clone and remove `data-next-ready`.
- * 3. Attach `onNextButtonClick` to the clone and replace the original in the DOM.
+ * 3. Preserve the `data-action="next"` routing hint on the clone and replace the original.
  *
  * @returns {void}
  */
@@ -1016,8 +1016,7 @@ export function resetNextButton() {
  *
  * @pseudocode
  * 1. Attempt to locate the `#quit-button` element and fall back to `#quit-match-button`.
- * 2. If the button is found, replace it with a deep clone of itself. This effectively
- *    removes all previously attached event listeners from the original button.
+ * 2. If found, replace it with a deep clone and enforce `data-action="quit"` routing.
  * @returns {void}
  */
 export function resetQuitButton() {
@@ -1028,7 +1027,9 @@ export function resetQuitButton() {
       : null;
   } catch {}
   if (quitBtn) {
-    quitBtn.replaceWith(quitBtn.cloneNode(true));
+    const clone = quitBtn.cloneNode(true);
+    clone.dataset.action = "quit";
+    quitBtn.replaceWith(clone);
   }
 }
 
