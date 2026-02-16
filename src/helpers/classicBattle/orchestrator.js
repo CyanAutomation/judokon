@@ -362,8 +362,7 @@ function emitCanonicalRoundStartedFromTransition(to) {
     lastRoundIndex: 0
   };
   const roundIndex = Number(engine?.getRoundsPlayed?.() || 0);
-  if (!Number.isFinite(roundIndex) || roundIndex <= bridgeState.lastRoundIndex || roundIndex <= 0) {
-    return;
+  if (!Number.isFinite(roundIndex) || roundIndex <= bridgeState.lastRoundIndex) {
   }
   bridgeState.lastRoundIndex = roundIndex;
   engineBridgeContext.set(engine, bridgeState);
