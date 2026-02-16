@@ -88,8 +88,6 @@ describe("orchestrator canonical event emissions", () => {
     expect(dottedRoundStarted).toHaveBeenCalledTimes(1);
   });
 
-
-
   it("bridges engine roundStarted events to canonical and legacy round-start events", async () => {
     const canonicalRoundStarted = vi.fn();
     const legacyRoundStarted = vi.fn();
