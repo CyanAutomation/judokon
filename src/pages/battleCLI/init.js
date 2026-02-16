@@ -930,7 +930,6 @@ export async function resetMatch() {
 
     disposeClassicBattleOrchestrator();
     await resetGame(store, preserveConfig);
-    subscribeEngine();
   })();
   // Initialize orchestrator after sync work without blocking callers
   resetPromise = next.then(async () => {
