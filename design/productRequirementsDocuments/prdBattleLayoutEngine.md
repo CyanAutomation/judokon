@@ -300,16 +300,26 @@ This schema defines the canonical layout payload used by the Layout Engine. It i
 >
 > Current state: The registry and fallback system exist, but are unpopulated. Inline JSON fallback is the only active path until layout modules are added. See implementation notes below for architecture details.
 
-The flowchart below illustrates the complete layout selection, validation, and application pipeline:
+### Target Architecture
+
+The flowchart below illustrates the intended end-state selection, validation, and application pipeline.
+
+**Implementation cross-links (target path):**
+- Loader selection and fallback logic: [`src/helpers/layoutEngine/loadLayout.js`](../../src/helpers/layoutEngine/loadLayout.js)
+- Layout application pipeline: [`src/helpers/layoutEngine/applyLayout.js`](../../src/helpers/layoutEngine/applyLayout.js)
+- Intended module source directory (currently missing `.layout.js` modules): [`src/layouts/`](../../src/layouts/)
 
 ```mermaid
 flowchart LR
-    Start([Layout Request<br/>modeId, variantId?]) --> RegistryLookup{"Registry<br/>Lookup"}
+    Start([Layout Request<br/>modeId, variantId?]) --> RegistryLookup{"Registry<br/>Lookup
+⚠️ Inactive until generated registry + .layout.js modules"}
 
-    RegistryLookup -->|Found| ValidateRegistry["Validate<br/>Registry"]
+    RegistryLookup -->|Found| ValidateRegistry["Validate<br/>Registry
+⚠️ Inactive until generated registry + .layout.js modules"]
     RegistryLookup -->|Not Found| FallbackLookup["Fallback<br/>Lookup"]
 
-    ValidateRegistry -->|Valid| ResolveRegistry["Resolve<br/>Module"]
+    ValidateRegistry -->|Valid| ResolveRegistry["Resolve<br/>Module
+⚠️ Inactive until generated registry + .layout.js modules"]
     ValidateRegistry -->|Invalid| FallbackLookup
 
     ResolveRegistry --> ResolveSuccess{Resolved?}
@@ -338,6 +348,34 @@ flowchart LR
     ApplySuccess --> EmitEvent["Emit layout:applied<br/>Event"]
     EmitEvent --> Telemetry2["Log Success<br/>to Telemetry"]
     Telemetry2 --> End2([Layout Applied<br/>Render Complete])
+```
+
+### Current Implementation
+
+The active runtime path currently executes inline fallback loading first, because `.layout.js` modules and a generated registry are not yet available.
+
+**Implementation cross-links (current active path):**
+- Active loader path (`loadLayout` + inline fallback parsing): [`src/helpers/layoutEngine/loadLayout.js`](../../src/helpers/layoutEngine/loadLayout.js)
+- Active applier path (`applyLayout` + CSS fallback behavior): [`src/helpers/layoutEngine/applyLayout.js`](../../src/helpers/layoutEngine/applyLayout.js)
+- Current `src/layouts/` state (`types.d.ts` present; no `.layout.js` modules yet): [`src/layouts/`](../../src/layouts/)
+
+```mermaid
+flowchart LR
+    Request([Layout Request<br/>modeId, variantId?]) --> InlineFallback["Read Inline Fallback JSON
+(script#layout-default[-mode])
+✅ Active"]
+    InlineFallback --> Validate{"Validate Fallback
+(schema + bounds + anchors)
+✅ Active"}
+    Validate -->|Valid| Apply["applyLayout()
+Batch styles in RAF
+✅ Active"]
+    Validate -->|Invalid| CssFallback["Fallback to Default CSS
+Log telemetry
+✅ Active"]
+
+    RegistryInactive["Registry /.layout.js module path
+⚠️ Inactive until generated registry + .layout.js modules"] -.not active yet.-> InlineFallback
 ```
 
 **Key Design Notes:**
