@@ -98,7 +98,6 @@ describe("classic battle bootstrap wiring", () => {
     modalControl.releaseCallback = null;
     initControl.failWith = null;
     capturedDeps.current = null;
-    delete window.__battleInitComplete;
     delete window.battleReadyPromise;
   });
   test("injects waitForOpponentCard from runtime utility and uses the real implementation", async () => {
@@ -108,11 +107,10 @@ describe("classic battle bootstrap wiring", () => {
     card.className = "judoka-card";
     container.appendChild(card);
     document.body.appendChild(container);
-    const { setupClassicBattlePage } = await import(
-      "../../../src/helpers/classicBattle/bootstrap.js"
-    );
+    const { createBattleClassic } = await import("../../../src/helpers/classicBattle/bootstrap.js");
 
-    await setupClassicBattlePage();
+    const battleClassic = createBattleClassic();
+    await battleClassic.readyPromise;
 
     expect(typeof capturedDeps.current?.waitForOpponentCard).toBe("function");
     await expect(capturedDeps.current.waitForOpponentCard()).resolves.toBeUndefined();
@@ -126,15 +124,13 @@ describe("classic battle bootstrap wiring", () => {
     });
     modalControl.releaseCallback = () => initBarrier;
 
-    const { setupClassicBattlePage } = await import(
-      "../../../src/helpers/classicBattle/bootstrap.js"
-    );
+    const { createBattleClassic } = await import("../../../src/helpers/classicBattle/bootstrap.js");
 
-    const bootstrapPromise = setupClassicBattlePage();
+    const battleClassic = createBattleClassic();
+    const bootstrapPromise = battleClassic.readyPromise;
 
     await Promise.resolve();
-    expect(window.battleReadyPromise).toBeInstanceOf(Promise);
-    expect(window.__battleInitComplete).toBeUndefined();
+    expect(battleClassic.readyPromise).toBeInstanceOf(Promise);
 
     let settled = false;
     bootstrapPromise.then(() => {
@@ -145,18 +141,15 @@ describe("classic battle bootstrap wiring", () => {
 
     resolveInit();
     await expect(bootstrapPromise).resolves.toEqual({ debug: true });
-    expect(window.__battleInitComplete).toBe(true);
   });
 
   test("rejects when initialization fails", async () => {
     initControl.failWith = new Error("init failed");
 
-    const { setupClassicBattlePage } = await import(
-      "../../../src/helpers/classicBattle/bootstrap.js"
-    );
+    const { createBattleClassic } = await import("../../../src/helpers/classicBattle/bootstrap.js");
 
-    await expect(setupClassicBattlePage()).rejects.toThrow("init failed");
-    await expect(window.battleReadyPromise).rejects.toThrow("init failed");
+    const battleClassic = createBattleClassic();
+    await expect(battleClassic.readyPromise).rejects.toThrow("init failed");
 
     initControl.failWith = null;
   });

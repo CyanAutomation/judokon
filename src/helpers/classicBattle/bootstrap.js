@@ -22,6 +22,7 @@ import { bindRoundUIEventHandlersDynamic } from "./roundUI.js";
 import { bindRoundFlowControllerOnce } from "./roundFlowController.js";
 import { getBattleEventTarget } from "./battleEvents.js";
 import { waitForOpponentCard } from "../opponentCardWait.js";
+import { exposeLegacyReadinessForTests } from "./readinessCompat.js";
 
 /**
  * @returns {boolean} True if window is globally available and accessible
@@ -31,19 +32,17 @@ function canAccessWindow() {
 }
 
 /**
- * Bootstrap Classic Battle page by wiring controller and view.
+ * Create a classic battle bootstrap instance with explicit readiness lifecycle.
  *
  * @pseudocode
- * 1. Create the view and controller, exposing the controller's battle store globally for tests.
- * 2. Define `startCallback` which binds and initializes both, then creates the debug API.
- * 3. Await `resolveRoundStartPolicy(startCallback)`.
- * 4. Await `startPromise` and expose readiness markers on `window`.
- * 5. Return the debug API after the round is selected.
+ * 1. Create controller/view and a single-settle `readyPromise` pair.
+ * 2. Wire side effects (engine, scoreboard, state badge) and expose store for diagnostics.
+ * 3. Start round-policy resolution through `controller.init()` and `view.init()` callback flow.
+ * 4. Resolve/reject `readyPromise` from callback outcomes and return a disposable handle.
  *
- * @returns {Promise<object|undefined>} Resolves to the debug API object when initialization completes.
- *   Returns `undefined` if not in a test environment. Rejects if initialization fails.
+ * @returns {{ readyPromise: Promise<object|undefined>, controller: ClassicBattleController, dispose: () => void }}
  */
-export async function setupClassicBattlePage() {
+export function createBattleClassic() {
   try {
     engineFacade.createBattleEngine?.();
     registerBridgeOnEngineCreated();
@@ -58,7 +57,7 @@ export async function setupClassicBattlePage() {
   let resolveStart;
   let rejectStart;
   let hasSettledStart = false;
-  const startPromise = new Promise((resolve, reject) => {
+  const readyPromise = new Promise((resolve, reject) => {
     resolveStart = (value) => {
       if (hasSettledStart) {
         return;
@@ -78,10 +77,11 @@ export async function setupClassicBattlePage() {
   if (canAccessWindow()) {
     try {
       // Single source of truth for full Classic Battle readiness.
-      window.battleReadyPromise = startPromise;
+      // @deprecated test-only global compatibility shim
+      exposeLegacyReadinessForTests(readyPromise);
     } catch (err) {
       if (typeof console !== "undefined" && typeof console.warn === "function") {
-        console.warn("[classicBattle.bootstrap] Failed to expose battleReadyPromise:", err);
+        console.warn("[classicBattle.bootstrap] Failed to expose legacy readiness globals:", err);
       }
     }
   }
@@ -150,26 +150,38 @@ export async function setupClassicBattlePage() {
     }
   }
 
-  try {
-    await resolveRoundStartPolicy(startCallback);
-  } catch (error) {
-    rejectStart(error);
-    throw error;
-  }
-
-  const readyDebugApi = await startPromise;
-
-  if (canAccessWindow()) {
+  const start = async () => {
     try {
-      window.__battleInitComplete = true;
-    } catch (err) {
-      if (typeof console !== "undefined" && typeof console.warn === "function") {
-        console.warn("[classicBattle.bootstrap] Failed to expose readiness markers:", err);
-      }
+      await resolveRoundStartPolicy(startCallback);
+    } catch (error) {
+      rejectStart(error);
     }
-  }
-  return readyDebugApi;
-  return readyDebugApi;
+  };
+
+  void start();
+
+  return {
+    readyPromise,
+    controller,
+    dispose: () => {
+      // Reserved for future teardown hooks.
+    }
+  };
+}
+
+/**
+ * Bootstrap Classic Battle page by wiring controller and view.
+ *
+ * @pseudocode
+ * 1. Create a battle bootstrap controller through `createBattleClassic()`.
+ * 2. Await the controller `readyPromise` for full init completion.
+ * 3. Return the resolved debug API payload.
+ *
+ * @returns {Promise<object|undefined>} Resolves to the debug API object when initialization completes.
+ */
+export async function setupClassicBattlePage() {
+  const battleClassic = createBattleClassic();
+  return battleClassic.readyPromise;
 }
 
 /**
