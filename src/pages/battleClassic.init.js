@@ -1,10 +1,5 @@
 import { createCountdownTimer, getDefaultTimer } from "../helpers/timerUtils.js";
-import {
-  createBattleStore,
-  startCooldown,
-  startRound,
-  handleReplay
-} from "../helpers/classicBattle/roundManager.js";
+import { startCooldown, startRound, handleReplay } from "../helpers/classicBattle/roundManager.js";
 import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
 import {
   disableStatButtons,
@@ -109,6 +104,8 @@ import {
   DEFAULT_OPPONENT_MESSAGE_BUFFER_MS
 } from "../helpers/classicBattle/selectionDelayCalculator.js";
 import { isDevelopmentEnvironment } from "../helpers/environment.js";
+import { runClassicBattleBootstrapCoordinator } from "../helpers/classicBattle/bootstrapCoordinator.js";
+import { createBattleStore } from "../helpers/classicBattle/roundManager.js";
 import { STORE_READY_EVENT } from "../helpers/classicBattleHomeLink.constants.js";
 
 // =============================================================================
@@ -1860,20 +1857,16 @@ const isTestEnvironment =
 /**
  * Initialize the Classic Battle page.
  *
- * @summary Orchestrates the bootstrap sequence for the Classic Battle interface,
- * following a 5-phase initialization: utilities, UI, engine, event handlers, and match start.
+ * @summary Delegates deterministic bootstrap orchestration to the coordinator while
+ * preserving existing phase ordering and page-level side effects.
  *
  * @returns {Promise<void>} A Promise that resolves when the Classic Battle page has been fully initialized.
  * @pseudocode
- * 1. Execute `initializePhase1_Utilities()` to set up core utilities like the scheduler and expose test APIs.
- * 2. Execute `initializePhase2_UI()` to configure the initial user interface, including the scoreboard and feature flags.
- * 3. Create a battle store instance using `createBattleStore()` to manage the game's state.
- * 4. If in a browser environment, expose the created battle store globally as `window.battleStore`.
- * 5. Execute `initializePhase3_Engine()` to set up the battle engine and orchestrator.
- * 6. Execute `initializePhase4_EventHandlers()` to wire up all necessary event listeners and control buttons.
- * 7. Execute `initializeMatchStart()` to initiate the match, typically by showing the round selection modal.
- * 8. If in a browser environment, set `window.__battleInitComplete` to `true` to signal successful initialization.
- * 9. Catch any errors during the bootstrap process and display a fatal initialization error to the user.
+ * 1. Reset page-level init error markers before bootstrap starts.
+ * 2. Invoke `runClassicBattleBootstrapCoordinator()` with dependency-build, view-wiring, and match-start phase callbacks.
+ * 3. In `onStoreCreated`, publish the battle store on `window` and dispatch `STORE_READY_EVENT`.
+ * 4. In `finalize`, initialize diagnostics and mark init completion metadata.
+ * 5. On failure, preserve existing fatal error behavior and rethrow in test environments.
  */
 export async function init() {
   console.log("battleClassic: init()");
@@ -1881,33 +1874,32 @@ export async function init() {
     window.__battleInitError = undefined;
   }
   try {
-    const store = createBattleStore();
-    if (typeof window !== "undefined") {
-      window.battleStore = store;
-      window.dispatchEvent(new CustomEvent(STORE_READY_EVENT, { detail: { store } }));
-    }
+    await runClassicBattleBootstrapCoordinator({
+      createStore: createBattleStore,
+      onStoreCreated: (store) => {
+        if (typeof window !== "undefined") {
+          window.battleStore = store;
+          const StoreReadyEvent = window.CustomEvent || CustomEvent;
+          window.dispatchEvent(new StoreReadyEvent(STORE_READY_EVENT, { detail: { store } }));
+        }
+      },
+      initializeUtilities: initializePhase1_Utilities,
+      initializeUI: initializePhase2_UI,
+      initializeEngine: initializePhase3_Engine,
+      initializeEventHandlers: initializePhase4_EventHandlers,
+      wireStatBindings: wireExistingStatButtons,
+      startMatch: initializeMatchStart,
+      wireControlBindings: wireControlButtons,
+      finalize: () => {
+        // Initialize diagnostic panel (development mode only, Ctrl+Shift+D to toggle)
+        initDiagnosticPanel();
 
-    await initializePhase1_Utilities();
-    await initializePhase2_UI();
-
-    await initializePhase3_Engine(store);
-    await initializePhase4_EventHandlers(store);
-
-    // Wire stat buttons BEFORE match start (needed for gameplay)
-    wireExistingStatButtons(store);
-
-    await initializeMatchStart(store);
-
-    // Wire control buttons AFTER match start (prevents DOM replacement issues)
-    wireControlButtons(store);
-
-    // Initialize diagnostic panel (development mode only, Ctrl+Shift+D to toggle)
-    initDiagnosticPanel();
-
-    if (typeof window !== "undefined") {
-      window.__battleInitComplete = true;
-      window.__battleInitError = undefined;
-    }
+        if (typeof window !== "undefined") {
+          window.__battleInitComplete = true;
+          window.__battleInitError = undefined;
+        }
+      }
+    });
   } catch (err) {
     console.error("battleClassic: bootstrap failed", err);
     if (typeof window !== "undefined") {
