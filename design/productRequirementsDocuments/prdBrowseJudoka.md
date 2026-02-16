@@ -105,6 +105,7 @@ graph TD
 ```
 
 **Flow Annotations:**
+
 - **Entry**: Player navigates to Browse Judoka from main menu, map, or navigation bar
 - **Data Loading**: judoka.json fetched asynchronously; retry on failure
 - **Country Filter**: Alphabetical country list from judoka roster
@@ -136,6 +137,7 @@ graph LR
 ```
 
 **Integration Points:**
+
 - **Filter Entry**: details/summary disclosure opens country picker
 - **Data Binding**: Country codes from judoka.json matched against flag assets
 - **Real-Time Update**: Carousel carousel refresh on country selection
@@ -158,6 +160,7 @@ graph LR
 | **Bottom Stack** | Filter above carousel <768px | Filter beside carousel >768px |
 
 **Carousel Specifications:**
+
 ```
 - Max cards per row: 5 (desktop) / 1 (mobile strict)
 - Lazy load images on viewport visibility
@@ -210,6 +213,7 @@ stateDiagram-v2
 ```
 
 **Navigation States:**
+
 - **Ready**: Initial state, awaiting user interaction
 - **Browsing**: Carousel active, keyboard/touch navigation available
 - **CardFocused**: Individual card in focus, enlargement applied
@@ -263,6 +267,7 @@ stateDiagram-v2
 ```
 
 **Error Recovery:**
+
 - **Fetch Failures**: Show error + Retry button; reload judoka.json on retry
 - **Empty Data**: Display "No cards available" message
 - **Filter Empty**: Display "No judoka found for [country]" + option to clear filter

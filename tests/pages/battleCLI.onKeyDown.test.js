@@ -49,7 +49,7 @@ vi.mock("../../src/components/Button.js", () => ({
 }));
 
 describe("battleCLI onKeyDown", () => {
-  let onKeyDown, __test, getEscapeHandledPromise, store, dispatchSpy, emitSpy, timers;
+  let onKeyDown, __test, store, dispatchSpy, emitSpy, timers;
 
   beforeEach(async () => {
     timers = useCanonicalTimers();
@@ -70,8 +70,7 @@ describe("battleCLI onKeyDown", () => {
     emitSpy = mockEmitSpy;
     ({
       onKeyDown,
-      battleCLI: __test,
-      getEscapeHandledPromise
+      battleCLI: __test
     } = await import("../../src/pages/index.js"));
     __test.ensureCliDomForTest({ reset: true });
     document.body.className = "";

@@ -72,8 +72,12 @@ export function subscribe(eventName, handler) {
     return () => {};
   }
   return () => {
+    const offMethod = getFacadeMethod("off");
+    if (!offMethod) {
+      return;
+    }
     try {
-      getFacadeMethod("off")?.(eventName, handler);
+      offMethod(eventName, handler);
     } catch {}
   };
 }

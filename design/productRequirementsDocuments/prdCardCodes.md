@@ -180,6 +180,7 @@ graph TD
 ```
 
 **Generation Steps:**
+
 1. **Extract & Validate**: Gather all required fields from Judoka object
 2. **Concatenate**: Build raw string from name, country, weight, signature move, stats
 3. **XOR Encoding**: Obfuscate each character using XOR with position-dependent key
@@ -218,6 +219,7 @@ graph TB
 ```
 
 **Key Properties:**
+
 - **Deterministic**: Same Judoka → same code every time
 - **Obfuscated**: XOR encoding prevents casual reverse-engineering
 - **Readable**: Charset avoids confusing characters (no I/O/1/0)
@@ -258,12 +260,14 @@ graph TD
 ```
 
 **Validation Checks:**
+
 - All required fields present (firstname, surname, country, weight, signature move ID, stats)
 - Stats are numbers within valid range
 - Country code is valid format
 - Weight class is positive number
 
 **Fallback Strategy:**
+
 - If validation fails, generate generic code with fallback pattern
 - Display error message to user
 - Suggest correction steps
@@ -301,12 +305,14 @@ graph LR
 ```
 
 **Display UX:**
+
 - Show code in monospace font for clarity
 - Copy button for easy sharing
 - Toast confirmation when copied
 - QR code option (if supported)
 
 **Entry UX:**
+
 - Auto-format: Remove spaces, add hyphens, uppercase
 - Real-time validation feedback
 - Show matching Judoka on valid codes
@@ -350,12 +356,14 @@ graph TD
 ```
 
 **Charset Strategy:**
+
 - 32 characters = 5 bits per character
 - Avoids I, O, 1, 0 (easily confused)
 - Alphabetical (A–Z) + numeric (2–9)
 - Optimized for <2% manual entry error rate
 
 **Performance Targets:**
+
 - Code generation: <100ms
 - UI response: <200ms
 - Manual entry: <2% error rate
