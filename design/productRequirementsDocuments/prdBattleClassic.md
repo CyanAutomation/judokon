@@ -229,7 +229,7 @@ sequenceDiagram
   Orch->>UI: enable stat buttons for selection
   Orch->>Snackbar: show "Choose a stat"
 
-  Note over UI,Scoreboard: State transitions are driven by control.state.changed;<br/>domain events are value updates.
+  Note over UI,Scoreboard: State transitions are driven by control.state.changed<br/>domain events are value updates.
 ```
 
 #### Event naming legend
