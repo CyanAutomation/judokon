@@ -3027,6 +3027,12 @@ function handleCountdownStart(e) {
   const skipEnabled = skipRoundCooldownIfEnabled({
     onSkip: () => {
       skipHandled = true;
+      try {
+        emitBattleEvent("countdownFinished");
+      } catch {}
+      try {
+        emitBattleEvent("round.start");
+      } catch {}
     }
   });
   if (skipEnabled && skipHandled) {
