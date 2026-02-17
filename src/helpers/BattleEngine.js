@@ -158,6 +158,7 @@ export class BattleEngine {
     this._currentStats = Object.freeze({});
     this._initialConfig = { pointsToWin, maxRounds, stats, debugHooks, seed: this.seed };
     this._selectionLockSequence = 0;
+    this._selectionLocksByRound = new Map();
     return emitter || new SimpleEmitter();
   }
 
@@ -327,20 +328,95 @@ export class BattleEngine {
    * Request a lock acknowledgement for a stat selection intent.
    *
    * @pseudocode
-   * 1. Increment the internal selection lock sequence.
-   * 2. Return an accepted lock result payload for orchestrator transition gating.
+   * 1. Resolve the current round key (`selection.roundKey` or `roundsPlayed + 1`).
+   * 2. Reject invalid/match-ended states with a structured reason.
+   * 3. Reject duplicate lock requests for the same round.
+   * 4. Otherwise create and persist a lock result for the round.
+   * 5. Return a structured lock result payload.
    *
-   * @param {{statKey?: string, source?: string}} [selection]
-   * @returns {{accepted: boolean, lockId: string, statKey: string|null, source: string}}
+   * @param {{
+   *   statKey?: string,
+   *   source?: string,
+   *   intent?: string,
+   *   roundKey?: number,
+   *   state?: string
+   * }} [selection]
+   * @returns {{
+   *   accepted: boolean,
+   *   reason: "ok"|"duplicate"|"invalidState"|"invalidRound",
+   *   lockId: string|null,
+   *   statKey: string|null,
+   *   source: string,
+   *   intent: string,
+   *   roundKey: number|null,
+   *   duplicateOf?: string|null
+   * }}
    */
   requestSelectionLock(selection = {}) {
+    const source = selection?.source || "player";
+    const intent = selection?.intent || "statSelected";
+    const statKey = typeof selection?.statKey === "string" ? selection.statKey : null;
+    const state = typeof selection?.state === "string" ? selection.state : null;
+    const stateIsValid = state === null || state === "roundSelect" || state === "roundResolve";
+
+    if (this.matchEnded || !stateIsValid) {
+      return {
+        accepted: false,
+        reason: "invalidState",
+        lockId: null,
+        statKey,
+        source,
+        intent,
+        roundKey: null,
+        duplicateOf: null
+      };
+    }
+
+    const computedRoundKey = Number(selection?.roundKey);
+    const roundKey = Number.isFinite(computedRoundKey)
+      ? computedRoundKey
+      : Number(this.roundsPlayed) + 1;
+
+    if (!Number.isFinite(roundKey) || roundKey <= 0) {
+      return {
+        accepted: false,
+        reason: "invalidRound",
+        lockId: null,
+        statKey,
+        source,
+        intent,
+        roundKey: null,
+        duplicateOf: null
+      };
+    }
+
+    const existingLock = this._selectionLocksByRound.get(roundKey);
+    if (existingLock?.accepted) {
+      return {
+        accepted: false,
+        reason: "duplicate",
+        lockId: null,
+        statKey,
+        source,
+        intent,
+        roundKey,
+        duplicateOf: existingLock.lockId
+      };
+    }
+
     this._selectionLockSequence += 1;
-    return {
+    const lockResult = {
       accepted: true,
+      reason: "ok",
       lockId: `selection-lock-${this._selectionLockSequence}`,
-      statKey: typeof selection?.statKey === "string" ? selection.statKey : null,
-      source: selection?.source || "player"
+      statKey,
+      source,
+      intent,
+      roundKey,
+      duplicateOf: null
     };
+    this._selectionLocksByRound.set(roundKey, lockResult);
+    return lockResult;
   }
 
   /**
@@ -773,6 +849,8 @@ export class BattleEngine {
     this._selectionLockSequence = 0;
     this._currentStats = Object.freeze({});
     this.timer = new TimerController();
+    this._selectionLockSequence = 0;
+    this._selectionLocksByRound = new Map();
   }
 }
 
@@ -1142,7 +1220,16 @@ export const resumeTimer = () => requireEngine().resumeTimer();
  * 1. Delegate to `battleEngine.requestSelectionLock(...args)`.
  *
  * @param {...any} args
- * @returns {{accepted: boolean, lockId: string, statKey: string|null, source: string}}
+ * @returns {{
+ *   accepted: boolean,
+ *   reason: "ok"|"duplicate"|"invalidState"|"invalidRound",
+ *   lockId: string|null,
+ *   statKey: string|null,
+ *   source: string,
+ *   intent: string,
+ *   roundKey: number|null,
+ *   duplicateOf?: string|null
+ * }}
  */
 export const requestSelectionLock = (...args) => requireEngine().requestSelectionLock(...args);
 
