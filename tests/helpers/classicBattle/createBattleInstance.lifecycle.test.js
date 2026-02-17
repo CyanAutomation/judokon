@@ -32,4 +32,23 @@ describe("createBattleInstance lifecycle", () => {
     expect(orchestratorInit).toHaveBeenCalledTimes(2);
     expect(orchestratorDispose).toHaveBeenCalledTimes(2);
   });
+
+  it("dispatchIntent is the sole transition gateway with standardized results", async () => {
+    const machineDispatch = vi.fn().mockResolvedValue(true);
+    const orchestratorInit = vi.fn(async () => ({ dispatch: machineDispatch }));
+    const battle = createBattleInstance({ orchestratorInit });
+    await battle.init({}, {});
+
+    const accepted = await battle.dispatchIntent("ready");
+    expect(machineDispatch).toHaveBeenCalledWith("ready");
+    expect(accepted).toMatchObject({ accepted: true, rejected: false });
+
+    machineDispatch.mockResolvedValueOnce(false);
+    const rejected = await battle.dispatchIntent("continue");
+    expect(rejected).toMatchObject({
+      accepted: false,
+      rejected: true,
+      reason: "intent_rejected"
+    });
+  });
 });

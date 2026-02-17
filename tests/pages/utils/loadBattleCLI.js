@@ -37,7 +37,8 @@ export async function loadBattleCLI(options = {}) {
     stats = [],
     battleStats = [],
     mockBattleEvents = true,
-    mockBattleEngine = true
+    mockBattleEngine = true,
+    createBattleInstanceFactory = null
   } = options;
 
   window.__TEST__ = true;
@@ -171,6 +172,11 @@ export async function loadBattleCLI(options = {}) {
     });
   }
 
+  if (typeof createBattleInstanceFactory === "function") {
+    vi.doMock("../../../src/helpers/classicBattle/createBattleInstance.js", () => ({
+      createBattleInstance: createBattleInstanceFactory
+    }));
+  }
   if (mockBattleEngine === true) {
     // Helper-owned mock: provides base BattleEngine stub for CLI page tests.
     let pts = pointsToWin;
