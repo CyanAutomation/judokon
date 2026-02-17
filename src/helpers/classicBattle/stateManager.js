@@ -311,11 +311,22 @@ function resolveRoundPromptTransition(eventName) {
 
 function requestRoundSelectionLock(context, payload = {}) {
   const engine = context?.engine;
+  const currentState =
+    typeof context?.getCurrentState === "function" ? context.getCurrentState() : context?.state;
+  const roundKey = Number.isFinite(Number(payload?.opts?.roundKey))
+    ? Number(payload?.opts?.roundKey)
+    : Number(context?.store?.roundsPlayed) + 1;
+
   if (!engine || typeof engine.requestSelectionLock !== "function") {
     return {
       accepted: true,
+      reason: "ok",
+      lockId: null,
+      roundKey,
       statKey: payload?.stat,
-      source: payload?.opts?.selectionSource ?? "player"
+      source: payload?.opts?.selectionSource ?? "player",
+      intent: payload?.opts?.intent ?? "statSelected",
+      duplicateOf: null
     };
   }
 
@@ -324,11 +335,23 @@ function requestRoundSelectionLock(context, payload = {}) {
       engine.requestSelectionLock({
         statKey: payload?.stat,
         source: payload?.opts?.selectionSource ?? "player",
+        intent: payload?.opts?.intent ?? "statSelected",
+        roundKey,
+        state: currentState,
         selection: payload
       }) || { accepted: false }
     );
   } catch {
-    return { accepted: false };
+    return {
+      accepted: false,
+      reason: "invalidState",
+      lockId: null,
+      roundKey,
+      statKey: payload?.stat,
+      source: payload?.opts?.selectionSource ?? "player",
+      intent: payload?.opts?.intent ?? "statSelected",
+      duplicateOf: null
+    };
   }
 }
 
@@ -645,6 +668,15 @@ export async function createStateManager(
       if (eventName === "statSelected") {
         const lockResult = requestRoundSelectionLock(context, payload);
         if (!lockResult?.accepted) {
+          try {
+            emitBattleEvent("input.ignored", {
+              kind: "selectionLockRejected",
+              reason: lockResult?.reason ?? "invalidState",
+              stat: payload?.stat,
+              state: from,
+              source: payload?.opts?.selectionSource ?? "player"
+            });
+          } catch {}
           const rejection = {
             event: eventName,
             state: from,
@@ -733,6 +765,10 @@ export async function createStateManager(
       );
     }
   };
+
+  try {
+    machine.context.getCurrentState = () => current;
+  } catch {}
 
   // Initialize machine
   try {

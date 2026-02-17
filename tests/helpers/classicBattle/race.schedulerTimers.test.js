@@ -1,6 +1,65 @@
 import { describe, expect, it, vi } from "vitest";
+import { createStateManager } from "../../../src/helpers/classicBattle/stateManager.js";
+import { CLASSIC_BATTLE_STATES } from "../../../src/helpers/classicBattle/stateTable.js";
+
+const { emitSpy } = vi.hoisted(() => ({ emitSpy: vi.fn() }));
+
+vi.mock("../../../src/helpers/classicBattle/battleEvents.js", async () => {
+  const actual = await vi.importActual("../../../src/helpers/classicBattle/battleEvents.js");
+  return {
+    ...actual,
+    emitBattleEvent: emitSpy
+  };
+});
 
 describe("classic battle scheduler race guards", () => {
+  it("accepts a single selection lock when click and timeout auto-select collide", async () => {
+    emitSpy.mockClear();
+    const { BattleEngine } = await import("../../../src/helpers/BattleEngine.js");
+    const engine = new BattleEngine();
+    const store = { roundsPlayed: 0 };
+
+    const machine = await createStateManager(
+      {},
+      {
+        engine,
+        store
+      },
+      undefined,
+      CLASSIC_BATTLE_STATES
+    );
+
+    await machine.dispatch("startClicked");
+    await machine.dispatch("ready");
+    await machine.dispatch("ready");
+    await machine.dispatch("cardsRevealed");
+
+    const [manualResult, timeoutResult] = await Promise.all([
+      machine.dispatch("statSelected", {
+        stat: "power",
+        opts: { selectionSource: "player", intent: "statSelected", roundKey: 1 }
+      }),
+      machine.dispatch("statSelected", {
+        stat: "speed",
+        opts: { selectionSource: "auto", intent: "statSelected", roundKey: 1 }
+      })
+    ]);
+
+    expect([manualResult, timeoutResult].filter(Boolean)).toHaveLength(1);
+
+    const lockEvents = emitSpy.mock.calls.filter(
+      ([eventName]) => eventName === "round.selection.locked"
+    );
+    expect(lockEvents).toHaveLength(1);
+    expect(lockEvents[0][1]).toEqual(expect.objectContaining({ accepted: true, reason: "ok" }));
+
+    const ignoredEvents = emitSpy.mock.calls.filter(([eventName]) => eventName === "input.ignored");
+    expect(ignoredEvents.length).toBeGreaterThanOrEqual(1);
+    expect(ignoredEvents.at(-1)?.[1]).toEqual(
+      expect.objectContaining({ kind: "selectionLockRejected" })
+    );
+  });
+
   it("ignores selection timeout when manual selection already won the lock", async () => {
     const dispatchEvent = vi.fn();
     const emitEvent = vi.fn();
