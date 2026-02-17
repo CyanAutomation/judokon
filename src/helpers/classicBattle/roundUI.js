@@ -9,7 +9,6 @@ import { attachCountdownCoordinator } from "./countdownCoordinator.js";
 import { handleStatSelection } from "./selectionHandler.js";
 import * as roundManagerModule from "./roundManager.js";
 import { onBattleEvent, emitBattleEvent, getBattleEventTarget } from "./battleEvents.js";
-import { EVENT_TYPES } from "./eventCatalog.js";
 import { battleLog } from "./battleLogger.js";
 import {
   validateRoundStartedEvent,
@@ -42,7 +41,6 @@ import {
   resolveOpponentPromptBuffer
 } from "./cooldownResolver.js";
 import { createPostResetScheduler } from "./frameScheduler.js";
-import { applyControlStateTransition } from "./uiStateReducer.js";
 
 /**
  * @summary Safety buffer exported for backward compatibility with existing imports.
@@ -787,9 +785,6 @@ export function bindRoundResolved() {
 export function bindRoundUIEventHandlers() {
   bindRoundStarted();
   bindRoundResolved();
-  onBattleEvent(EVENT_TYPES.STATE_TRANSITIONED, (event) => {
-    applyControlStateTransition(event?.detail || {});
-  });
   // Instrument statButtons enable/disable events to observe unexpected toggles
   try {
     const target = getBattleEventTarget();
@@ -890,8 +885,5 @@ export function bindRoundUIEventHandlersDynamic() {
       document.body?.setAttribute?.("data-stat-selected", "true");
     } catch {}
     handleStatSelectedEvent(event);
-  });
-  onBattleEvent(EVENT_TYPES.STATE_TRANSITIONED, (event) => {
-    applyControlStateTransition(event?.detail || {});
   });
 }
