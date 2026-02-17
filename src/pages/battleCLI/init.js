@@ -2719,7 +2719,7 @@ export function handleRoundOverKey(key) {
       emitBattleEvent("outcomeConfirmed");
     } catch {}
     try {
-      dispatchIntent("continue");
+      await dispatchIntent("continue");
     } catch {}
     return true;
   }
