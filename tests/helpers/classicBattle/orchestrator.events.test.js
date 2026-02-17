@@ -80,6 +80,33 @@ describe("classic battle orchestrator UI events", () => {
     expect(document.body.classList.contains("battle-mode-roundDisplay")).toBe(true);
   });
 
+  it("enforces roundResolve → round.evaluated → roundDisplay event ordering", async () => {
+    const { __resetBattleEventTarget, emitBattleEvent, onBattleEvent } = await import(
+      "../../../src/helpers/classicBattle/battleEvents.js"
+    );
+    const { EVENT_TYPES } = await import("../../../src/helpers/classicBattle/eventCatalog.js");
+
+    __resetBattleEventTarget();
+    const eventOrder = [];
+    onBattleEvent(EVENT_TYPES.STATE_TRANSITIONED, (event) => {
+      const toState = event?.detail?.to;
+      if (toState === "roundResolve" || toState === "roundDisplay") {
+        eventOrder.push(`state:${toState}`);
+      }
+    });
+    onBattleEvent("round.evaluated", () => {
+      eventOrder.push("round.evaluated");
+    });
+
+    emitBattleEvent(EVENT_TYPES.STATE_TRANSITIONED, { from: "roundSelect", to: "roundResolve" });
+    emitBattleEvent("round.evaluated", {
+      outcome: "winPlayer",
+      scores: { player: 1, opponent: 0 }
+    });
+    emitBattleEvent(EVENT_TYPES.STATE_TRANSITIONED, { from: "roundResolve", to: "roundDisplay" });
+
+    expect(eventOrder).toEqual(["state:roundResolve", "round.evaluated", "state:roundDisplay"]);
+  });
   it("applies control transition once when flow and round UI handlers are both bound", async () => {
     const { __resetBattleEventTarget, emitBattleEvent, onBattleEvent } = await import(
       "../../../src/helpers/classicBattle/battleEvents.js"

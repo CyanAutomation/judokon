@@ -5,9 +5,9 @@ import { emitBattleEvent, onBattleEvent, offBattleEvent } from "../battleEvents.
 import { resolveRound } from "../roundResolver.js";
 import { guard, guardAsync, scheduleGuard } from "../guard.js";
 import { exposeDebugState, readDebugState } from "../debugHooks.js";
-import { getAutoContinue } from "../autoContinue.js";
 import isStateTransition from "../isStateTransition.js";
 import { createComponentLogger } from "../debugLogger.js";
+import { getScores } from "../../BattleEngine.js";
 
 const resolverLogger = createComponentLogger("RoundResolveHelpers");
 
@@ -49,9 +49,9 @@ function getOpponentStatValue(stat, fallbackCard) {
  * ```
  * if not in roundResolve or already resolved → return
  * if no player choice → dispatch outcome=draw fallback
- * outcomeEvent ← determineOutcomeEvent(store)
+ * resolve round immediately via resolveSelectionIfPresent(store)
  * record debug guard timing
- * await dispatchOutcome(outcomeEvent, machine)
+ * fallback to draw only when resolution is unavailable
  * emit debug panel update
  * ```
  */
@@ -60,104 +60,25 @@ export async function computeAndDispatchOutcome(store, machine) {
     debugLog("DEBUG: computeAndDispatchOutcome start", { playerChoice: store?.playerChoice });
     if (!isStateTransition(null, "roundResolve")) return;
     const rd = readDebugState("roundDebug");
-    const resolved = rd && typeof rd.resolvedAt === "number";
-    if (resolved) return;
+    const alreadyResolved = rd && typeof rd.resolvedAt === "number";
+    if (alreadyResolved) return;
     if (!store?.playerChoice) {
       await dispatchFallbackOutcome(machine, "stalledNoSelection");
       return;
     }
-    const outcomeEvent = determineOutcomeEvent(store);
-    debugLog("DEBUG: computeAndDispatchOutcome outcomeEvent", { outcomeEvent });
+    const resolved = await resolveSelectionIfPresent(store);
     try {
       exposeDebugState("guardFiredAt", Date.now());
-      exposeDebugState("guardOutcomeEvent", outcomeEvent || "none");
+      exposeDebugState("guardOutcomeEvent", resolved ? "resolved" : "none");
     } catch (err) {
       debugLog("DEBUG: exposeDebugState error", { error: err.message });
     }
-    await dispatchOutcome(outcomeEvent, machine);
+    if (!resolved) {
+      await dispatchFallbackOutcome(machine, "guardNoOutcome");
+    }
     emitBattleEvent("debugPanelUpdate");
   } catch (err) {
     debugLog("DEBUG: computeAndDispatchOutcome error", { error: err.message });
-  }
-}
-
-/**
- * Determine the round outcome based on player and opponent stat values.
- *
- * @param {object} store - Battle state store
- * @returns {string|null} Outcome event string or null if unable to determine
- */
-function determineOutcomeEvent(store) {
-  try {
-    const stat = store.playerChoice;
-    const pCard = getElementIfDocument("player-card");
-    const oCard = getElementIfDocument("opponent-card");
-    const playerVal = getStatValue(pCard, stat);
-    debugLog("DEBUG: computeAndDispatchOutcome values", { stat, playerVal });
-    const opponentVal = getOpponentStatValue(stat, oCard);
-    if (Number.isFinite(playerVal) && Number.isFinite(opponentVal)) {
-      if (playerVal > opponentVal) return "outcome=winPlayer";
-      if (playerVal < opponentVal) return "outcome=winOpponent";
-      return "outcome=draw";
-    }
-  } catch (err) {
-    debugLog("DEBUG: determineOutcomeEvent error", { error: err.message });
-  }
-  return null;
-}
-
-/**
- * Dispatch the outcome event to the machine, with microtask scheduling as fallback.
- *
- * @param {string|null} outcomeEvent - Outcome event string or null
- * @param {object} machine - State machine
- * @returns {Promise<void>}
- */
-async function dispatchOutcomeEvent(outcomeEvent, machine) {
-  try {
-    await machine.dispatch(outcomeEvent);
-    if (getAutoContinue()) await machine.dispatch("continue");
-  } catch (err) {
-    debugLog("DEBUG: dispatchOutcomeEvent error", { outcomeEvent, error: err.message });
-  }
-}
-
-/**
- * Dispatch outcome via async scheduler with fallback to setTimeout.
- *
- * @param {string|null} outcomeEvent - Outcome event string or null
- * @param {object} machine - State machine
- * @returns {Promise<void>}
- */
-async function dispatchOutcome(outcomeEvent, machine) {
-  if (outcomeEvent) {
-    try {
-      await new Promise((resolve, reject) => {
-        const run = async () => {
-          try {
-            await dispatchOutcomeEvent(outcomeEvent, machine);
-            resolve();
-          } catch (err) {
-            reject(err);
-          }
-        };
-
-        try {
-          if (typeof queueMicrotask === "function") {
-            queueMicrotask(run);
-            return;
-          }
-          setTimeout(run, 0);
-        } catch (err) {
-          reject(err);
-        }
-      });
-    } catch (err) {
-      debugLog("DEBUG: dispatchOutcome queueMicrotask error", { error: err.message });
-      await dispatchOutcomeEvent(outcomeEvent, machine);
-    }
-  } else {
-    await dispatchFallbackOutcome(machine, "guardNoOutcome");
   }
 }
 
@@ -357,9 +278,30 @@ export function schedulePostResolveWatchdog(machine, token) {
   };
 }
 
-async function dispatchFallbackOutcome(machine, reason) {
+function buildFallbackEvaluationPayload(reason) {
+  let scores = { player: 0, opponent: 0 };
   try {
-    await machine.dispatch("outcome=draw", { reason });
+    const engineScores = getScores?.();
+    scores = {
+      player: Number(engineScores?.playerScore) || 0,
+      opponent: Number(engineScores?.opponentScore) || 0
+    };
+  } catch {}
+
+  return {
+    outcome: "draw",
+    reason,
+    message: "No selection detected. Resolving as draw.",
+    scores,
+    source: "roundResolveFallback"
+  };
+}
+
+async function dispatchFallbackOutcome(machine, reason) {
+  const evaluationPayload = buildFallbackEvaluationPayload(reason);
+  try {
+    emitBattleEvent("round.evaluated", evaluationPayload);
+    await machine.dispatch("outcome=draw", { reason, evaluationPayload });
   } catch (err) {
     debugLog("DEBUG: dispatchFallbackOutcome error", { reason, error: err.message });
   }
