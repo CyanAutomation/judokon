@@ -2713,7 +2713,7 @@ export function handleWaitingForMatchStartKey(key) {
  *   return true
  * return false
  */
-export function handleRoundOverKey(key) {
+export async function handleRoundOverKey(key) {
   if (key === "enter" || key === " ") {
     try {
       emitBattleEvent("outcomeConfirmed");
@@ -2750,7 +2750,7 @@ export function handleRoundOverKey(key) {
  *   return true
  * return false
  */
-export function handleCooldownKey(key) {
+export async function handleCooldownKey(key) {
   if (key === "enter" || key === " ") {
     clearCooldownTimers();
     try {
