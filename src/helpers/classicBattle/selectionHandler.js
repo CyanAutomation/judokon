@@ -926,35 +926,53 @@ export async function resolveWithFallback(
       const normalizedDelay = 0;
       const fallbackDelay = FALLBACK_BUFFER_MS;
       const schedulers = collectSelectionSchedulers(store);
+      const scheduleFallbackResolution = () => {
+        const timeoutId = setTimeout(async () => {
+          if (store && store.selectionFallbackTimeoutId !== timeoutId) {
+            return;
+          }
+          if (store) {
+            store.selectionFallbackTimeoutId = null;
+          }
+
+          const selectionInFlight = !!getHiddenStoreValue(store, SELECTION_IN_FLIGHT_GUARD);
+          if (selectionInFlight) {
+            scheduleFallbackResolution();
+            return;
+          }
+
+          await handleFallbackResolution(
+            store,
+            currentState,
+            stat,
+            playerVal,
+            opponentVal,
+            opts,
+            normalizedDelay
+          );
+        }, fallbackDelay);
+
+        if (store && typeof store === "object") {
+          store.selectionFallbackTimeoutId = timeoutId;
+        }
+        return timeoutId;
+      };
+
       clearTimerHandle(store?.selectionFallbackTimeoutId, schedulers);
       if (store) {
         store.selectionFallbackTimeoutId = null;
       }
-
-      const timeoutId = setTimeout(async () => {
-        if (store && store.selectionFallbackTimeoutId === timeoutId) {
-          store.selectionFallbackTimeoutId = null;
-        }
-        await handleFallbackResolution(
-          store,
-          currentState,
-          stat,
-          playerVal,
-          opponentVal,
-          opts,
-          normalizedDelay
-        );
-      }, fallbackDelay);
-      if (store && typeof store === "object") {
-        store.selectionFallbackTimeoutId = timeoutId;
-      }
+      scheduleFallbackResolution();
 
       try {
         getRoundEvaluatedPromise()
           .then(() => {
-            clearTimeout(timeoutId);
-            if (store && store.selectionFallbackTimeoutId === timeoutId) {
-              store.selectionFallbackTimeoutId = null;
+            const activeTimeoutId = store?.selectionFallbackTimeoutId;
+            if (activeTimeoutId !== null && activeTimeoutId !== undefined) {
+              clearTimeout(activeTimeoutId);
+              if (store && store.selectionFallbackTimeoutId === activeTimeoutId) {
+                store.selectionFallbackTimeoutId = null;
+              }
             }
           })
           .catch(() => {});
