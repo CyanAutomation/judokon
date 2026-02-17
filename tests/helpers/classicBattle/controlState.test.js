@@ -251,6 +251,38 @@ describe("classicBattle battle control state", () => {
     detach();
   });
 
+  it("repeated identical control.state.changed payloads do not add listeners", async () => {
+    const { __resetBattleEventTarget, emitBattleEvent, getBattleEventTarget } = await import(
+      "../../../src/helpers/classicBattle/battleEvents.js"
+    );
+    const { EVENT_TYPES } = await import("../../../src/helpers/classicBattle/eventCatalog.js");
+    const { bindRoundFlowControllerOnce } = await import(
+      "../../../src/helpers/classicBattle/roundFlowController.js"
+    );
+
+    __resetBattleEventTarget();
+    const target = getBattleEventTarget();
+    const addEventListenerSpy = vi.spyOn(target, "addEventListener");
+
+    bindRoundFlowControllerOnce();
+
+    const transitionRegistrations = addEventListenerSpy.mock.calls.filter(
+      ([type]) => type === EVENT_TYPES.STATE_TRANSITIONED
+    );
+    expect(transitionRegistrations).toHaveLength(1);
+
+    emitBattleEvent(EVENT_TYPES.STATE_TRANSITIONED, { from: "roundWait", to: "roundResolve" });
+    emitBattleEvent(EVENT_TYPES.STATE_TRANSITIONED, { from: "roundWait", to: "roundResolve" });
+    emitBattleEvent(EVENT_TYPES.STATE_TRANSITIONED, { from: "roundWait", to: "roundResolve" });
+
+    const transitionRegistrationsAfter = addEventListenerSpy.mock.calls.filter(
+      ([type]) => type === EVENT_TYPES.STATE_TRANSITIONED
+    );
+    expect(transitionRegistrationsAfter).toHaveLength(1);
+
+    addEventListenerSpy.mockRestore();
+  });
+
   it("only control.state.changed mutates battle mode attributes/classes", async () => {
     const { __resetBattleEventTarget, emitBattleEvent } = await import(
       "../../../src/helpers/classicBattle/battleEvents.js"

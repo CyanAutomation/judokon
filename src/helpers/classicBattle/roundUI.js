@@ -785,22 +785,6 @@ export function bindRoundResolved() {
 export function bindRoundUIEventHandlers() {
   bindRoundStarted();
   bindRoundResolved();
-  // Instrument statButtons enable/disable events to observe unexpected toggles
-  try {
-    const target = getBattleEventTarget();
-    if (target && typeof target.addEventListener === "function") {
-      target.addEventListener("statButtons:disable", () => {
-        try {
-          // console.log("INFO: event statButtons:disable observed");
-        } catch {}
-      });
-      target.addEventListener("statButtons:enable", () => {
-        try {
-          // console.log("INFO: event statButtons:enable observed");
-        } catch {}
-      });
-    }
-  } catch {}
 }
 
 function shouldBindRoundUIHandlers(key) {
