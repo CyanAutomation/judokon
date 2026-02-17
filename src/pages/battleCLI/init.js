@@ -12,7 +12,6 @@ import {
   startRound as startRoundCore,
   resetGame
 } from "../../helpers/classicBattle/roundManager.js";
-import * as battleOrchestrator from "../../helpers/classicBattle/orchestrator.js";
 import { createBattleInstance } from "../../helpers/classicBattle/createBattleInstance.js";
 import {
   onBattleEvent,
@@ -228,94 +227,47 @@ function disposeClassicBattleOrchestrator() {
  *
  * @param {string} eventName
  * @param {*} [payload]
- * @returns {Promise<{ok: boolean, eventName: string, via?: "debugHooks.machine"|"orchestrator", result?: *, reason?: "no_machine", error?: Error}>}
+ * @returns {Promise<{accepted: boolean, rejected: boolean, reason?: string, result?: unknown, error?: Error}>}
  * @pseudocode
  * 1. Try debugHooks channel first to get the live machine and call `dispatch`.
  * 2. Fallback to orchestrator's `dispatchBattleEvent` if available (when not mocked).
  * 3. Return explicit failure contract when no dispatch handler is available.
  * 4. Return error contract when a dispatch handler throws.
  */
+export async function dispatchIntent(eventName, payload) {
+  const result = await Promise.resolve(battleInstance?.dispatchIntent?.(eventName, payload));
+  const normalized =
+    result && typeof result === "object" && "accepted" in result && "rejected" in result
+      ? result
+      : {
+          accepted: false,
+          rejected: true,
+          reason: "no_dispatcher"
+        };
+
+  const isAccepted = normalized.accepted === true;
+  const logLevel = isAccepted ? "info" : "warn";
+  try {
+    console[logLevel]("[CLI.dispatchIntent]", {
+      eventName,
+      accepted: normalized.accepted,
+      rejected: normalized.rejected,
+      reason: normalized.reason ?? null
+    });
+  } catch {}
+
+  return normalized;
+}
+
+/**
+ * Backward-compatible alias for tests and existing call sites.
+ *
+ * @param {string} eventName
+ * @param {*} [payload]
+ * @returns {Promise<{accepted: boolean, rejected: boolean, reason?: string, result?: unknown, error?: Error}>}
+ */
 export async function safeDispatch(eventName, payload) {
-  // DEBUG: Store dispatch attempts to understand why stat selection fails
-  const isDebugEvent = eventName === "statSelected";
-  const debugLog = (msg) => {
-    try {
-      const logs = JSON.parse(localStorage.getItem("__DEBUG_DISPATCH_LOG") || "[]");
-      logs.push(`${new Date().toISOString()}: ${msg}`);
-      if (logs.length > 100) logs.shift();
-      localStorage.setItem("__DEBUG_DISPATCH_LOG", JSON.stringify(logs));
-    } catch {}
-    if (isDebugEvent) {
-      console.log("[CLI.safeDispatch]", msg);
-    }
-  };
-
-  if (isDebugEvent) {
-    debugLog("Attempting dispatch: " + eventName);
-  }
-
-  try {
-    const getter = debugHooks?.readDebugState?.("getClassicBattleMachine");
-    const m = typeof getter === "function" ? getter() : getter;
-    if (isDebugEvent) {
-      debugLog(
-        `debugHooks getter result: getter=${typeof getter}, machine=${m ? "exists" : "null"}`
-      );
-    }
-    if (m?.dispatch) {
-      if (isDebugEvent) {
-        debugLog("Using debugHooks machine dispatch");
-      }
-      const result =
-        payload === undefined ? await m.dispatch(eventName) : await m.dispatch(eventName, payload);
-      return {
-        ok: true,
-        eventName,
-        via: "debugHooks.machine",
-        result
-      };
-    }
-  } catch (err) {
-    if (isDebugEvent) {
-      debugLog(`debugHooks path failed: ${err?.message}`);
-    }
-  }
-
-  let dispatchError = null;
-  try {
-    const fn = battleOrchestrator?.dispatchBattleEvent;
-    if (isDebugEvent) {
-      debugLog(`battleOrchestrator.dispatchBattleEvent: ${typeof fn}`);
-    }
-    if (typeof fn === "function") {
-      if (isDebugEvent) {
-        debugLog("Using battleOrchestrator dispatch");
-      }
-      const result = payload === undefined ? await fn(eventName) : await fn(eventName, payload);
-      return {
-        ok: true,
-        eventName,
-        via: "orchestrator",
-        result
-      };
-    }
-  } catch (err) {
-    if (isDebugEvent) {
-      debugLog(`battleOrchestrator path failed: ${err?.message}`);
-    }
-    dispatchError = err instanceof Error ? err : new Error(String(err));
-  }
-
-  if (isDebugEvent) {
-    debugLog(`DISPATCH FAILED - no handler found for: ${eventName}`);
-  }
-
-  return {
-    ok: false,
-    eventName,
-    reason: "no_machine",
-    ...(dispatchError ? { error: dispatchError } : {})
-  };
+  return dispatchIntent(eventName, payload);
 }
 
 /**
@@ -709,7 +661,7 @@ export function ensureCliDomForTest({ reset = false } = {}) {
  * @returns {Promise<{ detail: object, dispatched: boolean, emitted: boolean }>}
  * @pseudocode
  * return resolveRoundForTestHelper(eventLike, {
- *   dispatch: detail => safeDispatch("round.evaluated", detail),
+ *   dispatch: detail => dispatchIntent("round.evaluated", detail),
  *   emitOpponentReveal: detail => emitBattleEvent("opponentReveal", detail),
  *   emit: detail => emitBattleEvent("round.evaluated", detail),
  *   getStore: () => store
@@ -717,7 +669,7 @@ export function ensureCliDomForTest({ reset = false } = {}) {
  */
 async function resolveRoundForTest(eventLike = {}) {
   return resolveRoundForTestHelper(eventLike, {
-    dispatch: (detail) => safeDispatch("round.evaluated", detail),
+    dispatch: (detail) => dispatchIntent("round.evaluated", detail),
     emitOpponentReveal: (detail) => emitBattleEvent("opponentReveal", detail),
     emit: (detail) => emitBattleEvent("round.evaluated", detail),
     getStore: () => store
@@ -1007,40 +959,8 @@ export async function triggerMatchStart() {
     emitBattleEvent("startClicked");
   } catch {}
 
-  try {
-    const getter = debugHooks?.readDebugState?.("getClassicBattleMachine");
-    const machine = typeof getter === "function" ? getter() : getter;
-    if (machine?.dispatch) {
-      await machine.dispatch("startClicked");
-      return;
-    }
-  } catch {}
-
-  let dispatched = false;
-  let dispatchFailure = null;
-  const result = await safeDispatch("startClicked");
-  dispatched = result?.ok === true;
-  dispatchFailure = result?.ok === true ? null : result;
-
-  if (dispatched) {
-    return;
-  }
-
-  try {
-    const result = await safeDispatch("startClicked");
-    dispatched = result?.ok === true;
-    dispatchFailure = result;
-  } catch (error) {
-    dispatched = false;
-    dispatchFailure = {
-      ok: false,
-      eventName: "startClicked",
-      reason: "dispatch_exception",
-      error: error instanceof Error ? error : new Error(String(error))
-    };
-  }
-
-  if (dispatched) {
+  const dispatchResult = await dispatchIntent("startClicked");
+  if (dispatchResult.accepted) {
     return;
   }
 
@@ -1050,8 +970,8 @@ export async function triggerMatchStart() {
     }
     emitBattleEvent("battle.unavailable", {
       action: "startClicked",
-      reason: dispatchFailure?.reason || "no_machine",
-      error: dispatchFailure?.error || null
+      reason: dispatchResult?.reason || "no_machine",
+      error: dispatchResult?.error || null
     });
   } catch {}
 }
@@ -1553,10 +1473,10 @@ function showQuitModal() {
       // Maintain backward-compat: first dispatch interrupt expected by tests/UI,
       // then optionally emit dedicated quit for future handlers.
       try {
-        await safeDispatch("interrupt", { reason: "quit" });
+        await dispatchIntent("interrupt", { reason: "quit" });
       } catch {}
       try {
-        await safeDispatch("quit", { reason: "userQuit" });
+        await dispatchIntent("quit", { reason: "userQuit" });
       } catch {}
       try {
         // Use a relative path so deployments under a subpath (e.g. GitHub Pages)
@@ -1727,7 +1647,7 @@ export async function selectStat(stat) {
     state.roundResolving = true;
     // Dispatch the statSelected event to the state machine and emit the battle event
     emitBattleEvent("statSelected", { stat });
-    await Promise.resolve(safeDispatch("statSelected"));
+    await Promise.resolve(dispatchIntent("statSelected"));
   } catch (err) {
     console.error("Error dispatching statSelected", err);
   } finally {
@@ -2799,15 +2719,7 @@ export function handleRoundOverKey(key) {
       emitBattleEvent("outcomeConfirmed");
     } catch {}
     try {
-      // Try to synchronously call the orchestrator dispatch when available
-      // so tests that mock `dispatchBattleEvent` observe the call immediately.
-      const fn = battleOrchestrator?.dispatchBattleEvent;
-      if (typeof fn === "function") {
-        fn("continue");
-      } else {
-        // Fallback to safe async dispatch when orchestrator isn't available
-        safeDispatch("continue");
-      }
+      dispatchIntent("continue");
     } catch {}
     return true;
   }
@@ -2842,7 +2754,7 @@ export function handleCooldownKey(key) {
   if (key === "enter" || key === " ") {
     clearCooldownTimers();
     try {
-      safeDispatch("ready");
+      dispatchIntent("ready");
     } catch {}
     return true;
   }
@@ -2987,13 +2899,11 @@ function recordDispatchError(err) {
  * Dispatch continue on round over.
  *
  * @pseudocode
- * machine = getMachine()
- * machine.dispatch("continue") if available
+ * dispatchIntent("continue")
  */
 function advanceRoundOver() {
   try {
-    const machine = getMachine();
-    if (machine) machine.dispatch("continue");
+    dispatchIntent("continue");
   } catch (err) {
     recordDispatchError(err);
   }
@@ -3004,14 +2914,12 @@ function advanceRoundOver() {
  *
  * @pseudocode
  * clearCooldownTimers()
- * machine = getMachine()
- * machine.dispatch("ready") if available
+ * dispatchIntent("ready")
  */
 function advanceCooldown() {
   clearCooldownTimers();
   try {
-    const machine = getMachine();
-    if (machine) machine.dispatch("ready");
+    dispatchIntent("ready");
   } catch (err) {
     recordDispatchError(err);
   }
@@ -3291,7 +3199,7 @@ function ensureNextRoundButton() {
     btn.addEventListener("click", () => {
       clearCooldownTimers();
       try {
-        safeDispatch("continue");
+        dispatchIntent("continue");
       } catch {}
     });
     section.appendChild(btn);

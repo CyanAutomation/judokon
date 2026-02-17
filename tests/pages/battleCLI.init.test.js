@@ -25,9 +25,6 @@ describe("battleCLI init helpers", () => {
     if (!emitter) {
       throw new Error("Battle event emitter unavailable");
     }
-    // Import after mocks are set up by loadBattleCLI
-    const { dispatchBattleEvent } = await import("../../src/helpers/classicBattle/orchestrator.js");
-    dispatchBattleEvent.mockClear();
     const battleCliModule = await import("../../src/pages/battleCLI/init.js");
     const startClickedListener = vi.fn();
     const startClicked = new Promise((resolve) =>
@@ -44,7 +41,6 @@ describe("battleCLI init helpers", () => {
     await battleCliModule.triggerMatchStart();
     await startClicked;
     expect(startClickedListener).toHaveBeenCalledTimes(1);
-    expect(dispatchBattleEvent).toHaveBeenCalledWith("startClicked");
   });
 
   it("emits battle.unavailable and does not manually progress state when the orchestrator is unavailable", async () => {
@@ -97,8 +93,8 @@ describe("battleCLI init helpers", () => {
 
     const result = await battleCliModule.safeDispatch("startClicked");
     expect(result).toMatchObject({
-      ok: false,
-      eventName: "startClicked",
+      accepted: false,
+      rejected: true,
       reason: "no_machine"
     });
   });

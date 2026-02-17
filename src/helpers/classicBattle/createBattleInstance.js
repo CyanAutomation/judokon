@@ -1,6 +1,5 @@
 import { createBattleEventBus, setActiveBattleEventBus } from "./battleEvents.js";
 import { initClassicBattleOrchestrator, disposeClassicBattleOrchestrator } from "./orchestrator.js";
-import { dispatchBattleEvent } from "./eventBus.js";
 import { ensureClassicBattleScheduler } from "./timingScheduler.js";
 
 /**
@@ -15,7 +14,7 @@ import { ensureClassicBattleScheduler } from "./timingScheduler.js";
  * @returns {{
  *   machine: import('./stateManager.js').ClassicBattleStateManager|null,
  *   eventBus: ReturnType<typeof createBattleEventBus>,
- *   dispatchIntent: (eventName: string, payload?: any) => Promise<void>,
+ *   dispatchIntent: (eventName: string, payload?: any) => Promise<{accepted: boolean, rejected: boolean, reason?: string, result?: unknown, error?: Error}>,
  *   init: (contextOverrides?: object, dependencies?: object|Function, hooks?: object|Function) => Promise<any>,
  *   dispose: () => void
  * }}
@@ -33,6 +32,64 @@ export function createBattleInstance(options = {}) {
   const scheduler = ensureClassicBattleScheduler(options.scheduler);
 
   let machine = null;
+
+  /**
+   * Dispatch a state-machine intent through the active battle instance.
+   *
+   * @param {string} eventName
+   * @param {any} [payload]
+   * @returns {Promise<{accepted: boolean, rejected: boolean, reason?: string, result?: unknown, error?: Error}>}
+   * @pseudocode
+   * validate intent name and machine availability
+   * dispatch intent through machine.dispatch with optional payload
+   * map falsy machine acceptance to standardized rejected contract
+   * return accepted/rejected schema and include rejection reason
+   */
+  async function dispatchIntent(eventName, payload) {
+    if (typeof eventName !== "string" || eventName.length === 0) {
+      return {
+        accepted: false,
+        rejected: true,
+        reason: "invalid_intent"
+      };
+    }
+
+    if (!machine?.dispatch) {
+      return {
+        accepted: false,
+        rejected: true,
+        reason: "no_machine"
+      };
+    }
+
+    try {
+      const result =
+        payload === undefined
+          ? await machine.dispatch(eventName)
+          : await machine.dispatch(eventName, payload);
+      const accepted = result !== false;
+      return accepted
+        ? {
+            accepted: true,
+            rejected: false,
+            result
+          }
+        : {
+            accepted: false,
+            rejected: true,
+            reason: "intent_rejected",
+            result
+          };
+    } catch (error) {
+      const normalized = error instanceof Error ? error : new Error(String(error));
+      return {
+        accepted: false,
+        rejected: true,
+        reason: "dispatch_exception",
+        error: normalized
+      };
+    }
+  }
 
   async function init(contextOverrides = {}, dependencies = {}, hooks = {}) {
     setActiveBattleEventBus(eventBus);
@@ -58,7 +115,7 @@ export function createBattleInstance(options = {}) {
       return machine;
     },
     eventBus,
-    dispatchIntent: async (eventName, payload) => dispatchBattleEvent(eventName, payload),
+    dispatchIntent,
     init,
     dispose
   };
