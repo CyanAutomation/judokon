@@ -309,6 +309,29 @@ function resolveRoundPromptTransition(eventName) {
   return null;
 }
 
+function requestRoundSelectionLock(context, payload = {}) {
+  const engine = context?.engine;
+  if (!engine || typeof engine.requestSelectionLock !== "function") {
+    return {
+      accepted: true,
+      statKey: payload?.stat,
+      source: payload?.opts?.selectionSource ?? "player"
+    };
+  }
+
+  try {
+    return (
+      engine.requestSelectionLock({
+        statKey: payload?.stat,
+        source: payload?.opts?.selectionSource ?? "player",
+        selection: payload
+      }) || { accepted: false }
+    );
+  } catch {
+    return { accepted: false };
+  }
+}
+
 function resolveRoundSelectTransition(eventName) {
   if (eventName === "statSelected") return "roundResolve";
   if (eventName === "timeout") return "roundResolve";
@@ -618,6 +641,32 @@ export async function createStateManager(
       const from = current;
       const currentStateDef = statesByName.get(from);
       const availableTriggers = getAvailableTriggers(currentStateDef);
+
+      if (eventName === "statSelected") {
+        const lockResult = requestRoundSelectionLock(context, payload);
+        if (!lockResult?.accepted) {
+          const rejection = {
+            event: eventName,
+            state: from,
+            reason: "selection.lockRejected",
+            availableTriggers,
+            lockResult
+          };
+          logError("stateManager: selection lock rejected", rejection);
+          try {
+            emitBattleEvent("battle.intent.rejected", rejection);
+          } catch {}
+          return false;
+        }
+
+        try {
+          emitBattleEvent("round.selection.locked", {
+            ...lockResult,
+            statKey: lockResult?.statKey ?? payload?.stat,
+            source: lockResult?.source ?? payload?.opts?.selectionSource ?? "player"
+          });
+        } catch {}
+      }
 
       // Prefer explicit trigger from the provided state table if available (allows test-provided overrides)
       let target = null;
