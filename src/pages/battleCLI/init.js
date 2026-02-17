@@ -2754,7 +2754,7 @@ export function handleCooldownKey(key) {
   if (key === "enter" || key === " ") {
     clearCooldownTimers();
     try {
-      dispatchIntent("ready");
+      await dispatchIntent("ready");
     } catch {}
     return true;
   }
