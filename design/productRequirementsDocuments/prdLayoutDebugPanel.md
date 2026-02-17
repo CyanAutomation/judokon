@@ -62,18 +62,18 @@ flowchart TD
     F --> G[Apply 1px Red Dashed]
     G -->|Inject Styles| H[Visual Feedback]
     H -->|Show Input| I[Custom Selector Ready]
-    
+
     D -->|Click OFF| J[Remove Outlines]
     J -->|Query Applied| K[Clean DOM]
     K -->|No Flicker| L[Reset]
-    
+
     I -->|User Input| M{Valid Selector?}
     M -->|Yes| N[Query Matches]
     M -->|No| O[Show Warning]
     N --> P{Matches Found?}
     P -->|Yes| Q[Outline Elements]
     P -->|No| R[Show Message]
-    
+
     style A fill:#lightblue
     style B fill:#lightyellow
     style D fill:#lightgreen
@@ -97,21 +97,21 @@ flowchart LR
     A["User Input<br/>CSS Selector"] --> B[Validate Syntax]
     B -->|Valid| C[Query Elements]
     B -->|Invalid| D["Warn: Invalid<br/>Selector"]
-    
+
     C -->|querySelectorAll| E{Matches?}
     E -->|Yes| F["Count Matches"]
     E -->|No| G["Msg: No Elements<br/>Matched"]
-    
+
     F -->|>0| H[Apply Outlines]
     F -->|=0| G
-    
+
     H -->|All Match| I["Outline Color:<br/>Red #FF0000"]
     I --> J["Non-Disruptive:<br/>No Interaction Block"]
-    
+
     G --> K[Clear Outlines]
     D --> K
     K -->|Ready| L[Accept New Input]
-    
+
     style A fill:#lightblue
     style B fill:#lightyellow
     style C fill:#lightyellow
@@ -146,7 +146,7 @@ stateDiagram-v2
     Cleaning: Clear Injected Styles
     Cleaning: No Memory Leak
     Cleaning --> Disabled
-    
+
     style Disabled fill:#lightgray
     style Enabled fill:#lightgreen
     style CustomInput fill:#lightblue

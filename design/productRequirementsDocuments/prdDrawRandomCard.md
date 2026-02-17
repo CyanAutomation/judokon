@@ -155,7 +155,7 @@ stateDiagram-v2
     ERROR -->|User Retry| IDLE
     ERROR -->|Exit| [*]
     IDLE -->|Exit| [*]
-    
+
     style IDLE fill:#lightgreen
     style DRAWING fill:#lightyellow
     style SUCCESS fill:#lightgreen
@@ -183,7 +183,7 @@ flowchart TD
     J -->|No| L[Play Animation]
     K --> M[Reveal Complete]
     L --> M
-    
+
     style A fill:#lightblue
     style B fill:#lightyellow
     style C fill:#lightyellow
@@ -214,12 +214,12 @@ flowchart LR
     F -->|Yes| G[Allow Next Draw]
     F -->|No| H[Wait Debounce]
     H --> G
-    
+
     I[Error Occurs] -->|Parse Failure| J[Show Fallback]
     I -->|Empty Set| J
     J --> K[Error Toast]
     K --> G
-    
+
     style A fill:#lightblue
     style B fill:#lightyellow
     style C fill:#lightgreen

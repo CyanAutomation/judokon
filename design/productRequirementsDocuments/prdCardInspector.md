@@ -86,7 +86,7 @@ flowchart TD
     D -->|Set data-inspector=true| E[Cards Show Details]
     E -->|Click Collapse| F[Panel Collapses]
     F -->|Remove Attribute| G[Ready for Next]
-    
+
     style A fill:#lightblue
     style B fill:#lightgreen
     style C fill:#lightyellow
@@ -111,7 +111,7 @@ stateDiagram-v2
     Collapsing -->|Animation Ends| Hidden
     Hidden -->|Toggle OFF| Disabled
     Disabled -->|Toggle ON| Hidden
-    
+
     style Hidden fill:#lightyellow
     style Expanding fill:#lightyellow
     style Expanded fill:#lightgreen
@@ -133,7 +133,7 @@ flowchart LR
     D --> F["Show: 'Invalid card data'"]
     E -->|Click Disclosure| G[Toggle State]
     F -->|Attempts Remaining| A
-    
+
     style A fill:#lightblue
     style B fill:#lightyellow
     style C fill:#lightgreen

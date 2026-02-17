@@ -65,7 +65,7 @@ flowchart TD
     J -->|Add Animation| L[Display on Landing]
     K -->|Add Animation| L
     L -->|Tomorrow| A
-    
+
     style A fill:#lightblue
     style B fill:#lightyellow
     style D fill:#lightyellow
@@ -92,7 +92,7 @@ stateDiagram-v2
     Viewing -->|User Closes| Idle
     Idle -->|showCardOfTheDay=false| Hidden
     Hidden -->|Toggle ON| Idle
-    
+
     style Idle fill:#lightyellow
     style Rendering fill:#lightyellow
     style Displayed fill:#lightgreen
@@ -120,7 +120,7 @@ flowchart LR
     H -->|Yes| I[Render Card]
     H -->|No| J[Display Placeholder]
     D -->|Clear UI| K[No Visual Gap]
-    
+
     style A fill:#lightblue
     style B fill:#lightyellow
     style C fill:#lightgreen

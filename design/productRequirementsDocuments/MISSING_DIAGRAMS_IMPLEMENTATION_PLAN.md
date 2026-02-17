@@ -33,66 +33,66 @@ This document tracks the systematic implementation of 49 missing Mermaid diagram
 
 ## Master Tracking Table
 
-| Phase | PRD File | System/Feature | Diagram Type | Priority | Effort | Status | Notes |
-|-------|----------|---|---|---|---|---|---|
-| **Phase 1: Foundational Systems** | | | | | | | |
-| 1.1 | prdArchitecture.md | High-level system architecture | System Diagram | CRITICAL | Medium | ✅ Completed | 5-7 components; data flow |
-| 1.2 | prdGameModes.md | Game mode selection and entry | State/Flow Diagram | CRITICAL | Medium | ✅ Completed | 7 modes; Entry/exit flows |
-| 1.3 | prdBattleEngine.md | Abstract vs Canonical states | Mapping Diagram | CRITICAL | Small | ✅ Completed | Clarification layer |
-| 1.4 | prdBattleScoreboard.md | Authority & Idempotency | Metadata Only | CRITICAL | Minimal | ✅ Completed | Add test refs to existing |
-| 1.5 | prdBattleClassic.md | Initialization phases | Sequence Diagram | CRITICAL | Small | ✅ Completed | Optional: 5 phases |
-| **Phase 2: Battle Variants** | | | | | | | |
-| 2.1 | prdBattleCLI.md | CLI vs Classic Battle | Comparative Sequence | HIGH | Medium | ✅ Completed | Same engine, different UI |
-| 2.2 | prdBattleBandit.md | One-armed-bandit mode | Round Flowchart | HIGH | Small | ✅ Completed | Simplified game loop |
-| 2.3 | prdTeamBattleRules.md | Team battle rules | Bout + Scoring SM | CRITICAL | Small | ✅ Completed | Turn order + win condition |
-| **Phase 3: Navigation & UI Systems** | | | | | | | |
-| 3.1 | prdHomePageNavigation.md | Homepage 2×2 tile menu | UI Flow Diagram | HIGH | Small | ✅ Completed | Entry point; responsive |
-| 3.2 | prdNavigationMap.md | Thematic map UI | State Diagram | HIGH | Small | ✅ Completed | Map state + fallback |
-| 3.3 | prdNavigationBar.md | Navigation bar structure | Component Tree | HIGH | Small | ✅ Completed | Hierarchy; responsive |
-| 3.4 | prdSettingsMenu.md | Settings & feature flags | Decision Tree | CRITICAL | Large | ✅ Completed | ~30 toggles; flag logic |
-| 3.5 | prdTeamBattleSelection.md | Team mode selection | UI Flow Diagram | MEDIUM | Small | ✅ Completed | Gender routing |
-| **Phase 4: Helper Systems & Features** | | | | | | | |
-| 4.1 | prdBattleActionBar.md | Control bar (7 buttons) | State Machine | HIGH | Medium | ✅ Completed | Engine state → button states |
-| 4.2 | prdSnackbar.md | Notification system | Queue & Lifecycle | MEDIUM | Small | ✅ Completed | Stack logic; 3s auto-dismiss |
-| 4.3 | prdTooltipSystem.md | In-context help tooltips | Lifecycle Diagram | MEDIUM | Small | ✅ Completed | Trigger + lifecycle |
-| 4.4 | prdBattleStateIndicator.md | Debug state badge | State Update Diagram | MEDIUM | Minimal | ✅ Completed | Simple; debug feature |
-| 4.5 | prdVectorDatabaseRAG.md | Vector search pipeline | Flowchart | HIGH | Medium | ✅ Completed | Query → Search → Answer |
-| **Phase 5: Content & Utilities** | | | | | | | |
-| 5.1 | prdDataSchemas.md | Data relationships | ER/Tree Diagram | MEDIUM | Small | ✅ Completed | Judoka → Cards → Stats |
-| 5.2 | prdTestingStandards.md | Test workflow | Validation Gates | MEDIUM | Small | ✅ Completed | Lint → Test → Merge |
-| 5.3 | prdDevelopmentStandards.md | Development workflow | Process Flowchart | MEDIUM | Small | ✅ Completed | Code → Standards → Merge |
-| 5.4 | prdCountryPickerFilter.md | Browse filter | Filter State Machine | MEDIUM | Small | ✅ Completed | Country selection |
-| 5.5 | prdCardCarousel.md | Card carousel UI | State Machine | MEDIUM | Small | ✅ Completed | Navigation + boundaries |
-| 5.6 | prdCreateJudoka.md | Form workflow | Flowchart | LOW | Minimal | ✅ Completed | Form → Validate → Save |
-| 5.7 | prdMeditationScreen.md | Quote display screen | Screen Flow | LOW | Minimal | ✅ Completed | Simple; zen mode |
-| 5.8 | prdMysteryCard.md | Card reveal mechanic | State Diagram | MEDIUM | Small | ✅ Completed | Reveal animation + options |
-| 5.9 | prdChangeLog.md | Version timeline | Timeline/Release Notes | LOW | Minimal | ✅ Completed | Chronological display |
-| 5.10 | prdBrowseJudoka.md | Browse mode workflow | Workflow Diagram | MEDIUM | Small | ✅ Completed | Filter → Browse → Filter |
-| **Phase 6: Remaining Utilities** | | | | | | | |
-| 6.1 | prdBattleDebugPanel.md | Debug panel | State Diagram | LOW | Minimal | ✅ Completed | Show/Hide + Content sel |
-| 6.2 | prdBattleLayoutEditor.md | Layout editing | Workflow Diagram | LOW | Small | ✅ Completed | Edit → Preview → Save |
-| 6.3 | prdBattleMarkup.md | HTML structure | Component Tree | LOW | Minimal | ✅ Completed | Structure diagram |
-| 6.4 | prdBattleQuick.md | Quick battle mode | Flow Diagram | MEDIUM | Small | ✅ Completed | If distinct from Classic |
-| 6.5 | prdCardCodes.md | Card code entry | Workflow Diagram | LOW | Minimal | ✅ Completed | Entry → Lookup |
-| 6.6 | prdCardInspector.md | Card inspector UI | Component Diagram | LOW | Minimal | ✅ Completed | 3/3 diagrams |
-| 6.7 | prdCardOfTheDay.md | COTD feature | Workflow Diagram | LOW | Minimal | ✅ Completed | 3/3 diagrams |
-| 6.8 | prdCharacterDesign.md | Character design | Visual Hierarchy | LOW | Minimal | ✅ Completed | 3/3 diagrams |
-| 6.9 | prdCodeStandards.md | Code organization | Hierarchy Diagram | LOW | Minimal | ✅ Completed | 3/3 diagrams |
-| 6.10 | prdDrawRandomCard.md | Random draw | Workflow Diagram | LOW | Minimal | ✅ Completed | 3/3 diagrams |
-| 6.11 | prdJudokaCard.md | Card component | Component Structure | LOW | Minimal | ✅ Completed | 3/3 diagrams |
-| 6.12 | prdLayoutDebugPanel.md | Layout debug UI | State Diagram | LOW | Minimal | ✅ Completed | 3/3 diagrams |
-| 6.13 | prdMockupViewer.md | Mockup viewer | Workflow Diagram | LOW | Minimal | ✅ Completed | 3/3 diagrams |
-| 6.14 | prdPRDViewer.md | PRD document viewer | Workflow Diagram | LOW | Minimal | ✅ Completed | 3/3 diagrams |
-| 6.15 | prdPseudoJapanese.md | Text transformation | Pipeline Diagram | LOW | Minimal | ✅ Completed | 3/3 diagrams |
-| 6.16 | prdRandomJudoka.md | Random judoka select | Workflow Diagram | LOW | Minimal | ✅ Completed | 3/3 diagrams |
-| 6.17 | prdTooltipViewer.md | Tooltip viewer | Utility Diagram | LOW | Minimal | ✅ Completed | 3/3 diagrams |
-| **Additional PRDs** | | | | | | | |
-| - | prdAIAgentWorkflows.md | AI agent orchestration | Workflow Diagram | MEDIUM | Medium | ◻️ Not Started | Phase 5 or later |
-| - | prdBattleLayoutEditor.md | Layout editor | Workflow | LOW | Small | ◻️ Not Started | Phase 6 |
-| - | prdUpdateJudoka.md | Form workflow (update) | Flowchart | LOW | Minimal | ◻️ Not Started | Phase 6 |
-| - | prdResetNavigation.md | Navigation reset | Flowchart | LOW | Minimal | ◻️ Not Started | Phase 6 |
-| - | prdTestMode.md | Test mode feature | State Diagram | MEDIUM | Small | ◻️ Not Started | Phase 5 or later |
-| - | prdUIDesignSystem.md | Design system | Component Catalog | MEDIUM | Medium | ◻️ Not Started | Phase 5 or later |
+| Phase                                  | PRD File                   | System/Feature                 | Diagram Type           | Priority | Effort  | Status         | Notes                        |
+| -------------------------------------- | -------------------------- | ------------------------------ | ---------------------- | -------- | ------- | -------------- | ---------------------------- |
+| **Phase 1: Foundational Systems**      |                            |                                |                        |          |         |                |                              |
+| 1.1                                    | prdArchitecture.md         | High-level system architecture | System Diagram         | CRITICAL | Medium  | ✅ Completed   | 5-7 components; data flow    |
+| 1.2                                    | prdGameModes.md            | Game mode selection and entry  | State/Flow Diagram     | CRITICAL | Medium  | ✅ Completed   | 7 modes; Entry/exit flows    |
+| 1.3                                    | prdBattleEngine.md         | Abstract vs Canonical states   | Mapping Diagram        | CRITICAL | Small   | ✅ Completed   | Clarification layer          |
+| 1.4                                    | prdBattleScoreboard.md     | Authority & Idempotency        | Metadata Only          | CRITICAL | Minimal | ✅ Completed   | Add test refs to existing    |
+| 1.5                                    | prdBattleClassic.md        | Initialization phases          | Sequence Diagram       | CRITICAL | Small   | ✅ Completed   | Optional: 5 phases           |
+| **Phase 2: Battle Variants**           |                            |                                |                        |          |         |                |                              |
+| 2.1                                    | prdBattleCLI.md            | CLI vs Classic Battle          | Comparative Sequence   | HIGH     | Medium  | ✅ Completed   | Same engine, different UI    |
+| 2.2                                    | prdBattleBandit.md         | One-armed-bandit mode          | Round Flowchart        | HIGH     | Small   | ✅ Completed   | Simplified game loop         |
+| 2.3                                    | prdTeamBattleRules.md      | Team battle rules              | Bout + Scoring SM      | CRITICAL | Small   | ✅ Completed   | Turn order + win condition   |
+| **Phase 3: Navigation & UI Systems**   |                            |                                |                        |          |         |                |                              |
+| 3.1                                    | prdHomePageNavigation.md   | Homepage 2×2 tile menu         | UI Flow Diagram        | HIGH     | Small   | ✅ Completed   | Entry point; responsive      |
+| 3.2                                    | prdNavigationMap.md        | Thematic map UI                | State Diagram          | HIGH     | Small   | ✅ Completed   | Map state + fallback         |
+| 3.3                                    | prdNavigationBar.md        | Navigation bar structure       | Component Tree         | HIGH     | Small   | ✅ Completed   | Hierarchy; responsive        |
+| 3.4                                    | prdSettingsMenu.md         | Settings & feature flags       | Decision Tree          | CRITICAL | Large   | ✅ Completed   | ~30 toggles; flag logic      |
+| 3.5                                    | prdTeamBattleSelection.md  | Team mode selection            | UI Flow Diagram        | MEDIUM   | Small   | ✅ Completed   | Gender routing               |
+| **Phase 4: Helper Systems & Features** |                            |                                |                        |          |         |                |                              |
+| 4.1                                    | prdBattleActionBar.md      | Control bar (7 buttons)        | State Machine          | HIGH     | Medium  | ✅ Completed   | Engine state → button states |
+| 4.2                                    | prdSnackbar.md             | Notification system            | Queue & Lifecycle      | MEDIUM   | Small   | ✅ Completed   | Stack logic; 3s auto-dismiss |
+| 4.3                                    | prdTooltipSystem.md        | In-context help tooltips       | Lifecycle Diagram      | MEDIUM   | Small   | ✅ Completed   | Trigger + lifecycle          |
+| 4.4                                    | prdBattleStateIndicator.md | Debug state badge              | State Update Diagram   | MEDIUM   | Minimal | ✅ Completed   | Simple; debug feature        |
+| 4.5                                    | prdVectorDatabaseRAG.md    | Vector search pipeline         | Flowchart              | HIGH     | Medium  | ✅ Completed   | Query → Search → Answer      |
+| **Phase 5: Content & Utilities**       |                            |                                |                        |          |         |                |                              |
+| 5.1                                    | prdDataSchemas.md          | Data relationships             | ER/Tree Diagram        | MEDIUM   | Small   | ✅ Completed   | Judoka → Cards → Stats       |
+| 5.2                                    | prdTestingStandards.md     | Test workflow                  | Validation Gates       | MEDIUM   | Small   | ✅ Completed   | Lint → Test → Merge          |
+| 5.3                                    | prdDevelopmentStandards.md | Development workflow           | Process Flowchart      | MEDIUM   | Small   | ✅ Completed   | Code → Standards → Merge     |
+| 5.4                                    | prdCountryPickerFilter.md  | Browse filter                  | Filter State Machine   | MEDIUM   | Small   | ✅ Completed   | Country selection            |
+| 5.5                                    | prdCardCarousel.md         | Card carousel UI               | State Machine          | MEDIUM   | Small   | ✅ Completed   | Navigation + boundaries      |
+| 5.6                                    | prdCreateJudoka.md         | Form workflow                  | Flowchart              | LOW      | Minimal | ✅ Completed   | Form → Validate → Save       |
+| 5.7                                    | prdMeditationScreen.md     | Quote display screen           | Screen Flow            | LOW      | Minimal | ✅ Completed   | Simple; zen mode             |
+| 5.8                                    | prdMysteryCard.md          | Card reveal mechanic           | State Diagram          | MEDIUM   | Small   | ✅ Completed   | Reveal animation + options   |
+| 5.9                                    | prdChangeLog.md            | Version timeline               | Timeline/Release Notes | LOW      | Minimal | ✅ Completed   | Chronological display        |
+| 5.10                                   | prdBrowseJudoka.md         | Browse mode workflow           | Workflow Diagram       | MEDIUM   | Small   | ✅ Completed   | Filter → Browse → Filter     |
+| **Phase 6: Remaining Utilities**       |                            |                                |                        |          |         |                |                              |
+| 6.1                                    | prdBattleDebugPanel.md     | Debug panel                    | State Diagram          | LOW      | Minimal | ✅ Completed   | Show/Hide + Content sel      |
+| 6.2                                    | prdBattleLayoutEditor.md   | Layout editing                 | Workflow Diagram       | LOW      | Small   | ✅ Completed   | Edit → Preview → Save        |
+| 6.3                                    | prdBattleMarkup.md         | HTML structure                 | Component Tree         | LOW      | Minimal | ✅ Completed   | Structure diagram            |
+| 6.4                                    | prdBattleQuick.md          | Quick battle mode              | Flow Diagram           | MEDIUM   | Small   | ✅ Completed   | If distinct from Classic     |
+| 6.5                                    | prdCardCodes.md            | Card code entry                | Workflow Diagram       | LOW      | Minimal | ✅ Completed   | Entry → Lookup               |
+| 6.6                                    | prdCardInspector.md        | Card inspector UI              | Component Diagram      | LOW      | Minimal | ✅ Completed   | 3/3 diagrams                 |
+| 6.7                                    | prdCardOfTheDay.md         | COTD feature                   | Workflow Diagram       | LOW      | Minimal | ✅ Completed   | 3/3 diagrams                 |
+| 6.8                                    | prdCharacterDesign.md      | Character design               | Visual Hierarchy       | LOW      | Minimal | ✅ Completed   | 3/3 diagrams                 |
+| 6.9                                    | prdCodeStandards.md        | Code organization              | Hierarchy Diagram      | LOW      | Minimal | ✅ Completed   | 3/3 diagrams                 |
+| 6.10                                   | prdDrawRandomCard.md       | Random draw                    | Workflow Diagram       | LOW      | Minimal | ✅ Completed   | 3/3 diagrams                 |
+| 6.11                                   | prdJudokaCard.md           | Card component                 | Component Structure    | LOW      | Minimal | ✅ Completed   | 3/3 diagrams                 |
+| 6.12                                   | prdLayoutDebugPanel.md     | Layout debug UI                | State Diagram          | LOW      | Minimal | ✅ Completed   | 3/3 diagrams                 |
+| 6.13                                   | prdMockupViewer.md         | Mockup viewer                  | Workflow Diagram       | LOW      | Minimal | ✅ Completed   | 3/3 diagrams                 |
+| 6.14                                   | prdPRDViewer.md            | PRD document viewer            | Workflow Diagram       | LOW      | Minimal | ✅ Completed   | 3/3 diagrams                 |
+| 6.15                                   | prdPseudoJapanese.md       | Text transformation            | Pipeline Diagram       | LOW      | Minimal | ✅ Completed   | 3/3 diagrams                 |
+| 6.16                                   | prdRandomJudoka.md         | Random judoka select           | Workflow Diagram       | LOW      | Minimal | ✅ Completed   | 3/3 diagrams                 |
+| 6.17                                   | prdTooltipViewer.md        | Tooltip viewer                 | Utility Diagram        | LOW      | Minimal | ✅ Completed   | 3/3 diagrams                 |
+| **Additional PRDs**                    |                            |                                |                        |          |         |                |                              |
+| -                                      | prdAIAgentWorkflows.md     | AI agent orchestration         | Workflow Diagram       | MEDIUM   | Medium  | ◻️ Not Started | Phase 5 or later             |
+| -                                      | prdBattleLayoutEditor.md   | Layout editor                  | Workflow               | LOW      | Small   | ◻️ Not Started | Phase 6                      |
+| -                                      | prdUpdateJudoka.md         | Form workflow (update)         | Flowchart              | LOW      | Minimal | ◻️ Not Started | Phase 6                      |
+| -                                      | prdResetNavigation.md      | Navigation reset               | Flowchart              | LOW      | Minimal | ◻️ Not Started | Phase 6                      |
+| -                                      | prdTestMode.md             | Test mode feature              | State Diagram          | MEDIUM   | Small   | ◻️ Not Started | Phase 5 or later             |
+| -                                      | prdUIDesignSystem.md       | Design system                  | Component Catalog      | MEDIUM   | Medium  | ◻️ Not Started | Phase 5 or later             |
 
 **Legend**:
 
@@ -234,7 +234,7 @@ After each phase completes, verify:
 
 **Final Verification** (all 49 diagrams complete):
 
-```bash
+````bash
 # Verify all PRD files now have Mermaid diagrams
 grep -r "^\`\`\`mermaid" design/productRequirementsDocuments/*.md | wc -l
 # Expected output: 65 (16 existing + 49 new = 65 total ```mermaid blocks)
@@ -249,7 +249,7 @@ done
 # Verify test links validity (sample random 10)
 # Manually check: [tests/path.js](tests/path.js) links resolve
 git ls-files tests/ | head -20  # Verify test files exist
-```
+````
 
 ---
 

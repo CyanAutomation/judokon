@@ -100,23 +100,23 @@ flowchart TD
     B -->|Valid?| C{Check Status}
     C -->|Valid| D[Extract Key-Value]
     C -->|Invalid| E["Show Parse Error<br/>Line/Column Number"]
-    
+
     D -->|Sort Keys| F[Populate Sidebar]
     F -->|Default Select| G[First Key]
     G -->|Render Preview| H[Show Markdown]
     H -->|Check Format| I{Valid Markdown?}
     I -->|Yes| J[Pretty Display]
     I -->|No| K["Warn:<br/>Malformed MD"]
-    
+
     J -->|Check Content| L{Empty/Bad?}
     K --> L
     L -->|Yes| M["Flag with<br/>Red Icon"]
     L -->|No| N["✅ Standard"]
-    
+
     E -->|Error Badge| O["User Sees<br/>Error"]
     M -->|Visual| P[Display]
     N -->|Visual| P
-    
+
     style A fill:#lightblue
     style B fill:#lightyellow
     style D fill:#lightgreen
@@ -141,30 +141,30 @@ stateDiagram-v2
     SidebarVisible: Zebra Striped
     SidebarVisible: ~300px Truncate
     SidebarVisible --> SearchReady
-    
+
     SearchReady: Input Ready
     SearchReady: Debounced
     SearchReady -->|Type Text| Searching
-    
+
     Searching: Filter Keys
     Searching: Match Key\|Body
     Searching: Update Results
     Searching -->|Matches| Filtered
     Searching -->|No Match| Empty
-    
+
     Filtered: Show Matches
     Filtered: Category Highlight
     Filtered -->|Click File| Selecting
-    
+
     Empty: "No Results"
     Empty -->|Clear Search| SearchReady
-    
+
     Selecting: Highlight Row
     Selecting: Load Preview
     Selecting -->|Update Preview| SidebarVisible
-    
+
     SidebarVisible --> [*]
-    
+
     style SidebarVisible fill:#lightgreen
     style SearchReady fill:#lightblue
     style Searching fill:#lightyellow
@@ -183,26 +183,26 @@ flowchart LR
     B -->|Long Value?| C{Length>300px?}
     C -->|Yes| D["Truncate+<br/>Add Disclosure"]
     C -->|No| E["Full Display"]
-    
+
     D -->|Click Details| F["Expand<br/>Full Value"]
     E --> G["Show Content"]
     F --> G
-    
+
     G -->|Copy Key| H["Copy to<br/>Clipboard"]
     G -->|Copy Body| I["Copy<br/>Content"]
-    
+
     H -->|Show Toast| J["✅ Copied!"]
     I -->|Show Toast| J
-    
+
     J -->|Highlight| K{Dark Mode?}
     K -->|Yes| L["Bright Color<br/>#Link"]
     K -->|No| M["Standard Color"]
-    
+
     L --> N[WCAG AA]
     M --> N
-    
+
     N -->|Ready| O["Next Tooltip"]
-    
+
     style A fill:#lightblue
     style B fill:#lightgreen
     style D fill:#lightyellow

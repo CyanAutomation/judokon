@@ -68,26 +68,26 @@ flowchart TD
     A["User Sees Quote<br/>English Default"] --> B{Conversion Ready?}
     B -->|Yes| C[Load JSON Map]
     B -->|No| D[Load Fallback]
-    
+
     C -->|Parse Mapping| E[Clean Input]
     E -->|Remove Unsupported| F[Map Characters]
     F -->|Character-by-Char| G{All Mapped?}
-    
+
     G -->|Yes| H[Build Pseudo-JP]
     G -->|No| I{Substitute?}
     I -->|Yes| J["Random Pseudo<br/>Char"]
     I -->|No| K[Skip Character]
-    
+
     J --> H
     K --> H
     H -->|Validate| L{Valid Output?}
     L -->|Yes| M[Display Converted]
     L -->|No| D
-    
+
     D -->|Static Fallback| N{Fallback Set?}
     N -->|Yes| O[Show Fallback]
     N -->|No| P[Show English]
-    
+
     style A fill:#lightblue
     style C fill:#lightyellow
     style E fill:#lightyellow
@@ -109,22 +109,22 @@ stateDiagram-v2
     English: Quote in English
     English: Default Display
     English -->|User Clicks Toggle| Transitioning
-    
+
     Transitioning: Fade Out 150ms
     Transitioning -->|Toggle Complete| Pseudo
-    
+
     Pseudo: Quote in Pseudo-JP
     Pseudo: Font: Mincho/Gothic
     Pseudo -->|User Clicks Toggle| Transitioning
-    
+
     Transitioning -->|Conversion Error| Error
     Error: Fallback Active
     Error -->|Retry| English
     Error -->|Close| [*]
-    
+
     English --> [*]
     Pseudo --> [*]
-    
+
     style English fill:#lightgreen
     style Pseudo fill:#lightgreen
     style Transitioning fill:#lightyellow
@@ -141,23 +141,23 @@ flowchart LR
     A[Quote Ready] -->|Try| B["Local JSON<br/>Conversion"]
     B -->|Success| C["✅ Use Result"]
     B -->|Fail| D{API Available?}
-    
+
     D -->|Test Only| E["Validate API<br/>Against Local"]
     D -->|No| F["Use Static<br/>Fallback"]
-    
+
     E -->|Match| G["✓ Accurate"]
     E -->|Mismatch| H["⚠️ Review<br/>Log Error"]
-    
+
     G -->|Production| I[Use Local]
     H -->|Log Data| J[Investigation]
     F -->|Empty/Null| K["Show English<br/>Quote"]
     F -->|Has Value| L["Show Fallback<br/>Pseudo-JP"]
-    
+
     C --> M[Display]
     I --> M
     L --> M
     K --> M
-    
+
     style A fill:#lightblue
     style B fill:#lightyellow
     style C fill:#lightgreen
