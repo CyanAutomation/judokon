@@ -8,12 +8,7 @@ import { dismissCountdownSnackbar } from "../CooldownRenderer.js";
 import { attachCountdownCoordinator } from "./countdownCoordinator.js";
 import { handleStatSelection } from "./selectionHandler.js";
 import * as roundManagerModule from "./roundManager.js";
-import {
-  onBattleEvent,
-  emitBattleEvent,
-  emitBattleEventWithAliases,
-  getBattleEventTarget
-} from "./battleEvents.js";
+import { onBattleEvent, emitBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import { EVENT_TYPES } from "./eventCatalog.js";
 import { battleLog } from "./battleLogger.js";
 import {
@@ -47,6 +42,7 @@ import {
   resolveOpponentPromptBuffer
 } from "./cooldownResolver.js";
 import { createPostResetScheduler } from "./frameScheduler.js";
+import { applyControlStateTransition } from "./uiStateReducer.js";
 
 /**
  * @summary Safety buffer exported for backward compatibility with existing imports.
@@ -382,26 +378,6 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000, options 
     container = typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
     if (container && typeof container.dataset !== "undefined") {
       container.dataset.selectionInProgress = "false";
-    }
-  } catch {}
-  // Emit a state change for fallback flows so a state listener can enable buttons.
-  // But don't re-emit if a selection is in progress.
-  try {
-    const selectionInProgress = container?.dataset?.selectionInProgress;
-    if (store?.roundReadyForInput === true && selectionInProgress !== "true") {
-      const roundsPlayed = Number(store?.roundsPlayed);
-      const roundIndex = Number.isFinite(roundsPlayed)
-        ? roundsPlayed
-        : Number.isFinite(roundNumber)
-          ? Math.max(0, roundNumber - 1)
-          : 0;
-      emitBattleEventWithAliases(EVENT_TYPES.STATE_TRANSITIONED, {
-        from: null,
-        to: "roundSelect",
-        context: { roundIndex },
-        catalogVersion: "fallback",
-        source: "roundUI.applyRoundUI"
-      });
     }
   } catch {}
 }
@@ -812,9 +788,7 @@ export function bindRoundUIEventHandlers() {
   bindRoundStarted();
   bindRoundResolved();
   onBattleEvent(EVENT_TYPES.STATE_TRANSITIONED, (event) => {
-    const { source, to } = event?.detail || {};
-    if (source !== "roundUI.applyRoundUI" || to !== "roundSelect") return;
-    emitBattleEvent("statButtons:enable");
+    applyControlStateTransition(event?.detail || {});
   });
   // Instrument statButtons enable/disable events to observe unexpected toggles
   try {
@@ -918,8 +892,6 @@ export function bindRoundUIEventHandlersDynamic() {
     handleStatSelectedEvent(event);
   });
   onBattleEvent(EVENT_TYPES.STATE_TRANSITIONED, (event) => {
-    const { source, to } = event?.detail || {};
-    if (source !== "roundUI.applyRoundUI" || to !== "roundSelect") return;
-    emitBattleEvent("statButtons:enable");
+    applyControlStateTransition(event?.detail || {});
   });
 }
