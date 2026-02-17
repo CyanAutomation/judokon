@@ -1,13 +1,16 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-const { capturedDeps, modalControl, initControl } = vi.hoisted(() => ({
+const { capturedDeps, modalControl, initControl, viewControl } = vi.hoisted(() => ({
   capturedDeps: { current: null },
   modalControl: {
     waitForCallback: false,
     releaseCallback: null
   },
   initControl: {
+    failWith: null
+  },
+  viewControl: {
     failWith: null
   }
 }));
@@ -51,7 +54,11 @@ vi.mock("../../../src/helpers/classicBattle/controller.js", () => ({
 vi.mock("../../../src/helpers/classicBattle/view.js", () => ({
   ClassicBattleView: class {
     bindController() {}
-    async init() {}
+    async init() {
+      if (viewControl.failWith) {
+        throw viewControl.failWith;
+      }
+    }
   }
 }));
 
@@ -98,6 +105,7 @@ describe("classic battle bootstrap wiring", () => {
     modalControl.releaseCallback = null;
     initControl.failWith = null;
     capturedDeps.current = null;
+    viewControl.failWith = null;
     delete window.battleReadyPromise;
   });
   test("injects waitForOpponentCard from runtime utility and uses the real implementation", async () => {
@@ -152,5 +160,16 @@ describe("classic battle bootstrap wiring", () => {
     await expect(battleClassic.readyPromise).rejects.toThrow("init failed");
 
     initControl.failWith = null;
+  });
+
+  test("rejects when view initialization fails", async () => {
+    viewControl.failWith = new Error("view init failed");
+
+    const { createBattleClassic } = await import("../../../src/helpers/classicBattle/bootstrap.js");
+
+    const battleClassic = createBattleClassic();
+    await expect(battleClassic.readyPromise).rejects.toThrow("view init failed");
+
+    viewControl.failWith = null;
   });
 });

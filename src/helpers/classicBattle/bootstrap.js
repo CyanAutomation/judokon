@@ -24,6 +24,51 @@ import { getBattleEventTarget } from "./battleEvents.js";
 import { waitForOpponentCard } from "../opponentCardWait.js";
 import { exposeLegacyReadinessForTests } from "./readinessCompat.js";
 
+const CLASSIC_BATTLE_BOOTSTRAP_FAILED_EVENT = "classicbattle:bootstrap-failed";
+
+function isVitestEnvironment() {
+  return typeof process !== "undefined" && process.env?.VITEST === "true";
+}
+
+function shouldLogFatalBootstrapFailure() {
+  if (!isVitestEnvironment()) {
+    return true;
+  }
+  return Boolean(process.env?.SHOW_TEST_LOGS);
+}
+
+function serializeBootstrapFailure(error) {
+  if (error instanceof Error) {
+    return { name: error.name, message: error.message, stack: error.stack };
+  }
+  return { name: "Error", message: String(error), stack: undefined };
+}
+
+function reportBootstrapFailure(error, phase) {
+  const detail = {
+    phase,
+    error,
+    timestamp: Date.now(),
+    serializedError: serializeBootstrapFailure(error)
+  };
+
+  try {
+    dispatchBattleIntent("engine.bootstrap.failure", detail);
+  } catch {}
+
+  if (canAccessWindow()) {
+    try {
+      window.__classicBattleBootstrapFailure = detail;
+      const FailureEvent = window.CustomEvent || CustomEvent;
+      window.dispatchEvent(new FailureEvent(CLASSIC_BATTLE_BOOTSTRAP_FAILED_EVENT, { detail }));
+    } catch {}
+  }
+
+  if (shouldLogFatalBootstrapFailure() && typeof console !== "undefined") {
+    console.error?.("[classicBattle.bootstrap] Fatal bootstrap failure", detail.serializedError);
+  }
+}
+
 /**
  * @returns {boolean} True if window is globally available and accessible
  */
@@ -230,8 +275,25 @@ function exposeDebugAPIToWindow(debugApi) {
 // call `setupClassicBattlePage` directly.
 onDomReady(async () => {
   // Expose the Classic Battle test API without coupling to the main bootstrap flow.
-  exposeClassicBattleTestAPI().catch(() => {});
+  const exposePromise = exposeClassicBattleTestAPI().catch((error) => {
+    reportBootstrapFailure(error, "test-api-exposure");
+    throw error;
+  });
 
-  // Fire-and-forget; errors are swallowed to avoid noisy failures on page load.
-  setupClassicBattlePage().catch(() => {});
+  exposePromise.catch(() => {});
+  if (canAccessWindow()) {
+    window.__classicBattleTestApiExposurePromise = exposePromise;
+  }
+
+  const startPromise = setupClassicBattlePage().catch((error) => {
+    reportBootstrapFailure(error, "setup-classic-battle-page");
+    throw error;
+  });
+
+  // Keep runtime unhandled-rejection noise controlled while preserving a rejected
+  // promise for tests/hooks via `window.__classicBattleBootstrapStartPromise`.
+  startPromise.catch(() => {});
+  if (canAccessWindow()) {
+    window.__classicBattleBootstrapStartPromise = startPromise;
+  }
 });
