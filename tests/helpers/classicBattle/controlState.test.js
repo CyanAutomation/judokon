@@ -250,4 +250,44 @@ describe("classicBattle battle control state", () => {
     expect(clickSpy).not.toHaveBeenCalled();
     detach();
   });
+
+  it("only control.state.changed mutates battle mode attributes/classes", async () => {
+    const { __resetBattleEventTarget, emitBattleEvent } = await import(
+      "../../../src/helpers/classicBattle/battleEvents.js"
+    );
+    const { EVENT_TYPES } = await import("../../../src/helpers/classicBattle/eventCatalog.js");
+    const { bindRoundFlowController } = await import(
+      "../../../src/helpers/classicBattle/roundFlowController.js"
+    );
+
+    __resetBattleEventTarget();
+    bindRoundFlowController();
+
+    const opponentCard = document.createElement("div");
+    opponentCard.id = "opponent-card";
+    opponentCard.classList.add("opponent-hidden");
+    document.body.appendChild(opponentCard);
+
+    document.body.dataset.battleState = "roundWait";
+    document.body.setAttribute("data-battle-state", "roundWait");
+    document.body.classList.add("battle-mode-roundWait");
+    document.body.dataset.uiModeClass = "battle-mode-roundWait";
+
+    emitBattleEvent("round.evaluated", { winner: "player" });
+    emitBattleEvent("match.concluded", { scores: { player: 1, opponent: 0 } });
+    emitBattleEvent("timer.roundExpired", { secondsRemaining: 0 });
+
+    expect(document.body.dataset.battleState).toBe("roundWait");
+    expect(document.body.getAttribute("data-battle-state")).toBe("roundWait");
+    expect(document.body.dataset.uiModeClass).toBe("battle-mode-roundWait");
+    expect(document.body.classList.contains("battle-mode-roundWait")).toBe(true);
+
+    emitBattleEvent(EVENT_TYPES.STATE_TRANSITIONED, { from: "roundWait", to: "roundResolve" });
+
+    expect(document.body.dataset.battleState).toBe("roundResolve");
+    expect(document.body.getAttribute("data-battle-state")).toBe("roundResolve");
+    expect(document.body.dataset.uiModeClass).toBe("battle-mode-roundResolve");
+    expect(document.body.classList.contains("battle-mode-roundResolve")).toBe(true);
+    expect(opponentCard.classList.contains("opponent-hidden")).toBe(false);
+  });
 });
