@@ -18,6 +18,7 @@ import { clearScheduled } from "./timerSchedule.js";
 import snackbarManager, { SnackbarPriority } from "../SnackbarManager.js";
 import { isEnabled } from "../featureFlags.js";
 import { getOpponentDelay } from "./snackbar.js";
+import { setOpponentCardVisibility } from "./uiStateReducer.js";
 let opponentSnackbarId = 0;
 let pendingOpponentCardData = null;
 let pendingOpponentCardDataSequence = 0;
@@ -87,8 +88,8 @@ function finalizeRevealContainerState(container, options = {}) {
   const { clearPlaceholder = false, setAriaLabel = false } = options;
   try {
     container.classList.remove("is-obscured");
-    container.classList.remove("opponent-hidden");
   } catch {}
+  setOpponentCardVisibility(container, { visible: true });
   if (clearPlaceholder) {
     try {
       const placeholder = container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`);
@@ -321,7 +322,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       if (container) {
         lastOpponentRevealTimestamp = now();
         container.classList.add("is-obscured");
-        container.classList.remove("opponent-hidden");
+        setOpponentCardVisibility(container, { visible: true });
       }
     } catch {}
     try {

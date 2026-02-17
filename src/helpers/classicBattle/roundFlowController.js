@@ -6,6 +6,7 @@ import { getOpponentDelay } from "./snackbar.js";
 import { getSelectionDelayOverride } from "./selectionDelayCalculator.js";
 import { EVENT_TYPES } from "./eventCatalog.js";
 import { ensureClassicBattleScheduler } from "./timingScheduler.js";
+import { applyControlStateTransition } from "./uiStateReducer.js";
 
 /**
  * Bind round flow UI handlers for engine-driven events.
@@ -82,7 +83,9 @@ export function bindRoundFlowController() {
   });
 
   onBattleEvent(EVENT_TYPES.STATE_TRANSITIONED, (event) => {
-    const toState = event?.detail?.to;
+    const detail = event?.detail || {};
+    applyControlStateTransition(detail);
+    const toState = detail?.to;
     if (toState !== "roundDisplay" && toState !== "evaluation") {
       return;
     }
