@@ -770,6 +770,7 @@ export class BattleEngine {
     this.lastInterruptReason = "";
     this.lastError = "";
     this.lastModification = null;
+    this._selectionLockSequence = 0;
     this._currentStats = Object.freeze({});
     this.timer = new TimerController();
   }
