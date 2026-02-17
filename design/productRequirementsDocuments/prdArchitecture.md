@@ -301,5 +301,6 @@ Component modules own DOM rendering concerns and expose internal state via `data
 - `roundManager.startRound(store)` draws cards and initializes round UI. After resolution, `roundManager.startCooldown(store)` computes cooldown timing and schedules Next-button enablement before dispatching `ready` for the next round.
 - Modules outside the orchestrator interact with the machine only through `dispatchBattleEvent` exported by `orchestrator.js`. The machine instance remains private (tests can access it through dedicated getters when required).
 - The internal event bus (`classicBattle/battleEvents.js`) is the single source of truth for battle events; DOM events are not dispatched in hot paths.
+- Event payload contract: emitters clone payloads before dispatch so subscribers cannot mutate emitter-owned state. In non-production environments, payloads are deep-frozen to fail fast on mutation attempts.
 - **Feature-flag boundary policy (Classic Battle):** flags may influence only pre-dispatch intent shaping (for optional UX events such as delay/telemetry/autoselect intent) and UI rendering choices.
 - Core transition states (`selection`/`evaluation`/`cooldown`/`match end`) must remain flag-agnostic in reducers and state tables so transition sequences are deterministic across flag on/off variants.

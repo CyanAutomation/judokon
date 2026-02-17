@@ -2,6 +2,12 @@ import { isConsoleMocked, shouldShowTestLogs } from "../testLogGate.js";
 /**
  * Lightweight event bus for Classic Battle interactions.
  *
+ * Event payload immutability contract:
+ * - Emitted payloads are cloned before dispatch so subscribers never receive a live
+ *   reference to emitter-owned objects.
+ * - In non-production environments (including Vitest), payloads are deep-frozen to
+ *   fail fast when subscribers attempt mutation.
+ *
  * @pseudocode
  * 1. Build bus instances with their own EventTarget and dedupe memory.
  * 2. Expose a module-level active bus for backwards-compatible helpers.
@@ -10,6 +16,7 @@ import { isConsoleMocked, shouldShowTestLogs } from "../testLogGate.js";
 import { logEventEmit, createComponentLogger } from "./debugLogger.js";
 import { setMaxListenersIfNode } from "../nodeEventsShim.js";
 import { emitBattleEventWithAliases as emitBattleEventWithAliasesCore } from "./eventAliases.js";
+import { createImmutableEventPayload } from "./eventPayloadImmutability.js";
 
 const eventLogger = createComponentLogger("BattleEvents");
 const DISPATCH_PATCHED_KEY = "__classicBattleDispatchPatched";
@@ -218,16 +225,18 @@ export function createBattleEventBus(options = {}) {
           return;
         }
 
-        logEventEmit(type, detail, { timestamp: Date.now() });
-        target.dispatchEvent(new CustomEvent(type, { detail }));
+        const immutableDetail = createImmutableEventPayload(detail);
+        logEventEmit(type, immutableDetail, { timestamp: Date.now() });
+        target.dispatchEvent(new CustomEvent(type, { detail: immutableDetail }));
       } catch (error) {
         eventLogger.error(`Failed to emit event "${type}":`, error);
       }
     },
     emitWithAliases(type, detail, options = {}) {
       try {
-        eventLogger.event(`Emitting with aliases: ${type}`, detail, { options });
-        emitBattleEventWithAliasesCore(type, detail, options, target);
+        const immutableDetail = createImmutableEventPayload(detail);
+        eventLogger.event(`Emitting with aliases: ${type}`, immutableDetail, { options });
+        emitBattleEventWithAliasesCore(type, immutableDetail, options, target);
       } catch (error) {
         eventLogger.error(`Failed to emit aliased event "${type}":`, error);
         bus.emit(type, detail);

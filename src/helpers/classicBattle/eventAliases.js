@@ -1,4 +1,5 @@
 import { getBattleEventTarget } from "./battleEvents.js";
+import { createImmutableEventPayload } from "./eventPayloadImmutability.js";
 import {
   EVENT_ALIASES as EVENT_ALIASES_FROM_CATALOG,
   LEGACY_EVENT_DEPRECATIONS
@@ -96,7 +97,9 @@ export function emitEventWithAliases(eventTarget, eventName, payload, options = 
   const { skipAliases = false, warnDeprecated = true } = options;
 
   // Always emit the new standardized event name
-  eventTarget.dispatchEvent(new CustomEvent(eventName, { detail: payload }));
+  eventTarget.dispatchEvent(
+    new CustomEvent(eventName, { detail: createImmutableEventPayload(payload) })
+  );
 
   // Emit backward compatibility aliases unless skipped
   if (!skipAliases) {
@@ -104,7 +107,9 @@ export function emitEventWithAliases(eventTarget, eventName, payload, options = 
 
     for (const alias of aliases) {
       // Emit the deprecated alias event
-      eventTarget.dispatchEvent(new CustomEvent(alias, { detail: payload }));
+      eventTarget.dispatchEvent(
+        new CustomEvent(alias, { detail: createImmutableEventPayload(payload) })
+      );
 
       // Warn about deprecated usage in development
       const isDev =
