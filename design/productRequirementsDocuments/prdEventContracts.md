@@ -1,8 +1,12 @@
 # Event Contracts PRD
 
+**Diagram Verification:** Last verified 2026-02-17 | Current state and aspirational roadmap clearly separated
+
 ## TL;DR
 
 Defines the canonical event names, payload schemas, emitters, consumers, and versioning policy used across JU-DO-KON!. Tests, the CLI, and integrations rely on these events; this document is the single source of truth.
+
+⚠️ **Important**: This PRD documents both **current implemented behavior** and **aspirational future enhancements**. See [distinctions below](#aspirational-vs-current-behavior) for clarity on which sections describe active code vs planned roadmap.
 
 > **Status**: This PRD fully replaces the retired `design/eventNamingAudit.md` inventory. All event naming guidance, audit tables, and migration checklists now live here.
 
@@ -20,6 +24,32 @@ Event names and payloads are often used as implicit contracts between modules. W
 
 - As a test author, I want stable event names so Playwright tests don't flake.
 - As an integration consumer, I want payload schemas so I can parse events reliably.
+
+---
+
+## ⚠️ Aspirational vs Current Behavior
+
+This PRD documents both **currently implemented features** and **aspirational future enhancements** (planned roadmap). To avoid confusion:
+
+### Current (Implemented)
+
+- ✅ Canonical event names (e.g., `round.started`, `round.selection.locked`, `round.evaluated`)
+- ✅ Full emitter inventory (8 modules emitting ~42 unique events)
+- ✅ Consumer contract mapping (5 primary consumer modules)
+- ✅ Event payload immutability contract
+- ✅ Breaking vs non-breaking change classification flowchart (describes intended policy)
+- ✅ Legacy compatibility aliases (eventAliases.js for backward compatibility)
+
+### Aspirational/Planned (Not Yet Implemented)
+
+- 🔮 **ProposedDual state & 1-cycle compatibility window** — Dual-emission of old and new event names during migration periods
+- 🔮 **Telemetry tracking for consumer errors** — Monitoring adoption of new event names
+- 🔮 **Provisional vs Stable contract durability markers** — Formal experimental/stable tagging at event introduction
+- 🔮 **Event versioning state machine** — Full lifecycle with intermediate transitions (not yet active)
+
+**Key Identifier**: Sections marked with **🟠 Status: ASPIRATIONAL** or **🔮 Future enhancement** describe roadmap items, not current behavior. Current implementation uses a simplified path: Active → Deprecated → Removed (no intermediate states).
+
+---
 
 ## Prioritized Functional Requirements
 

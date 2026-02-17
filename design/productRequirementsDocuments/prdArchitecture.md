@@ -1,5 +1,7 @@
 # Architecture PRD
 
+**Diagram Verification**: Last verified 2026-02-17 | Mermaid diagrams reviewed for accuracy against current codebase
+
 ## TL;DR
 
 This PRD captures the authoritative architecture decisions and component contracts for JU-DO-KON!. It defines system boundaries, responsibilities, and stable public contracts used by other PRDs, tests, and integrations.
@@ -25,7 +27,7 @@ flowchart TB
 
     subgraph Core["Core Game Logic"]
         Engine["Battle Engine<br/>(BattleEngine.js)"]
-        Facade["Engine Facade<br/>(battleEngineFacade.js)"]
+        Facade["Engine Facade<br/>(src/helpers/api/battleUI.js)"]
     end
 
     subgraph Data["Data Layer"]

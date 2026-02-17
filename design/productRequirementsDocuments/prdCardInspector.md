@@ -1,5 +1,7 @@
 # Card Inspector PRD
 
+**Diagram Verification:** Last verified 2026-02-17 | Panel state machine clarified regarding native `<details>` element use
+
 ## Problem Statement
 
 Developers, QA testers, and advanced users need a fast, reliable way to inspect the raw JSON data behind each judoka card in JU-DO-KON! for debugging, validation, and troubleshooting. The current process of using browser dev tools is slow and error-prone, especially as card content and logic rapidly evolve. An in-game inspector panel will accelerate iteration, improve QA coverage, and reduce development friction.
@@ -121,6 +123,8 @@ stateDiagram-v2
 
 **Panel State Transitions:**
 Each JSON panel operates independently through a state machine managing expansion/collapse and error states. Panels start collapsed, animate smoothly on interaction, and mirror the toggle's enabled/disabled state.
+
+> **Implementation Note**: The state diagram above represents the conceptual behavior. The actual implementation uses HTML's native `<details>` element for collapse/expand functionality, which provides semantic HTML, native keyboard support, and smooth built-in animations. The `<details>` element natively handles the Hidden ↔ Expanded transitions when users click the disclosure triangle; CSS handles visual styling and the `<summary>` element acts as the disclosure control.
 
 ### 6.6.3: Error Handling & Fallback Strategy
 

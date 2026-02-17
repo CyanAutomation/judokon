@@ -1,5 +1,7 @@
 # PRD: Layout Editor
 
+**Diagram Verification:** Last verified 2026-02-17 | Import/export formats audited against actual implementation
+
 ## Overview
 
 A browser-based layout editor for JU-DO-KON! that allows developers, QA agents, and contributors to view, edit, and create battle mode layouts.
@@ -201,20 +203,28 @@ graph LR
     style P fill:lightgreen
     style J fill:lightsalmon
     style L fill:lightsalmon
+    style C fill:#ffffcc
+    style E fill:#ffffcc
+    style O fill:#ffffcc
 ```
 
 **Input Formats:**
 
-- ESM `.layout.js` module (dynamic import)
-- JSON `.layout.json` file (parse)
-- ASCII text (reconstruct from visual)
-- localStorage draft (recover unsaved work)
+- ✅ **JSON `.layout.json` file** — IMPLEMENTED: File upload with JSON parsing
+- ✅ **JSON text (paste)** — IMPLEMENTED: Direct textarea paste + parse
+- ✅ **localStorage draft** — IMPLEMENTED: Recover unsaved work from editor session
+- ⚠️ **ESM `.layout.js` module** — ASPIRATIONAL: Dynamic import planned but not yet available
+- ⚠️ **ASCII text** — ASPIRATIONAL: ASCII-to-coordinates reconstruction planned but not yet available
 
 **Output Formats:**
 
-- JSON: structuring for runtime import
-- ASCII: documentation and CI snapshots
-- ESM: ready-to-use `.layout.js` module
+- ✅ **JSON** — IMPLEMENTED: Structured export, download or copy to clipboard
+- ✅ **ASCII** — IMPLEMENTED: Visual grid representation, available in modal + download
+- ⚠️ **ESM** — ASPIRATIONAL: Ready-to-use `.layout.js` module export planned but not yet available
+
+**Status Notes:**
+
+The yellow boxes (C, E, O) in the diagram above represent aspirational input/output formats that are planned for future enhancement but not yet implemented. The diagram shows the intended end-state architecture; for current capabilities, see implementation status above.
 
 ---
 

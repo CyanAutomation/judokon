@@ -2,7 +2,8 @@
 
 **Game Mode ID:** `1`  
 **Entry Point:** `battleClassic.html`  
-**Shares Engine With:** Battle Engine Core (see [prdBattleEngine.md](prdBattleEngine.md))
+**Shares Engine With:** Battle Engine Core (see [prdBattleEngine.md](prdBattleEngine.md))  
+**Diagram Verification:** Last verified 2026-02-17 | Bootstrap initialization and snackbar event flow reviewed
 
 ---
 
@@ -133,10 +134,17 @@ flowchart LR
 - ✅ **Wire stat buttons BEFORE match start** — needed for gameplay from round 1
 - ❌ **DO NOT wire control buttons before match start** — buttons are replaced during Phase 5, losing handlers
 - ✅ **Wire control buttons AFTER match start** — prevents DOM replacement issues
+- ⚠️ **CRITICAL: Register round UI event handlers DURING Phase 4** — the `bindRoundUIEventHandlersDynamic()` call is essential for snackbar dismissal on round advancement
 
 > **Why this order matters**: During Phase 5 (`initializeMatchStart`), the round selection modal is shown. If the Quit or Next buttons are wired before this phase, their event handlers will be lost when the DOM elements are replaced by the modal. Therefore, these buttons must be wired AFTER Phase 5.
 
-**Test Coverage**: Verified by: [../../tests/classicBattle/quit-flow.test.js](../../tests/classicBattle/quit-flow.test.js) — validates quit button handler persistence; [../../tests/classicBattle/element-identity.test.js](../../tests/classicBattle/element-identity.test.js) — ensures buttons maintain identity across DOM replacements
+> **Snackbar Dismissal Handler**: The `bindRoundUIEventHandlersDynamic()` call in `src/helpers/classicBattle/bootstrap.js` (line 79) registers the `round.start` event handler that **dismisses countdown and opponent snackbars** when advancing to the next round. Without this handler, snackbars ("Opponent is choosing...", "You picked: X", countdown timers) will persist across rounds, creating visual clutter and confusion. This registration happens during Phase 4 and must occur before gameplay begins. See [Snackbar Dismissal Event Flow](#event-flow-snackbar-dismissal) for detailed event sequencing.
+
+**Test Coverage**:
+
+- Verified by: [../../tests/classicBattle/quit-flow.test.js](../../tests/classicBattle/quit-flow.test.js) — validates quit button handler persistence
+- [../../tests/classicBattle/element-identity.test.js](../../tests/classicBattle/element-identity.test.js) — ensures buttons maintain identity across DOM replacements
+- [../../tests/helpers/classicBattle/bootstrap-event-handlers.test.js](../../tests/helpers/classicBattle/bootstrap-event-handlers.test.js) — verifies snackbar dismissal handler registration (CRITICAL)
 
 ### Round UI Flow
 
@@ -240,6 +248,24 @@ sequenceDiagram
 - **Legacy compatibility aliases (implementation note only):** `statSelected`, `roundResolved`
 
 > **Note**: The Orchestrator acts as the authority broker between the UI and Engine. All stat selection events and control commands flow through the Orchestrator to maintain separation of concerns. See [Event Authority Sequence Diagram](prdBattleEngine.md#event-authority-sequence-diagram) for more details on the 3-hop event propagation pattern.
+
+#### Event Flow: Snackbar Dismissal
+
+**Critical Path**: When a new round begins (`round.started` event), all snackbars from the previous round must be dismissed to avoid visual clutter. This is accomplished via the **`bindRoundUIEventHandlersDynamic()` handler** registered during Phase 4 initialization.
+
+**Flow**:
+
+1. Phase 4 (during bootstrap) → `bindRoundUIEventHandlersDynamic()` is called (line 79 of `src/helpers/classicBattle/bootstrap.js`)
+2. This registers a listeners on `round.start` event that clears the snackbar:
+   - Dismisses countdown timer snackbar from previous cooldown
+   - Dismisses "Opponent is choosing..." snackbar
+   - Dismisses result snackbar ("You Won", "You Lost", "Draw")
+   - Clears `#round-message` to reset state for next round message
+3. New round begins with "Choose a stat" snackbar displayed fresh
+
+**Why this matters**: If `bindRoundUIEventHandlersDynamic()` is not called or is called at the wrong phase, snackbars persist across rounds, creating visual confusion and potentially blocking UI interaction. The handler **must be wired during Phase 4** (before match start) to take effect from round 1 onward. See **[Initialization Phases](#initialization-phases-sequence)** for timing requirements.
+
+**Test Coverage**: Verified by `tests/helpers/classicBattle/bootstrap-event-handlers.test.js`
 
 **Key branches:**
 
