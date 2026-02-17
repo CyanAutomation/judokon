@@ -79,4 +79,32 @@ describe("classic battle orchestrator UI events", () => {
     expect(document.body.dataset.uiModeClass).toBe("battle-mode-roundDisplay");
     expect(document.body.classList.contains("battle-mode-roundDisplay")).toBe(true);
   });
+
+  it("applies control transition once when flow and round UI handlers are both bound", async () => {
+    const { __resetBattleEventTarget, emitBattleEvent, onBattleEvent } = await import(
+      "../../../src/helpers/classicBattle/battleEvents.js"
+    );
+    const { EVENT_TYPES } = await import("../../../src/helpers/classicBattle/eventCatalog.js");
+    const { bindRoundFlowController } = await import(
+      "../../../src/helpers/classicBattle/roundFlowController.js"
+    );
+    const { bindRoundUIEventHandlersDynamic } = await import(
+      "../../../src/helpers/classicBattle/roundUI.js"
+    );
+
+    __resetBattleEventTarget();
+    bindRoundFlowController();
+    bindRoundUIEventHandlersDynamic();
+
+    document.body.innerHTML = '<div id="opponent-card" class="opponent-hidden"></div>';
+
+    const disableSpy = vi.fn();
+    onBattleEvent("statButtons:disable", disableSpy);
+
+    emitBattleEvent(EVENT_TYPES.STATE_TRANSITIONED, { from: "roundSelect", to: "roundDisplay" });
+
+    expect(disableSpy).toHaveBeenCalledTimes(1);
+    expect(document.body.dataset.battleState).toBe("roundDisplay");
+    expect(document.body.classList.contains("battle-mode-roundDisplay")).toBe(true);
+  });
 });
