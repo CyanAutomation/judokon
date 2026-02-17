@@ -2719,8 +2719,10 @@ export async function handleRoundOverKey(key) {
       emitBattleEvent("outcomeConfirmed");
     } catch {}
     try {
-      await dispatchIntent("continue");
-    } catch {}
+      Promise.resolve(dispatchIntent("continue")).catch(recordDispatchError);
+    } catch (err) {
+      recordDispatchError(err);
+    }
     return true;
   }
   return false;
@@ -2754,8 +2756,10 @@ export async function handleCooldownKey(key) {
   if (key === "enter" || key === " ") {
     clearCooldownTimers();
     try {
-      await dispatchIntent("ready");
-    } catch {}
+      Promise.resolve(dispatchIntent("ready")).catch(recordDispatchError);
+    } catch (err) {
+      recordDispatchError(err);
+    }
     return true;
   }
   return false;
@@ -2899,11 +2903,11 @@ function recordDispatchError(err) {
  * Dispatch continue on round over.
  *
  * @pseudocode
- * dispatchIntent("continue")
+ * await dispatchIntent("continue")
  */
-function advanceRoundOver() {
+async function advanceRoundOver() {
   try {
-    dispatchIntent("continue");
+    await dispatchIntent("continue");
   } catch (err) {
     recordDispatchError(err);
   }
@@ -2914,12 +2918,12 @@ function advanceRoundOver() {
  *
  * @pseudocode
  * clearCooldownTimers()
- * dispatchIntent("ready")
+ * await dispatchIntent("ready")
  */
-function advanceCooldown() {
+async function advanceCooldown() {
   clearCooldownTimers();
   try {
-    dispatchIntent("ready");
+    await dispatchIntent("ready");
   } catch (err) {
     recordDispatchError(err);
   }
@@ -2949,7 +2953,7 @@ function onClickAdvance(event) {
   const stateName = document.body?.dataset?.battleState || "";
   const handler = stateAdvanceHandlers[stateName];
   if (!handler) return;
-  handler();
+  Promise.resolve(handler()).catch(recordDispatchError);
 }
 
 // Phase 4: Removed handleScoreboardShowMessage and handleScoreboardClearMessage
@@ -3196,10 +3200,10 @@ function ensureNextRoundButton() {
     btn.className = "primary-button";
     btn.textContent = "Next";
     btn.setAttribute("aria-label", "Continue to next round");
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
       clearCooldownTimers();
       try {
-        dispatchIntent("continue");
+        await dispatchIntent("continue");
       } catch {}
     });
     section.appendChild(btn);
