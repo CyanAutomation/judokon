@@ -157,6 +157,7 @@ export class BattleEngine {
     this.lastModification = null;
     this._currentStats = Object.freeze({});
     this._initialConfig = { pointsToWin, maxRounds, stats, debugHooks, seed: this.seed };
+    this._selectionLockSequence = 0;
     return emitter || new SimpleEmitter();
   }
 
@@ -320,6 +321,26 @@ export class BattleEngine {
    */
   resumeTimer() {
     engineResumeTimer(this);
+  }
+
+  /**
+   * Request a lock acknowledgement for a stat selection intent.
+   *
+   * @pseudocode
+   * 1. Increment the internal selection lock sequence.
+   * 2. Return an accepted lock result payload for orchestrator transition gating.
+   *
+   * @param {{statKey?: string, source?: string}} [selection]
+   * @returns {{accepted: boolean, lockId: string, statKey: string|null, source: string}}
+   */
+  requestSelectionLock(selection = {}) {
+    this._selectionLockSequence += 1;
+    return {
+      accepted: true,
+      lockId: `selection-lock-${this._selectionLockSequence}`,
+      statKey: typeof selection?.statKey === "string" ? selection.statKey : null,
+      source: selection?.source || "player"
+    };
   }
 
   /**
@@ -1112,6 +1133,17 @@ export const pauseTimer = () => requireEngine().pauseTimer();
  * @returns {void}
  */
 export const resumeTimer = () => requireEngine().resumeTimer();
+
+/**
+ * Request engine acknowledgement for a selection intent lock.
+ *
+ * @pseudocode
+ * 1. Delegate to `battleEngine.requestSelectionLock(...args)`.
+ *
+ * @param {...any} args
+ * @returns {{accepted: boolean, lockId: string, statKey: string|null, source: string}}
+ */
+export const requestSelectionLock = (...args) => requireEngine().requestSelectionLock(...args);
 
 /**
  * Forward stat selection to the engine which computes outcome and updates scores.

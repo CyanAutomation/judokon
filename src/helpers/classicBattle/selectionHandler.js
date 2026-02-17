@@ -671,7 +671,7 @@ export function cleanupTimers(store) {
  * Emit the selection event and apply test-mode shortcuts.
  *
  * @pseudocode
- * 1. Emit `statSelected` via `emitBattleEvent`.
+ * 1. Emit `statSelected` intent event.
  * 2. In Vitest, clear the next-round timer and round message elements.
  * 3. Dynamically show the opponent delay snackbar.
  *
@@ -679,6 +679,7 @@ export function cleanupTimers(store) {
  * @param {string} stat - Chosen stat key.
  * @param {number} playerVal - Player's stat value.
  * @param {number} opponentVal - Opponent's stat value.
+ * @returns {Record<string, any>} Selection intent payload.
  */
 async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
   // Delay opponent message when not using direct resolution to let orchestrator handle countdown
@@ -692,11 +693,8 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
   try {
     document.body?.setAttribute?.("data-stat-selected", "true");
   } catch {}
-  emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal, opts: eventOpts });
-  // PRD taxonomy: mirror selection lock event
-  try {
-    emitBattleEvent("round.selection.locked", { statKey: stat, source: selectionSource });
-  } catch {}
+  const selectionIntentPayload = { store, stat, playerVal, opponentVal, opts: eventOpts };
+  emitBattleEvent("statSelected", selectionIntentPayload);
 
   // Emit a roundReset signal immediately after selection to allow UI to clear
   // previous-round artifacts deterministically before resolution proceeds.
@@ -710,6 +708,7 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
     }
   } catch {}
   // Timer clearing and message display handled by event orchestrator
+  return selectionIntentPayload;
 }
 
 /**
@@ -779,7 +778,13 @@ export async function dispatchStatSelected(store, stat, playerVal, opponentVal, 
   });
 
   cleanupTimers(store);
-  await emitSelectionEvent(store, stat, playerVal, opponentVal, opts);
+  const selectionIntentPayload = await emitSelectionEvent(
+    store,
+    stat,
+    playerVal,
+    opponentVal,
+    opts
+  );
 
   logSelectionDebug("[dispatchStatSelected] After emitSelectionEvent:", {
     storeSelectionMade: store.selectionMade,
@@ -792,7 +797,7 @@ export async function dispatchStatSelected(store, stat, playerVal, opponentVal, 
       logSelectionDebug("[dispatchStatSelected] Returning false (forceDirectResolution)");
       return false;
     }
-    const result = await dispatchBattleEvent("statSelected");
+    const result = await dispatchBattleEvent("statSelected", selectionIntentPayload);
     logSelectionDebug("[dispatchStatSelected] dispatchBattleEvent returned:", result);
     return result;
   } catch (error) {

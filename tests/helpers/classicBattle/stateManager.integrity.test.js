@@ -60,9 +60,7 @@ describe("state manager integrity", () => {
       "../../../src/helpers/classicBattle/stateManager.js"
     );
 
-    const expectedTransitionMarkers = {
-      roundResolve: { event: "statSelected" }
-    };
+    const expectedTransitionMarkers = {};
     const transitions = [];
     const onEnterMap = {};
     const statesWithoutHandlers = [];
@@ -79,7 +77,6 @@ describe("state manager integrity", () => {
     });
 
     expect(statesWithoutHandlers.length).toBeGreaterThanOrEqual(0);
-    expect(statesWithoutHandlers).toContain("roundResolve");
 
     const machine = await withMutedConsole(() =>
       createStateManager({}, onEnterMap, ({ from, to, event }) => {

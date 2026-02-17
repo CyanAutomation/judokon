@@ -48,7 +48,7 @@ export const EVENT_ALIASES = Object.freeze({
   [EVENT_TYPES.STATE_ROUND_STARTED]: ["roundStarted", "round.started"],
   [EVENT_TYPES.STATE_TRANSITIONED]: ["control.state.changed"],
   [EVENT_TYPES.STATE_MATCH_CONCLUDED]: ["match.concluded"],
-  [EVENT_TYPES.PLAYER_STAT_SELECTED]: ["statSelected"],
+  [EVENT_TYPES.PLAYER_STAT_SELECTED]: ["statSelected", "intent.selectStat"],
   [EVENT_TYPES.PLAYER_SELECTION_STALLED]: ["statSelectionStalled"],
   [EVENT_TYPES.SCOREBOARD_MESSAGE_SHOWN]: ["scoreboardShowMessage"],
   [EVENT_TYPES.SCOREBOARD_MESSAGE_CLEARED]: ["scoreboardClearMessage"],
