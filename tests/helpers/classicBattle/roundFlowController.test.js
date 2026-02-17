@@ -8,6 +8,7 @@ const onBattleEventMock = vi.fn((type, handler) => {
   handlerRegistry.set(type, handler);
 });
 const emitBattleEventMock = vi.fn();
+const sharedEventTarget = new EventTarget();
 
 const getSelectionDelayOverrideMock = vi.fn(() => 25);
 const getOpponentDelayMock = vi.fn(() => 5);
@@ -19,7 +20,7 @@ const handleRoundResolvedEventMock = vi.fn(async () => {});
 vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
   onBattleEvent: onBattleEventMock,
   emitBattleEvent: emitBattleEventMock,
-  getBattleEventTarget: vi.fn(() => new EventTarget())
+  getBattleEventTarget: vi.fn(() => sharedEventTarget)
 }));
 
 vi.mock("../../../src/helpers/classicBattle/roundUI.js", () => ({
@@ -71,13 +72,10 @@ describe("roundFlowController", () => {
     bindRoundFlowController();
 
     const evaluated = handlerRegistry.get("round.evaluated");
-    const stateChanged = handlerRegistry.get(EVENT_TYPES.STATE_TRANSITIONED);
 
-    await evaluated({
+    void evaluated({
       detail: { message: "Player wins", stat: "speed", playerVal: 9, opponentVal: 7 }
     });
-
-    stateChanged({ detail: { to: "roundDisplay" } });
 
     await vi.advanceTimersByTimeAsync(24);
     expect(showRoundOutcomeMock).not.toHaveBeenCalled();
@@ -99,14 +97,11 @@ describe("roundFlowController", () => {
     bindRoundFlowController();
 
     const evaluated = handlerRegistry.get("round.evaluated");
-    const stateChanged = handlerRegistry.get(EVENT_TYPES.STATE_TRANSITIONED);
 
-    await evaluated({ detail: { message: "old", stat: "speed", playerVal: 2, opponentVal: 1 } });
-    stateChanged({ detail: { to: "roundDisplay" } });
+    void evaluated({ detail: { message: "old", stat: "speed", playerVal: 2, opponentVal: 1 } });
     await vi.advanceTimersByTimeAsync(10);
 
-    await evaluated({ detail: { message: "new", stat: "power", playerVal: 5, opponentVal: 1 } });
-    stateChanged({ detail: { to: "roundDisplay" } });
+    void evaluated({ detail: { message: "new", stat: "power", playerVal: 5, opponentVal: 1 } });
 
     await vi.advanceTimersByTimeAsync(15);
     expect(showRoundOutcomeMock).not.toHaveBeenCalled();
@@ -114,5 +109,19 @@ describe("roundFlowController", () => {
     await vi.advanceTimersByTimeAsync(10);
     expect(showRoundOutcomeMock).toHaveBeenCalledTimes(1);
     expect(showRoundOutcomeMock).toHaveBeenCalledWith("new", "power", 5, 1);
+  });
+
+  it("bindRoundFlowControllerOnce only subscribes once for state transitions", async () => {
+    const { bindRoundFlowControllerOnce } = await import(
+      "../../../src/helpers/classicBattle/roundFlowController.js"
+    );
+
+    bindRoundFlowControllerOnce();
+    bindRoundFlowControllerOnce();
+
+    const transitionSubscriptions = onBattleEventMock.mock.calls.filter(
+      ([type]) => type === EVENT_TYPES.STATE_TRANSITIONED
+    );
+    expect(transitionSubscriptions).toHaveLength(1);
   });
 });

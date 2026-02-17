@@ -21,7 +21,6 @@ export function bindRoundFlowController() {
   const scheduler = ensureClassicBattleScheduler();
   let outcomeSequence = 0;
   let pendingOutcomeTimeoutId = null;
-  let cachedOutcome = null;
   const clearPendingOutcomeDelay = () => {
     if (pendingOutcomeTimeoutId) {
       scheduler.cancel(pendingOutcomeTimeoutId);
@@ -73,26 +72,19 @@ export function bindRoundFlowController() {
   };
 
   onBattleEvent(EVENT_TYPES.STATE_ROUND_STARTED, (event) => {
-    cachedOutcome = null;
+    outcomeSequence += 1;
+    clearPendingOutcomeDelay();
     handleRoundStartedEvent(event).catch(() => {});
   });
 
   onBattleEvent("round.evaluated", async (event) => {
-    cachedOutcome = event?.detail || null;
     await handleRoundResolvedEvent(event);
+    await scheduleRoundOutcomeDisplay(event?.detail || null);
   });
 
   onBattleEvent(EVENT_TYPES.STATE_TRANSITIONED, (event) => {
     const detail = event?.detail || {};
     applyControlStateTransition(detail);
-    const toState = detail?.to;
-    if (toState !== "roundDisplay" && toState !== "evaluation") {
-      return;
-    }
-    if (!cachedOutcome) return;
-    const outcomeToDisplay = cachedOutcome;
-    cachedOutcome = null;
-    scheduleRoundOutcomeDisplay(outcomeToDisplay).catch(() => {});
   });
 }
 
