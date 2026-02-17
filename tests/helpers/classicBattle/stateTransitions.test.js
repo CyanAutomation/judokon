@@ -107,4 +107,67 @@ describe("classic battle state table transitions", () => {
       });
     }
   }
+
+  it("records deterministic resolve sequencing before roundDisplay transition", async () => {
+    const transitions = [];
+    const events = [];
+    const onTransition = ({ from, to, event }) => {
+      transitions.push({ from, to, event });
+      emitBattleEvent("battleStateChange", { from, to, event });
+    };
+
+    const roundSelectState = CLASSIC_BATTLE_STATES.find((state) => state.name === "roundSelect");
+    const roundResolveState = CLASSIC_BATTLE_STATES.find((state) => state.name === "roundResolve");
+    const toResolve = roundSelectState?.triggers?.find(
+      (trigger) => trigger.target === "roundResolve"
+    );
+    const toDisplay = roundResolveState?.triggers?.find(
+      (trigger) => trigger.target === "roundDisplay"
+    );
+
+    expect(toResolve).toBeDefined();
+    expect(toDisplay).toBeDefined();
+
+    onBattleEvent("battleStateChange", (event) => {
+      const toState = event?.detail?.to;
+      if (toState === "roundResolve" || toState === "roundDisplay") {
+        events.push(`state:${toState}`);
+      }
+    });
+    onBattleEvent("round.evaluated", () => {
+      events.push("round.evaluated");
+    });
+
+    document.body.dataset.battleState = "roundSelect";
+    const machineToResolve = await createMachineForTransition(
+      roundSelectState,
+      toResolve,
+      onTransition
+    );
+    await machineToResolve.dispatch(toResolve.on);
+
+    emitBattleEvent("round.evaluated", {
+      outcome: "draw",
+      scores: { player: 0, opponent: 0 }
+    });
+
+    document.body.dataset.battleState = "roundResolve";
+    const machineToDisplay = await createMachineForTransition(
+      roundResolveState,
+      toDisplay,
+      onTransition
+    );
+    await machineToDisplay.dispatch(toDisplay.on);
+
+    const resolveIndex = events.indexOf("state:roundResolve");
+    const evaluatedIndex = events.indexOf("round.evaluated");
+    const displayIndex = events.indexOf("state:roundDisplay");
+
+    expect(resolveIndex).toBeGreaterThanOrEqual(0);
+    expect(evaluatedIndex).toBeGreaterThan(resolveIndex);
+    expect(displayIndex).toBeGreaterThan(evaluatedIndex);
+
+    expect(transitions.map((transition) => transition.to)).toContain("roundResolve");
+    expect(transitions.map((transition) => transition.to)).toContain("roundDisplay");
+  });
 });

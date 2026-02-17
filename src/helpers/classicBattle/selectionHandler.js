@@ -849,9 +849,10 @@ async function handleFallbackResolution(
     });
   } catch {}
 
-  // Sync result display
+  // Sync result display; this emits round.evaluated before any display transition.
+  let evaluationResult = null;
   try {
-    await syncResultDisplay(store, stat, playerVal, opponentVal, {
+    evaluationResult = await syncResultDisplay(store, stat, playerVal, opponentVal, {
       ...opts,
       delayMs: normalizedDelay,
       forceOpponentPrompt: true
@@ -861,6 +862,10 @@ async function handleFallbackResolution(
     if (store && typeof store === "object") {
       store.playerChoice = null;
     }
+  }
+
+  if (!evaluationResult) {
+    return;
   }
 
   if (selectionWasMade) {

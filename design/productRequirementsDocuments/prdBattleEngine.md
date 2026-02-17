@@ -136,6 +136,17 @@ sequenceDiagram
 
 > Canonical authority for state names and legal transitions: `src/helpers/classicBattle/stateCatalog.js` and `src/helpers/classicBattle/stateTable.js`.
 
+### Strict round resolution pipeline (required)
+
+For every round, orchestrator/state handlers **must** enforce this exact order without reordering:
+
+1. Transition to `roundResolve` (`control.state.changed(to="roundResolve")`).
+2. Request/perform evaluation while still in `roundResolve`.
+3. Emit `round.evaluated` with the full evaluation payload.
+4. Transition to `roundDisplay` (`control.state.changed(to="roundDisplay")`).
+
+`roundDisplay` transitions are invalid before `round.evaluated` payload availability.
+
 **Critical Authority Rules (enforced by event taxonomy):**
 
 - **`control.state.changed`** (emitted by Orchestrator FSM) — **ONLY** authoritative signal for view state transitions. Payload includes `from`, `to`, `context`, `catalogVersion`.
