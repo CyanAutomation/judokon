@@ -60,7 +60,7 @@ graph TD
     D2 --> D2d["Kumi-kata: 0-10"]
     D2 --> D2e["Ne-waza: 0-10"]
     D3 --> D3a["Move Name Text"]
-    
+
     style A fill:#lightblue
     style B fill:#lightyellow
     style C fill:#lightblue
@@ -83,18 +83,18 @@ graph LR
     B -->|Common| C["Border: Blue<br/>#0066CC"]
     B -->|Rare| D["Border: Red<br/>#CC0000"]
     B -->|Legendary| E["Border: Gold<br/>#FFD700"]
-    
+
     C --> F["Background<br/>Subtle Tint"]
     D --> F
     E --> F
-    
+
     F --> G["Stats Display<br/>Readable Layout"]
     G --> H["Portrait<br/>High Contrast"]
     H --> I["Name & Move<br/>Clear Font"]
-    
+
     J["Animation on Load"] --> K["Slide + Fade<br/>400ms Duration"]
     K --> L["respects<br/>Reduce Motion"]
-    
+
     style A fill:#lightblue
     style B fill:#lightyellow
     style C fill:#lightgreen
@@ -118,23 +118,23 @@ stateDiagram-v2
     Mobile: Max Width 100%
     Mobile: Stack Layout
     Mobile --> Tablet
-    
+
     Tablet: Width 50-70%
     Tablet: Full Layout
     Tablet --> Desktop
-    
+
     Desktop: Width 300px
     Desktop: 2:3 Ratio
     Desktop --> Hover
-    
+
     Hover: Scale ≤1.05x
     Hover: No Clipping
     Hover -->|Scaled| Focus
-    
+
     Focus: Visible Focus Ring
     Focus: Keyboard Accessible
     Focus --> [*]
-    
+
     style Mobile fill:#lightyellow
     style Tablet fill:#lightyellow
     style Desktop fill:#lightgreen

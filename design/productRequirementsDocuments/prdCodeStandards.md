@@ -37,7 +37,7 @@ flowchart TD
     K -->|Happy+Edge| L{≥80%?}
     L -->|No| M[Fail: Add Tests]
     L -->|Yes| N[PASS: Merge]
-    
+
     style A fill:#lightblue
     style B fill:#lightyellow
     style E fill:#lightyellow
@@ -62,16 +62,16 @@ graph LR
     B --> D["@returns Type"]
     B --> E["@pseudocode"]
     B --> F["Side-Effects"]
-    
+
     C -->|Type+Desc| G["Complete Spec"]
     D -->|Return Type| G
     E -->|Algorithm| G
     F -->|State Changes| G
-    
+
     G --> H["CI Validation"]
     H -->|Pass| I["✅ Ready"]
     H -->|Fail| J["❌ Missing Tags"]
-    
+
     style A fill:#lightblue
     style B fill:#lightgreen
     style C fill:#lightyellow
@@ -93,19 +93,19 @@ flowchart TD
     A["Check Import Pattern"] --> B{Static or Await?}
     B -->|Static Import| C{Hot Path?}
     B -->|Await Import| D{Hot Path?}
-    
+
     C -->|Yes| E["✅ Allowed"]
     C -->|No| F["✅ Allowed"]
-    
-    D -->|Yes| G["❌ BLOCKED"] 
+
+    D -->|Yes| G["❌ BLOCKED"]
     D -->|No| H{Has Preload?}
-    
+
     H -->|Yes| I["⚠️ Review"]
     H -->|No| J["✅ Allowed"]
-    
+
     G --> K["Fail: Use Static"]
     I --> L["Document Rationale"]
-    
+
     style A fill:#lightblue
     style B fill:#lightyellow
     style C fill:#lightyellow

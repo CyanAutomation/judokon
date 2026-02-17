@@ -67,23 +67,23 @@ stateDiagram-v2
     IDLE: Button Enabled
     IDLE: "Draw" Label
     IDLE --> DRAWING: User Taps Button
-    
+
     DRAWING: Button Disabled
     DRAWING: Show Loading
     DRAWING: Debounce Active
     DRAWING --> SUCCESS: Card Generated
     DRAWING --> ERROR: Random Failed
-    
+
     SUCCESS: Animation Playing
     SUCCESS: Card Revealing
     SUCCESS --> IDLE: Animation Ends
-    
+
     ERROR: Fallback Shown
     ERROR: Show Message
     ERROR --> IDLE: User Retry Click
-    
+
     IDLE --> [*]
-    
+
     style IDLE fill:#lightgreen
     style DRAWING fill:#lightyellow
     style SUCCESS fill:#lightgreen
@@ -100,26 +100,26 @@ flowchart TD
     A[User Taps Draw] -->|Check Active List| B{Cards Available?}
     B -->|Yes| C[Generator Active]
     B -->|No| D[Use Fallback]
-    
+
     C -->|crypto.getRandomValues| E[Random Index]
     E -->|Select Card| F[Get judoka.json]
     D -->|Load id=0| F
-    
+
     F -->|generateJudokaCardHTML| G[Render DOM]
     G -->|Apply Animation| H{Reduce Motion?}
     H -->|Disabled| I[Play Fade+Slide]
     H -->|Enabled| J[Display Instant]
-    
+
     I -->|400ms Duration| K[Reveal Complete]
     J -->|No Wait| K
-    
+
     K -->|Add to History| L["Update History<br/>Panel"]
     L -->|Store Card ID| M[Remember Draw]
     M -->|Ready| N[Next Tap OK]
-    
+
     L -->|Reset After 24h| O{Time Passed?}
     O -->|Yes| P[Clear History]
-    
+
     style A fill:#lightblue
     style C fill:#lightyellow
     style F fill:#lightblue
@@ -139,22 +139,22 @@ The system selects from active judoka (skipping hidden entries), generates HTML,
 flowchart LR
     A{Draw Attempted} -->|Success| B["✅ Card Ready"]
     A -->|Fail| C{Error Type?}
-    
+
     C -->|Empty List| D["No Cards<br/>Available"]
     C -->|Load Error| E["Parse/API<br/>Failed"]
     C -->|Random Fail| F["Selection<br/>Failed"]
-    
+
     D -->|Fallback| G["Load id=0<br/>Default Card"]
     E -->|Fallback| G
     F -->|Fallback| G
-    
+
     G -->|Display| H["Show Fallback<br/>Card"]
     H -->|Log Error| I["Browser Console"]
     I -->|Ready| J["✅ User Can Retry"]
-    
+
     B -->|Render| K[Success]
     J -->|Render| L[Fallback Mode]
-    
+
     style B fill:#lightgreen
     style C fill:#lightyellow
     style D fill:#lightsalmon

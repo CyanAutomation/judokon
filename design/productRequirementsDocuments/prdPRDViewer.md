@@ -77,24 +77,24 @@ flowchart TD
     A[Viewer Initializes] -->|Query Param| B{“?doc=” Set?}
     B -->|Yes| C{File Valid?}
     B -->|No| D[Load First PRD]
-    
+
     C -->|Yes| E[Load Specific]
     C -->|No| D
-    
+
     E -->|Fetch Markdown| F[Show Spinner]
     D -->|Fetch Markdown| F
-    
+
     F -->|Parse Markdown| G[Convert to HTML]
     G -->|Render Headings| H[Format Tables]
     H -->|Format Code| I[Syntax Highlight]
     I -->|Remove Spinner| J[Display Content]
-    
+
     J -->|Extract Tasks| K[Count Tasks]
     K -->|Calculate %| L[Show Summary]
-    
+
     M[Load Failure] -->|404/Parse Error| N[Show Error]
     N -->|Continue Nav| O[Load Next]
-    
+
     style A fill:#lightblue
     style F fill:#lightyellow
     style G fill:#lightyellow
@@ -116,27 +116,27 @@ stateDiagram-v2
     Viewing: Display PRD
     Viewing: Sidebar Visible
     Viewing: Ready for Input
-    
+
     Viewing -->|Sidebar Click| Selecting
     Viewing -->|Right Arrow| Next
     Viewing -->|Left Arrow| Previous
     Viewing -->|Swipe Right| Previous
     Viewing -->|Swipe Left| Next
-    
+
     Selecting: File Highlighted
     Selecting -->|Update URL| UrlSync
     Previous: Load Prev PRD
     Previous --> UrlSync
     Next: Load Next PRD
     Next --> UrlSync
-    
+
     UrlSync: Push History
     UrlSync: Update ?doc=
     UrlSync -->|Render| Viewing
-    
+
     Viewing -->|Click Home| Exiting
     Exiting: Navigate to \\n    Exiting --> [*]
-    
+
     style Viewing fill:#lightgreen
     style Selecting fill:#lightblue
     style Previous fill:#lightblue
@@ -156,27 +156,27 @@ graph TD
     B --> B1[Logo Link]
     B --> B2[Title]
     B --> B3[Task Summary]
-    
+
     A --> C[Main Content]
     C --> C1[Sidebar]
     C --> C2[PRD Content]
-    
+
     C1 -->|Fixed Left| C1a[PRD List]
     C1a -->|Zebra Stripe| C1b[Alternating Colors]
     C1a -->|Independent| C1c[Scroll Only]
-    
+
     C2 -->|Scrollable| C2a[Markdown HTML]
     C2a -->|Fade In| C2b[Animate on Load]
-    
+
     D[Accessibility] --> E{Screen Size}
     E -->|Desktop| F[Side-by-Side]
     E -->|Tablet| G[Sidebar Top]
     E -->|Mobile| G
-    
+
     H[Keyboard] -->|Tab| I[Focus Management]
     H -->|Enter/Space| J[Select Document]
     H -->|Esc| K[Return Home]
-    
+
     style C1 fill:#lightblue
     style C2 fill:#lightgreen
     style F fill:#lightblue

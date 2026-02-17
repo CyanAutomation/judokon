@@ -300,23 +300,23 @@ flowchart TD
     A --> C[Outfits]
     A --> D[Expressions]
     A --> E[Poses]
-    
+
     B --> B1["Chibi Proportions<br/>3 Heads Tall"]
     B --> B2["Color Palette<br/>Gi Blue: #3C7DC4"]
     B --> B3["Art Style<br/>Cell Shading+Outlines"]
-    
+
     C --> C1["Primary: Blue Gi<br/>90% Usage"]
     C --> C2["Casual: Red Shirt"]
     C --> C3["Ceremonial: White Gi"]
-    
+
     D --> D1["Default: Cheerful<br/>80% Usage"]
     D --> D2["Determined: Serious<br/>Combat Intro"]
     D --> D3["Surprise: Excited<br/>Achievement"]
-    
+
     E --> E1["Standing Neutral"]
     E --> E2["Action Pose"]
     E --> E3["Thinking Pose"]
-    
+
     style A fill:#lightgreen
     style B fill:#lightblue
     style C fill:#lightblue
@@ -337,15 +337,15 @@ graph LR
     A["KG Base Properties"] --> B["Skin Tone<br/>#F0C8A0-#D9A57E"]
     A --> C["Hair/Beard<br/>#2C2C2C"]
     A --> D["Eyes<br/>#4A4A4A"]
-    
+
     E["Outfit Colors"] --> F["Blue Gi<br/>#3C7DC4 - 90%"]
     E --> G["Black Belt<br/>#1A1A1A - All"]
     E --> H["Red Casual<br/>#D32F2F - 5%"]
     E --> I["White Gi<br/>#FFFFFF - 5%"]
-    
+
     J["Accessory Colors"] --> K["Japan Flag<br/>Red+White"]
     J --> L["Medals<br/>Gold/Silver"]
-    
+
     style A fill:#lightblue
     style B fill:#lightyellow
     style C fill:#lightyellow
@@ -368,26 +368,26 @@ All character colors maintain WCAG AA contrast standards and reproduce consisten
 ```mermaid
 stateDiagram-v2
     [*] --> Meditation
-    
+
     Meditation --> Default
     Default: Cheerful Smile 😊
     Default --> Thinking
-    
+
     Thinking: Hand on Chin 🤔
     Thinking --> Tutorial
-    
+
     Tutorial --> Confident
     Confident: Arms Crossed 💪
     Confident --> Gameplay
-    
+
     Gameplay --> Determined
     Determined: Furrowed Brow ⚡
     Determined --> Achievement
-    
+
     Achievement --> Surprised
     Surprised: Wide Eyes & Open Mouth 😮
     Surprised --> [*]
-    
+
     style Meditation fill:#lightblue
     style Default fill:#lightgreen
     style Thinking fill:#lightyellow

@@ -70,9 +70,10 @@ stateDiagram-v2
 ```
 
 **Visibility Logic:**
+
 - **Hidden by Default**: Panel hidden unless explicitly enabled in Settings or debug flag set
 - **Toggle-Enabled**: Settings page toggle switches panel visibility on/off
-- **Debug Flags Override**: DEBUG_LOGGING or __PROFILE_DEBUG_FLAGS__ force panel visible for development
+- **Debug Flags Override**: DEBUG_LOGGING or **PROFILE_DEBUG_FLAGS** force panel visible for development
 - **Persistence**: Toggle state saved to localStorage, persists across battles
 
 ---
@@ -99,12 +100,14 @@ graph TD
 ```
 
 **Real-Time Updates Trigger:**
+
 - Score changes (round won/lost)
 - Timer countdown (<500ms refresh rate)
 - Match end detection (final score locked)
 - Test mode seed visibility (if applicable)
 
 **Panel Content Structure:**
+
 ```json
 {
   "playerScore": 2,
@@ -128,21 +131,21 @@ graph LR
     B -->|__debugPerf()| C
     B -->|process.env flags| C
     B -->|None set| D["❌ Profiling<br/>DISABLED"]
-    
+
     C -->|Init on:| E["📊 Initialize HUD<br/>Settings page / Battle init<br/>CLI Battle init"]
     E --> F["🔍 Start collecting<br/>flag execution times"]
     F --> G["⏱️ Record metric<br/>avg/last/max + count"]
-    
+
     G -->|Duration >= threshold| H["🚨 Flag ALERTING<br/>Default: 16ms"]
     G -->|Duration < threshold| I["✅ Flag OK"]
-    
+
     H --> J["📖 Add to alert history<br/>max 100 entries"]
     J --> K["🎨 Show 5 most recent<br/>in HUD alert section"]
     K --> L["📢 Dispatch event:<br/>debug-flag-hud:alert"]
     L --> M["⚠️ Alert snapshot<br/>with timestamp"]
-    
+
     D -->|Only logging| N["📝 Console output only<br/>for DEBUG_PERF logs"]
-    
+
     style C fill:lightgreen
     style D fill:lightyellow
     style H fill:lightsalmon
@@ -150,6 +153,7 @@ graph LR
 ```
 
 **Profiling Activation Conditions:**
+
 - `window.__PROFILE_DEBUG_FLAGS__ = true`
 - `window.__DEBUG_PERF__ = true`
 - `window.__profileDebugFlags()` (function call)
@@ -157,6 +161,7 @@ graph LR
 - Environment: `process.env.DEBUG_FLAG_PERF` or `process.env.DEBUG_PERF`
 
 **Alert Threshold:**
+
 - Default: 16ms (for 60fps performance target)
 - Configurable: `window.__DEBUG_FLAG_ALERT_THRESHOLD__` or `process.env.DEBUG_FLAG_ALERT_THRESHOLD`
 - Alert if: `avg >= threshold` OR `max >= threshold` OR `last >= threshold`
@@ -171,22 +176,22 @@ graph TD
     A --> B["🔝 Header"]
     B --> C["Title: Debug Flag Metrics"]
     B --> D["❌ Close button"]
-    
+
     A --> E["📈 Metrics List<br/>Most recent collected"]
     E --> F["Row: FLAG_NAME"]
     F --> G["Avg: X.XXms | Last: Y.YYms | Max: Z.ZZms | Count: N"]
     F --> H["🎯 Highlighting if alerting"]
-    
+
     A --> I["🚨 Alert History<br/>Collapsible section"]
     I --> J["Shows 5 most recent alerts"]
     J --> K["Each alert: timestamp +<br/>flagName + duration"]
-    
+
     A --> L["🎛️ Action Buttons"]
     L --> M["📋 Copy Alerts<br/>JSON to clipboard"]
     L --> N["🗑️ Clear<br/>Reset metrics + refresh"]
-    
+
     M --> O["✅ Fallback: download<br/>if clipboard unavailable"]
-    
+
     style A fill:lightblue
     style B fill:lightgreen
     style E fill:lightblue
@@ -196,6 +201,7 @@ graph TD
 ```
 
 **HUD Features:**
+
 - **Fixed Position**: Lower-right corner, always visible when active
 - **Metrics Display**: Live list of flag execution times (avg, last, max, count)
 - **Alert History**: Most recent 5 alerts (up to 100 stored)
@@ -246,6 +252,7 @@ stateDiagram-v2
 ```
 
 **User Interactions:**
+
 - **Enable Panel**: Toggle in Settings ON → Panel appears immediately
 - **Copy State**: Click Copy → Content to clipboard → Toast confirmation
 - **Disable Panel**: Toggle OFF → Panel hides → Content cleared
