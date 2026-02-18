@@ -195,21 +195,20 @@ graph LR
 ```mermaid
 stateDiagram-v2
 
-    Default: ⚪ All Stat Buttons\nVISIBLE but DISABLED\n(grayed out, opacity 0.5)
+    [*] --> Default
 
-    Default --> SelectionRequired: Engine emits\nroundSelect event
+    state "⚪ All Stat Buttons\nVISIBLE but DISABLED\n(grayed out, opacity 0.5)" as Default
+    state "🎯 Stat Buttons ENABLED\nKeyboard: 1-5 active\nMouse/Touch: clickable" as SelectionRequired
+    state "⚫ Button Active\nPulse animation 150ms\nSend stat selection to engine" as InputReceived
+    state "🔒 All Stat Buttons LOCKED\nDISABLED + opacity reduced\nDuration: 3s (default)" as Cooldown
 
-    SelectionRequired: 🎯 Stat Buttons ENABLED\nKeyboard: 1-5 active\nMouse/Touch: clickable
+    Default --> SelectionRequired : Engine emits\nroundSelect event
 
-    SelectionRequired --> InputReceived: User presses\nkey 1-5 / clicks stat
+    SelectionRequired --> InputReceived : User presses\nkey 1-5 / clicks stat
 
-    InputReceived: ⚫ Button active state\nPulse animation 150ms\nSend stat selection to engine
+    InputReceived --> Cooldown : Engine evaluates\nStat comparison\nAwards points
 
-    InputReceived --> Cooldown: Engine evaluates\nStat comparison\nAwards points
-
-    Cooldown: 🔒 All Stat Buttons LOCKED\nDISABLED + opacity reduced\nDuration: 3s (default)
-
-    Cooldown --> Default: Cooldown expires\nOR next round begins
+    Cooldown --> Default : Cooldown expires\nOR next round begins
 
     note right of Default
         Always in DOM
