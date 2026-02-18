@@ -287,7 +287,7 @@ onDomReady(async () => {
 
   const startPromise = setupClassicBattlePage().catch((error) => {
     reportBootstrapFailure(error, "setup-classic-battle-page");
-    throw error;
+    return Promise.reject(error);
   });
 
   // Keep runtime unhandled-rejection noise controlled while preserving a rejected
