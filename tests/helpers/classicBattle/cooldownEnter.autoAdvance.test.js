@@ -87,4 +87,14 @@ describe("roundWaitEnter", () => {
 
     expect(machine.dispatch).toHaveBeenCalledWith("ready", { source: "uiPacingBypass" });
   });
+
+  it("preserves initial cooldown on CLI surface", async () => {
+    machine.context.uiSurface = "cli";
+
+    await roundWaitEnter(machine, { initial: true });
+    await timers.advanceTimersByTimeAsync(3200);
+
+    expect(machine.dispatch).toHaveBeenCalledWith("ready");
+    expect(machine.dispatch).not.toHaveBeenCalledWith("ready", { source: "uiPacingBypass" });
+  });
 });
