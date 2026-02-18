@@ -38,12 +38,12 @@ export async function roundPromptEnter(machine) {
   const fallback = installRoundPromptFallback(machine);
   try {
     await invokeRoundPrompt(machine.context);
-    if (fallback) clearTimeout(fallback);
+    if (fallback !== null && fallback !== undefined) clearTimeout(fallback);
     if (machine.getState() === "roundPrompt") {
       await machine.dispatch("cardsRevealed");
     }
   } catch (err) {
-    if (fallback) clearTimeout(fallback);
+    if (fallback !== null && fallback !== undefined) clearTimeout(fallback);
     await handleRoundError(machine, "roundStartError", err);
   }
 }

@@ -130,6 +130,27 @@ describe("battleCLI init helpers", () => {
     expect(document.getElementById("cli-countdown")?.dataset.status).toBe("error");
   });
 
+  it("clears store timer id 0 when applying a stat selection", async () => {
+    const mod = await loadBattleCLI();
+    await mod.init();
+
+    const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
+    const clearIntervalSpy = vi.spyOn(globalThis, "clearInterval");
+    const battleCliModule = await import("../../src/pages/battleCLI/init.js");
+
+    window.__battleCLIinit.__setStoreForTest({
+      selectionMade: false,
+      statTimeoutId: 0,
+      autoSelectId: null,
+      userJudoka: { stats: {} }
+    });
+
+    await battleCliModule.selectStat("power");
+
+    expect(clearTimeoutSpy).toHaveBeenCalledWith(0);
+    expect(clearIntervalSpy).toHaveBeenCalledWith(0);
+  });
+
   it("renders stats list", async () => {
     const mod = await loadBattleCLI({
       mockBattleEvents: false
