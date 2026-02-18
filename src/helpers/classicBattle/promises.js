@@ -93,7 +93,10 @@ export let roundEvaluatedPromise;
 export function resetBattlePromises() {
   clearPromiseSubscriptions();
 
-  roundOptionsReadyPromise = setupPromise("roundOptionsReadyPromise", "roundOptionsReady").getPromise();
+  roundOptionsReadyPromise = setupPromise(
+    "roundOptionsReadyPromise",
+    "roundOptionsReady"
+  ).getPromise();
   roundPromptPromise = setupPromise("roundPromptPromise", "roundPrompt").getPromise();
   nextRoundTimerReadyPromise = setupPromise(
     "nextRoundTimerReadyPromise",

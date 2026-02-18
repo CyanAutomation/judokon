@@ -9,20 +9,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ju-Do-Kon!</title>
     <link rel="preload" as="image" href="../assets/helperKG/helperKG1.png" />
-    <link
-      rel="preload"
-      as="fetch"
-      href="../data/aesopsFables.json"
-      type="application/json"
-      crossorigin="anonymous"
-    />
-    <link
-      rel="preload"
-      as="fetch"
-      href="../data/aesopsMeta.json"
-      type="application/json"
-      crossorigin="anonymous"
-    />
     <link rel="stylesheet" href="../styles/fonts.css" />
     <link rel="stylesheet" href="../styles/base.css" />
     <link rel="stylesheet" href="../styles/layout.css" />
@@ -55,29 +41,10 @@
             />
           </div>
 
-          <div class="quote-block fade-in">
-            <button
-              id="language-toggle"
-              data-testid="language-toggle"
-              data-tooltip-id="ui.languageToggle"
-              class="language-toggle hidden"
-            >
-              <span class="jp-flag flag-icon"></span> 日本語風 / English
-              <span class="uk-flag flag-icon"></span>
-            </button>
-            <div id="language-announcement" class="visually-hidden" aria-live="polite"></div>
-            <div id="quote-loader" class="quote-loader" aria-live="polite" aria-busy="true">
-              <span class="visually-hidden">Loading quote…</span>
+          <div class="quote-block">
+            <div id="quote" class="quote" role="region" aria-live="polite">
+              <p>Take a breath. Even a still pond reflects the sky.</p>
             </div>
-
-            <div
-              id="quote"
-              class="quote hidden"
-              aria-labelledby="quote-heading"
-              aria-describedby="quote-content"
-              role="region"
-              aria-live="polite"
-            ></div>
           </div>
         </section>
 
@@ -99,22 +66,11 @@
         </p>
       </noscript>
 
-      <noscript>
-        <p class="noscript-warning">
-          JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.
-        </p>
-      </noscript>
-
       <script nomodule>
         alert(
           "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
         );
       </script>
-      <script type="module">
-        import { preloadMeditationAssets } from "../helpers/preload.js";
-        preloadMeditationAssets();
-      </script>
-      <script type="module" src="../helpers/meditationPage.js"></script>
       <script type="module" src="../helpers/setupSvgFallback.js"></script>
     </div>
     <div id="snackbar-container" role="status" aria-live="polite"></div>

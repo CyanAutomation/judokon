@@ -1,5 +1,9 @@
 # PRD: Meditation Screen (Zen mode)
 
+> **⚠️ DEPRECATED / ARCHIVED**  
+> This PRD is archived as of 2026-02-18. The Aesop's Fables quotes feature has been removed from the project.  
+> This document is retained for historical reference only.
+
 ---
 
 ## TL;DR
