@@ -1,4 +1,5 @@
 import { emitBattleEvent } from "./battleEvents.js";
+import { isCanonicalState, phaseFromCanonicalState } from "./statePhases.js";
 
 const HIDDEN_OPPONENT_STATES = new Set([
   "waitingForMatchStart",
@@ -15,8 +16,12 @@ const DISABLE_STAT_BUTTON_STATES = new Set([
   "roundPrompt",
   "roundResolve",
   "roundDisplay",
-  "evaluation",
-  "matchOver"
+  "matchEvaluate",
+  "matchDecision",
+  "matchOver",
+  "interruptRound",
+  "interruptMatch",
+  "roundModification"
 ]);
 
 function getBody() {
@@ -65,8 +70,8 @@ function setStatButtonsEnabledForState(state) {
  * 4. Route opponent visibility classes from the control state.
  */
 export function applyControlStateTransition(detail = {}) {
-  const to = typeof detail?.to === "string" && detail.to.length > 0 ? detail.to : null;
-  if (!to) return;
+  const to = detail?.to;
+  if (!isCanonicalState(to)) return;
 
   const body = getBody();
   if (body) {
@@ -77,6 +82,9 @@ export function applyControlStateTransition(detail = {}) {
     }
     body.dataset.battleState = to;
     body.setAttribute("data-battle-state", to);
+    const phase = phaseFromCanonicalState(to);
+    if (phase) body.dataset.battlePhase = phase;
+    else delete body.dataset.battlePhase;
     setBattleModeClass(body, to);
   }
 
@@ -90,6 +98,10 @@ export function applyControlStateTransition(detail = {}) {
  * @param {Element|null|undefined} container
  * @param {{visible?: boolean}} [options]
  * @returns {void}
+ * @pseudocode
+ * 1. Exit when `container` has no classList API.
+ * 2. Add `opponent-hidden` when `options.visible` is explicitly false.
+ * 3. Otherwise remove `opponent-hidden`.
  */
 export function setOpponentCardVisibility(container, options = {}) {
   if (!container?.classList) return;
