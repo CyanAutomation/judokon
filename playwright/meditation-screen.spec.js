@@ -48,7 +48,7 @@ test.describe("Meditation screen", () => {
     const continueLink = page.getByTestId("continue-link");
     await continueLink.focus();
     await expect(continueLink).toBeFocused();
-    
+
     const currentUrl = page.url();
     await page.keyboard.press("Escape");
     await expect(page).toHaveURL(currentUrl);
