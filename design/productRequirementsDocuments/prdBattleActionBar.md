@@ -197,18 +197,15 @@ stateDiagram-v2
 
     [*] --> Default
 
-    state "⚪ All Stat Buttons\nVISIBLE but DISABLED\n(grayed out, opacity 0.5)" as Default
-    state "🎯 Stat Buttons ENABLED\nKeyboard: 1-5 active\nMouse/Touch: clickable" as SelectionRequired
-    state "⚫ Button Active\nPulse animation 150ms\nSend stat selection to engine" as InputReceived
-    state "🔒 All Stat Buttons LOCKED\nDISABLED + opacity reduced\nDuration: 3s (default)" as Cooldown
+    state "All Stat Buttons\nVISIBLE but DISABLED\n(grayed out, opacity 0.5)" as Default
+    state "Stat Buttons ENABLED\nKeyboard: 1-5 active\nMouse/Touch: clickable" as SelectionRequired
+    state "Button Active\nPulse animation 150ms\nSend stat selection to engine" as InputReceived
+    state "All Stat Buttons LOCKED\nDISABLED + opacity reduced\nDuration: 3s (default)" as Cooldown
 
-    Default --> SelectionRequired : Engine emits\nroundSelect event
-
-    SelectionRequired --> InputReceived : User presses\nkey 1-5 / clicks stat
-
-    InputReceived --> Cooldown : Engine evaluates\nStat comparison\nAwards points
-
-    Cooldown --> Default : Cooldown expires\nOR next round begins
+    Default --> SelectionRequired : Engine emits roundSelect
+    SelectionRequired --> InputReceived : User selects stat
+    InputReceived --> Cooldown : Engine evaluates & awards points
+    Cooldown --> Default : Cooldown expires / next round
 
     note right of Default
         Always in DOM
