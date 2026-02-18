@@ -13,6 +13,7 @@ const {
   mockHandleStatSelection,
   mockQuitMatch,
   mockInterruptMatch,
+  mockLogEvent,
   mockOn,
   mockOff,
   mockGetPointsToWin,
@@ -34,6 +35,7 @@ const {
   mockHandleStatSelection: vi.fn(),
   mockQuitMatch: vi.fn(),
   mockInterruptMatch: vi.fn(),
+  mockLogEvent: vi.fn(),
   mockOn: vi.fn(),
   mockOff: vi.fn(),
   mockGetPointsToWin: vi.fn(),
@@ -44,6 +46,9 @@ const {
   mockGetCurrentStats: vi.fn()
 }));
 
+vi.mock("../../../src/helpers/telemetry.js", () => ({
+  logEvent: mockLogEvent
+}));
 vi.mock("../../../src/helpers/BattleEngine.js", () => ({
   STATS: Object.freeze({ SPEED: "speed" }),
   createBattleEngine: mockCreateBattleEngine,
@@ -82,6 +87,7 @@ describe("battleAppService", () => {
     mockHandleStatSelection.mockReset();
     mockQuitMatch.mockReset();
     mockInterruptMatch.mockReset();
+    mockLogEvent.mockReset();
     mockOn.mockReset();
     mockOff.mockReset();
     mockGetPointsToWin.mockReset().mockReturnValue(3);
@@ -98,10 +104,14 @@ describe("battleAppService", () => {
     );
 
     dispatchIntent("engine.setPointsToWin", { value: 7 });
+    dispatchIntent("engine.bootstrap.failure", { phase: "setup" });
     dispatchIntent("battle.startRound", { args: ["arg-a", "arg-b"] });
     dispatchIntent("battle.interruptMatch", { reason: "manual-stop" });
 
     expect(mockSetPointsToWin).toHaveBeenCalledWith(7);
+    expect(mockLogEvent).toHaveBeenCalledWith("classic_battle_bootstrap_failure", {
+      phase: "setup"
+    });
     expect(mockStartRound).toHaveBeenCalledWith("arg-a", "arg-b");
     expect(mockInterruptMatch).toHaveBeenCalledWith("manual-stop");
   });
