@@ -1667,7 +1667,7 @@ export async function selectStat(stat) {
     state.roundResolving = true;
     // Dispatch the statSelected event to the state machine and emit the battle event
     emitBattleEvent("statSelected", { stat });
-    await Promise.resolve(dispatchIntent("statSelected"));
+    await dispatchIntent("statSelected");
   } catch (err) {
     console.error("Error dispatching statSelected", err);
     if (store) {
