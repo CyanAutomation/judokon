@@ -1,4 +1,23 @@
-import { onBattleEvent } from "./battleEvents.js";
+import { offBattleEvent, onBattleEvent } from "./battleEvents.js";
+
+const promiseSubscriptionRegistry = new Map();
+
+function getSubscriptionKey(key, eventName) {
+  return `${key}:${eventName}`;
+}
+
+function removePromiseSubscription(subscriptionKey) {
+  const subscription = promiseSubscriptionRegistry.get(subscriptionKey);
+  if (!subscription) return;
+  subscription.teardown();
+  promiseSubscriptionRegistry.delete(subscriptionKey);
+}
+
+function clearPromiseSubscriptions() {
+  for (const subscriptionKey of promiseSubscriptionRegistry.keys()) {
+    removePromiseSubscription(subscriptionKey);
+  }
+}
 
 /**
  * Create a self-resetting promise tied to a battle event.
@@ -10,9 +29,12 @@ import { onBattleEvent } from "./battleEvents.js";
  *
  * @param {string} key - Global name for the promise.
  * @param {string} eventName - Battle event to listen for.
- * @returns {() => Promise<void>} Function returning the current promise.
+ * @returns {{getPromise: () => Promise<void>, teardown: () => void}} Promise getter and teardown.
  */
 function setupPromise(key, eventName) {
+  const subscriptionKey = getSubscriptionKey(key, eventName);
+  removePromiseSubscription(subscriptionKey);
+
   let resolve;
   function reset() {
     const p = new Promise((r) => {
@@ -31,7 +53,8 @@ function setupPromise(key, eventName) {
     return p;
   }
   let promise = reset();
-  onBattleEvent(eventName, () => {
+
+  const handler = () => {
     try {
       try {
         window.__promiseEvents = window.__promiseEvents || [];
@@ -41,8 +64,12 @@ function setupPromise(key, eventName) {
       resolve();
     } catch {}
     promise = reset();
-  });
-  return () => promise;
+  };
+
+  onBattleEvent(eventName, handler);
+  const teardown = () => offBattleEvent(eventName, handler);
+  promiseSubscriptionRegistry.set(subscriptionKey, { teardown });
+  return { getPromise: () => promise, teardown };
 }
 
 export let roundOptionsReadyPromise;
@@ -64,17 +91,25 @@ export let roundEvaluatedPromise;
  * @returns {void}
  */
 export function resetBattlePromises() {
-  roundOptionsReadyPromise = setupPromise("roundOptionsReadyPromise", "roundOptionsReady")();
-  roundPromptPromise = setupPromise("roundPromptPromise", "roundPrompt")();
-  nextRoundTimerReadyPromise = setupPromise("nextRoundTimerReadyPromise", "nextRoundTimerReady")();
-  matchOverPromise = setupPromise("matchOverPromise", "matchOver")();
-  countdownStartedPromise = setupPromise("countdownStartedPromise", "nextRoundCountdownStarted")();
-  roundTimeoutPromise = setupPromise("roundTimeoutPromise", "roundTimeout")();
+  clearPromiseSubscriptions();
+
+  roundOptionsReadyPromise = setupPromise("roundOptionsReadyPromise", "roundOptionsReady").getPromise();
+  roundPromptPromise = setupPromise("roundPromptPromise", "roundPrompt").getPromise();
+  nextRoundTimerReadyPromise = setupPromise(
+    "nextRoundTimerReadyPromise",
+    "nextRoundTimerReady"
+  ).getPromise();
+  matchOverPromise = setupPromise("matchOverPromise", "matchOver").getPromise();
+  countdownStartedPromise = setupPromise(
+    "countdownStartedPromise",
+    "nextRoundCountdownStarted"
+  ).getPromise();
+  roundTimeoutPromise = setupPromise("roundTimeoutPromise", "roundTimeout").getPromise();
   statSelectionStalledPromise = setupPromise(
     "statSelectionStalledPromise",
     "statSelectionStalled"
-  )();
-  roundEvaluatedPromise = setupPromise("roundEvaluatedPromise", "round.evaluated")();
+  ).getPromise();
+  roundEvaluatedPromise = setupPromise("roundEvaluatedPromise", "round.evaluated").getPromise();
 }
 
 // Return the latest promise instance for each awaitable, using the window-scoped
