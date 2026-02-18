@@ -194,7 +194,6 @@ graph LR
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Default - Engine Init
 
     Default: ⚪ All Stat Buttons\nVISIBLE but DISABLED\n(grayed out, opacity 0.5)
 
@@ -258,7 +257,6 @@ graph TD
     L --> I
     M --> I
     N --> I
-    K --> [*]
     I --> O["✅ Modal Closed"]
     O --> P["⚙ Button released"]
 
