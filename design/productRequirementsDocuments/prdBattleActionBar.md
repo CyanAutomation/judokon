@@ -195,8 +195,6 @@ graph LR
 ```mermaid
 stateDiagram-v2
 
-    [*] --> Default
-
     state "All Stat Buttons\nVISIBLE but DISABLED\n(grayed out, opacity 0.5)" as Default
     state "Stat Buttons ENABLED\nKeyboard: 1-5 active\nMouse/Touch: clickable" as SelectionRequired
     state "Button Active\nPulse animation 150ms\nSend stat selection to engine" as InputReceived
@@ -211,18 +209,6 @@ stateDiagram-v2
         Always in DOM
         Visible on page
         Prevented from interaction
-    end note
-
-    note right of SelectionRequired
-        State = "roundSelect"
-        Engine value in DOM via
-        data-action-state="roundSelect"
-    end note
-
-    note right of Cooldown
-        State = "cooldown"
-        Automatic unlock timer
-        OR triggered by round event
     end note
 ```
 
