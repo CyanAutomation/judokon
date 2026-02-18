@@ -172,8 +172,8 @@ export function waitForPlayerChoice(store, timeoutMs) {
 
   const cleanup = () => {
     offBattleEvent("statSelected", handler);
-    if (pollId) clearInterval(pollId);
-    if (timeoutId) clearTimeout(timeoutId);
+    if (pollId !== null && pollId !== undefined) clearInterval(pollId);
+    if (timeoutId !== null && timeoutId !== undefined) clearTimeout(timeoutId);
   };
 
   const eventPromise = new Promise((resolve) => {

@@ -1297,9 +1297,11 @@ function pauseTimer(type) {
   const isSelection = type === "selection";
   const timer = isSelection ? selectionTimer : cooldownTimer;
   const interval = isSelection ? selectionInterval : cooldownInterval;
-  if (!timer && !interval) return null;
+  const hasTimer = timer !== null && timer !== undefined;
+  const hasInterval = interval !== null && interval !== undefined;
+  if (!hasTimer && !hasInterval) return null;
   try {
-    if (timer) {
+    if (hasTimer) {
       if (typeof timer.stop === "function") {
         timer.stop();
       } else {
@@ -1308,7 +1310,7 @@ function pauseTimer(type) {
     }
   } catch {}
   try {
-    if (interval) clearInterval(interval);
+    if (hasInterval) clearInterval(interval);
   } catch {}
   if (isSelection) {
     const countdown = byId("cli-countdown");
@@ -1512,10 +1514,17 @@ function stopSelectionCountdown() {
   } catch {}
   // Legacy clears for fallback paths
   try {
-    if (selectionTimer && typeof selectionTimer === "number") clearTimeout(selectionTimer);
+    if (
+      selectionTimer !== null &&
+      selectionTimer !== undefined &&
+      typeof selectionTimer === "number"
+    ) {
+      clearTimeout(selectionTimer);
+    }
   } catch {}
   try {
-    if (selectionInterval) clearInterval(selectionInterval);
+    if (selectionInterval !== null && selectionInterval !== undefined)
+      clearInterval(selectionInterval);
   } catch {}
   selectionTimer = null;
   selectionInterval = null;
@@ -1549,7 +1558,7 @@ function clearStoreTimer(store, timerProperty) {
   if (!store) return;
   try {
     const timerId = store[timerProperty];
-    if (timerId) {
+    if (timerId !== null && timerId !== undefined) {
       clearTimeout(timerId);
       clearInterval(timerId);
     }
@@ -2922,10 +2931,11 @@ registerBattleHandlers({
  */
 function clearCooldownTimers() {
   try {
-    if (cooldownTimer) clearTimeout(cooldownTimer);
+    if (cooldownTimer !== null && cooldownTimer !== undefined) clearTimeout(cooldownTimer);
   } catch {}
   try {
-    if (cooldownInterval) clearInterval(cooldownInterval);
+    if (cooldownInterval !== null && cooldownInterval !== undefined)
+      clearInterval(cooldownInterval);
   } catch {}
   cooldownTimer = null;
   cooldownInterval = null;
