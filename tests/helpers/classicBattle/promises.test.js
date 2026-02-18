@@ -22,7 +22,8 @@ describe("classic battle promise subscriptions", () => {
 
     resetBattlePromises();
 
-    expect(offSpy).toHaveBeenCalledTimes(8);
+    const expectedPromiseCount = 8; // Update if promises added/removed in resetBattlePromises
+    expect(offSpy).toHaveBeenCalledTimes(expectedPromiseCount);
   });
 
   it("does not multiply roundPrompt handling after repeated resets", async () => {
