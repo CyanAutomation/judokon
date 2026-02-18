@@ -1609,10 +1609,30 @@ export async function selectStat(stat) {
   if (selectionApplying) return;
   clearHistoryPreview({ restoreAnchor: false });
   selectionApplying = true;
+  const list = byId("cli-stats");
+
+  const preDispatchSnapshot = {
+    selectionMade: !!store?.selectionMade,
+    playerChoice: store?.playerChoice,
+    roundResolving: state.roundResolving,
+    selectedIndex: null,
+    selectedMarkers: []
+  };
+
+  if (list) {
+    preDispatchSnapshot.selectedIndex = list.dataset.selectedIndex ?? null;
+    preDispatchSnapshot.selectedMarkers = Array.from(list.querySelectorAll(".cli-stat")).map(
+      (el) => ({
+        el,
+        selected: el.classList.contains("selected"),
+        ariaSelected: el.getAttribute("aria-selected")
+      })
+    );
+  }
+
   stopSelectionCountdown();
   clearStoreTimer(store, "statTimeoutId");
   clearStoreTimer(store, "autoSelectId");
-  const list = byId("cli-stats");
   list?.querySelectorAll(".selected").forEach((el) => el.classList.remove("selected"));
   list?.querySelectorAll(".cli-stat").forEach((el) => el.setAttribute("aria-selected", "false"));
   const idx = STATS.indexOf(stat) + 1;
@@ -1647,9 +1667,38 @@ export async function selectStat(stat) {
     state.roundResolving = true;
     // Dispatch the statSelected event to the state machine and emit the battle event
     emitBattleEvent("statSelected", { stat });
-    await Promise.resolve(dispatchIntent("statSelected"));
+    await dispatchIntent("statSelected");
   } catch (err) {
     console.error("Error dispatching statSelected", err);
+    if (store) {
+      store.selectionMade = preDispatchSnapshot.selectionMade;
+      store.playerChoice = preDispatchSnapshot.playerChoice;
+    }
+    state.roundResolving = preDispatchSnapshot.roundResolving;
+
+    if (list) {
+      list.querySelectorAll(".selected").forEach((el) => el.classList.remove("selected"));
+      list.querySelectorAll(".cli-stat").forEach((el) => el.setAttribute("aria-selected", "false"));
+
+      if (preDispatchSnapshot.selectedIndex) {
+        list.dataset.selectedIndex = preDispatchSnapshot.selectedIndex;
+      } else {
+        delete list.dataset.selectedIndex;
+      }
+
+      preDispatchSnapshot.selectedMarkers.forEach(({ el, selected, ariaSelected }) => {
+        if (selected) {
+          el.classList.add("selected");
+        }
+        if (ariaSelected !== null) {
+          el.setAttribute("aria-selected", ariaSelected);
+        } else {
+          el.removeAttribute("aria-selected");
+        }
+      });
+    }
+
+    showBottomLine("Selection failed. Please try again.");
   } finally {
     // Allow future selections only after dispatch settles (success or failure).
     selectionApplying = false;
