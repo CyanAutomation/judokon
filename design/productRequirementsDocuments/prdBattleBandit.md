@@ -149,7 +149,7 @@ flowchart TD
     classDef setup fill:#lightblue,stroke:#333,stroke-width:2px
     classDef playing fill:#lightgreen,stroke:#333,stroke-width:2px
     classDef cooldown fill:#lightyellow,stroke:#333,stroke-width:2px
-    classDef end fill:#lightsalmon,stroke:#333,stroke-width:2px
+    classDef end fill:#lightred,stroke:#333,stroke-width:2px
 
     class Start,Init setup
     class Ready,Spin,Evaluate,Resolve,Score,Display playing
