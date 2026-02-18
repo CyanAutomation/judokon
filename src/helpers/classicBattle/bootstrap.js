@@ -277,7 +277,7 @@ onDomReady(async () => {
   // Expose the Classic Battle test API without coupling to the main bootstrap flow.
   const exposePromise = exposeClassicBattleTestAPI().catch((error) => {
     reportBootstrapFailure(error, "test-api-exposure");
-    throw error;
+    return Promise.reject(error);
   });
 
   exposePromise.catch(() => {});
