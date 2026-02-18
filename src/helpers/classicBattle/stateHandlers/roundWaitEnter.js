@@ -169,17 +169,17 @@ export async function roundWaitEnter(machine, payload) {
   // Prevent user interaction with stat buttons during state transition
   disableStatButtonsDuringCooldown();
 
+  if (payload?.initial) {
+    await initStartCooldown(machine);
+    return;
+  }
+
   if (isCliSurface(machine)) {
     Promise.resolve().then(() => {
       guard(() => {
         machine.dispatch("ready", { source: "uiPacingBypass" });
       });
     });
-    return;
-  }
-
-  if (payload?.initial) {
-    await initStartCooldown(machine);
     return;
   }
 
