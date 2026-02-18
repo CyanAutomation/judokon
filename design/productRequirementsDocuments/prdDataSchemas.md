@@ -26,13 +26,11 @@ graph LR
     A -->|"1:1"| E["📝 Bio<br/>firstName, surname<br/>birthday"]
     C -->|"References"| G["🗂️ Country Codes<br/>ISO 3166-1 alpha-2"]
     H["⚙️ Settings<br/>sound, UI, theme<br/>feature flags"] -->|"References"| I["🏳️ Feature Flags<br/>enabled, tooltip"]
-    J["📖 Aesop's Fables<br/>id, story, title"] -->|"1:1"| K["🎬 Fable Meta<br/>theme, difficulty<br/>keywords"]
     L["💬 Stat Names<br/>id, name<br/>japanese, description"] -->|"Maps stat<br/>indices"| B
     M["🥋 Gokyo Techniques<br/>nage-waza<br/>katame-waza"] -->|"Taxonomy for"| N["🏅 Signature Moves<br/>technique ID<br/>name, description"]
     style A fill:#lightgreen
     style B fill:#lightyellow
     style H fill:#lightblue
-    style J fill:#lightcyan
     style G fill:#lightyellow
 ```
 
@@ -59,16 +57,11 @@ graph TD
 graph TD
     A["src/schemas/<br/>Canonical Source"] -->|"Root"| B["judoka.schema.json"]
     A -->|"Root"| C["settings.schema.json"]
-    A -->|"Root"| D["aesopsFables.schema.json"]
-    A -->|"Root"| E["aesopsMeta.schema.json"]
     A -->|"Shared"| F["commonDefinitions.schema.json<br/>Stats, CountryCode<br/>WeightClass, refs"]
     B -->|"$ref"| F
     C -->|"$ref"| F
-    D -->|"$ref"| F
-    E -->|"$ref"| F
     G["src/data/<br/>Runtime Data"] -->|"Implements"| B
     G -->|"Implements"| C
-    G -->|"Implements"| D
     style A fill:#lightgreen
     style G fill:#lightyellow
     style F fill:#lightcyan
@@ -303,7 +296,7 @@ Acceptance Criteria (validator):
 ## Schema Validation Workflow
 
 - Run `npm run validate:data` to validate all schema/data pairs. The command executes `scripts/validateData.js`, which loads each schema and data module and validates them in-process using Ajv.
-- Ensure every new schema/data pair is covered by the workflow (e.g., `gameModes`, `weightCategories`, `navigationItems`, `aesopsMeta`, `gameTimers`).
+- Ensure every new schema/data pair is covered by the workflow (e.g., `gameModes`, `weightCategories`, `navigationItems`, `gameTimers`).
 - Treat the validation script as part of the core CI contract—include it in local pre-merge checks and rerun it whenever schemas or data modules change.
 - When adding fields to a data file, update the matching schema with the new property, mark it as `required` when applicable, and re-run validation. Update dependent tests or helpers at the same time to avoid drift.
 
@@ -358,43 +351,6 @@ The `statNames.json` file defines the CLI-facing stat labels and descriptions us
   - `Shime-waza`
   - `Kansetsu-waza`
 - **Country code utilities**: `src/utils/countryCodes.js` provides `getCountryByCode`, `getCodeByCountry`, and `listCountries` helpers backed by `src/data/countryCodeMapping.json`. Reference these utilities when implementing data workflows so schema changes stay aligned with runtime lookups.
-
-## Canonical `aesopsFables` schema
-
-The Aesop's Fables story payload is an array of fable objects. Each entry must include a numeric `id` and the `story` text. The schema includes an optional `title` for display, but the current implementation depends on `id` and `story` being present.
-
-**Schema source**: `src/schemas/aesopsFables.schema.json`
-
-**Implemented fields (per entry):**
-
-- `id` (integer): Unique identifier for the fable.
-- `story` (string): The full story text.
-- `title` (string, optional): Display title for the fable.
-
-**Implementation references:**
-
-- `src/helpers/quotes/quoteService.js` fetches `aesopsFables.json` and merges fables by `id` when building the meditation quote data.
-- `src/pages/meditation.html` preloads `aesopsFables.json` so the meditation page can render quote content without delayed fetches.
-
-## Canonical `aesopsMeta` schema
-
-The Aesop's Fables metadata payload is an array of fable metadata objects keyed by `id`. Each entry provides presentation and filtering data for the meditation quote experience.
-
-**Schema source**: `src/schemas/aesopsMeta.schema.json`
-
-**Implemented fields (per entry):**
-
-- `id` (integer): Unique identifier for the fable.
-- `title` (string): Display title for the fable.
-- `tags` (string array): Tag list for filtering and labeling.
-- `readingTime` (string): Human-readable reading duration.
-- `moral` (string): Moral summary of the fable.
-- `haiku` (string, optional): Haiku-style summary.
-
-**Implementation references:**
-
-- `src/helpers/quotes/quoteService.js` merges `aesopsMeta.json` by `id` to enrich each fable with metadata before rendering.
-- `src/pages/meditation.html` preloads `aesopsMeta.json` alongside the story data for the meditation experience.
 
 P2 - Versioning & Deprecation Policy: Define minor/major change rules and how to announce/rollout changes.
 
