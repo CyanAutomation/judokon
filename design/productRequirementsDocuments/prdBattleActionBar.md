@@ -195,10 +195,10 @@ graph LR
 ```mermaid
 stateDiagram-v2
 
-    state "All Stat Buttons<br/>VISIBLE but DISABLED<br/>(grayed out, opacity 0.5)" as Default
-    state "Stat Buttons ENABLED<br/>Keyboard: 1-5 active<br/>Mouse/Touch: clickable" as SelectionRequired
-    state "Button Active<br/>Pulse animation 150ms<br/>Send stat selection to engine" as InputReceived
-    state "All Stat Buttons LOCKED<br/>DISABLED + opacity reduced<br/>Duration: 3s (default)" as Cooldown
+    state "All Stat Buttons - Visible but Disabled (opacity 0.5)" as Default
+    state "Stat Buttons Enabled - Keyboard 1-5 Active - Clickable" as SelectionRequired
+    state "Button Active - Pulse 150ms - Send Selection" as InputReceived
+    state "All Stat Buttons Locked - Disabled - 3s Cooldown" as Cooldown
 
     Default --> SelectionRequired : Engine emits roundSelect
     SelectionRequired --> InputReceived : User selects stat
