@@ -106,7 +106,10 @@ describe("classic battle onTransition", () => {
 
     expect(resolvedSpy).toHaveBeenCalledTimes(1);
     expect(resolvedSpy.mock.calls[0][0].detail).toEqual({
-      outcome: "restartRound"
+      outcome: "restartRound",
+      resumeTarget: null,
+      restoredTimer: false,
+      remainingMs: 0
     });
 
     offBattleEvent("interrupt.resolved", resolvedSpy);

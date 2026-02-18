@@ -37,6 +37,7 @@ import { buildClassicBattleStateTable } from "./stateTable.js";
 import { isRoundModificationOverlayEnabled } from "./roundModificationOverlay.js";
 import { EVENT_TYPES } from "./eventCatalog.js";
 import { ensureClassicBattleScheduler } from "./timingScheduler.js";
+import { resolveInterruptContext } from "./stateHandlers/interruptStateCleanup.js";
 
 const bridgedEngines = typeof WeakSet === "function" ? new WeakSet() : new Set();
 const engineBridgeContext = typeof WeakMap === "function" ? new WeakMap() : new Map();
@@ -656,7 +657,15 @@ function mirrorTimerState() {
 function emitResolution(event) {
   try {
     const outcome = interruptResolutionMap[event];
-    if (outcome) emitBattleEvent("interrupt.resolved", { outcome });
+    if (!outcome) return;
+    const store = machine?.context?.store;
+    const resolution = resolveInterruptContext(store, event);
+    emitBattleEvent("interrupt.resolved", {
+      outcome,
+      resumeTarget: resolution?.resumeTarget || null,
+      restoredTimer: Boolean(resolution?.restoredTimer),
+      remainingMs: Math.max(0, Number(resolution?.timerSnapshot?.remaining || 0)) * 1000
+    });
   } catch {
     // ignore: taxonomy events are non-critical
   }

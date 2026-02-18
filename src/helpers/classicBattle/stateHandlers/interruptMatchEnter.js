@@ -1,5 +1,5 @@
 import { emitBattleEvent } from "../battleEvents.js";
-import { cleanupInterruptState } from "./interruptStateCleanup.js";
+import { cleanupInterruptState, freezeInterruptContext } from "./interruptStateCleanup.js";
 import { debugLog } from "../debugLog.js";
 
 /**
@@ -35,6 +35,15 @@ export async function interruptMatchEnter(machine, payload) {
   if (payload?.reason) {
     emitBattleEvent("scoreboardShowMessage", `Match interrupted: ${payload.reason}`);
   }
+
+  const interruptContext = freezeInterruptContext(store, payload, "waitingForMatchStart");
+  emitBattleEvent("interrupt.raised", {
+    scope: "match",
+    reason: payload?.reason ?? null,
+    resumeTarget: "waitingForMatchStart",
+    remainingMs: Math.max(0, Number(interruptContext?.timerSnapshot?.remaining || 0)) * 1000,
+    inputFrozen: true
+  });
 
   // Transition back to lobby
   await machine.dispatch("toLobby", payload);
