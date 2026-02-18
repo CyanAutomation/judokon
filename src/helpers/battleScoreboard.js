@@ -218,7 +218,12 @@ function hasRoundIdentity(identity) {
 }
 
 function shouldRenderEvaluation(controlState) {
-  return controlState === "roundDisplay" || controlState === "evaluation";
+  return (
+    controlState === "roundDisplay" ||
+    controlState === "evaluation" ||
+    controlState === "matchEvaluate" ||
+    controlState === "matchDecision"
+  );
 }
 
 function isFinalControlState(controlState) {
