@@ -55,6 +55,17 @@ function setupDebugState(payload) {
 }
 
 /**
+ * Determine whether the current machine is running under the CLI surface.
+ *
+ * @param {object} machine - State machine context.
+ * @returns {boolean} True when surface metadata resolves to CLI.
+ */
+function isCliSurface(machine) {
+  const surface = machine?.context?.uiSurface ?? machine?.context?.store?.uiSurface;
+  return surface === "cli";
+}
+
+/**
  * Compute the next round number based on current round.
  *
  * @pseudocode
@@ -157,6 +168,15 @@ export async function roundWaitEnter(machine, payload) {
 
   // Prevent user interaction with stat buttons during state transition
   disableStatButtonsDuringCooldown();
+
+  if (isCliSurface(machine)) {
+    Promise.resolve().then(() => {
+      guard(() => {
+        machine.dispatch("ready", { source: "uiPacingBypass" });
+      });
+    });
+    return;
+  }
 
   if (payload?.initial) {
     await initStartCooldown(machine);

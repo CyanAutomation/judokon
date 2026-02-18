@@ -256,6 +256,32 @@ flowchart LR
 - `match.concluded({ scores })`
 - `interrupt.raised` / `interrupt.resolved`
 
+### Canonical vs Surface Adapter Hops (Section 7 Clarification)
+
+The engine/orchestrator progression should stay minimal and cross-surface canonical. Any transition whose purpose is primarily readability/animation pacing should be treated as a **surface adapter hop**.
+
+**Canonical cross-surface (must exist across Classic + CLI + future surfaces):**
+
+- `waitingForMatchStart -> matchStart` (`startClicked`)
+- `matchStart -> roundWait` (`ready`) as the setup handoff boundary
+- `roundPrompt -> roundSelect` (`cardsRevealed`)
+- `roundSelect -> roundResolve` (`statSelected|timeout`)
+- `roundResolve -> roundDisplay` (`outcome=*`) for deterministic score/result materialization
+- `matchEvaluate -> matchDecision` (`evaluateMatch` with win guard)
+- `matchDecision -> matchOver` (`finalize`)
+- Interrupt transitions (`interrupt*`) and recovery paths
+
+**Surface pacing (Classic-only readability/animation, adapter-level):**
+
+- `roundWait -> roundPrompt` (`ready`) inter-round visual pacing hop
+- `roundDisplay -> matchEvaluate` (`continue|matchPointReached`) outcome readability hop
+- `matchEvaluate -> roundWait` (`evaluateMatch` when no win) loop back through pacing boundary
+
+Implementation requirement:
+
+- Keep pacing hops local to UI/view-controller sequencing where possible.
+- If retained in shared state tables for compatibility, mark them explicitly with `uiPacing` metadata so non-visual surfaces (CLI) can bypass artificial waits.
+
 ### Guards & rules
 
 - Win guard: if `scores.player >= targetWins || scores.opponent >= targetWins` → transition to `end`.
@@ -268,7 +294,7 @@ stateDiagram-v2
 
   waitingForMatchStart --> matchStart: startClicked
   matchStart --> roundWait: ready
-  roundWait --> roundPrompt: ready
+  roundWait --> roundPrompt: ready [uiPacing]
   roundPrompt --> roundSelect: cardsRevealed
 
   roundSelect --> roundResolve: statSelected
@@ -276,8 +302,8 @@ stateDiagram-v2
   roundSelect --> interruptRound: timeout [!autoSelectEnabled]
 
   roundResolve --> roundDisplay: outcome=winPlayer|winOpponent|draw
-  roundDisplay --> matchEvaluate: continue|matchPointReached
-  matchEvaluate --> roundWait: evaluateMatch [!win condition]
+  roundDisplay --> matchEvaluate: continue|matchPointReached [uiPacing]
+  matchEvaluate --> roundWait: evaluateMatch [!win condition, uiPacing]
   matchEvaluate --> matchDecision: evaluateMatch [win condition]
   matchDecision --> matchOver: finalize
 

@@ -3850,12 +3850,13 @@ export async function init() {
   }
   initSeed();
   store = createBattleStore();
+  store.uiSurface = "cli";
   normalizeShortcutCopy();
   bindSkipLinkFocusTarget();
   updateControlsHint();
   ensureVerboseScrollHandling();
-  // Enable outcome confirmation pause for better UX
-  store.waitForOutcomeConfirmation = true;
+  // CLI should avoid visual-only pacing waits from classic UI flow.
+  store.waitForOutcomeConfirmation = false;
   try {
     if (typeof window !== "undefined") {
       window.battleStore = store;

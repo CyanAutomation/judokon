@@ -27,6 +27,8 @@
  * @property {string} target - Target state name
  * @property {string} [guard] - Optional condition (e.g., "FF_ROUND_MODIFY")
  * @property {string} [note] - Clarification for complex logic
+ * @property {boolean} [uiPacing] - True when transition exists only for surface-level pacing.
+ * @property {'canonicalCrossSurface'|'surfacePacing'} [classification] - Transition class for cross-surface parity.
  *
  * Expected guard conditions:
  * - FF_ROUND_MODIFY: boolean, admin-only feature flag
@@ -155,6 +157,7 @@ export const CLASSIC_BATTLE_STATES = [
   {
     id: 3,
     name: "roundWait",
+    uiPacing: true,
     description:
       "Short pacing pause before the first round and between rounds; allows animations and readability.",
     onEnter: [
@@ -162,7 +165,13 @@ export const CLASSIC_BATTLE_STATES = [
       CLASSIC_BATTLE_ACTIONS.ANNOUNCE_NEXT_ROUND
     ],
     triggers: [
-      { on: "ready", target: "roundPrompt" },
+      {
+        on: "ready",
+        target: "roundPrompt",
+        uiPacing: true,
+        classification: "surfacePacing",
+        note: "Surface pacing hop. Canonical round progression is roundPrompt -> roundSelect -> roundResolve."
+      },
       { on: "interrupt", target: "interruptRound" }
     ]
   },
@@ -221,16 +230,30 @@ export const CLASSIC_BATTLE_STATES = [
   {
     id: 7,
     name: "roundDisplay",
+    uiPacing: true,
     description: "Updates scores and presents a brief summary. No card transfers occur.",
     onEnter: [CLASSIC_BATTLE_ACTIONS.UPDATE_SCORE, CLASSIC_BATTLE_ACTIONS.UPDATE_UI_ROUND_SUMMARY],
     triggers: [
-      { on: "matchPointReached", target: "matchEvaluate" },
-      { on: "continue", target: "matchEvaluate" }
+      {
+        on: "matchPointReached",
+        target: "matchEvaluate",
+        uiPacing: true,
+        classification: "surfacePacing",
+        note: "Summary pacing hop; non-visual surfaces should advance immediately."
+      },
+      {
+        on: "continue",
+        target: "matchEvaluate",
+        uiPacing: true,
+        classification: "surfacePacing",
+        note: "Summary pacing hop; non-visual surfaces should advance immediately."
+      }
     ]
   },
   {
     id: 8,
     name: "matchEvaluate",
+    uiPacing: true,
     description:
       "Match-level evaluation boundary that decides whether to continue the round loop or resolve the match.",
     onEnter: [CLASSIC_BATTLE_ACTIONS.EVALUATE_MATCH_OUTCOME],
@@ -239,9 +262,16 @@ export const CLASSIC_BATTLE_STATES = [
         on: "evaluateMatch",
         target: "matchDecision",
         guard: GUARD_CONDITIONS.WIN_CONDITION_MET,
+        classification: "canonicalCrossSurface",
         note: "Checks the user-selected win target (3/5/10)."
       },
-      { on: "evaluateMatch", target: "roundWait" }
+      {
+        on: "evaluateMatch",
+        target: "roundWait",
+        uiPacing: true,
+        classification: "surfacePacing",
+        note: "Loop back through a UI pacing surface before the next canonical round prompt."
+      }
     ]
   },
   {

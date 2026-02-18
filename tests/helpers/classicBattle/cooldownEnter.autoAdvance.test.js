@@ -78,4 +78,13 @@ describe("roundWaitEnter", () => {
     await timers.advanceTimersByTimeAsync(1200); // 1s duration + 200ms fallback
     expect(machine.dispatch).toHaveBeenCalledWith("ready");
   });
+
+  it("bypasses pacing wait on CLI surface", async () => {
+    machine.context.uiSurface = "cli";
+
+    await roundWaitEnter(machine);
+    await Promise.resolve();
+
+    expect(machine.dispatch).toHaveBeenCalledWith("ready", { source: "uiPacingBypass" });
+  });
 });
