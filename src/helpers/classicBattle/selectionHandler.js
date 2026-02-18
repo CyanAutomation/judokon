@@ -626,10 +626,12 @@ function clearTimerHandle(handle, schedulers) {
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @returns {void}
  */
-export function cleanupTimers(store) {
-  try {
-    stopTimer();
-  } catch {}
+export function cleanupTimers(store, { preserveEngineTimer = false } = {}) {
+  if (!preserveEngineTimer) {
+    try {
+      stopTimer();
+    } catch {}
+  }
   try {
     scoreboard.clearTimer?.();
   } catch {}

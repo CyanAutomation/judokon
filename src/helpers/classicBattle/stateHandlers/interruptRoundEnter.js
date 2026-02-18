@@ -1,6 +1,6 @@
 import { emitBattleEvent } from "../battleEvents.js";
 import { exposeDebugState } from "../debugHooks.js";
-import { cleanupInterruptState } from "./interruptStateCleanup.js";
+import { cleanupInterruptState, freezeInterruptContext } from "./interruptStateCleanup.js";
 import { cancelRoundResolveGuard } from "./guardCancellation.js";
 import { debugLog } from "../debugLog.js";
 import { isRoundModificationOverlayEnabled } from "../roundModificationOverlay.js";
@@ -67,14 +67,25 @@ export async function interruptRoundEnter(machine, payload) {
   if (payload?.adminTest && !hasOverlayTransition) {
     debugLog("interruptRoundEnter: roundModifyFlag unavailable in current state table");
   }
+  let resolutionEvent = "restartRound";
+  let resumeTarget = "roundWait";
   if (canUseOverlay) {
-    // Admin-initiated test scenario enters the optional overlay
-    await machine.dispatch("roundModifyFlag", payload);
+    resolutionEvent = "roundModifyFlag";
+    resumeTarget = "roundModification";
   } else if (payload?.reason === "quit") {
-    // User quit: abort entire match instead of just this round
-    await machine.dispatch("abortMatch");
-  } else {
-    // Normal interrupt: restart the current round
-    await machine.dispatch("restartRound");
+    resolutionEvent = "abortMatch";
+    resumeTarget = "matchOver";
   }
+
+  const interruptContext = freezeInterruptContext(store, payload, resumeTarget);
+  emitBattleEvent("interrupt.raised", {
+    scope: "round",
+    reason: payload?.reason ?? null,
+    resumeTarget,
+    remainingMs: Math.max(0, Number(interruptContext?.timerSnapshot?.remaining || 0)) * 1000,
+    inputFrozen: true
+  });
+
+  // Dispatch deterministic resolution event selected above.
+  await machine.dispatch(resolutionEvent, payload);
 }

@@ -61,21 +61,41 @@ async function setupInterruptHarness(storeOverrides = {}) {
   const activeStore = machine?.context?.store ?? baseStore;
   const transitions = [];
   const scoreboardMessages = [];
+  const interruptRaisedEvents = [];
+  const interruptResolvedEvents = [];
   const recordTransition = (event) => {
     if (event?.detail) transitions.push(event.detail);
   };
   const recordMessage = (event) => {
     if (event?.detail) scoreboardMessages.push(event.detail);
   };
+  const recordMessageRaised = (event) => {
+    if (event?.detail) interruptRaisedEvents.push(event.detail);
+  };
+  const recordMessageResolved = (event) => {
+    if (event?.detail) interruptResolvedEvents.push(event.detail);
+  };
   onBattleEvent("battleStateChange", recordTransition);
   onBattleEvent("scoreboardShowMessage", recordMessage);
+  onBattleEvent("interrupt.raised", recordMessageRaised);
+  onBattleEvent("interrupt.resolved", recordMessageResolved);
 
   const cleanup = () => {
     offBattleEvent("battleStateChange", recordTransition);
     offBattleEvent("scoreboardShowMessage", recordMessage);
+    offBattleEvent("interrupt.raised", recordMessageRaised);
+    offBattleEvent("interrupt.resolved", recordMessageResolved);
   };
 
-  return { store: activeStore, machine, transitions, scoreboardMessages, cleanup };
+  return {
+    store: activeStore,
+    machine,
+    transitions,
+    scoreboardMessages,
+    interruptRaisedEvents,
+    interruptResolvedEvents,
+    cleanup
+  };
 }
 
 async function dispatchEvents(sequence) {
@@ -129,7 +149,14 @@ describe.sequential("classic battle orchestrator interrupt flows", () => {
 
   it("restarts the round and clears selection state after an interrupt", async () => {
     const env = await setupInterruptHarness();
-    const { store, transitions, scoreboardMessages, cleanup } = env;
+    const {
+      store,
+      transitions,
+      scoreboardMessages,
+      interruptRaisedEvents,
+      interruptResolvedEvents,
+      cleanup
+    } = env;
     try {
       await advanceToPlayerActionState();
 
@@ -146,6 +173,23 @@ describe.sequential("classic battle orchestrator interrupt flows", () => {
       await selectionTask;
 
       expect(scoreboardMessages).toContain("Round interrupted: noSelection");
+
+      expect(interruptRaisedEvents.at(-1)).toEqual(
+        expect.objectContaining({
+          scope: "round",
+          reason: "noSelection",
+          resumeTarget: "roundWait",
+          inputFrozen: true
+        })
+      );
+      expect(interruptResolvedEvents.at(-1)).toEqual(
+        expect.objectContaining({
+          outcome: "restartRound",
+          resumeTarget: "roundWait",
+          restoredTimer: expect.any(Boolean),
+          remainingMs: expect.any(Number)
+        })
+      );
 
       expect(store.selectionMade).toBe(false);
       expect(store.__lastSelectionMade).toBe(false);
