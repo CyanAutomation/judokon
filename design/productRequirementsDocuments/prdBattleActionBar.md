@@ -200,10 +200,10 @@ stateDiagram
     state "Button Active - Pulse 150ms - Send Selection" as InputReceived
     state "All Stat Buttons Locked - Disabled - 3s Cooldown" as Cooldown
 
-    Default --> SelectionRequired : Engine emits roundSelect
-    SelectionRequired --> InputReceived : User selects stat
-    InputReceived --> Cooldown : Engine evaluates and awards points
-    Cooldown --> Default : Cooldown expires or next round
+    Default --> SelectionRequired: Engine emits roundSelect
+    SelectionRequired --> InputReceived: User selects stat
+    InputReceived --> Cooldown: Engine evaluates and awards points
+    Cooldown --> Default: Cooldown expires or next round
 
     note right of Default
         Always in DOM
