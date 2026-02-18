@@ -1,5 +1,6 @@
 import * as engineFacade from "../BattleEngine.js";
 import { STATS } from "../BattleEngine.js";
+import { logEvent } from "../telemetry.js";
 
 function getFacadeMethod(name) {
   try {
@@ -12,6 +13,8 @@ function getFacadeMethod(name) {
 
 const INTENT_HANDLERS = Object.freeze({
   "engine.create": (payload = {}) => getFacadeMethod("createBattleEngine")?.(payload),
+  "engine.bootstrap.failure": (payload = {}) =>
+    logEvent("classic_battle_bootstrap_failure", payload),
   "engine.reset": (payload = {}) => getFacadeMethod("resetBattleEnginePreservingConfig")?.(payload),
   "engine.get": () => getFacadeMethod("getEngine")?.(),
   "engine.setPointsToWin": (payload = {}) => getFacadeMethod("setPointsToWin")?.(payload.value),
