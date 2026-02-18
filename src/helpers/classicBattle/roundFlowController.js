@@ -7,6 +7,7 @@ import { getSelectionDelayOverride } from "./selectionDelayCalculator.js";
 import { EVENT_TYPES } from "./eventCatalog.js";
 import { ensureClassicBattleScheduler } from "./timingScheduler.js";
 import { applyControlStateTransition } from "./uiStateReducer.js";
+import { isCanonicalState, phaseFromCanonicalState } from "./statePhases.js";
 
 /**
  * Bind round flow UI handlers for engine-driven events.
@@ -84,7 +85,16 @@ export function bindRoundFlowController() {
 
   onBattleEvent(EVENT_TYPES.STATE_TRANSITIONED, (event) => {
     const detail = event?.detail || {};
+    if (!isCanonicalState(detail?.to)) return;
     applyControlStateTransition(detail);
+    const phase = phaseFromCanonicalState(detail.to);
+    if (phase) {
+      emitBattleEvent("state.phaseDerived", {
+        from: detail?.from ?? null,
+        to: detail.to,
+        phase
+      });
+    }
   });
 }
 
