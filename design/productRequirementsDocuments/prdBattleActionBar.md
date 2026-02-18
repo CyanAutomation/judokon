@@ -269,23 +269,23 @@ graph TD
 
 ```mermaid
 graph TD
-    A["👆 Tap/Click ⚙ Button"] -->|Keyboard: O| B["▶️ Modal Opening\nFade-in 200ms"]
+    A["👆 Tap/Click ⚙ Button"] -->|Keyboard: O| B["▶️ Modal Opening<br/>Fade-in 200ms"]
 
-    B --> C["📋 Modal Open\n4 Controls:\n• Quit\n• Replay\n• Audio Toggle\n• Reduced Motion Toggle"]
+    B --> C["📋 Modal Open<br/>4 Controls:<br/>• Quit<br/>• Replay<br/>• Audio Toggle<br/>• Reduced Motion Toggle"]
 
     C --> D{"User Action?"}
 
-    D -->|Tap Quit| E["🔴 Confirm Modal\nPre-focus: Cancel"]
-    D -->|Tap Replay| F["🔄 Replay Match\nReset to start"]
-    D -->|Toggle Audio| G["🔊 Update settings\nPersist to localStorage"]
-    D -->|Toggle Motion| H["✨ Apply reduced motion\nCSS: prefers-reduced-motion"]
-    D -->|Tap outside / Esc| I["▶️ Modal Closing\nFade-out 200ms"]
+    D -->|Tap Quit| E["🔴 Confirm Modal<br/>Pre-focus: Cancel"]
+    D -->|Tap Replay| F["🔄 Replay Match<br/>Reset to start"]
+    D -->|Toggle Audio| G["🔊 Update settings<br/>Persist to localStorage"]
+    D -->|Toggle Motion| H["✨ Apply reduced motion<br/>CSS: prefers-reduced-motion"]
+    D -->|Tap outside / Esc| I["▶️ Modal Closing<br/>Fade-out 200ms"]
 
     E --> J{"Confirm?"}
     J -->|Cancel| I
-    J -->|Confirm Quit| K["🚪 Return to\nLanding Page\nLog: battle.quit event"]
+    J -->|Confirm Quit| K["🚪 Return to<br/>Landing Page<br/>Log: battle.quit event"]
 
-    F --> L["🎮 Battle resets\nRound 1, Score 0-0"]
+    F --> L["🎮 Battle resets<br/>Round 1, Score 0-0"]
     G --> M["💾 Save audio state"]
     H --> N["🎨 Apply motion prefs"]
 
