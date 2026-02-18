@@ -153,7 +153,7 @@ flowchart TD
     class Start,Init setup
     class Ready,Spin,Evaluate,Resolve,Score,Display playing
     class Cooldown,Expire cooldown
-    class Winner,End,Done end
+    class Winner,End,Done
 ```
 
 **Round Sequence**:
