@@ -204,6 +204,59 @@ describe("battleCLI roundSelect handler latency", () => {
     }
   });
 
+  it("restores selection state and allows retry when statSelected dispatch rejects", async () => {
+    const dispatchIntentSpy = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("dispatch failed"))
+      .mockResolvedValueOnce({ accepted: true, rejected: false });
+
+    const mod = await loadBattleCLI({
+      autoSelect: false,
+      battleStats: ["power", "speed"],
+      stats: [
+        { statIndex: 1, name: "Power" },
+        { statIndex: 2, name: "Speed" }
+      ],
+      createBattleInstanceFactory: () => ({
+        machine: { dispatch: vi.fn() },
+        dispatchIntent: dispatchIntentSpy,
+        init: vi.fn(async () => ({ dispatch: vi.fn() })),
+        dispose: vi.fn()
+      })
+    });
+    battleCliLoaded = true;
+    await mod.init();
+    await mod.renderStatList();
+
+    const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    battleEventsMod.emitBattleEvent("battleStateChange", { to: "roundSelect" });
+
+    const runtimeInit = await import("../../../src/pages/battleCLI/init.js");
+    const { default: cliState } = await import("../../../src/pages/battleCLI/state.js");
+    const { showSnackbar } = await import("../../../src/helpers/showSnackbar.js");
+
+    const list = document.getElementById("cli-stats");
+    const powerStat = list?.querySelector('[data-stat-index="1"]');
+    const speedStat = list?.querySelector('[data-stat-index="2"]');
+
+    expect(powerStat).toBeTruthy();
+    expect(speedStat).toBeTruthy();
+
+    await runtimeInit.selectStat("power");
+
+    expect(dispatchIntentSpy).toHaveBeenCalledTimes(1);
+    expect(cliState.roundResolving).toBe(false);
+    expect(powerStat?.classList.contains("selected")).toBe(false);
+    expect(list?.dataset.selectedIndex).toBeUndefined();
+    expect(showSnackbar).toHaveBeenCalledWith("Selection failed. Please try again.");
+
+    await runtimeInit.selectStat("speed");
+
+    expect(dispatchIntentSpy).toHaveBeenCalledTimes(2);
+    expect(speedStat?.classList.contains("selected")).toBe(true);
+    expect(cliState.roundResolving).toBe(true);
+  });
+
   it("delays DOM updates until the numeric selection microtask runs", async () => {
     const { mod } = await initNumericSelectionTest();
     // Import cliState AFTER setup to get the correct instance
