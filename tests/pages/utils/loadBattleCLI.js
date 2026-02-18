@@ -271,6 +271,10 @@ export async function cleanupBattleCLI() {
     initMod.unwireEvents?.();
     await initMod.resetMatch?.();
   } catch {}
+  try {
+    const domMod = await import("../../../src/pages/battleCLI/dom.js");
+    domMod.resetVerboseScrollHandling?.();
+  } catch {}
 
   document.body.innerHTML = "";
   delete window.__TEST__;
