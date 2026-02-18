@@ -193,7 +193,7 @@ graph LR
 **Stat Button Enablement & Keyboard Shortcut Mapping**:
 
 ```mermaid
-stateDiagram-v2
+stateDiagram
 
     state "All Stat Buttons - Visible but Disabled (opacity 0.5)" as Default
     state "Stat Buttons Enabled - Keyboard 1-5 Active - Clickable" as SelectionRequired
