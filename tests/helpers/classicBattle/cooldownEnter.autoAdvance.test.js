@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useCanonicalTimers } from "../../setup/fakeTimers.js";
+import { roundState } from "../../../src/helpers/classicBattle/roundState.js";
 
 vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => {
   const setupFallbackTimer = vi.fn((ms, cb) => setTimeout(cb, ms));
@@ -67,6 +68,8 @@ describe("roundWaitEnter", () => {
       clearTimeout: (id) => clearTimeout(id)
     };
     machine.context = { store: { dispatch: machine.dispatch }, scheduler };
+    roundState.reset();
+    roundState.setRoundNumber(1);
   });
   afterEach(() => {
     timers.cleanup();
@@ -85,6 +88,7 @@ describe("roundWaitEnter", () => {
     await roundWaitEnter(machine);
     await Promise.resolve();
 
+    expect(roundState.getCurrentRound().number).toBe(2);
     expect(machine.dispatch).toHaveBeenCalledWith("ready", { source: "uiPacingBypass" });
   });
 
