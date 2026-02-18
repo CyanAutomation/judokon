@@ -4,7 +4,8 @@ import { getSnapshot as getBattleSnapshot } from "../../helpers/classicBattle/ba
 // Dynamic import kept for fallback scenarios only
 let sharedScoreboardHelpers = null;
 let sharedScoreboardReady = Promise.resolve(null);
-let verboseScrollListenerAttached = false;
+let currentVerboseLogEl = null;
+let currentVerboseScrollHandler = null;
 let verboseResizeListenerAttached = false;
 
 const assignSharedScoreboardHelpers = (module) => {
@@ -278,20 +279,46 @@ export function refreshVerboseScrollIndicators() {
  */
 export function ensureVerboseScrollHandling() {
   const { log } = getVerboseElements();
-  if (!log) return;
-  if (!verboseScrollListenerAttached) {
-    log.addEventListener(
-      "scroll",
-      () => {
-        refreshVerboseScrollIndicators();
-      },
-      { passive: true }
-    );
-    verboseScrollListenerAttached = true;
+  if (!log) {
+    return;
   }
+
+  if (currentVerboseLogEl !== log) {
+    if (currentVerboseLogEl && currentVerboseScrollHandler) {
+      currentVerboseLogEl.removeEventListener("scroll", currentVerboseScrollHandler);
+    }
+
+    currentVerboseScrollHandler = () => {
+      refreshVerboseScrollIndicators();
+    };
+    log.addEventListener("scroll", currentVerboseScrollHandler, { passive: true });
+    currentVerboseLogEl = log;
+  }
+
   if (!verboseResizeListenerAttached && typeof window !== "undefined") {
     window.addEventListener("resize", refreshVerboseScrollIndicators, { passive: true });
     verboseResizeListenerAttached = true;
   }
   refreshVerboseScrollIndicators();
+}
+
+/**
+ * Reset verbose scroll listeners and tracked references.
+ *
+ * @returns {void}
+ * @pseudocode
+ * if tracked log element and handler exist -> remove "scroll" listener
+ * if resize listener tracked and window exists -> remove resize listener
+ * clear tracked element/handler/flags
+ */
+export function resetVerboseScrollHandling() {
+  if (currentVerboseLogEl && currentVerboseScrollHandler) {
+    currentVerboseLogEl.removeEventListener("scroll", currentVerboseScrollHandler);
+  }
+  if (verboseResizeListenerAttached && typeof window !== "undefined") {
+    window.removeEventListener("resize", refreshVerboseScrollIndicators);
+  }
+  currentVerboseLogEl = null;
+  currentVerboseScrollHandler = null;
+  verboseResizeListenerAttached = false;
 }
