@@ -194,7 +194,7 @@ graph LR
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Default: Engine Init
+    [*] --> Default - Engine Init
 
     Default: ⚪ All Stat Buttons\nVISIBLE but DISABLED\n(grayed out, opacity 0.5)
 
