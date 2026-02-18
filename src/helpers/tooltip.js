@@ -315,173 +315,23 @@ function ensureTooltipElement(container = globalThis.document?.body) {
  *
  * @param {ParentNode} [root=globalThis.document] - Scope to search for tooltip targets.
  * @param {HTMLElement} [container] - Container element to append tooltips to (defaults to document.body).
- * @returns {Promise<() => void>} Resolves with a cleanup function.
+ * @returns {Promise<() => void> & { cleanup?: () => void }} Resolves with a cleanup function.
  */
-export async function initTooltips(root = globalThis.document, container) {
+export function initTooltips(root = globalThis.document, container) {
   const notifyReady = () => globalThis.dispatchEvent?.(new Event("tooltips:ready"));
-  if (!root) {
-    notifyReady();
-    return () => {};
-  }
-  // Fast-path: if there are no tooltip targets, avoid loading settings,
-  // sanitizer, or tooltip data. This dramatically reduces overhead for
-  // pages without tooltips (common in unit tests and some views).
-  const elements = root?.querySelectorAll?.("[data-tooltip-id]") || [];
-  if (elements.length === 0) {
-    notifyReady();
-    return () => {};
-  }
-  let overlay = false;
-  try {
-    const settings = await loadSettings();
-    // Priority: window.__FF_OVERRIDES > settings.featureFlags > false
-    const hasOverride =
-      typeof window !== "undefined" &&
-      window.__FF_OVERRIDES &&
-      Object.prototype.hasOwnProperty.call(window.__FF_OVERRIDES, "tooltipOverlayDebug");
-    overlay = hasOverride
-      ? !!window.__FF_OVERRIDES.tooltipOverlayDebug
-      : Boolean(settings.featureFlags?.tooltipOverlayDebug?.enabled);
-    if (!settings.tooltips) {
-      toggleTooltipOverlayDebug(false);
-      notifyReady();
-      return () => {};
+  let disposed = false;
+  let elements = [];
+  let show = () => {};
+  let hide = () => {};
+  let handleKeydown = () => {};
+  let keydownBound = false;
+
+  const cleanup = () => {
+    disposed = true;
+    if (keydownBound) {
+      root?.removeEventListener?.("keydown", handleKeydown);
+      keydownBound = false;
     }
-  } catch {
-    // ignore settings errors and assume enabled
-  }
-  toggleTooltipOverlayDebug(overlay);
-  const DOMPurify = await getSanitizer();
-  const data = await loadTooltips();
-  // Use provided container or default to document.body
-  const tooltipContainer = container || globalThis.document?.body;
-  const tip = ensureTooltipElement(tooltipContainer);
-  if (!tip) {
-    notifyReady();
-    return () => {};
-  }
-  const tooltipId = tip.id || "tooltip";
-  const previousDescriptions = new WeakMap();
-  let showTimer = null;
-  let hideTimer = null;
-  let activeTarget = null;
-  let pendingHideTarget = null;
-
-  function clearTimers() {
-    if (showTimer !== null) {
-      clearTimeout(showTimer);
-      showTimer = null;
-    }
-    if (hideTimer !== null) {
-      const targetToRestore = pendingHideTarget;
-      pendingHideTarget = null;
-      clearTimeout(hideTimer);
-      hideTimer = null;
-      if (targetToRestore) {
-        restoreAriaDescription(targetToRestore);
-      }
-    }
-  }
-
-  function linkAriaDescription(target) {
-    if (!target?.setAttribute) return;
-    if (!previousDescriptions.has(target)) {
-      previousDescriptions.set(target, target.getAttribute("aria-describedby"));
-    }
-    const describedBy = target.getAttribute("aria-describedby") || "";
-    const tokens = describedBy
-      .split(/\s+/)
-      .map((token) => token.trim())
-      .filter(Boolean);
-    if (!tokens.includes(tooltipId)) {
-      tokens.push(tooltipId);
-    }
-    target.setAttribute("aria-describedby", tokens.join(" "));
-  }
-
-  function restoreAriaDescription(target) {
-    if (!target?.setAttribute) return;
-    const original = previousDescriptions.get(target);
-    if (original === null || original === undefined || original === "") {
-      target.removeAttribute("aria-describedby");
-    } else {
-      target.setAttribute("aria-describedby", original);
-    }
-  }
-
-  function show(e) {
-    const target = e.currentTarget || e.target;
-    const id = target?.dataset?.tooltipId;
-    const text = resolveTooltipText(id, data);
-    const render = () => {
-      activeTarget = target;
-      tip.dataset.showDelayMs = String(SHOW_DELAY_MS);
-      tip.dataset.hideDelayMs = String(HIDE_DELAY_MS);
-      tip.dataset.dismissHint = DISMISS_HINT;
-      tip.removeAttribute("data-dismissed-by");
-      tip.innerHTML = sanitizeTooltip(text, id, DOMPurify);
-      tip.style.display = "block";
-      tip.setAttribute("aria-hidden", "false");
-      linkAriaDescription(target);
-      positionTooltip(tip, target);
-    };
-
-    clearTimers();
-    if (e?.type === "focus" || e?.type === "touchstart") {
-      render();
-      return;
-    }
-
-    showTimer = globalThis.setTimeout(render, SHOW_DELAY_MS);
-  }
-
-  function hide(e, { immediate = false, reason } = {}) {
-    const target = e?.currentTarget || e?.target || activeTarget;
-    const performHide = () => {
-      tip.style.display = "none";
-      tip.setAttribute("aria-hidden", "true");
-      if (reason) {
-        tip.dataset.dismissedBy = reason;
-      }
-      restoreAriaDescription(target);
-      if (activeTarget === target) {
-        activeTarget = null;
-      }
-      pendingHideTarget = null;
-    };
-
-    clearTimers();
-    pendingHideTarget = target;
-    if (immediate) {
-      performHide();
-      return;
-    }
-
-    hideTimer = globalThis.setTimeout(performHide, HIDE_DELAY_MS);
-  }
-
-  function handleKeydown(event) {
-    if (event?.key === "Escape" && tip.style.display === "block") {
-      hide({ currentTarget: activeTarget }, { immediate: true, reason: "escape" });
-    }
-  }
-
-  elements.forEach((el) => {
-    el.addEventListener("mouseenter", show);
-    el.addEventListener("mouseover", show);
-    el.addEventListener("focus", show);
-    el.addEventListener("touchstart", show);
-    el.addEventListener("mouseleave", hide);
-    el.addEventListener("mouseout", hide);
-    el.addEventListener("blur", hide);
-    el.addEventListener("touchend", hide);
-    el.addEventListener("touchcancel", hide);
-  });
-  root?.addEventListener?.("keydown", handleKeydown);
-  notifyReady();
-  return () => {
-    clearTimers();
-    root?.removeEventListener?.("keydown", handleKeydown);
     elements.forEach((el) => {
       el.removeEventListener("mouseenter", show);
       el.removeEventListener("mouseover", show);
@@ -494,4 +344,188 @@ export async function initTooltips(root = globalThis.document, container) {
       el.removeEventListener("touchcancel", hide);
     });
   };
+
+  const initPromise = (async () => {
+    if (!root) {
+      notifyReady();
+      return cleanup;
+    }
+    // Fast-path: if there are no tooltip targets, avoid loading settings,
+    // sanitizer, or tooltip data. This dramatically reduces overhead for
+    // pages without tooltips (common in unit tests and some views).
+    elements = root?.querySelectorAll?.("[data-tooltip-id]") || [];
+    if (elements.length === 0) {
+      notifyReady();
+      return cleanup;
+    }
+    let overlay = false;
+    try {
+      if (disposed) return cleanup;
+      const settings = await loadSettings();
+      if (disposed) return cleanup;
+      // Priority: window.__FF_OVERRIDES > settings.featureFlags > false
+      const hasOverride =
+        typeof window !== "undefined" &&
+        window.__FF_OVERRIDES &&
+        Object.prototype.hasOwnProperty.call(window.__FF_OVERRIDES, "tooltipOverlayDebug");
+      overlay = hasOverride
+        ? !!window.__FF_OVERRIDES.tooltipOverlayDebug
+        : Boolean(settings.featureFlags?.tooltipOverlayDebug?.enabled);
+      if (!settings.tooltips) {
+        toggleTooltipOverlayDebug(false);
+        notifyReady();
+        return cleanup;
+      }
+    } catch {
+      // ignore settings errors and assume enabled
+    }
+    if (disposed) return cleanup;
+    toggleTooltipOverlayDebug(overlay);
+    if (disposed) return cleanup;
+    const DOMPurify = await getSanitizer();
+    if (disposed) return cleanup;
+    const data = await loadTooltips();
+    if (disposed) return cleanup;
+    // Use provided container or default to document.body
+    const tooltipContainer = container || globalThis.document?.body;
+    const tip = ensureTooltipElement(tooltipContainer);
+    if (!tip) {
+      notifyReady();
+      return cleanup;
+    }
+    const tooltipId = tip.id || "tooltip";
+    const previousDescriptions = new WeakMap();
+    let showTimer = null;
+    let hideTimer = null;
+    let activeTarget = null;
+    let pendingHideTarget = null;
+
+    function clearTimers() {
+      if (showTimer !== null) {
+        clearTimeout(showTimer);
+        showTimer = null;
+      }
+      if (hideTimer !== null) {
+        const targetToRestore = pendingHideTarget;
+        pendingHideTarget = null;
+        clearTimeout(hideTimer);
+        hideTimer = null;
+        if (targetToRestore) {
+          restoreAriaDescription(targetToRestore);
+        }
+      }
+    }
+
+    function linkAriaDescription(target) {
+      if (!target?.setAttribute) return;
+      if (!previousDescriptions.has(target)) {
+        previousDescriptions.set(target, target.getAttribute("aria-describedby"));
+      }
+      const describedBy = target.getAttribute("aria-describedby") || "";
+      const tokens = describedBy
+        .split(/\s+/)
+        .map((token) => token.trim())
+        .filter(Boolean);
+      if (!tokens.includes(tooltipId)) {
+        tokens.push(tooltipId);
+      }
+      target.setAttribute("aria-describedby", tokens.join(" "));
+    }
+
+    function restoreAriaDescription(target) {
+      if (!target?.setAttribute) return;
+      const original = previousDescriptions.get(target);
+      if (original === null || original === undefined || original === "") {
+        target.removeAttribute("aria-describedby");
+      } else {
+        target.setAttribute("aria-describedby", original);
+      }
+    }
+
+    show = function showTooltip(e) {
+      const target = e.currentTarget || e.target;
+      const id = target?.dataset?.tooltipId;
+      const text = resolveTooltipText(id, data);
+      const render = () => {
+        activeTarget = target;
+        tip.dataset.showDelayMs = String(SHOW_DELAY_MS);
+        tip.dataset.hideDelayMs = String(HIDE_DELAY_MS);
+        tip.dataset.dismissHint = DISMISS_HINT;
+        tip.removeAttribute("data-dismissed-by");
+        tip.innerHTML = sanitizeTooltip(text, id, DOMPurify);
+        tip.style.display = "block";
+        tip.setAttribute("aria-hidden", "false");
+        linkAriaDescription(target);
+        positionTooltip(tip, target);
+      };
+
+      clearTimers();
+      if (e?.type === "focus" || e?.type === "touchstart") {
+        render();
+        return;
+      }
+
+      showTimer = globalThis.setTimeout(render, SHOW_DELAY_MS);
+    };
+
+    hide = function hideTooltip(e, { immediate = false, reason } = {}) {
+      const target = e?.currentTarget || e?.target || activeTarget;
+      const performHide = () => {
+        tip.style.display = "none";
+        tip.setAttribute("aria-hidden", "true");
+        if (reason) {
+          tip.dataset.dismissedBy = reason;
+        }
+        restoreAriaDescription(target);
+        if (activeTarget === target) {
+          activeTarget = null;
+        }
+        pendingHideTarget = null;
+      };
+
+      clearTimers();
+      pendingHideTarget = target;
+      if (immediate) {
+        performHide();
+        return;
+      }
+
+      hideTimer = globalThis.setTimeout(performHide, HIDE_DELAY_MS);
+    };
+
+    handleKeydown = function tooltipKeydownHandler(event) {
+      if (event?.key === "Escape" && tip.style.display === "block") {
+        hide({ currentTarget: activeTarget }, { immediate: true, reason: "escape" });
+      }
+    };
+
+    elements.forEach((el) => {
+      if (disposed || !el?.isConnected) return;
+      el.addEventListener("mouseenter", show);
+      el.addEventListener("mouseover", show);
+      el.addEventListener("focus", show);
+      el.addEventListener("touchstart", show);
+      el.addEventListener("mouseleave", hide);
+      el.addEventListener("mouseout", hide);
+      el.addEventListener("blur", hide);
+      el.addEventListener("touchend", hide);
+      el.addEventListener("touchcancel", hide);
+    });
+    if (!disposed) {
+      root?.addEventListener?.("keydown", handleKeydown);
+      keydownBound = true;
+    }
+    if (disposed) {
+      cleanup();
+      return cleanup;
+    }
+    notifyReady();
+    return () => {
+      clearTimers();
+      cleanup();
+    };
+  })();
+
+  initPromise.cleanup = cleanup;
+  return initPromise;
 }

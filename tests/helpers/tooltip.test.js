@@ -25,6 +25,59 @@ beforeEach(async () => {
 });
 
 describe("initTooltips", () => {
+  it("skips binding and tooltip side effects when cleanup runs before settings resolve", async () => {
+    const deferred = {};
+    deferred.promise = new Promise((resolve) => {
+      deferred.resolve = resolve;
+    });
+    loadSettings.mockReturnValue(deferred.promise);
+    fetchJson.mockResolvedValue({ stat: { delayed: "delayed text" } });
+
+    const { initTooltips } = await import("../../src/helpers/tooltip.js");
+
+    const el = document.createElement("button");
+    el.dataset.tooltipId = "stat.delayed";
+    document.body.appendChild(el);
+
+    const initPromise = initTooltips();
+    initPromise.cleanup?.();
+    deferred.resolve({ tooltips: true, featureFlags: {} });
+
+    const cleanup = await initPromise;
+    expect(typeof cleanup).toBe("function");
+
+    el.dispatchEvent(new Event("mouseover"));
+    vi.runAllTimers();
+
+    expect(document.querySelector(".tooltip")).toBeNull();
+    expect(fetchJson).not.toHaveBeenCalled();
+  });
+
+  it("does not bind listeners for disconnected tooltip targets", async () => {
+    fetchJson.mockResolvedValue({ stat: { detached: "detached text" } });
+
+    const { initTooltips } = await import("../../src/helpers/tooltip.js");
+
+    const detached = document.createElement("button");
+    detached.dataset.tooltipId = "stat.detached";
+    document.body.appendChild(detached);
+    document.body.removeChild(detached);
+
+    const root = {
+      querySelectorAll: () => [detached],
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn()
+    };
+
+    await initTooltips(root, document.body);
+
+    detached.dispatchEvent(new Event("mouseover"));
+    vi.runAllTimers();
+
+    const tip = document.querySelector(".tooltip");
+    expect(tip?.style.display ?? "none").toBe("none");
+  });
+
   it("shows tooltip on hover and parses markdown", async () => {
     fetchJson.mockResolvedValue({
       stat: { test: "**Bold**\n_italic_" }
