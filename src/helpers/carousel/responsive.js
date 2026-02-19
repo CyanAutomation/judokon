@@ -48,9 +48,20 @@
  * 5. Immediately call `setCardWidths()` for initial setup.
  *
  * @param {HTMLElement} container - Carousel container with judoka cards.
- * @returns {void}
+ * @returns {() => void} Disposer that removes responsive sizing listeners.
  */
+const responsiveSizingState = new WeakMap();
+
 export function setupResponsiveSizing(container) {
+  if (!(container instanceof HTMLElement)) {
+    return () => {};
+  }
+
+  const existing = responsiveSizingState.get(container);
+  if (existing) {
+    return existing.dispose;
+  }
+
   function setCardWidths() {
     const width = window.innerWidth;
     let cardsInView = 3;
@@ -69,4 +80,16 @@ export function setupResponsiveSizing(container) {
   resizeObs.observe(container);
   window.addEventListener("resize", setCardWidths);
   setCardWidths();
+
+  let disposed = false;
+  const dispose = () => {
+    if (disposed) return;
+    disposed = true;
+    resizeObs.disconnect();
+    window.removeEventListener("resize", setCardWidths);
+    responsiveSizingState.delete(container);
+  };
+
+  responsiveSizingState.set(container, { dispose });
+  return dispose;
 }

@@ -100,6 +100,8 @@ export function createBrowsePageRuntime(documentRef = document) {
     async renderCarousel(list, gokyoData) {
       const carousel = await buildCardCarousel(list, gokyoData);
       if (carouselContainer) {
+        const existingCarousel = carouselContainer.querySelector?.(".carousel-container");
+        existingCarousel?._disposeCarousel?.();
         carouselContainer.innerHTML = "";
         carouselContainer.appendChild(carousel);
       }
@@ -231,6 +233,8 @@ export async function setupBrowseJudokaPage({ runtime } = {}) {
     } catch (fallbackError) {
       console.error("Error building fallback judoka:", fallbackError);
       const container = pageRuntime.carouselContainer;
+      const existingCarousel = container?.querySelector?.(".carousel-container");
+      existingCarousel?._disposeCarousel?.();
       if (container?.replaceChildren) {
         container.replaceChildren();
       } else if (container && "innerHTML" in container) {
