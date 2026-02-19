@@ -328,6 +328,55 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
     expect(scrollIntoView).toHaveBeenCalled();
   });
 
+  it("selects hash key containing quotes, brackets, and spaces", async () => {
+    Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
+
+    const specialKey = 'ui.key "quoted] value"';
+    const mod = await import("../../src/helpers/tooltipViewerPage.js");
+    mod.setTooltipDataLoader(async () => ({ [specialKey]: "special body", "ui.other": "x" }));
+
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    location.hash = `#${encodeURIComponent(specialKey)}`;
+
+    await init(mod);
+
+    expect(document.getElementById("tooltip-preview").innerHTML).toBe("special body");
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to dataset matching when CSS.escape is unavailable", async () => {
+    Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
+
+    const specialKey = 'ui.key with space]and"quote';
+    const mod = await import("../../src/helpers/tooltipViewerPage.js");
+    mod.setTooltipDataLoader(async () => ({ [specialKey]: "fallback body", "ui.other": "x" }));
+
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+
+    const originalCss = globalThis.CSS;
+    Object.defineProperty(globalThis, "CSS", {
+      value: undefined,
+      configurable: true,
+      writable: true
+    });
+    try {
+      location.hash = `#${encodeURIComponent(specialKey)}`;
+
+      await init(mod);
+
+      expect(document.getElementById("tooltip-preview").innerHTML).toBe("fallback body");
+      expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    } finally {
+      Object.defineProperty(globalThis, "CSS", {
+        value: originalCss,
+        configurable: true,
+        writable: true
+      });
+    }
+  });
+
   it("shows 'File not found' when tooltips.json is missing", async () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 
