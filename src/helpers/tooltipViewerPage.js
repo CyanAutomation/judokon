@@ -276,7 +276,17 @@ export function applyHashSelection(listPlaceholder, select) {
             };
         } catch {}
       } else {
-        el = listPlaceholder.querySelector(`[data-key="${key}"]`);
+        const supportsCssEscape =
+          typeof CSS !== "undefined" && CSS && typeof CSS.escape === "function";
+        if (supportsCssEscape) {
+          const escapedKey = CSS.escape(key);
+          el = listPlaceholder.querySelector(`[data-key="${escapedKey}"]`);
+        }
+        if (!el) {
+          el = Array.from(listPlaceholder.querySelectorAll("[data-key]")).find(
+            (candidate) => candidate.dataset.key === key
+          );
+        }
       }
     } catch (e) {
       try {
