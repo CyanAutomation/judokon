@@ -43,11 +43,35 @@ vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
 
 let timers;
 
+/**
+ * Create a state manager instance for testing with custom handlers and context.
+ *
+ * @pseudocode
+ * 1. Import createStateManager from stateManager module
+ * 2. Initialize with custom onEnter handlers, context, and transition callback
+ * 3. Return configured state machine for test usage
+ *
+ * @param {Record<string, Function>} [onEnterMap={}] - Map of state name to onEnter handler functions
+ * @param {object} [context={}] - Initial machine context (engine, store, etc.)
+ * @param {Function} [onTransition] - Optional transition callback
+ * @returns {Promise<object>} State manager instance with dispatch and getState methods
+ */
 async function createMachine(onEnterMap = {}, context = {}, onTransition = undefined) {
   const { createStateManager } = await import("../../../src/helpers/classicBattle/stateManager.js");
   return createStateManager(onEnterMap, context, onTransition, CLASSIC_BATTLE_STATES);
 }
 
+/**
+ * Advance a state machine through the initial states to reach roundSelect.
+ *
+ * @pseudocode
+ * 1. Dispatch "startClicked" to enter matchStart state
+ * 2. Dispatch "ready" twice to transition through roundWait and roundPrompt
+ * 3. Dispatch "cardsRevealed" to reach roundSelect state
+ *
+ * @param {object} machine - State manager instance with dispatch method
+ * @returns {Promise<void>}
+ */
 async function advanceToRoundSelect(machine) {
   await machine.dispatch("startClicked");
   await machine.dispatch("ready");
