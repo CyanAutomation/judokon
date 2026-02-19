@@ -13,16 +13,32 @@ vi.mock("../../src/helpers/carousel/index.js", async () => {
       });
       return { ready: Promise.resolve() };
     }),
-    setupResponsiveSizing: vi.fn()
+    setupResponsiveSizing: vi.fn(() => vi.fn())
   };
 });
 
 import { buildCardCarousel } from "../../src/helpers/carouselBuilder.js";
+import { setupResponsiveSizing } from "../../src/helpers/carousel/index.js";
 
 describe("buildCardCarousel", () => {
   it("returns message when judoka list is empty", async () => {
     const wrapper = await withMutedConsole(() => buildCardCarousel([], []));
     expect(wrapper.textContent).toContain("No cards available.");
+  });
+
+  it("invokes responsive sizing disposer during carousel teardown", async () => {
+    const disposeResponsiveSizing = vi.fn();
+    setupResponsiveSizing.mockReturnValueOnce(disposeResponsiveSizing);
+
+    const wrapper = await withMutedConsole(() =>
+      buildCardCarousel([{ id: 1 }, { id: 2 }, { id: 3 }], [])
+    );
+
+    wrapper._disposeCarousel();
+
+    expect(disposeResponsiveSizing).toHaveBeenCalledTimes(1);
+    expect(wrapper._carouselController).toBeNull();
+    expect(wrapper._disposeResponsiveSizing).toBeNull();
   });
 
   it("updates scroll button state on scroll", async () => {
