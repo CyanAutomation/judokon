@@ -45,6 +45,43 @@ describe("prdReaderPage", () => {
     expect(baseNames).toEqual(["a", "b"]);
   });
 
+  it("loads archived paths from manifest fallback", async () => {
+    globalThis.SKIP_PRD_AUTO_INIT = true;
+    const { loadPrdDocs } = await import("../../src/helpers/prdReaderPage.js");
+    const fetchMock = vi.fn(async (url) => {
+      if (url.endsWith("prdIndex.json")) {
+        return {
+          ok: true,
+          json: async () => ["archive/prdAIAgentWorkflows.md", "prdArchitecture.md"]
+        };
+      }
+      if (url.endsWith("archive/prdAIAgentWorkflows.md")) {
+        return { ok: true, text: async () => "# Archived workflow" };
+      }
+      if (url.endsWith("prdArchitecture.md")) {
+        return { ok: true, text: async () => "# Architecture" };
+      }
+      return { ok: false, status: 404, statusText: "Not Found" };
+    });
+
+    global.fetch = fetchMock;
+
+    const docs = await loadPrdDocs(undefined, (md) => `<h1>${md}</h1>`);
+    expect(docs.files).toEqual(["archive/prdAIAgentWorkflows.md", "prdArchitecture.md"]);
+
+    await docs.fetchOne(0);
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      expect.stringMatching(/design\/productRequirementsDocuments\/prdIndex\.json$/)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      expect.stringMatching(
+        /design\/productRequirementsDocuments\/archive\/prdAIAgentWorkflows\.md$/
+      )
+    );
+  });
   it("seeds history state from doc map", async () => {
     history.replaceState(null, "", "/?doc=b");
 
