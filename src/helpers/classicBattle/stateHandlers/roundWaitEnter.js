@@ -175,6 +175,10 @@ export async function roundWaitEnter(machine, payload) {
   }
 
   if (isCliSurface(machine)) {
+    guard(() => {
+      updateRoundStateAtomically(roundState.getCurrentRound());
+    });
+
     Promise.resolve().then(() => {
       guard(() => {
         machine.dispatch("ready", { source: "uiPacingBypass" });
