@@ -107,6 +107,7 @@ export function setupLanguageToggle(element) {
     if (isTransitioning) {
       if (pendingTimeoutId !== null) {
         clearTimeout(pendingTimeoutId);
+        pendingTimeoutId = null;
       }
       scheduleTransition();
       return;
