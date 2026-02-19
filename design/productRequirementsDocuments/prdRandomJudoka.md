@@ -336,7 +336,7 @@ This state machine implementation satisfies the functional requirement to **"Dis
 
 - Detect OS-level Reduced Motion; disable animations if active
 - Sound and motion preferences are configured via `settings.html` (no on-screen toggles)
-- Tap targets ≥44px × 44px (64px recommended for kid-friendly design). See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)
+- Tap targets ≥44px × 44px (64px recommended for kid-friendly design). See [UI Design Standards](prdUIDesignSystem.md#4-accessibility-standards-p1)
 - Text must meet WCAG 2.1 AA 4.5:1 contrast ratio (verify with automated tools)
 - All buttons and states require clear text labels
 - The Draw button uses `aria-label="Draw a random judoka card"` so screen readers

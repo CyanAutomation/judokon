@@ -56,7 +56,7 @@ This selection screen is the gateway to the three Team Battle modes:
 - Display three large buttons horizontally (or vertically on mobile) labeled "Male", "Female", and "Mixed".
 - Highlight the last selected mode if available.
 - Ensure all buttons are accessible by keyboard (tab order matches visual order).
-- Buttons must have a minimum touch target size of 44px. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness).
+- Buttons must have a minimum touch target size of 44px. See [UI Design Standards](prdUIDesignSystem.md#4-accessibility-standards-p1).
 - Use clear, high-contrast colors for button text and backgrounds.
 - Provide visible focus indicators for keyboard navigation.
 - The layout should be responsive and visually centered on the page.

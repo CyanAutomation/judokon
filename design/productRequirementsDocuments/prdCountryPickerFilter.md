@@ -281,7 +281,7 @@ Slide-In Panel (Default)              Full-Screen Grid
   - Full-Screen Grid: Grid layout showing all countries.
 - A layout toggle control switches between the slide-in panel and full-screen grid.
 - Mobile Optimization:
-  - Minimum tap target size of 44x44px for flags to ensure touch accessibility (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
+  - Minimum tap target size of 44x44px for flags to ensure touch accessibility (see [UI Design Standards](prdUIDesignSystem.md#4-accessibility-standards-p1)).
   - Color contrast ratios must meet WCAG 2.1 AA standards for readability.
   - Selected country should be visually highlighted (e.g., border or shading).
   - Selector should respond well to different screen sizes (responsive design).
@@ -299,9 +299,9 @@ Slide-In Panel (Default)              Full-Screen Grid
 
 ### Wireframes
 
-| **Country Picker Mockup 1**                                          |                                          **Country Picker Mockup 2** |
-| -------------------------------------------------------------------- | -------------------------------------------------------------------: |
-| ![Country Picker Mockup 1](/design/mockups/mockupCountryPicker1.png) | ![Country Picker Mockup 2](/design/mockups/mockupCountryPicker2.png) |
+| **Country Picker Mockup 1**                                         |                                         **Country Picker Mockup 2** |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------: |
+| ![Country Picker Mockup 1](assets/mockups/mockupCountryPicker1.png) | ![Country Picker Mockup 2](assets/mockups/mockupCountryPicker2.png) |
 
 ---
 
@@ -335,7 +335,7 @@ Slide-In Panel (Default)              Full-Screen Grid
 - [ ] 5.0 Ensure Accessibility and Compliance
 - [x] 5.1 Add alt-text for all flag icons based on country names and apply `aria-label` text like "Filter by {country}" to each flag radio input for screen readers.
   - [x] 5.2 Ensure color contrast ratios meet WCAG 2.1 AA standards.
-  - [x] 5.3 Enforce minimum tap target size (44x44px) for touch devices (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
+  - [x] 5.3 Enforce minimum tap target size (44x44px) for touch devices (see [UI Design Standards](prdUIDesignSystem.md#4-accessibility-standards-p1)).
   - [x] 5.4 Ensure flags are displayed alphabetically.
 - [x] 5.5 Ensure keyboard navigation and focus outlines are visible and accessible.
 

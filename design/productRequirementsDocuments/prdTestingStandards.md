@@ -102,8 +102,8 @@ sequenceDiagram
 
 **Related Diagrams**:
 
-- [Development Standards](prdDevelopmentStandards.md#validation-pipeline) — Code validation and quality gates
-- [Battle Pages Regression Testing](prdBattlePages.md) — Specialized test organization for critical pages
+- [Development Standards](prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) — Code validation and quality gates
+- [Validation Command Matrix](prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) — Specialized test organization for critical pages
 
 ---
 

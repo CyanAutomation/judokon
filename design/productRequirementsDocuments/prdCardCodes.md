@@ -393,9 +393,9 @@ graph TD
 
 ## 8. Wireframes
 
-| **Card Code Display and Entry Mockup 1**                                     | **Card Code Display and Entry Mockup 2**                                     |
-| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| ![Card Code Display and Entry Mockup 1](/design/mockups/mockupCardCode1.png) | ![Card Code Display and Entry Mockup 2](/design/mockups/mockupCardCode2.png) |
+| **Card Code Display and Entry Mockup 1**                                    | **Card Code Display and Entry Mockup 2**                                    |
+| --------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| ![Card Code Display and Entry Mockup 1](assets/mockups/mockupCardCode1.png) | ![Card Code Display and Entry Mockup 2](assets/mockups/mockupCardCode2.png) |
 
 ---
 

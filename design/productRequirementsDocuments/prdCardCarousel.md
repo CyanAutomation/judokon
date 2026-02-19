@@ -294,9 +294,9 @@ listeners or leaked references during navigation.
 - **Hover Effect**: On desktop, cards scale to **1.05** on hover; the focused center card scales to **1.1**.
 - **Touch Interaction**: On mobile, swipe left/right; smooth snap after swipe.
 
-| **Card Carousel Mockup 1**                                       | **Card Carousel Mockup 2**                                       |
-| ---------------------------------------------------------------- | ---------------------------------------------------------------- |
-| ![Card Carousel Mockup](/design/mockups/mockupCardCarousel2.png) | ![Card Carousel Mockup](/design/mockups/mockupCardCarousel3.png) |
+| **Card Carousel Mockup 1**                                      | **Card Carousel Mockup 2**                                      |
+| --------------------------------------------------------------- | --------------------------------------------------------------- |
+| ![Card Carousel Mockup](assets/mockups/mockupCardCarousel2.png) | ![Card Carousel Mockup](assets/mockups/mockupCardCarousel3.png) |
 
 ---
 
