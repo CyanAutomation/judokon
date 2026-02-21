@@ -226,7 +226,7 @@ export async function buildCardCarousel(judokaList, gokyoData) {
 
   const { ready } = appendCards(container, judokaList, gokyoLookup);
   await ready;
-  setupResponsiveSizing(container);
+  const disposeResponsiveSizing = setupResponsiveSizing(container);
 
   spinner.remove();
   if (forceSpinner) {
@@ -240,6 +240,13 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   });
   // Expose for debugging/tests if needed
   wrapper._carouselController = controller;
+  wrapper._disposeResponsiveSizing = disposeResponsiveSizing;
+  wrapper._disposeCarousel = () => {
+    disposeResponsiveSizing?.();
+    controller?.destroy?.();
+    wrapper._disposeResponsiveSizing = null;
+    wrapper._carouselController = null;
+  };
 
   // Apply non-navigation accessibility helpers
   setupFocusHandlers(container);

@@ -1,6 +1,6 @@
 [
   "archive/prdFlatDesign.md",
-  "prdAIAgentWorkflows.md",
+  "archive/prdAIAgentWorkflows.md",
   "prdArchitecture.md",
   "prdBattleActionBar.md",
   "prdBattleBandit.md",
@@ -57,5 +57,5 @@
   "prdTooltipViewer.md",
   "prdUIDesignSystem.md",
   "prdUpdateJudoka.md",
-  "prdVectorDatabaseRAG.md"
+  "archive/prdVectorDatabaseRAG.md"
 ]

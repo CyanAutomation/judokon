@@ -71,14 +71,14 @@ export function setupLanguageToggle(element) {
   let pseudoHTML = "";
   let pseudoLoaded = false;
   let showingPseudo = false;
+  let isTransitioning = false;
+  let pendingTimeoutId = null;
 
-  button.addEventListener("click", () => {
-    element.classList.add("fading");
-    setTimeout(async () => {
+  const scheduleTransition = () => {
+    pendingTimeoutId = setTimeout(async () => {
       try {
-        if (showingPseudo) {
-          element.innerHTML = originalHTML;
-        } else {
+        const nextShowingPseudo = !showingPseudo;
+        if (nextShowingPseudo) {
           if (!pseudoLoaded) {
             originalHTML = element.innerHTML;
             const clone = element.cloneNode(true);
@@ -87,16 +87,35 @@ export function setupLanguageToggle(element) {
             pseudoLoaded = true;
           }
           element.innerHTML = pseudoHTML;
+        } else {
+          element.innerHTML = originalHTML;
         }
-        element.classList.toggle("jp-font", !showingPseudo);
-        element.classList.remove("fading");
-        showingPseudo = !showingPseudo;
+        element.classList.toggle("jp-font", nextShowingPseudo);
+        showingPseudo = nextShowingPseudo;
         button.setAttribute("aria-pressed", String(showingPseudo));
       } catch (error) {
         console.error(error);
+      } finally {
         element.classList.remove("fading");
+        isTransitioning = false;
+        pendingTimeoutId = null;
       }
     }, 200);
+  };
+
+  button.addEventListener("click", () => {
+    if (isTransitioning) {
+      if (pendingTimeoutId !== null) {
+        clearTimeout(pendingTimeoutId);
+        pendingTimeoutId = null;
+      }
+      scheduleTransition();
+      return;
+    }
+
+    isTransitioning = true;
+    element.classList.add("fading");
+    scheduleTransition();
   });
 
   return button;
