@@ -63,15 +63,15 @@ New and returning players often feel confused or overwhelmed when first launchin
 
 ### Home Navigation Menu
 
-| Priority | Feature                     | Description                                                                                                                                                    |
-| -------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P1       | Grid Layout                 | 2x2 grid, responsive stacking on smaller screens.                                                                                                              |
-| P1       | Clickable Tile Area         | Entire tile area must be clickable, not just the label or icon.                                                                                                |
-| P1       | Mobile Tap Optimization     | Tap targets must be at least 44px for mobile compliance. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness). |
-| P2       | Tile Hover Effects          | Cursor change and visual feedback (150ms ease-in zoom effect) on hover.                                                                                        |
-| P2       | Keyboard Navigation Support | Tiles must be focusable and triggerable with keyboard navigation (Tab, Enter).                                                                                 |
-| P3       | SVG Optimization            | Icons must be <50KB and optimized for fast loading.                                                                                                            |
-| P3       | Accessibility Compliance    | Text contrast ≥4.5:1 and screen-reader friendly (aria-labels, alt text).                                                                                       |
+| Priority | Feature                     | Description                                                                                                                            |
+| -------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| P1       | Grid Layout                 | 2x2 grid, responsive stacking on smaller screens.                                                                                      |
+| P1       | Clickable Tile Area         | Entire tile area must be clickable, not just the label or icon.                                                                        |
+| P1       | Mobile Tap Optimization     | Tap targets must be at least 44px for mobile compliance. See [UI Design Standards](prdUIDesignSystem.md#4-accessibility-standards-p1). |
+| P2       | Tile Hover Effects          | Cursor change and visual feedback (150ms ease-in zoom effect) on hover.                                                                |
+| P2       | Keyboard Navigation Support | Tiles must be focusable and triggerable with keyboard navigation (Tab, Enter).                                                         |
+| P3       | SVG Optimization            | Icons must be <50KB and optimized for fast loading.                                                                                    |
+| P3       | Accessibility Compliance    | Text contrast ≥4.5:1 and screen-reader friendly (aria-labels, alt text).                                                               |
 
 ### Map Interface (if present)
 
@@ -159,7 +159,7 @@ Each tile contains:
 > - Optimized for landscape desktop layout.
 > - Tap target sizes specified for touch devices.
 
-![Main Screen Game Modes Mockup](/design/mockups/mockupGameModes1.png)
+![Main Screen Game Modes Mockup](assets/mockups/mockupGameModes1.png)
 
 ---
 
@@ -368,7 +368,7 @@ stateDiagram-v2
 - Tile backgrounds use `var(--button-bg)` and corners `var(--radius-md)`.
 - Hover animation uses `var(--transition-fast)` to scale tiles to **1.05**.
 - Ensure text labels and background colors have contrast ratio ≥4.5:1.
-- Follow UI design tokens for fonts and color contrast as outlined in [codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md).
+- Follow UI design tokens for fonts and color contrast as outlined in [codeUIDesignStandards.md](prdUIDesignSystem.md).
 - Consistent margin and padding for tile spacing.
 
 ### Battle Mode Section

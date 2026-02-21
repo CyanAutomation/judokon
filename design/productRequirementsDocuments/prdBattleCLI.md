@@ -128,7 +128,7 @@ flowchart TB
 
 > **Test Parity**: Because both modes share the engine and event stream, a Playwright test written for CLI mode produces **identical game state sequences** to a classic mode test—enabling cross-mode test coverage and deterministic replay via seed parameters.
 
-**Test Coverage**: Verified by: [playwright/battle-cli-start.spec.js](playwright/battle-cli-start.spec.js) — validates initialization and round selection parity; [playwright/battle-cli-play.spec.js](playwright/battle-cli-play.spec.js) — tests stat selection, timers, and outcome rendering; [playwright/battle-cli-restart.spec.js](playwright/battle-cli-restart.spec.js) — verifies match restart and deterministic seed replay
+**Test Coverage**: Verified by: [playwright/battle-cli-start.spec.js](../../playwright/battle-cli-start.spec.js) — validates initialization and round selection parity; [playwright/battle-cli-play.spec.js](../../playwright/battle-cli-play.spec.js) — tests stat selection, timers, and outcome rendering; [playwright/battle-cli-restart.spec.js](../../playwright/battle-cli-restart.spec.js) — verifies match restart and deterministic seed replay
 
 **Related diagrams**: See [prdBattleEngine.md](prdBattleEngine.md) for shared event catalog; [prdBattleClassic.md](prdBattleClassic.md) for animated UI rendering; [prdBattleScoreboard.md](prdBattleScoreboard.md) for event authority rules
 

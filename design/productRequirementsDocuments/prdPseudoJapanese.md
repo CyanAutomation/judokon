@@ -219,9 +219,9 @@ System tries local JSON mapping first (fastest). During testing, API validation 
   - Visually consistent with game UI (rounded rectangle, matching color scheme).
 - No plan for real Japanese localization — this feature is purely for stylistic effect.
 
-|                       **Meditation Screen Mockup 3**                       |                       **Meditation Screen Mockup 4**                       |
-| :------------------------------------------------------------------------: | :------------------------------------------------------------------------: |
-| ![Meditation Screen Mockup 3](/design/mockups/mockupMeditationScreen3.png) | ![Meditation Screen Mockup 4](/design/mockups/mockupMeditationScreen4.png) |
+|                    **Meditation Screen Mockup 3**                    |                    **Meditation Screen Mockup 4**                    |
+| :------------------------------------------------------------------: | :------------------------------------------------------------------: |
+| ![Meditation Screen Mockup 3](assets/mockups/mockupQuoteScreen3.png) | ![Meditation Screen Mockup 4](assets/mockups/mockupQuoteScreen4.png) |
 
 ### 1. Quote Display + Language Toggle Module
 
@@ -250,7 +250,7 @@ Prevents accidental taps and creates distinct flow—finish reading before proce
 
 ## Dependencies
 
-- Local JSON mapping file for English-to-pseudo-Japanese conversion ([pseudoJapaneseMap.json](../../data/pseudoJapaneseMap.json) if present; see repo for details).
+- Local JSON mapping file for English-to-pseudo-Japanese conversion ([pseudoJapaneseMap.json](../../src/data/japaneseConverter.js) if present; see repo for details).
 - Validation API: [https://romaji2kana.com/api](https://romaji2kana.com/api) (testing only, not production).
 - Integrated with the Meditation screen ([PRD: Meditation Screen](prdMeditationScreen.md)).
 

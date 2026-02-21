@@ -84,9 +84,9 @@ jobs:
         timeout-minutes: 5
         continue-on-error: true
 
-      - name: Check PRD test coverage links
+      - name: Check PRD markdown links
         id: prd-links
-        run: npm run check:prd-test-links
+        run: npm run check:prd-links
         timeout-minutes: 3
 
       - name: Run Vitest unit tests

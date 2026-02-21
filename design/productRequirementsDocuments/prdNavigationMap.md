@@ -46,7 +46,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 ## Player Actions
 
 - **Trigger:** In landscape mode, tapping the bottom right corner map icon expands a "Judo Training Village" map from the footer with a smooth upward slide animation (<500ms).
-- **Map Layout:** The map presents different game modes as a grid of image tiles representing village landmarks (Dojo (training hall), Budokan (martial arts arena), Kodokan (judo headquarters)), with minimum 44px touch target size. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness).
+- **Map Layout:** The map presents different game modes as a grid of image tiles representing village landmarks (Dojo (training hall), Budokan (martial arts arena), Kodokan (judo headquarters)), with minimum 44px touch target size. See [UI Design Standards](prdUIDesignSystem.md#4-accessibility-standards-p1).
 - **Navigation:** Tapping a tile smoothly transitions the player to the selected game mode.
 - **Cancel/Back Out:** Tapping outside the map area or pressing the map icon button again collapses the map. If device orientation changes mid-animation, the expansion is canceled and reverts to the default footer state.
 - **Fallback:** If the map fails to load, a simplified, high-contrast text menu appears instantly.
@@ -128,9 +128,9 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - **Performance:** Maintain ≥60fps animations on mid-tier devices.
 - **Responsiveness:** If viewport height <400px or width <640px, hide the map icon and corresponding functionality.
 
-|                       Navigation Map Mockup 1                        |                       Navigation Map Mockup 2                        |
-| :------------------------------------------------------------------: | :------------------------------------------------------------------: |
-| ![Navigation Map Mockup 1](/design/mockups/mockupNavigationMap2.png) | ![Navigation Map Mockup 2](/design/mockups/mockupNavigationMap3.png) |
+|                       Navigation Map Mockup 1                       |                       Navigation Map Mockup 2                       |
+| :-----------------------------------------------------------------: | :-----------------------------------------------------------------: |
+| ![Navigation Map Mockup 1](assets/mockups/mockupNavigationMap2.png) | ![Navigation Map Mockup 2](assets/mockups/mockupNavigationMap3.png) |
 
 ---
 

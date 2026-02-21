@@ -76,6 +76,7 @@
     "diagram:preview": "node scripts/runMermaid.js -i diagram.mmd -o /tmp/preview.svg",
     "check:root-markdown": "node scripts/check-root-markdown.mjs",
     "check:prd-test-links": "node scripts/check-prd-test-links.mjs",
+    "check:prd-links": "node scripts/check-prd-links.mjs"
     "check:prd-index": "node scripts/validate-prd-index.mjs"
   },
   "keywords": [],

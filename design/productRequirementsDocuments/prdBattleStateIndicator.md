@@ -298,7 +298,7 @@ Then `isReady` is false and no DOM rendered
 **Related Diagrams**:
 
 - [Battle Engine FSM](prdBattleEngine.md#fsm-state-catalog) — State definitions and catalog
-- [Battle Event System](prdBattleEventSystem.md) — control.state.changed event contract
+- [Battle Event System](prdEventContracts.md#battle-events) — control.state.changed event contract
 
 ---
 
