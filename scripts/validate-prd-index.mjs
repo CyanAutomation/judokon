@@ -22,11 +22,19 @@ export async function validatePrdIndex() {
   }
 
   const rootAbs = path.resolve(PRD_ROOT);
-  return entries.filter((entry) => {
+  const isInvalidManifestEntry = (entry) => {
     if (typeof entry !== "string" || !entry.trim()) return true;
+
     const resolved = path.resolve(rootAbs, entry);
     const isUnderRoot = resolved === rootAbs || resolved.startsWith(`${rootAbs}${path.sep}`);
-    return !isUnderRoot || !existsSync(resolved);
+    const fileExists = existsSync(resolved);
+
+    return !isUnderRoot || !fileExists;
+  };
+
+  return entries.filter((entry) => {
+    // Keep only entries that are invalid/missing so caller can fail fast with diagnostics.
+    return isInvalidManifestEntry(entry);
   });
 }
 
