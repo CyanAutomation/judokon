@@ -3,7 +3,6 @@ import { guard, guardAsync } from "./guard.js";
 import { setSkipHandler } from "./skipHandler.js";
 import {
   hasReadyBeenDispatchedForCurrentCooldown,
-  resetReadyDispatchState,
   setReadyDispatchedForCurrentCooldown
 } from "./roundReadyState.js";
 
@@ -303,65 +302,14 @@ export function createCooldownCompletion({ machine, timer, button, scheduler, on
 }
 
 /**
- * Schedule a fallback timer for cooldown completion.
- *
- * @param {object} options - Configuration options.
- * @param {number} options.duration - Duration in seconds.
- * @param {() => void} options.finish - Completion callback.
- * @param {object} [options.scheduler] - Optional scheduler with setTimeout.
- * @summary Schedule a fallback timer that fires after the main cooldown timer.
- * @pseudocode
- * 1. Convert duration to milliseconds and add buffer time.
- * 2. Use provided scheduler or fallback to setupFallbackTimer.
- * 3. Schedule the finish callback to execute after the calculated delay.
- *
- * @returns {ReturnType<typeof setTimeout>|null} The timer ID, or null if scheduling fails.
- */
-function scheduleCooldownFallback({ duration, finish, scheduler }) {
-  const ms = Math.max(0, Number(duration) || 0) * 1000 + FALLBACK_TIMER_BUFFER_MS;
-  return setupFallbackTimer(ms, finish, scheduler);
-}
-
-function attachVisibilityPauseControls(
-  timer,
-  documentRef = typeof document !== "undefined" ? document : null
-) {
-  if (!timer || !documentRef || typeof documentRef.addEventListener !== "function") {
-    return () => {};
-  }
-
-  const handler = () => {
-    try {
-      if (documentRef.hidden) {
-        timer.pause?.();
-      } else {
-        timer.resume?.();
-      }
-    } catch {}
-  };
-
-  try {
-    documentRef.addEventListener("visibilitychange", handler);
-    handler();
-  } catch {}
-
-  return () => {
-    try {
-      documentRef.removeEventListener("visibilitychange", handler);
-    } catch {}
-  };
-}
-
-/**
  * @summary Orchestrate the inter-round wait — turn-based: waits for button click.
  *
  * @param {object} machine State machine instance.
- * @param {object} [_options] Ignored — kept for API compatibility.
  * @returns {void}
  * @pseudocode
  * 1. Enable the Next button and register a skipCooldown listener.
  * 2. No timer is started; player must click to advance.
  */
-export function initInterRoundCooldown(machine, _options = {}) {
+export function initInterRoundCooldown(machine) {
   initTurnBasedWait(machine);
 }

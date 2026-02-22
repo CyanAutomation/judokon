@@ -16,7 +16,6 @@ import { attachCountdownCoordinator, emitCountdownFinished } from "./countdownCo
 
 const timerLogger = createComponentLogger("TimerService");
 
-import { realScheduler } from "../scheduler.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
 import {
@@ -26,8 +25,6 @@ import {
 } from "./opponentPromptWaiter.js";
 import { isOpponentPromptReady } from "./opponentPromptTracker.js";
 import { getNextRoundControls } from "./roundManager.js";
-import { guard } from "./guard.js";
-import { safeGetSnapshot } from "./timerUtils.js";
 import { forceAutoSelectAndDispatch } from "./autoSelectHandlers.js";
 
 // Prevent re-entrant Next clicks from advancing multiple rounds at once.
