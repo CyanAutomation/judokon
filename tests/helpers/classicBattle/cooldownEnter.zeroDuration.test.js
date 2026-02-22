@@ -1,60 +1,74 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { useCanonicalTimers } from "../../setup/fakeTimers.js";
+
+// Turn-based flow: roundWaitEnter no longer starts a timer or emits countdownStart.
+// It calls initTurnBasedWait, which emits nextRoundTimerReady and waits for
+// a skipCooldown event before dispatching "ready".
+
+const emitBattleEvent = vi.fn();
+let skipCooldownHandler;
 
 vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
-  emitBattleEvent: vi.fn(),
-  onBattleEvent: vi.fn(),
-  offBattleEvent: vi.fn()
+  emitBattleEvent,
+  offBattleEvent: vi.fn(),
+  onBattleEvent: vi.fn((evt, fn) => {
+    if (evt === "skipCooldown") skipCooldownHandler = fn;
+  })
 }));
 
-vi.mock("../../../src/helpers/timerUtils.js", () => ({
-  getDefaultTimer: vi.fn(async () => 0)
+vi.mock("../../../src/helpers/classicBattle/guard.js", () => ({
+  guard: vi.fn((fn) => {
+    try {
+      fn();
+    } catch {}
+  }),
+  guardAsync: vi.fn((fn) => {
+    try {
+      fn();
+    } catch {}
+  })
+}));
+
+vi.mock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
+  setSkipHandler: vi.fn()
+}));
+
+vi.mock("../../../src/helpers/classicBattle/roundReadyState.js", () => ({
+  hasReadyBeenDispatchedForCurrentCooldown: vi.fn(() => false),
+  resetReadyDispatchState: vi.fn(),
+  setReadyDispatchedForCurrentCooldown: vi.fn()
 }));
 
 vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
-  getNextRoundControls: vi.fn(() => ({ timer: true })),
-  setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms))
+  getNextRoundControls: vi.fn(() => null)
 }));
 
-import {
-  roundWaitEnter,
-  roundSelectEnter
-} from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
-import { emitBattleEvent } from "../../../src/helpers/classicBattle/battleEvents.js";
-import { createStateManager } from "../../../src/helpers/classicBattle/stateManager.js";
+import { roundWaitEnter } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 
-describe("roundWaitEnter zero duration", () => {
-  let timers;
+describe("roundWaitEnter (turn-based)", () => {
+  let machine;
   beforeEach(() => {
-    timers = useCanonicalTimers();
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    vi.spyOn(console, "warn").mockImplementation(() => {});
+    emitBattleEvent.mockReset();
+    skipCooldownHandler = null;
+    document.body.innerHTML = '<button id="next-button" disabled></button>';
+    machine = { dispatch: vi.fn(), getState: vi.fn(() => "roundWait"), context: {} };
+    vi.resetModules();
   });
+
   afterEach(() => {
-    timers.cleanup();
     vi.restoreAllMocks();
   });
 
-  it("enables stat buttons after zero-second matchStart cooldown", async () => {
-    const states = [
-      {
-        name: "roundWait",
-        type: "initial",
-        triggers: [{ on: "ready", target: "roundSelect" }]
-      },
-      { name: "roundSelect", triggers: [] }
-    ];
-    const machine = await createStateManager(
-      { roundSelect: roundSelectEnter },
-      { store: { roundReadyForInput: true } },
-      undefined,
-      states
-    );
-
+  it("emits nextRoundTimerReady (not countdownStart) on match start", async () => {
     await roundWaitEnter(machine, { initial: true });
-    expect(emitBattleEvent).toHaveBeenCalledWith("countdownStart", { duration: 1 });
+    expect(emitBattleEvent).toHaveBeenCalledWith("nextRoundTimerReady");
+    expect(emitBattleEvent).not.toHaveBeenCalledWith("countdownStart", expect.anything());
+  });
 
-    await timers.advanceTimersByTimeAsync(1200);
-    expect(emitBattleEvent).toHaveBeenCalledWith("statButtons:enable");
+  it("enables stat buttons once skipCooldown dispatches ready", async () => {
+    await roundWaitEnter(machine, { initial: true });
+    expect(skipCooldownHandler).toBeTypeOf("function");
+    skipCooldownHandler();
+    expect(machine.dispatch).toHaveBeenCalledWith("ready");
   });
 });
+

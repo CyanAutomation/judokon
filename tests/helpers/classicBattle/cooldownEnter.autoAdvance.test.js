@@ -1,104 +1,84 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import { roundState } from "../../../src/helpers/classicBattle/roundState.js";
 
-vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => {
-  const setupFallbackTimer = vi.fn((ms, cb) => setTimeout(cb, ms));
-  const startCooldown = vi.fn((store, scheduler = {}) => {
-    const dispatchers = [];
-    if (store && typeof store.dispatch === "function") {
-      dispatchers.push(() => store.dispatch("ready"));
-    }
-    if (scheduler && typeof scheduler.dispatch === "function") {
-      dispatchers.push(() => scheduler.dispatch("ready"));
-    }
-    if (scheduler?.machine && typeof scheduler.machine.dispatch === "function") {
-      dispatchers.push(() => scheduler.machine.dispatch("ready"));
-    }
+// Turn-based flow: roundWaitEnter registers a skipCooldown listener instead of
+// starting a cooldown timer. The player advances by clicking "Next Round".
 
-    let resolved = false;
-    const triggerReady = () => {
-      if (resolved) return;
-      resolved = true;
-      for (const sendReady of dispatchers) {
-        try {
-          sendReady();
-        } catch {}
-      }
-    };
+const emitBattleEvent = vi.fn();
+const offBattleEvent = vi.fn();
+let skipCooldownHandler;
 
-    const schedule =
-      scheduler && typeof scheduler.setTimeout === "function"
-        ? scheduler.setTimeout.bind(scheduler)
-        : setTimeout;
+vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
+  emitBattleEvent,
+  offBattleEvent,
+  onBattleEvent: vi.fn((evt, fn) => {
+    if (evt === "skipCooldown") skipCooldownHandler = fn;
+  })
+}));
 
-    setupFallbackTimer(1000, triggerReady);
-    schedule(triggerReady, 1000);
+vi.mock("../../../src/helpers/classicBattle/guard.js", () => ({
+  guard: vi.fn((fn) => {
+    try {
+      fn();
+    } catch {}
+  }),
+  guardAsync: vi.fn((fn) => {
+    try {
+      fn();
+    } catch {}
+  })
+}));
 
-    return {
-      timer: null,
-      resolveReady: triggerReady,
-      ready: Promise.resolve()
-    };
-  });
+vi.mock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
+  setSkipHandler: vi.fn()
+}));
 
-  return {
-    getNextRoundControls: vi.fn(() => null),
-    setupFallbackTimer,
-    startCooldown
-  };
-});
-vi.mock("../../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
-  computeNextRoundCooldown: vi.fn(() => 1)
+vi.mock("../../../src/helpers/classicBattle/roundReadyState.js", () => ({
+  hasReadyBeenDispatchedForCurrentCooldown: vi.fn(() => false),
+  resetReadyDispatchState: vi.fn(),
+  setReadyDispatchedForCurrentCooldown: vi.fn()
+}));
+
+vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
+  getNextRoundControls: vi.fn(() => null)
 }));
 
 import { roundWaitEnter } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 
-describe("roundWaitEnter", () => {
-  let timers;
+describe("roundWaitEnter (turn-based)", () => {
   let machine;
   beforeEach(() => {
-    timers = useCanonicalTimers();
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    vi.spyOn(console, "warn").mockImplementation(() => {});
-    machine = { dispatch: vi.fn(), getState: vi.fn(() => "roundWait") };
-    const scheduler = {
-      machine,
-      setTimeout: (cb, ms) => setTimeout(cb, ms),
-      clearTimeout: (id) => clearTimeout(id)
-    };
-    machine.context = { store: { dispatch: machine.dispatch }, scheduler };
+    emitBattleEvent.mockReset();
+    offBattleEvent.mockReset();
+    skipCooldownHandler = null;
+    document.body.innerHTML = '<button id="next-button" disabled></button>';
+    machine = { dispatch: vi.fn(), getState: vi.fn(() => "roundWait"), context: {} };
     roundState.reset();
     roundState.setRoundNumber(1);
   });
+
   afterEach(() => {
-    timers.cleanup();
     vi.restoreAllMocks();
   });
-  it("auto dispatches ready after 1s timer", async () => {
+
+  it("registers skipCooldown listener and dispatches ready on click", async () => {
     await roundWaitEnter(machine);
-    expect(machine.dispatch).not.toHaveBeenCalled();
-    await timers.advanceTimersByTimeAsync(1200); // 1s duration + 200ms fallback
+    expect(skipCooldownHandler).toBeTypeOf("function");
+    skipCooldownHandler();
     expect(machine.dispatch).toHaveBeenCalledWith("ready");
   });
 
-  it("bypasses pacing wait on CLI surface", async () => {
-    machine.context.uiSurface = "cli";
-
+  it("emits nextRoundTimerReady (not countdownStart)", async () => {
     await roundWaitEnter(machine);
-    await Promise.resolve();
-
-    expect(roundState.getCurrentRound().number).toBe(2);
-    expect(machine.dispatch).toHaveBeenCalledWith("ready", { source: "uiPacingBypass" });
+    expect(emitBattleEvent).toHaveBeenCalledWith("nextRoundTimerReady");
+    expect(emitBattleEvent).not.toHaveBeenCalledWith("countdownStart", expect.anything());
   });
 
-  it("preserves initial cooldown on CLI surface", async () => {
-    machine.context.uiSurface = "cli";
-
-    await roundWaitEnter(machine, { initial: true });
-    await timers.advanceTimersByTimeAsync(3200);
-
-    expect(machine.dispatch).toHaveBeenCalledWith("ready");
-    expect(machine.dispatch).not.toHaveBeenCalledWith("ready", { source: "uiPacingBypass" });
+  it("only dispatches ready once even if next button clicked multiple times", async () => {
+    await roundWaitEnter(machine);
+    skipCooldownHandler();
+    skipCooldownHandler();
+    expect(machine.dispatch).toHaveBeenCalledTimes(1);
   });
 });
+
