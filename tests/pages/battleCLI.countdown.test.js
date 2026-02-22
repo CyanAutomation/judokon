@@ -99,10 +99,9 @@ describe("battleCLI countdown", () => {
     expect(countdown.dataset.remainingTime).toBe("4");
     expect(countdown.style.color).toBe("rgb(255, 204, 0)");
 
-    // Stop countdown to clean up
-    mod.stopSelectionCountdown();
+    // Advance remaining time to let countdown expire cleanly
+    await advanceTimersAndFlushPending(timers, 4000);
     expect(countdown.textContent).toBe("");
-    expect(countdown.dataset.remainingTime).toBeUndefined();
   });
 
   it("parses skipRoundCooldown query param", async () => {

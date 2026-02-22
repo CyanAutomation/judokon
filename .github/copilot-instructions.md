@@ -730,7 +730,7 @@ grep -r "page\.evaluate.*DOM\|innerHTML\|appendChild" playwright/ && echo "Found
 - Animation:
   - One-shot → `requestAnimationFrame`
   - Continuous → `scheduler.onFrame()` + cancel with `scheduler.cancel(id)`
-- Selection timers: clear `statTimeoutId` + `autoSelectId` before `statSelected`
+- Selection timers: **Turn-based mode** — no stat-selection countdown is active; `statTimeoutId` and `autoSelectId` are cleared defensively in `selectStat()` but will already be null in normal flow
 
 Safe search aliases:
 

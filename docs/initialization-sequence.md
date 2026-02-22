@@ -298,6 +298,7 @@ export function resetNextButton() {
 
 ## Changelog
 
+- **January 2026**: Converted game to turn-based flow — removed countdown/auto-select timers from stat selection in both Classic Battle and CLI Battle modes. The `roundSelect` state now waits indefinitely for player input. `initTurnBasedWait()` replaces timer-based cooldown setup in Classic Battle; `startSelectionCountdown(30)` call removed from CLI `updateUiForState("roundSelect")`.
 - **January 6, 2026**: Added documentation for snackbar dismissal fix (bindRoundUIEventHandlersDynamic)
 - **December 31, 2025**: Initial documentation created
 - **January 2025**: Bug fix implemented (moved wireControlButtons to after Phase 5)
