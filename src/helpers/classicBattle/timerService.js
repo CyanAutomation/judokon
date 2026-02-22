@@ -30,8 +30,6 @@ import { guard } from "./guard.js";
 import { safeGetSnapshot } from "./timerUtils.js";
 import { forceAutoSelectAndDispatch } from "./autoSelectHandlers.js";
 
-// Track timeout for cooldown warning to avoid duplicates.
-let cooldownWarningTimeoutId = null;
 // Prevent re-entrant Next clicks from advancing multiple rounds at once.
 let nextClickInFlight = false;
 

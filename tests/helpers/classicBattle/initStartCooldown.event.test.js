@@ -1,54 +1,76 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
 const emitBattleEvent = vi.fn();
-let finished;
+const offBattleEvent = vi.fn();
+let skipCooldownHandler;
 
 vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
   emitBattleEvent,
+  offBattleEvent,
   onBattleEvent: vi.fn((evt, fn) => {
-    if (evt === "countdownFinished") finished = fn;
+    if (evt === "skipCooldown") skipCooldownHandler = fn;
+  })
+}));
+
+vi.mock("../../../src/helpers/classicBattle/guard.js", () => ({
+  guard: vi.fn((fn) => {
+    try {
+      fn();
+    } catch {}
   }),
-  offBattleEvent: vi.fn()
+  guardAsync: vi.fn((fn) => {
+    try {
+      fn();
+    } catch {}
+  })
 }));
 
-vi.mock("../../../src/helpers/timerUtils.js", () => ({
-  getDefaultTimer: vi.fn(() => 1)
+vi.mock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
+  setSkipHandler: vi.fn()
 }));
 
-vi.mock("../../../src/helpers/testModeUtils.js", () => ({
-  isTestModeEnabled: () => false
+vi.mock("../../../src/helpers/classicBattle/roundReadyState.js", () => ({
+  hasReadyBeenDispatchedForCurrentCooldown: vi.fn(() => false),
+  resetReadyDispatchState: vi.fn(),
+  setReadyDispatchedForCurrentCooldown: vi.fn()
 }));
 
-vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
-  setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms))
-}));
-
-describe("initStartCooldown", () => {
+describe("initStartCooldown (turn-based)", () => {
   let machine;
   beforeEach(() => {
     emitBattleEvent.mockReset();
-    finished = null;
+    offBattleEvent.mockReset();
+    skipCooldownHandler = null;
     machine = { dispatch: vi.fn() };
+    vi.resetModules();
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
-  it("dispatches ready when countdown finishes", async () => {
+  it("dispatches ready when skipCooldown event fires", async () => {
     const { initStartCooldown } = await import("../../../src/helpers/classicBattle/cooldowns.js");
     await initStartCooldown(machine);
-    finished();
+    // skipCooldown listener should have been registered
+    expect(skipCooldownHandler).toBeTypeOf("function");
+    skipCooldownHandler();
     expect(machine.dispatch).toHaveBeenCalledWith("ready");
   });
 
-  it("dispatches ready via fallback timer", async () => {
-    const timers = useCanonicalTimers();
+  it("emits nextRoundTimerReady on init", async () => {
     const { initStartCooldown } = await import("../../../src/helpers/classicBattle/cooldowns.js");
     await initStartCooldown(machine);
-    await vi.runAllTimersAsync();
-    expect(machine.dispatch).toHaveBeenCalledWith("ready");
-    timers.cleanup();
+    expect(emitBattleEvent).toHaveBeenCalledWith("nextRoundTimerReady");
+  });
+
+  it("only dispatches ready once even if skipCooldown fires multiple times", async () => {
+    const { initStartCooldown } = await import("../../../src/helpers/classicBattle/cooldowns.js");
+    await initStartCooldown(machine);
+    skipCooldownHandler();
+    skipCooldownHandler();
+    expect(machine.dispatch).toHaveBeenCalledTimes(1);
   });
 });
+
+
