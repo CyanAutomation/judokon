@@ -1,11 +1,9 @@
-import { startCooldown } from "../roundManager.js";
-import { initStartCooldown } from "../cooldowns.js";
+import { initTurnBasedWait } from "../cooldowns.js";
 import { exposeDebugState } from "../debugHooks.js";
 import { debugLog } from "../debugLog.js";
 import { roundState } from "../roundState.js";
 import { disableStatButtons } from "../statButtons.js";
 import { guard } from "../guard.js";
-import { withStateGuard } from "../stateGuards.js";
 
 /**
  * State name constant for round wait phase.
@@ -60,10 +58,7 @@ function setupDebugState(payload) {
  * @param {object} machine - State machine context.
  * @returns {boolean} True when surface metadata resolves to CLI.
  */
-function isCliSurface(machine) {
-  const surface = machine?.context?.uiSurface ?? machine?.context?.store?.uiSurface;
-  return surface === "cli";
-}
+// isCliSurface removed – the turn-based flow uses the same path for all surfaces.
 
 /**
  * Compute the next round number based on current round.
@@ -169,55 +164,12 @@ export async function roundWaitEnter(machine, payload) {
   // Prevent user interaction with stat buttons during state transition
   disableStatButtonsDuringCooldown();
 
-  if (payload?.initial) {
-    await initStartCooldown(machine);
-    return;
-  }
-
-  if (isCliSurface(machine)) {
-    guard(() => {
-      updateRoundStateAtomically(roundState.getCurrentRound());
-    });
-
-    Promise.resolve().then(() => {
-      guard(() => {
-        machine.dispatch("ready", { source: "uiPacingBypass" });
-      });
-    });
-    return;
-  }
-
-  const { store, scheduler } = machine.context || {};
-
-  // Early finalization removed - rely solely on orchestrator for button state management
-  // This ensures consistent timing and prevents premature button enabling
-
-  debugLog("roundWaitEnter: about to call startCooldown");
-  await startCooldown(store, scheduler, {
-    isOrchestrated: () => !!machine.context,
-    getClassicBattleMachine: () => machine
+  // Turn-based flow: both match-start and inter-round wait are driven by
+  // the player clicking "Next Round". No timer fires automatically.
+  guard(() => {
+    updateRoundStateAtomically(roundState.getCurrentRound());
   });
-  debugLog("roundWaitEnter: startCooldown completed");
 
-  // Verify state hasn't regressed after async operation (race condition guard)
-  // Allow progression to roundPrompt (normal fast transition)
-  withStateGuard(
-    machine,
-    ["roundWait", "roundPrompt"],
-    () => {
-      // Update round state atomically; errors logged but non-blocking
-      guard(() => {
-        updateRoundStateAtomically(roundState.getCurrentRound());
-      });
-    },
-    {
-      debugContext: "roundWaitEnter.postStartCooldown",
-      onInvalidState: (currentState, validStates) => {
-        debugLog("roundWaitEnter: state changed unexpectedly during async operation", {
-          expected: validStates,
-          actual: currentState
-        });
-      }
-    }
-  );
+  debugLog("roundWaitEnter: waiting for Next Round button click (turn-based)");
+  initTurnBasedWait(machine);
 }

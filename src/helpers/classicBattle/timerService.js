@@ -266,19 +266,10 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
       try {
         controls?.timer?.stop?.();
       } catch {}
-      emitBattleEvent("skipCooldown", { source: "next-button" });
-
-      if (cooldownWarningTimeoutId !== null) {
-        realScheduler.clearTimeout(cooldownWarningTimeoutId);
-      }
-      cooldownWarningTimeoutId = realScheduler.setTimeout(() => {
-        const { state } = safeGetSnapshot();
-        if (state === "roundWait") {
-          guard(() => console.warn("[next] stuck in cooldown"));
-        }
-        cooldownWarningTimeoutId = null;
-      }, 1000);
     }
+    // Always emit skipCooldown so the turn-based flow can respond
+    // even when no cooldown timer controls are active.
+    emitBattleEvent("skipCooldown", { source: "next-button" });
     await Promise.resolve();
   } catch (error) {
     timerLogger.error("[next] error during click handling", error);

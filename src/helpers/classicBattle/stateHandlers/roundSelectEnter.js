@@ -1,27 +1,17 @@
 import { emitBattleEvent } from "../battleEvents.js";
-import { startTimer } from "../timerService.js";
 import {
-  handleStatSelection,
   logSelectionMutation,
   shouldClearSelectionForNextRound
 } from "../selectionHandler.js";
-import { getCardStatValue } from "../cardStatUtils.js";
-import { getOpponentJudoka } from "../cardSelection.js";
 import {
   logStateHandlerEnter,
   logStateHandlerExit,
   createComponentLogger
 } from "../debugLogger.js";
 import { resetSelectionFinalized } from "../selectionState.js";
-import { withStateGuard } from "../stateGuards.js";
 
 const stateLogger = createComponentLogger("RoundSelect");
 const SELECTION_IN_FLIGHT_GUARD = Symbol.for("classicBattle.selectionInFlight");
-
-function queryCardByRole(role) {
-  if (typeof document === "undefined") return null;
-  return document.querySelector(`[data-role='${role}']`);
-}
 
 /**
  * onEnter handler for `roundSelect` state.
@@ -112,63 +102,12 @@ export async function roundSelectEnter(machine) {
     emitBattleEvent("statButtons:enable");
   }
 
-  // timer:startStatSelection - Start round timer with timeout callback
-  if (store) {
-    stateLogger.info("Starting stat selection timer", {
-      store: {
-        selectionMade: store.selectionMade,
-        roundsPlayed: store.roundsPlayed
-      }
-    });
-
-    await startTimer(async (stat, opts) => {
-      // Debug logging for auto-selection
-      stateLogger.debug("Auto-selecting stat due to timeout", { stat, opts });
-
-      // Get card values for the auto-selected stat
-      const playerCard = queryCardByRole("player-card");
-      const opponentCard = queryCardByRole("opponent-card");
-
-      const playerVal = getCardStatValue(playerCard, stat);
-      let opponentVal = getCardStatValue(opponentCard, stat);
-
-      try {
-        const opp = getOpponentJudoka();
-        const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
-        opponentVal = Number.isFinite(raw) ? raw : opponentVal;
-      } catch {}
-
-      // Handle the stat selection via the normal selection handler
-      return handleStatSelection(store, stat, { playerVal, opponentVal, ...opts });
-    }, store);
-
-    // Verify state hasn't regressed after async timer operation (race condition guard)
-    // Allow progression to roundResolve (normal flow after selection) or interruptRound
-    withStateGuard(
-      machine,
-      ["roundSelect", "roundResolve", "interruptRound"],
-      () => {
-        // Timer is running, state is valid
-        // Post-timer logic will proceed naturally
-      },
-      {
-        debugContext: "roundSelectEnter.postTimerStart",
-        onInvalidState: (currentState, validStates) => {
-          stateLogger.debug("State changed unexpectedly during timer setup", {
-            expected: validStates,
-            actual: currentState
-          });
-        }
-      }
-    );
-  }
-
-  // a11y:exposeTimerStatus - Timer accessibility is handled by timerService
-  // when it updates the scoreboard timer display
+  // Turn-based flow: no stat-selection timer is started. The player picks
+  // a stat whenever they are ready; the game waits indefinitely.
 
   // Debug logging for state handler exit
   logStateHandlerExit("roundSelect", {
-    timerStarted: !!store,
+    timerStarted: false,
     buttonsEnabled: true
   });
 }

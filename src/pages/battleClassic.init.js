@@ -1,4 +1,4 @@
-import { createCountdownTimer, getDefaultTimer } from "../helpers/timerUtils.js";
+// timerUtils import removed – timer-based selection has been replaced by the turn-based flow.
 import {
   startCooldown,
   startRound,
@@ -32,7 +32,7 @@ import {
 } from "../helpers/classicBattle/bootstrapPolicy.js";
 import { getStateSnapshot } from "../helpers/classicBattle/battleDebug.js";
 import { resolveRoundStartPolicy } from "../helpers/classicBattle/roundSelectModal.js";
-import { startTimer, onNextButtonClick } from "../helpers/classicBattle/timerService.js";
+import { onNextButtonClick } from "../helpers/classicBattle/timerService.js";
 import { emitBattleEvent, onBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { bindScoreboardEventHandlersOnce } from "../helpers/classicBattle/uiService.js";
 import { initFeatureFlags, isEnabled } from "../helpers/featureFlags.js";
@@ -1151,154 +1151,14 @@ function wireExistingStatButtons(store) {
 // Timer Management
 // =============================================================================
 
-async function beginSelectionTimer(store) {
-  const TEST_ENV_FLAG =
-    (typeof process !== "undefined" && process.env?.VITEST === "true") ||
-    (typeof process !== "undefined" && process.env?.NODE_ENV === "test") ||
-    (typeof globalThis !== "undefined" && Boolean(globalThis.__TEST__));
-
-  if (TEST_ENV_FLAG) {
-    const dur = Number(getDefaultTimer("roundTimer")) || 2;
-    const timer = createCountdownTimer(dur, {
-      onTick: (remaining) => {
-        try {
-          const clamped = remaining > 0 ? `${remaining}s` : "";
-          updateTimerFallback(clamped);
-        } catch (err) {
-          console.debug("battleClassic: onTick DOM update failed", err);
-        }
-      },
-      onExpired: async () => {
-        try {
-          document.body.dataset.autoSelected = document.body.dataset.autoSelected || "auto";
-        } catch (err) {
-          console.debug("battleClassic: set autoSelected failed", err);
-        }
-        let result;
-        try {
-          const { playerVal, opponentVal } = resolveStatValues(store, "speed");
-          result = await computeRoundResult(store, "speed", playerVal, opponentVal);
-        } catch (err) {
-          console.debug("battleClassic: computeRoundResult (vitest) failed", err);
-        }
-        try {
-          if (result) {
-            syncScoreboardDisplay(
-              Number(result.playerScore) || 0,
-              Number(result.opponentScore) || 0
-            );
-          }
-        } catch {}
-        if (result) {
-          broadcastBattleState("roundResolve");
-        }
-        const { matchEnded } = await applyRoundDecisionResult(store, result);
-        if (!matchEnded) {
-          triggerCooldownOnce(store, "vitestTimerExpired");
-        } else {
-          try {
-            showSnackbar("");
-          } catch {}
-        }
-      },
-      pauseOnHidden: false
-    });
-    STATE.activeSelectionTimer = timer;
-    timer.start();
-    return;
-  }
-
-  STATE.activeSelectionTimer = await startTimer(async (stat) => {
-    if (STATE.failSafeTimerId) {
-      clearTimeout(STATE.failSafeTimerId);
-      STATE.failSafeTimerId = null;
-    }
-    try {
-      document.body.dataset.autoSelected = String(stat || "auto");
-    } catch (err) {
-      console.debug("battleClassic: set autoSelected (timer) failed", err);
-    }
-    try {
-      const { playerVal, opponentVal } = resolveStatValues(store, String(stat || "speed"));
-      const result = await computeRoundResult(
-        store,
-        String(stat || "speed"),
-        playerVal,
-        opponentVal
-      );
-      try {
-        if (result) {
-          syncScoreboardDisplay(Number(result.playerScore) || 0, Number(result.opponentScore) || 0);
-        }
-      } catch {}
-      if (result) {
-        broadcastBattleState("roundResolve");
-      }
-      const { matchEnded } = await applyRoundDecisionResult(store, result);
-      if (!matchEnded) {
-        const manualTrigger = triggerCooldownOnce(store, "selectionTimerAutoResolve");
-        if (manualTrigger) {
-          try {
-            enableNextRoundButton();
-          } catch {}
-        }
-      } else {
-        try {
-          showSnackbar("");
-        } catch {}
-      }
-    } catch (err) {
-      console.debug("battleClassic: computeRoundResult (timer) failed", err);
-    }
-    return Promise.resolve();
-  }, store);
-
-  // Fail-safe: ensure round resolves if timer binding fails
-  try {
-    const ms = (Number(getDefaultTimer("roundTimer")) || 2) * 1000 + 100;
-    STATE.failSafeTimerId = setTimeout(async () => {
-      STATE.failSafeTimerId = null;
-      try {
-        const btn = getNextButton();
-        const scoreEl = getScoreDisplay();
-        const playerValue = getPlayerScoreValue(scoreEl);
-        const opponentValue = getOpponentScoreValue(scoreEl);
-        const needsScore =
-          scoreEl && playerValue !== undefined && opponentValue !== undefined
-            ? playerValue === "0" && opponentValue === "0"
-            : scoreEl && /You:\s*0\s*Opponent:\s*0/.test(scoreEl?.textContent || "");
-        const notReady = btn && (btn.disabled || btn.getAttribute("data-next-ready") !== "true");
-        if (needsScore || notReady) {
-          const { playerVal, opponentVal } = resolveStatValues(store, "speed");
-          const result = await computeRoundResult(store, "speed", playerVal, opponentVal);
-          try {
-            if (result) {
-              syncScoreboardDisplay(
-                Number(result.playerScore) || 0,
-                Number(result.opponentScore) || 0
-              );
-            }
-          } catch {}
-          if (result) {
-            broadcastBattleState("roundResolve");
-          }
-          const { matchEnded } = await applyRoundDecisionResult(store, result);
-          if (!matchEnded) {
-            const fallbackTriggered = triggerCooldownOnce(store, "selectionFailSafe");
-            if (fallbackTriggered) {
-              try {
-                enableNextRoundButton();
-              } catch {}
-            }
-          } else {
-            try {
-              showSnackbar("");
-            } catch {}
-          }
-        }
-      } catch {}
-    }, ms);
-  } catch {}
+/**
+ * No-op stub: the stat-selection timer has been removed in favour of the
+ * turn-based flow. Players now pick a stat at their own pace; no timer fires.
+ *
+ * @returns {Promise<void>}
+ */
+async function beginSelectionTimer(_store) {
+  // Turn-based: no timer started.
 }
 
 // =============================================================================

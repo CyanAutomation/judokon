@@ -1,12 +1,6 @@
-import { getDefaultTimer } from "../timerUtils.js";
-import { setupFallbackTimer } from "./setupFallbackTimer.js";
-import { isTestModeEnabled } from "../testModeUtils.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { guard, guardAsync } from "./guard.js";
 import { setSkipHandler } from "./skipHandler.js";
-import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
-import { createRoundTimer } from "../timers/createRoundTimer.js";
-import { startCoolDown } from "../BattleEngine.js";
 import {
   hasReadyBeenDispatchedForCurrentCooldown,
   resetReadyDispatchState,
@@ -14,49 +8,63 @@ import {
 } from "./roundReadyState.js";
 
 /**
- * Additional buffer to ensure fallback timers fire after engine-backed timers.
+ * Turn-based wait: enable the "Next Round" button and wait indefinitely for
+ * the player to click it. No timer fires automatically.
  *
- * @type {number}
- */
-const FALLBACK_TIMER_BUFFER_MS = 200;
-
-/**
- * Initialize the match start cooldown timer.
+ * When the player clicks the button, `onNextButtonClick` fires which emits
+ * `skipCooldown`. This listener picks that up and dispatches `ready` to the
+ * state machine exactly once.
  *
  * @param {object} machine State machine instance.
- * @returns {Promise<void>}
+ * @returns {void}
  * @pseudocode
- * 1. Resolve `matchStartTimer` with 3s default.
- * 2. Emit countdown start events.
- * 3. On `countdownFinished` → dispatch `ready`.
- * 4. In tests → finish immediately.
- * 5. Otherwise schedule fallback timer to dispatch `ready`.
+ * 1. Find and enable the "Next Round" button.
+ * 2. Emit `nextRoundTimerReady` so UI listeners know the button is active.
+ * 3. Register a one-shot `skipCooldown` listener that calls machine.dispatch("ready").
  */
-export async function initStartCooldown(machine) {
-  let duration = 3;
-  try {
-    const val = await getDefaultTimer("matchStartTimer");
-    if (typeof val === "number") duration = val;
-  } catch {}
-  duration = Math.max(1, Number(duration));
-  let fallback;
-  const finish = () => {
-    guard(() => offBattleEvent("countdownFinished", finish));
-    guard(() => clearTimeout(fallback));
-    guard(() => emitBattleEvent("control.countdown.completed"));
+export function initTurnBasedWait(machine) {
+  // Enable the "Next Round" button immediately
+  const btn = getNextButton();
+  if (btn) {
+    try {
+      btn.disabled = false;
+    } catch {}
+    try {
+      if (btn.dataset) btn.dataset.nextReady = "true";
+      btn.setAttribute("data-next-ready", "true");
+    } catch {}
+  }
+
+  guard(() => emitBattleEvent("nextRoundTimerReady"));
+
+  // One-shot dispatch guard
+  let dispatched = false;
+  const dispatch = () => {
+    if (dispatched) return;
+    dispatched = true;
+    offBattleEvent("skipCooldown", dispatch);
     guardAsync(() => machine.dispatch("ready"));
   };
-  onBattleEvent("countdownFinished", finish);
-  guard(() => emitBattleEvent("countdownStart", { duration }));
-  guard(() => emitBattleEvent("control.countdown.started", { durationMs: duration * 1000 }));
-  guard(() => emitBattleEvent("nextRoundCountdownStarted", { durationMs: duration * 1000 }));
-  if (isTestModeEnabled && isTestModeEnabled()) {
-    if (typeof queueMicrotask === "function") queueMicrotask(finish);
-    else setTimeout(finish, 0);
-    return;
-  }
-  const schedule = typeof setupFallbackTimer === "function" ? setupFallbackTimer : setTimeout;
-  fallback = schedule(duration * 1000 + FALLBACK_TIMER_BUFFER_MS, finish);
+
+  // Listen for skipCooldown, which is emitted by onNextButtonClick
+  onBattleEvent("skipCooldown", dispatch);
+}
+
+/**
+ * Initialize the match start wait — turn-based: no timer fires automatically.
+ *
+ * The game now waits indefinitely for the player to click "Next Round".
+ * Delegates to `initTurnBasedWait()`.
+ *
+ * @param {object} machine State machine instance.
+ * @returns {void}
+ * @pseudocode
+ * 1. Enable the "Next Round" button.
+ * 2. Register a skip handler so a button click dispatches `ready`.
+ * 3. No timer is started.
+ */
+export function initStartCooldown(machine) {
+  initTurnBasedWait(machine);
 }
 
 /**
@@ -345,57 +353,15 @@ function attachVisibilityPauseControls(
 }
 
 /**
- * @summary Orchestrate the inter-round cooldown timer and fallback completion flow.
+ * @summary Orchestrate the inter-round wait — turn-based: waits for button click.
  *
  * @param {object} machine State machine instance.
- * @param {{ scheduler?: { setTimeout?: typeof setTimeout, clearTimeout?: typeof clearTimeout } }} [options]
- * @returns {Promise<void>}
+ * @param {object} [_options] Ignored — kept for API compatibility.
+ * @returns {void}
  * @pseudocode
- * 1. Compute cooldown duration and emit countdown start events.
- * 2. Enable the Next button and mark it ready.
- * 3. Start engine-backed timer; on expire → mark ready, emit events, dispatch `ready`.
- * 4. Schedule fallback timer with same completion path.
+ * 1. Enable the Next button and register a skipCooldown listener.
+ * 2. No timer is started; player must click to advance.
  */
-export async function initInterRoundCooldown(machine, options = {}) {
-  resetReadyDispatchState();
-  const duration = resolveInterRoundCooldownDuration(computeNextRoundCooldown);
-
-  guard(() => emitBattleEvent("countdownStart", { duration }));
-  guard(() =>
-    emitBattleEvent("control.countdown.started", {
-      durationMs: duration * 1000
-    })
-  );
-  guard(() => emitBattleEvent("nextRoundCountdownStarted", { durationMs: duration * 1000 }));
-
-  const button = prepareNextButtonForCooldown(machine, options.scheduler);
-
-  const timer = createRoundTimer({ starter: startCoolDown });
-  const completion = createCooldownCompletion({
-    machine,
-    timer,
-    button,
-    scheduler: options.scheduler,
-    onCleanup: attachVisibilityPauseControls(timer)
-  });
-
-  setupInterRoundTimer({
-    timer,
-    duration,
-    onExpired: completion.finish,
-    onTick: (remaining) =>
-      guard(() => {
-        const remainingSeconds = Math.max(0, Number(remaining) || 0);
-        // Cooldown ticks are display-only; do not drive state transitions here.
-        emitBattleEvent("display.timer.tick", { secondsRemaining: remainingSeconds });
-        emitBattleEvent("cooldown.timer.tick", { remainingMs: remainingSeconds * 1000 });
-      })
-  });
-
-  const fallbackId = scheduleCooldownFallback({
-    duration,
-    finish: completion.finish,
-    scheduler: options.scheduler
-  });
-  completion.trackFallback(fallbackId);
+export function initInterRoundCooldown(machine, _options = {}) {
+  initTurnBasedWait(machine);
 }
