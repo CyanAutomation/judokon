@@ -42,10 +42,6 @@
       "enabled": false,
       "tooltipId": "settings.battleStateProgress"
     },
-    "skipRoundCooldown": {
-      "enabled": false,
-      "tooltipId": "settings.skipRoundCooldown"
-    },
     "statHotkeys": {
       "enabled": true,
       "tooltipId": "settings.statHotkeys"
@@ -57,10 +53,6 @@
     "cliShortcuts": {
       "enabled": true,
       "tooltipId": "settings.cliShortcuts"
-    },
-    "autoSelect": {
-      "enabled": true,
-      "tooltipId": "settings.autoSelect"
     },
     "opponentDelayMessage": {
       "enabled": true,
