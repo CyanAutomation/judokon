@@ -131,7 +131,8 @@ describe("classic battle event conformance audit", () => {
     const machine = await createMachine(
       {},
       { engine: lockEngine, store: { roundsPlayed: 0 } },
-      ({ to }) => transitions.push(to));
+      ({ to }) => transitions.push(to)
+    );
 
     await advanceToRoundSelect(machine);
     const accepted = await machine.dispatch("statSelected", {
@@ -176,7 +177,11 @@ describe("classic battle event conformance audit", () => {
     expect(duplicate).toBe(false);
     expect(emitBattleEventSpy).toHaveBeenCalledWith(
       "input.ignored",
-      expect.objectContaining({ kind: "selectionLockRejected", reason: "duplicate", source: "auto" })
+      expect.objectContaining({
+        kind: "selectionLockRejected",
+        reason: "duplicate",
+        source: "auto"
+      })
     );
   });
 
@@ -221,7 +226,8 @@ describe("classic battle event conformance audit", () => {
         }
       },
       { store: { roundsPlayed: 0 }, engine: { requestSelectionLock: () => ({ accepted: true }) } },
-      undefined);
+      undefined
+    );
 
     await advanceToRoundSelect(machine);
     await machine.dispatch("statSelected", { stat: "power", opts: { selectionSource: "player" } });
@@ -248,7 +254,8 @@ describe("classic battle event conformance audit", () => {
         if (from === "interruptRound" && event === "restartRound") {
           battleEvents.emitBattleEvent("interrupt.resolved", { outcome: "restartRound" });
         }
-      });
+      }
+    );
 
     await advanceToRoundSelect(machine);
     await machine.dispatch("interrupt", { reason: "timeout" });
