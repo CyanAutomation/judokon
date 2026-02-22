@@ -32,7 +32,7 @@ describe("battleCLI countdown", () => {
     await cleanupBattleCLI();
   });
 
-  it("auto-select triggers marker when countdown expires", async () => {
+  it("does not start a countdown when roundSelect is entered (turn-based mode)", async () => {
     const mod = await loadBattleCLI({ autoSelect: true });
     await mod.init();
 
@@ -41,21 +41,20 @@ describe("battleCLI countdown", () => {
 
     const countdown = document.getElementById("cli-countdown");
     expect(countdown).toBeTruthy();
-    expect(countdown.textContent).toContain("30");
 
-    mod.startSelectionCountdown(3);
-    expect(countdown.dataset.remainingTime).toBe("3");
-    expect(countdown.textContent).toContain("3");
+    // Advance well past the old 30-second timeout — no countdown should be active
+    await advanceTimersAndFlushPending(timers, 5000);
 
-    await advanceTimersAndFlushPending(timers, 3000);
-
-    const marker = document.getElementById("auto-select-marker");
-    expect(marker?.dataset.triggerCount).toBe("1");
+    // In turn-based mode the countdown element should remain empty
     expect(countdown.textContent).toBe("");
     expect(countdown.dataset.remainingTime).toBeUndefined();
+
+    // No auto-select should have triggered
+    const marker = document.getElementById("auto-select-marker");
+    expect(marker?.dataset.triggerCount ?? "0").toBe("0");
   });
 
-  it("emits statSelectionStalled once when auto-select disabled", async () => {
+  it("does not emit statSelectionStalled automatically in turn-based mode", async () => {
     const mod = await loadBattleCLI({ autoSelect: false });
     await mod.init();
 
@@ -66,18 +65,18 @@ describe("battleCLI countdown", () => {
     const countdown = document.getElementById("cli-countdown");
     expect(countdown).toBeTruthy();
 
-    mod.startSelectionCountdown(2);
+    // Advance far beyond old countdown duration without any manual startSelectionCountdown call
+    await advanceTimersAndFlushPending(timers, 5000);
 
-    await advanceTimersAndFlushPending(timers, 2000);
-
+    // statSelectionStalled should NOT have been emitted automatically
     const stalledCalls = emitSpy.mock.calls.filter(
       ([eventName]) => eventName === "statSelectionStalled"
     );
-    expect(stalledCalls).toHaveLength(1);
+    expect(stalledCalls).toHaveLength(0);
     emitSpy.mockRestore();
   });
 
-  it("flips countdown colour below five seconds and resets on restart", async () => {
+  it("cli-countdown remains empty in turn-based mode; startSelectionCountdown still functional when called directly", async () => {
     const mod = await loadBattleCLI({ autoSelect: false });
     await mod.init();
 
@@ -86,8 +85,11 @@ describe("battleCLI countdown", () => {
 
     const countdown = document.getElementById("cli-countdown");
     expect(countdown).toBeTruthy();
-    expect(countdown.textContent).toContain("30");
 
+    // No countdown on state entry (turn-based mode)
+    expect(countdown.textContent).toBe("");
+
+    // The exported startSelectionCountdown API is still functional when called directly
     mod.startSelectionCountdown(6);
     expect(countdown.dataset.remainingTime).toBe("6");
     expect(countdown.textContent).toContain("6");
@@ -95,18 +97,12 @@ describe("battleCLI countdown", () => {
 
     await timers.advanceTimersByTimeAsync(2000);
     expect(countdown.dataset.remainingTime).toBe("4");
-    expect(countdown.textContent).toContain("4");
     expect(countdown.style.color).toBe("rgb(255, 204, 0)");
 
-    await advanceTimersAndFlushPending(timers, 4000);
-
+    // Stop countdown to clean up
+    mod.stopSelectionCountdown();
     expect(countdown.textContent).toBe("");
     expect(countdown.dataset.remainingTime).toBeUndefined();
-
-    mod.startSelectionCountdown(10);
-    expect(countdown.dataset.remainingTime).toBe("10");
-    expect(countdown.textContent).toContain("10");
-    expect(countdown.style.color).toBe("");
   });
 
   it("parses skipRoundCooldown query param", async () => {

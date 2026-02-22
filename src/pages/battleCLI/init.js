@@ -1359,9 +1359,7 @@ function pauseTimers() {
 function resumeTimers() {
   if (!hasDocument) return;
   console.log("[TIMER] resumeTimers called");
-  if (document.body?.dataset?.battleState === "roundSelect" && pausedSelectionRemaining) {
-    startSelectionCountdown(pausedSelectionRemaining);
-  }
+  // Turn-based mode: no selection countdown to resume in roundSelect.
   if (document.body?.dataset?.battleState === "roundWait" && pausedCooldownRemaining) {
     renderRoundWaitCountdown(pausedCooldownRemaining);
   }
@@ -3226,7 +3224,7 @@ function updateUiForState(battleState) {
     // haven't fully completed (edge case with fast state transitions in tests).
     state.roundResolving = false;
     selectionApplying = false;
-    startSelectionCountdown(30);
+    // Turn-based mode: wait indefinitely for player stat selection — no countdown timer.
     byId("cli-stats")?.focus();
   } else {
     stopSelectionCountdown();
