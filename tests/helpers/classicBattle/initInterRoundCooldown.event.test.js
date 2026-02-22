@@ -87,4 +87,3 @@ describe("initInterRoundCooldown (turn-based)", () => {
     expect(machine.dispatch).toHaveBeenCalledTimes(1);
   });
 });
-

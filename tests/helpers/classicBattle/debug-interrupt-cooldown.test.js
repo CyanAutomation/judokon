@@ -59,9 +59,7 @@ describe("Turn-based interrupt: roundWait waits for Next click", () => {
     const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
     );
-    const { emitBattleEvent } = await import(
-      "../../../src/helpers/classicBattle/battleEvents.js"
-    );
+    const { emitBattleEvent } = await import("../../../src/helpers/classicBattle/battleEvents.js");
     const store = { selectionMade: false, playerChoice: null };
 
     await initClassicBattleOrchestrator(store, undefined, {});

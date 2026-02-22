@@ -72,5 +72,3 @@ describe("initStartCooldown (turn-based)", () => {
     expect(machine.dispatch).toHaveBeenCalledTimes(1);
   });
 });
-
-

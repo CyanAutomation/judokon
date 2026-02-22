@@ -1,8 +1,5 @@
 import { emitBattleEvent } from "../battleEvents.js";
-import {
-  logSelectionMutation,
-  shouldClearSelectionForNextRound
-} from "../selectionHandler.js";
+import { logSelectionMutation, shouldClearSelectionForNextRound } from "../selectionHandler.js";
 import {
   logStateHandlerEnter,
   logStateHandlerExit,

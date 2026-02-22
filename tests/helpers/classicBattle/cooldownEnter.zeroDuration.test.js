@@ -71,4 +71,3 @@ describe("roundWaitEnter (turn-based)", () => {
     expect(machine.dispatch).toHaveBeenCalledWith("ready");
   });
 });
-

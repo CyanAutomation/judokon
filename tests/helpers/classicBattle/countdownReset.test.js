@@ -167,4 +167,3 @@ describe("turn-based: no countdown timer after stat selection", () => {
     randomSpy.mockRestore();
   });
 });
-

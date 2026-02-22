@@ -58,9 +58,7 @@ describe("interrupt → roundWait turn-based flow", () => {
     const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
     );
-    const { emitBattleEvent } = await import(
-      "../../../src/helpers/classicBattle/battleEvents.js"
-    );
+    const { emitBattleEvent } = await import("../../../src/helpers/classicBattle/battleEvents.js");
     const store = { selectionMade: false, playerChoice: null };
     await initClassicBattleOrchestrator(store, undefined, {});
     const machine = getBattleStateMachine();
