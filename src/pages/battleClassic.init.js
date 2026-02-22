@@ -5,7 +5,6 @@ import {
   handleReplay,
   getNextRoundControls
 } from "../helpers/classicBattle/roundManager.js";
-import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
 import {
   disableStatButtons,
   setStatButtonsEnabled,
@@ -56,10 +55,7 @@ import {
   getStatButtons,
   getNextButton,
   getScoreDisplay,
-  getPlayerScoreValue,
-  getOpponentScoreValue,
   getNextRoundTimer,
-  getTimerParts,
   getHomeButton,
   getHeaderLinks,
   getRoundSelectFallback,
@@ -156,42 +152,6 @@ const STATE = {
 // =============================================================================
 // Timer & UI Utilities
 // =============================================================================
-
-function updateTimerFallback(value) {
-  try {
-    const doc = getDocumentRef();
-    if (!doc) return;
-    const el = getNextRoundTimer(doc);
-    if (!el) return;
-    const { value: valueSpan, label: labelSpan } = getTimerParts(el);
-    if (valueSpan) {
-      const hasValue = typeof value === "string" && value.length > 0;
-      valueSpan.textContent = value;
-      if (labelSpan) {
-        labelSpan.textContent = hasValue ? "Time Left:" : "";
-      }
-      const separator = labelSpan?.nextSibling;
-      if (hasValue) {
-        if (!separator || separator.nodeType !== 3) {
-          const refDoc = el.ownerDocument || doc;
-          el.insertBefore(refDoc.createTextNode(" "), valueSpan);
-        } else if (!/\s/.test(separator.textContent || "")) {
-          separator.textContent = " ";
-        }
-      } else if (separator && separator.nodeType === 3) {
-        el.removeChild(separator);
-      }
-    } else {
-      el.textContent = value ? `Time Left: ${value}` : "";
-    }
-  } catch (err) {
-    safeExecute(
-      () => console.debug("battleClassic: updateTimerFallback failed", err),
-      "updateTimerFallback",
-      ERROR_LEVELS.SILENT
-    );
-  }
-}
 
 /**
  * Broadcast the current battle state to listeners and document metadata.
@@ -1157,7 +1117,7 @@ function wireExistingStatButtons(store) {
  *
  * @returns {Promise<void>}
  */
-async function beginSelectionTimer(_store) {
+async function beginSelectionTimer() {
   // Turn-based: no timer started.
 }
 
@@ -1210,7 +1170,7 @@ async function startRoundCycle(store, options = {}) {
       console.debug("battleClassic: showSelectionPrompt failed", err);
     }
     try {
-      await beginSelectionTimer(store);
+      await beginSelectionTimer();
     } catch {}
 
     broadcastBattleState("roundSelect");
