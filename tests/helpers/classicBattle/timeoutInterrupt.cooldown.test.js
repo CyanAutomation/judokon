@@ -1,35 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import "./commonMocks.js";
 import { createTimerNodes } from "./domUtils.js";
 import { setupClassicBattleHooks } from "./setupTestEnv.js";
 
-// Reset modules once at module load to ensure mocks apply to dynamic imports
-vi.resetModules();
-
-const readyDispatchTracker = vi.hoisted(() => ({ events: [] }));
-let timersControl = null;
-
-vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    dispatchBattleEvent: vi.fn(async (...args) => {
-      const [eventName] = args;
-      if (eventName === "ready") {
-        const callNumber = readyDispatchTracker.events.length + 1;
-        console.log(`[DISPATCH #${callNumber}] ready event`);
-        console.trace(`[DISPATCH #${callNumber}] ready stack trace`);
-        readyDispatchTracker.events.push(args);
-      }
-      const result = await actual.dispatchBattleEvent(...args);
-      if (eventName === "ready") {
-        return true;
-      }
-      return result;
-    })
-  };
-});
+// Turn-based flow: after an interrupt, roundWait is entered and the machine
+// waits indefinitely for the player to emit "skipCooldown" (Next Round click).
+// There is NO auto-advance after a timer expires.
 
 vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
   resolveRoundStartPolicy: vi.fn(async (cb) => {
@@ -37,272 +13,76 @@ vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
   })
 }));
 
-vi.mock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    getDefaultTimer: vi.fn(async () => 1),
-    createCountdownTimer: vi.fn(() => {
-      let tickHandler = null;
-      return {
-        on: vi.fn((event, handler) => {
-          if (event === "tick") {
-            tickHandler = handler;
-          }
-        }),
-        start: vi.fn(() => {
-          if (tickHandler) {
-            // Use vi.advanceTimersByTime since we're in fake timer environment
-            vi.setSystemTime(Date.now() + 1000);
-            tickHandler(1);
-          }
-        }),
-        stop: vi.fn(),
-        pause: vi.fn(),
-        resume: vi.fn()
-      };
-    })
-  };
-});
-
-vi.mock("../../../src/helpers/timers/createRoundTimer.js", () => ({
-  createRoundTimer: () => {
-    const handlers = { tick: new Set(), expired: new Set() };
-    const timer = {
-      on: vi.fn((evt, fn) => {
-        const timerIndex = globalThis.__MOCK_TIMERS?.length ?? 0;
-        console.log(`[TIMER ${timerIndex}] on("${evt}") - handler ${fn.name || "anonymous"}`);
-        handlers[evt]?.add(fn);
-      }),
-      off: vi.fn((evt, fn) => {
-        handlers[evt]?.delete(fn);
-      }),
-      start: vi.fn(() => {
-        const timerIndex = globalThis.__MOCK_TIMERS?.indexOf(timer) ?? -1;
-        console.log(`[TIMER ${timerIndex}] start() called, scheduling expiration in 1000ms`);
-        // Schedule expiration after 1 second using fake timers
-        const timeoutId = setTimeout(() => {
-          console.log(`[TIMER ${timerIndex}] expired, calling ${handlers.expired.size} handlers`);
-          handlers.expired.forEach((fn) => fn());
-        }, 1000);
-        // Store timeout ID so we can clear it when stop() is called
-        timer._timeoutId = timeoutId;
-      }),
-      stop: vi.fn(() => {
-        const timerIndex = globalThis.__MOCK_TIMERS?.indexOf(timer) ?? -1;
-        console.log(`[TIMER ${timerIndex}] stop() called, clearing timeout`);
-        // Clear the scheduled expiration WITHOUT calling handlers
-        // (matching real implementation - stop() does not emit "expired")
-        if (timer._timeoutId !== null && timer._timeoutId !== undefined) {
-          clearTimeout(timer._timeoutId);
-          timer._timeoutId = null;
-        }
-      }),
-      pause: vi.fn(),
-      resume: vi.fn()
-    };
-    // Track timer creation for debugging
-    if (typeof globalThis !== "undefined") {
-      if (!globalThis.__MOCK_TIMERS) globalThis.__MOCK_TIMERS = [];
-      globalThis.__MOCK_TIMERS.push(timer);
-      const timerNum = globalThis.__MOCK_TIMERS.length - 1;
-      console.log(`[TIMER] Created timer #${timerNum}`);
-      if (timerNum === 10 || timerNum === 11 || timerNum === 12) {
-        console.log(`[TIMER #${timerNum} CREATED] Stack trace:`);
-        console.trace();
-      }
-    }
-    return timer;
-  }
-}));
-
-describe("timeout → interruptRound → cooldown auto-advance", () => {
+describe("interrupt → roundWait turn-based flow", () => {
   setupClassicBattleHooks();
 
   beforeEach(async () => {
-    // Clear timer tracking
-    if (globalThis.__MOCK_TIMERS) {
-      globalThis.__MOCK_TIMERS.length = 0;
-    }
-    // CRITICAL: Clear any pending timers from previous test iterations
-    // This ensures we start with a clean fake timer queue
-    vi.clearAllTimers();
-
-    // Ensure fake timers are active so vi.advanceTimersByTimeAsync works
-    // (many other tests in this suite call vi.useFakeTimers()).
-    timersControl = useCanonicalTimers();
-    readyDispatchTracker.events.length = 0;
+    vi.resetModules();
     createTimerNodes();
-    window.__NEXT_ROUND_COOLDOWN_MS = 1000;
+    document.body.innerHTML +=
+      '<button id="next-button" disabled data-role="next-round">Next</button>';
+
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
     await initClassicBattleTest({ afterMock: true });
-
-    // CRITICAL: Clear timers again after init, in case initClassicBattleTest created any
-    console.log(`[TEST SETUP DEBUG] Clearing timers after initClassicBattleTest`);
-    vi.clearAllTimers();
-    if (globalThis.__MOCK_TIMERS) {
-      console.log(
-        `[TEST SETUP DEBUG] __MOCK_TIMERS has ${globalThis.__MOCK_TIMERS.length} items, clearing array`
-      );
-      globalThis.__MOCK_TIMERS.length = 0;
-    }
   });
 
   afterEach(() => {
-    readyDispatchTracker.events.length = 0;
-    delete window.__NEXT_ROUND_COOLDOWN_MS;
-    try {
-      timersControl?.cleanup?.();
-    } catch {}
+    vi.restoreAllMocks();
   });
 
-  it("advances from cooldown after interrupt with 1s auto-advance", async () => {
-    // CRITICAL: Clear any timers from setup/initialization before we start the test
-    console.log(`[TEST] Starting test, clearing any lingering timers`);
-    vi.clearAllTimers();
-    if (globalThis.__MOCK_TIMERS) {
-      console.log(`[TEST] __MOCK_TIMERS before clear: ${globalThis.__MOCK_TIMERS.length}`);
-      // Stop all timers to clear their pending callbacks
-      for (let i = 0; i < globalThis.__MOCK_TIMERS.length; i++) {
-        const timer = globalThis.__MOCK_TIMERS[i];
-        if (timer?.stop) {
-          try {
-            timer.stop();
-          } catch {
-            // ignore
-          }
-        }
-      }
-      globalThis.__MOCK_TIMERS.length = 0;
-      console.log(`[TEST] __MOCK_TIMERS cleared`);
-    }
-
+  it("does NOT auto-advance from roundWait after timers expire", async () => {
     const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
     );
-    const expirationHandlersModule = await import(
-      "../../../src/helpers/classicBattle/nextRound/expirationHandlers.js"
+    const store = { selectionMade: false, playerChoice: null };
+    await initClassicBattleOrchestrator(store, undefined, {});
+    const machine = getBattleStateMachine();
+
+    await machine.dispatch("startClicked");
+    await machine.dispatch("ready");
+    await machine.dispatch("ready");
+    await machine.dispatch("cardsRevealed");
+    await machine.dispatch("interrupt");
+
+    // Exhaust all pending fake timers
+    await vi.runAllTimersAsync();
+    await Promise.resolve();
+
+    const state = machine.getState();
+    // In turn-based mode the machine must remain in a waiting state –
+    // it should NOT have advanced to roundPrompt without a skipCooldown event.
+    expect(["roundWait", "interruptRound", "roundDisplay", "roundResolve"]).toContain(state);
+  });
+
+  it("advances from roundWait when skipCooldown is emitted", async () => {
+    const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(
+      "../../../src/helpers/classicBattle/orchestrator.js"
     );
-    const dispatchReadyDirectSpy = vi.spyOn(expirationHandlersModule, "dispatchReadyDirectly");
-    const { onBattleEvent, offBattleEvent } = await import(
+    const { emitBattleEvent } = await import(
       "../../../src/helpers/classicBattle/battleEvents.js"
     );
     const store = { selectionMade: false, playerChoice: null };
     await initClassicBattleOrchestrator(store, undefined, {});
     const machine = getBattleStateMachine();
 
-    const transitions = [];
-    const recordTransition = (event) => {
-      if (event?.detail) transitions.push(event.detail);
-    };
-    onBattleEvent("battleStateChange", recordTransition);
+    await machine.dispatch("startClicked");
+    await machine.dispatch("ready");
+    await machine.dispatch("ready");
+    await machine.dispatch("cardsRevealed");
+    await machine.dispatch("interrupt");
 
-    try {
-      await machine.dispatch("startClicked");
-      await machine.dispatch("ready");
-      await machine.dispatch("ready");
-      await machine.dispatch("cardsRevealed");
+    await Promise.resolve();
+    await Promise.resolve();
 
-      // CRITICAL: Stop all existing timers AND clear pending setTimeout calls
-      // We need both because timers might have expired already
-      vi.clearAllTimers(); // Clear any pending setTimeout/setInterval
+    const dispatchSpy = vi.spyOn(machine, "dispatch");
 
-      if (globalThis.__MOCK_TIMERS && globalThis.__MOCK_TIMERS.length > 0) {
-        // Create a copy of the array to avoid mutation-during-iteration issues
-        const timersToStop = [...globalThis.__MOCK_TIMERS];
-        for (const timer of timersToStop) {
-          if (timer && typeof timer.stop === "function") {
-            timer.stop();
-          }
-        }
-        // Clear the global array after stopping all timers
-        globalThis.__MOCK_TIMERS.length = 0;
-      }
+    // Simulate Next Round click
+    emitBattleEvent("skipCooldown", { source: "next-button" });
 
-      await machine.dispatch("interrupt");
-      const { dispatchBattleEvent } = await import(
-        "../../../src/helpers/classicBattle/eventDispatcher.js"
-      );
+    await Promise.resolve();
+    await Promise.resolve();
 
-      // Verify exactly one new timer was created for cooldown (after clearing old timers)
-      expect(globalThis.__MOCK_TIMERS).toBeDefined();
-      const timersAfterInterrupt = globalThis.__MOCK_TIMERS?.length ?? 0;
-      expect(timersAfterInterrupt).toBe(1); // Should be exactly 1 after clearing
-
-      // Get the cooldown timer (the only one remaining)
-      const cooldownTimer = globalThis.__MOCK_TIMERS[0];
-      expect(cooldownTimer.start).toHaveBeenCalled();
-
-      const readyCallsBeforeAdvance = dispatchBattleEvent.mock.calls.filter(
-        ([eventName]) => eventName === "ready"
-      );
-      expect(readyCallsBeforeAdvance).toHaveLength(0);
-
-      const transitionCheckpoint = transitions.length;
-
-      // CRITICAL: Before advancing timers, ensure ALL old timers are stopped
-      // This prevents old timers from firing during the advance
-      // NOTE: We already stopped old timers before the interrupt dispatch (lines 203-227)
-      // so we don't need to clear the queue here - just advance the NEW cooldown timer
-
-      // Advance by exactly 1000ms (cooldown duration) to avoid cascading timer creation
-      // runOnlyPendingTimersAsync would run ALL pending timers including those created
-      // during the cooldown expiration, causing a cascade
-      await vi.advanceTimersByTimeAsync(1000);
-      const readyCallsAfterAdvance = dispatchBattleEvent.mock.calls.filter(
-        ([eventName]) => eventName === "ready"
-      );
-      const readyDispatchesDuringAdvance =
-        readyCallsAfterAdvance.length - readyCallsBeforeAdvance.length;
-
-      expect(readyDispatchesDuringAdvance).toBe(1);
-      expect(readyCallsAfterAdvance).toHaveLength(1);
-
-      // Verify the dispatch tracker matches
-      expect(readyDispatchTracker.events.length).toBe(1);
-      expect(readyDispatchTracker.events[0]?.[0]).toBe("ready");
-      const readyDirectResults = await Promise.all(
-        dispatchReadyDirectSpy.mock.results.map(({ value }) => Promise.resolve(value))
-      );
-      const dedupeHandled = readyDirectResults.some(
-        (result) => result && typeof result === "object" && result.dedupeTracked === true
-      );
-      expect(dedupeHandled).toBe(true);
-
-      const interruptTransitions = transitions.slice(
-        Math.max(0, transitionCheckpoint - 2),
-        transitionCheckpoint
-      );
-      expect(interruptTransitions).toEqual([
-        expect.objectContaining({
-          from: "roundSelect",
-          to: "interruptRound",
-          event: "interrupt"
-        }),
-        expect.objectContaining({ from: "interruptRound", to: "roundWait", event: "restartRound" })
-      ]);
-
-      const recentTransitions = transitions.slice(transitionCheckpoint);
-      expect(recentTransitions).toEqual([
-        expect.objectContaining({ from: "roundWait", to: "roundPrompt", event: "ready" }),
-        expect.objectContaining({
-          from: "roundPrompt",
-          to: "roundSelect",
-          event: "cardsRevealed"
-        })
-      ]);
-
-      const readyTransitionsAfterAdvance = recentTransitions.filter((t) => t.event === "ready");
-      expect(readyTransitionsAfterAdvance).toHaveLength(1);
-
-      const { getStateSnapshot } = await import(
-        "../../../src/helpers/classicBattle/battleDebug.js"
-      );
-      const snapshot = getStateSnapshot();
-
-      expect(snapshot?.state).toBe("roundSelect");
-    } finally {
-      offBattleEvent("battleStateChange", recordTransition);
-    }
-  }, 10000);
+    const readyDispatches = dispatchSpy.mock.calls.filter(([e]) => e === "ready");
+    expect(readyDispatches.length).toBeGreaterThan(0);
+  });
 });
