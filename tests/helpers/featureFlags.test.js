@@ -145,6 +145,28 @@ describe("setFlag", () => {
       vi.doUnmock("../../src/helpers/settingsCache.js");
     }
   });
+
+  it("throws for unknown flags in isEnabled and setFlag", async () => {
+    vi.resetModules();
+    const loadSettings = vi.fn().mockResolvedValue({
+      ...DEFAULT_SETTINGS,
+      featureFlags: { ...DEFAULT_SETTINGS.featureFlags }
+    });
+    const updateSetting = vi.fn();
+
+    vi.doMock("../../src/config/loadSettings.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ updateSetting }));
+
+    try {
+      const { isEnabled, setFlag } = await import("../../src/helpers/featureFlags.js");
+      expect(() => isEnabled("missingFlag")).toThrow(/unknown flag/i);
+      await expect(setFlag("missingFlag", true)).rejects.toThrow(/unknown flag/i);
+      expect(updateSetting).not.toHaveBeenCalled();
+    } finally {
+      vi.doUnmock("../../src/config/loadSettings.js");
+      vi.doUnmock("../../src/helpers/settingsStorage.js");
+    }
+  });
 });
 
 describe("enableFlag", () => {

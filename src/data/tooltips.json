@@ -1,7 +1,7 @@
 {
   "stat": {
     "power": "**Power** represents a judoka's raw physical strength.\nStronger judoka can overpower opponents in throws and grip breaks.",
-    "kumikata": "_Kumi-kata_ means **grip fighting**.\nThis stat reflects how well a judoka can control grips and deny their opponent’s attacks.",
+    "kumikata": "_Kumi-kata_ means **grip fighting**.\nThis stat reflects how well a judoka can control grips and deny their opponent\u2019s attacks.",
     "speed": "**Speed** affects how quickly a judoka can attack or react.\nUseful for counterattacks and surprise techniques.",
     "technique": "**Technique** measures mastery of judo throws and transitions.\nHigh values indicate sharp, precise execution.",
     "newaza": "_Ne-waza_ means **ground grappling**.\nThis stat reflects skill in pins, holds, and other mat techniques."
@@ -13,8 +13,8 @@
     "cardOfTheDay": "**Card of the Day** shows a featured judoka.\nCheck back tomorrow for a new pick!",
     "winMessage": "**Victory!**\nYou chose the stronger stat.",
     "lossMessage": "**Defeat!**\nYour opponent had the upper hand.",
-    "drawMessage": "_It’s a draw._\nBoth stats were equal!",
-    "signatureBar": "**Signature move**\nThis bar shows the judoka’s special technique.",
+    "drawMessage": "_It\u2019s a draw._\nBoth stats were equal!",
+    "signatureBar": "**Signature move**\nThis bar shows the judoka\u2019s special technique.",
     "languageToggle": "**Language toggle**\nSwitch quote language between English and pseudo-Japanese.",
     "quitMatch": "**Quit match**\nReturn to the menu.",
     "drawCard": "**Draw card**\nGet a new random judoka card.",
@@ -26,7 +26,7 @@
     "copyDebug": "**Copy debug info**\nCopy current diagnostics to clipboard."
   },
   "mode": {
-    "classicBattle": "**Classic Battle Mode** pits you against an opponent.\nFirst to 10 round‑wins becomes the champion.",
+    "classicBattle": "**Classic Battle Mode** pits you against an opponent.\nFirst to 10 round\u2011wins becomes the champion.",
     "teamBattle": "**Team Battle Mode** lets you fight with your whole deck of cards.\nForm a team and win more rounds than the opposing team to triumph!",
     "meditation": "**Meditation Mode** lets you reflect and compare cards.\nNo battles, just peaceful analysis.",
     "randomJudoka": "**Random Judoka** picks a random card for quick inspiration.",
@@ -105,7 +105,7 @@
     },
     "statHotkeys": {
       "label": "Stat Hotkeys",
-      "description": "Use number keys 1–5 to select stats quickly."
+      "description": "Use number keys 1\u20135 to select stats quickly."
     },
     "cliVerbose": {
       "label": "CLI Verbose Logging",
@@ -126,10 +126,18 @@
     "roundStore": {
       "label": "Round Store (Experimental)",
       "description": "Use centralized round state management for improved performance and debugging."
+    },
+    "scanlines": {
+      "label": "Scanlines Effect",
+      "description": "Add a retro scanline overlay to the CLI battle mode for a more authentic feel."
+    },
+    "roundModify": {
+      "label": "Round Modify",
+      "description": "Enable QA-only round state mutation controls for battle flow testing."
     }
   },
   "card": {
-    "flag": "**Country flag**\nRepresents the judoka’s nation.",
+    "flag": "**Country flag**\nRepresents the judoka\u2019s nation.",
     "weightClass": "**Weight class**\nCompetition weight category."
   }
 }

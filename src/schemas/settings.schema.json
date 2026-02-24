@@ -29,7 +29,12 @@
       "type": "string",
       "description": "Visual display mode. Legacy values are normalized to \"dark\" at runtime.",
       "oneOf": [
-        { "enum": ["light", "dark"] },
+        {
+          "enum": [
+            "light",
+            "dark"
+          ]
+        },
         {
           "const": "retro",
           "deprecated": true,
@@ -48,19 +53,27 @@
     },
     "aiDifficulty": {
       "type": "string",
-      "enum": ["easy", "medium", "hard"],
+      "enum": [
+        "easy",
+        "medium",
+        "hard"
+      ],
       "description": "Difficulty level for AI stat selection.",
       "default": "easy"
     },
     "tooltipIds": {
       "type": "object",
       "description": "Mapping of setting keys to tooltip identifiers.",
-      "additionalProperties": { "type": "string" }
+      "additionalProperties": {
+        "type": "string"
+      }
     },
     "gameModes": {
       "type": "object",
       "description": "Per-mode enable/disable flags.",
-      "additionalProperties": { "type": "boolean" }
+      "additionalProperties": {
+        "type": "boolean"
+      }
     },
     "featureFlags": {
       "type": "object",
@@ -79,9 +92,19 @@
           "hidden": {
             "type": "boolean",
             "description": "When true, hide the flag from user-facing settings."
+          },
+          "devOnly": {
+            "type": "boolean",
+            "description": "When true, this flag is intended for development environments only."
+          },
+          "qaOnly": {
+            "type": "boolean",
+            "description": "When true, this flag is intended for QA/testing workflows only."
           }
         },
-        "required": ["enabled"],
+        "required": [
+          "enabled"
+        ],
         "additionalProperties": false
       }
     }
