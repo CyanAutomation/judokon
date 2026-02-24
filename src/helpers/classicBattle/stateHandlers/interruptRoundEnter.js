@@ -22,7 +22,7 @@ import { isRoundModificationOverlayEnabled } from "../roundModificationOverlay.j
  * @param {object} machine - State machine context with store and dispatcher.
  * @param {object} [payload] - Optional transition payload.
  * @param {string} [payload.reason] - Human-readable interrupt reason for display.
- * @param {boolean} [payload.adminTest] - If true and FF_ROUND_MODIFY is enabled, dispatch to the overlay.
+ * @param {boolean} [payload.adminTest] - If true and internal round-modification guardrails are enabled, dispatch to the overlay.
  * @param {boolean} [payload.quit] - If true, abort entire match; else restart round.
  * @returns {Promise<void>}
  */

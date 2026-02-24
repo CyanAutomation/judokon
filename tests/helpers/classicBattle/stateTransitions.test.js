@@ -20,6 +20,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.resetAllMocks();
+  delete globalThis.__JUDOKON_ALLOW_INTERNAL_ROUND_MODIFICATION__;
 });
 
 // Generates a state manager scoped to a single transition
@@ -55,12 +56,10 @@ async function createMachineForTransition(state, trigger, onTransition) {
   } else if (trigger.guard === GUARD_CONDITIONS.AUTO_SELECT_DISABLED) {
     // Guard is "!autoSelectEnabled", so we want autoSelect to be false (disabled)
     vi.spyOn(featureFlags, "isEnabled").mockReturnValue(false);
-  } else if (trigger.guard === GUARD_CONDITIONS.FF_ROUND_MODIFY) {
-    // Guard is "FF_ROUND_MODIFY", so we want roundModify to be true (enabled)
-    vi.spyOn(featureFlags, "isEnabled").mockImplementation((flag) => {
-      if (flag === "roundModify") return true;
-      return false;
-    });
+  } else if (trigger.guard === GUARD_CONDITIONS.INTERNAL_ROUND_MODIFICATION_ENABLED) {
+    // Internal round modification guard requires explicit internal config + runtime guard
+    globalThis.__JUDOKON_ALLOW_INTERNAL_ROUND_MODIFICATION__ = true;
+    context.internalConfig = { enableRoundModificationOverlay: true };
   }
 
   return createStateManager({}, context, onTransition, machineStates);
