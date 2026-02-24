@@ -164,4 +164,33 @@ describe("loadSettings", () => {
       warnSpy.mockRestore();
     }, ["warn"]);
   });
+
+  it("silently ignores legacy tooltipIds.roundStore persisted in localStorage", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({})
+      })
+    );
+
+    localStorage.setItem(
+      "settings",
+      JSON.stringify({
+        tooltipIds: {
+          roundStore: "legacy-tooltip-id"
+        }
+      })
+    );
+
+    await withAllowedConsole(async () => {
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const { loadSettings } = await import("../../src/config/loadSettings.js");
+      const settings = await loadSettings();
+
+      expect(settings.tooltipIds.roundStore).toBeUndefined();
+      expect(warnSpy).not.toHaveBeenCalledWith('Unknown setting "tooltipIds.roundStore" ignored');
+      warnSpy.mockRestore();
+    }, ["warn"]);
+  });
 });
