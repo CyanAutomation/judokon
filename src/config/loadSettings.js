@@ -1,6 +1,9 @@
 import { normalizeDisplayMode } from "../helpers/displayMode.js";
 
-const LEGACY_IGNORED_UNKNOWN_SETTINGS = new Set(["featureFlags.roundStore"]);
+const LEGACY_IGNORED_UNKNOWN_SETTINGS = new Set([
+  "featureFlags.roundStore",
+  "tooltipIds.roundStore"
+]);
 
 const SETTINGS_KEY = "settings";
 
