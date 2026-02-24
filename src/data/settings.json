@@ -13,8 +13,7 @@
     "typewriterEffect": "settings.typewriterEffect",
     "tooltips": "settings.tooltips",
     "showCardOfTheDay": "settings.showCardOfTheDay",
-    "fullNavigationMap": "settings.fullNavigationMap",
-    "roundStore": "settings.roundStore"
+    "fullNavigationMap": "settings.fullNavigationMap"
   },
   "gameModes": {},
   "featureFlags": {
@@ -62,11 +61,6 @@
       "tooltipId": "settings.roundModify",
       "hidden": true,
       "qaOnly": true
-    },
-    "roundStore": {
-      "enabled": true,
-      "tooltipId": "settings.roundStore",
-      "hidden": true
     },
     "scanlines": {
       "enabled": false,
