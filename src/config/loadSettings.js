@@ -80,9 +80,7 @@ function mergeKnown(base, override, defaults, path = []) {
         result[key] = value;
         continue;
       }
-      if (!LEGACY_IGNORED_UNKNOWN_SETTINGS.has(unknownPath)) {
-        console.warn(`Unknown setting "${unknownPath}" ignored`);
-      }
+      console.warn(`Unknown setting "${unknownPath}" ignored`);
       continue;
     }
 
