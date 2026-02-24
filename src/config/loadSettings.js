@@ -1,5 +1,7 @@
 import { normalizeDisplayMode } from "../helpers/displayMode.js";
 
+const LEGACY_IGNORED_UNKNOWN_SETTINGS = new Set(["featureFlags.roundStore"]);
+
 const SETTINGS_KEY = "settings";
 
 /**
@@ -27,7 +29,10 @@ function mergeObject(base, override, defaults, path = []) {
 
   for (const [key, value] of Object.entries(override)) {
     if (!(key in defaults)) {
-      console.warn(`Unknown setting "${[...path, key].join(".")}" ignored`);
+      const unknownPath = [...path, key].join(".");
+      if (!LEGACY_IGNORED_UNKNOWN_SETTINGS.has(unknownPath)) {
+        console.warn(`Unknown setting "${unknownPath}" ignored`);
+      }
       continue;
     }
 
@@ -60,7 +65,10 @@ function mergeKnown(base, override, defaults, path = []) {
 
   for (const [key, value] of Object.entries(override)) {
     if (!(key in defaults)) {
-      console.warn(`Unknown setting "${[...path, key].join(".")}" ignored`);
+      const unknownPath = [...path, key].join(".");
+      if (!LEGACY_IGNORED_UNKNOWN_SETTINGS.has(unknownPath)) {
+        console.warn(`Unknown setting "${unknownPath}" ignored`);
+      }
       continue;
     }
 

@@ -179,7 +179,6 @@ featureFlags: {
   layoutDebugPanel: { enabled: false, tooltipId: "settings.layoutDebugPanel" }
   opponentDelayMessage: { enabled: true, tooltipId: "settings.opponentDelayMessage" }
   scanlineEffect: { enabled: false, tooltipId: "settings.scanlineEffect" }
-  roundStore: { enabled: true, tooltipId: "settings.roundStore", hidden: true }
   autoSelect: { enabled: true, tooltipId: "settings.autoSelect" }
   viewportSimulation: { enabled: false, tooltipId: "settings.viewportSimulation" }
   navigationCacheReset: { enabled: false, tooltipId: "settings.navigationCacheReset" }

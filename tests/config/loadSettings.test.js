@@ -135,4 +135,33 @@ describe("loadSettings", () => {
       warnSpy.mockRestore();
     }, ["warn"]);
   });
+
+  it("silently ignores legacy featureFlags.roundStore persisted in localStorage", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({})
+      })
+    );
+
+    localStorage.setItem(
+      "settings",
+      JSON.stringify({
+        featureFlags: {
+          roundStore: { enabled: false }
+        }
+      })
+    );
+
+    await withAllowedConsole(async () => {
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const { loadSettings } = await import("../../src/config/loadSettings.js");
+      const settings = await loadSettings();
+
+      expect(settings.featureFlags.roundStore).toBeUndefined();
+      expect(warnSpy).not.toHaveBeenCalledWith('Unknown setting "featureFlags.roundStore" ignored');
+      warnSpy.mockRestore();
+    }, ["warn"]);
+  });
 });

@@ -3424,8 +3424,7 @@ function parseUrlFlags() {
     "statHotkeys",
     "cliShortcuts",
     "autoSelect",
-    "opponentDelayMessage",
-    "roundStore"
+    "opponentDelayMessage"
   ];
   flags.forEach((flag) => {
     if (urlParams.has(flag)) {

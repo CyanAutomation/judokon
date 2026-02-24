@@ -113,14 +113,14 @@ describe("feature flag debug toggles integration", () => {
     renderFeatureFlagSwitches(
       container,
       {
-        roundStore: { enabled: true, hidden: true }
+        roundModify: { enabled: false, hidden: true }
       },
       () => settings,
       handleUpdate,
       {}
     );
 
-    expect(container.querySelector("[data-flag='roundStore']")).toBeNull();
+    expect(container.querySelector("[data-flag='roundModify']")).toBeNull();
     expect(handleUpdate).not.toHaveBeenCalled();
     container.remove();
   });

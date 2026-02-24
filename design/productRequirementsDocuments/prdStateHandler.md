@@ -305,7 +305,7 @@ The state handler owns writes to the store (round numbers, transitions, ready fl
 ### Migration phases
 
 1. **Phase 0 – Prototype (in flight):** Complete contract definition, spike integrations, and verify parity with existing debug helpers.
-2. **Phase 1 – Feature-flagged writes:** Ship RoundStore behind a `roundStore.enabled` flag. The state handler and battle engine mirror all transitions into the store while legacy events remain the read path. **Success criteria:** End-to-end suites (unit, integration, Playwright) pass with the flag enabled and RoundStore snapshots match legacy event payloads in 100% of test fixtures.
+2. **Phase 1 – Baseline writes (completed):** RoundStore is the default write path in Classic and CLI battle flow. The state handler and battle engine mirror all transitions into the store while legacy events remain the read path. **Success criteria:** End-to-end suites (unit, integration, Playwright) pass with RoundStore enabled by default and snapshots match legacy event payloads in 100% of test fixtures.
 3. **Phase 2 – Consumer migration:** Gradually move scoreboard adapter, debug overlays, and Playwright helpers to read from RoundStore. Add assertions that compare store state with legacy events for early anomaly detection. **Success criteria:** At least two major consumers operate on RoundStore without performance regressions or telemetry alerts.
 4. **Phase 3 – Event deprecation:** Promote RoundStore to the authoritative read model, remove redundant event listeners, and delete compatibility shims once monitoring shows no drift for two releases. **Success criteria:** Legacy event system fully removed, store-backed consumers remain green across two releases, and CI suites stay passing.
 
