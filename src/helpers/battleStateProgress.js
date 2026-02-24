@@ -20,7 +20,12 @@ import { CLASSIC_BATTLE_STATES } from "./classicBattle/stateTable.js";
 import { updateBattleStateBadge } from "./classicBattle/uiHelpers.js";
 import { markBattlePartReady } from "./battleInit.js";
 import { isEnabled } from "./featureFlags.js";
+import { isDebugProfileEnabled } from "./debugProfiles.js";
 import { onBattleEvent, offBattleEvent } from "./classicBattle/battleEvents.js";
+
+function isBattleDebugEnabled() {
+  return isDebugProfileEnabled("battle") || isEnabled("battleStateProgress");
+}
 
 /**
  * Data attribute names and state remappings.
@@ -79,7 +84,7 @@ if (typeof window !== "undefined") {
   window.battleStateProgressReadyPromise = battleStateProgressReadyPromise;
 }
 
-if (!isEnabled("battleStateProgress")) {
+if (!isBattleDebugEnabled()) {
   if (typeof document !== "undefined") {
     const list = document.getElementById("battle-state-progress");
     if (list) {
@@ -243,7 +248,7 @@ export function initProgressListener(list, initialApplied = false) {
  * 6. Register event listener and return cleanup function.
  */
 export async function initBattleStateProgress() {
-  if (!isEnabled("battleStateProgress")) {
+  if (!isBattleDebugEnabled()) {
     if (typeof document !== "undefined") {
       const list = document.getElementById("battle-state-progress");
       if (list) {

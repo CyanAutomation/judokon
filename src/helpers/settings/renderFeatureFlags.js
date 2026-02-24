@@ -1,4 +1,4 @@
-import { renderFeatureFlagSwitches } from "./featureFlagSwitches.js";
+import { renderDebugProfileSwitches, renderFeatureFlagSwitches } from "./featureFlagSwitches.js";
 import { syncFeatureFlags } from "./syncFeatureFlags.js";
 import { reapplyAdvancedSettingsFilter } from "./filterAdvancedSettings.js";
 
@@ -21,6 +21,7 @@ export function renderFeatureFlags(current, getCurrentSettings, handleUpdate, to
   const container = document.getElementById("feature-flags-container");
   if (!container) return;
   container.querySelectorAll(".settings-item").forEach((el) => el.remove());
+  renderDebugProfileSwitches(container, getCurrentSettings, tooltipMap);
   const flags = syncFeatureFlags(current);
   renderFeatureFlagSwitches(container, flags, getCurrentSettings, handleUpdate, tooltipMap);
   reapplyAdvancedSettingsFilter();

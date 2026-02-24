@@ -32,6 +32,7 @@ import {
   setFlag,
   featureFlagsEmitter
 } from "../../helpers/featureFlags.js";
+import { isDebugProfileEnabled } from "../../helpers/debugProfiles.js";
 import { initDebugFlagHud } from "../../helpers/debugFlagHud.js";
 import {
   skipRoundCooldownIfEnabled,
@@ -370,9 +371,9 @@ async function handleVerboseToggleChange() {
 
 function handleFeatureFlagsChange(event) {
   const flag = event.detail?.flag;
-  if (!flag || flag === "cliVerbose") {
+  if (!flag || flag === "cliVerbose" || flag === "debugProfileCli") {
     try {
-      verboseEnabled = !!isEnabled("cliVerbose");
+      verboseEnabled = !!isDebugProfileEnabled("cli") || !!isEnabled("cliVerbose");
     } catch {}
     const round = Number(byId("cli-root")?.dataset.round || 0);
     updateRoundHeader(round, getBattleSnapshot().pointsToWin);
@@ -3108,7 +3109,7 @@ function handleRoundEvaluated(e) {
     opponentScore = opponentScore === undefined || opponentScore === null ? 0 : opponentScore;
     updateScoreLine({ playerScore, opponentScore });
     // Add detailed info to verbose log if enabled
-    if (isEnabled("cliVerbose")) {
+    if (isDebugProfileEnabled("cli")) {
       const verboseLog = byId("cli-verbose-log");
       if (verboseLog) {
         const round = Number(byId("cli-root")?.dataset.round || 0);
@@ -3418,7 +3419,6 @@ function parseUrlFlags() {
   const urlParams = new URLSearchParams(window.location.search);
   const flags = [
     "battleStateBadge",
-    "cliVerbose",
     "battleStateProgress",
     "skipRoundCooldown",
     "statHotkeys",
@@ -3537,6 +3537,7 @@ export async function setupFlags() {
     updateRoundHeader(round, headerTarget);
 
     try {
+      await setFlag("debugProfileCli", enable);
       await setFlag("cliVerbose", enable);
     } catch (error) {
       verboseEnabled = previousVerboseEnabled;
@@ -3580,7 +3581,7 @@ export async function setupFlags() {
   ensureVerboseScrollHandling();
   refreshVerboseScrollIndicators();
   try {
-    verboseEnabled = !!isEnabled("cliVerbose");
+    verboseEnabled = !!isDebugProfileEnabled("cli") || !!isEnabled("cliVerbose");
   } catch {}
   applyScanlines();
   setAutoContinue(true);

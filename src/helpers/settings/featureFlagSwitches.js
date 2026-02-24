@@ -2,6 +2,57 @@ import { ToggleSwitch } from "../../components/ToggleSwitch.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { toggleTooltipOverlayDebug } from "../tooltipOverlayDebug.js";
 import { toggleLayoutDebugPanel } from "../layoutDebugPanel.js";
+import { isDebugProfileEnabled, setDebugProfile } from "../debugProfiles.js";
+
+const DEBUG_PROFILE_ORDER = ["ui", "battle", "cli"];
+
+function getDebugProfileLabel(profile, tooltipMap) {
+  const tooltipLabel = tooltipMap[`settings.debugProfiles.${profile}.label`];
+  if (tooltipLabel) return tooltipLabel;
+  return `Debug Profile: ${profile.toUpperCase()}`;
+}
+
+function getDebugProfileDescription(profile, tooltipMap) {
+  return tooltipMap[`settings.debugProfiles.${profile}.description`] || "";
+}
+
+export function renderDebugProfileSwitches(container, getCurrentSettings, tooltipMap = {}) {
+  DEBUG_PROFILE_ORDER.forEach((profile) => {
+    const label = getDebugProfileLabel(profile, tooltipMap);
+    const description = getDebugProfileDescription(profile, tooltipMap);
+    const id = `debug-profile-${profile}`;
+    const toggle = new ToggleSwitch(label, {
+      id,
+      name: `debugProfiles.${profile}`,
+      checked: isDebugProfileEnabled(profile, { settings: getCurrentSettings() }),
+      ariaLabel: label,
+      tooltipId: `settings.debugProfiles.${profile}`
+    });
+    const { element: wrapper, input } = toggle;
+    if (!input) return;
+    input.dataset.flag = `debugProfiles.${profile}`;
+    const desc = document.createElement("p");
+    desc.className = "settings-description";
+    desc.id = `${id}-desc`;
+    desc.textContent = description;
+    wrapper.appendChild(desc);
+    input.setAttribute("aria-describedby", desc.id);
+    input.addEventListener("change", async () => {
+      const previous = !input.checked;
+      try {
+        await setDebugProfile(profile, input.checked);
+        showSnackbar(`${label} ${input.checked ? "enabled" : "disabled"}`);
+        if (profile === "ui") {
+          toggleLayoutDebugPanel(input.checked);
+          toggleTooltipOverlayDebug(input.checked);
+        }
+      } catch {
+        input.checked = previous;
+      }
+    });
+    container.appendChild(wrapper);
+  });
+}
 
 /**
  * Handle a feature flag toggle change.
@@ -47,12 +98,6 @@ export function handleFeatureFlagChange({
   )
     .then(() => {
       showSnackbar(`${label} ${input.checked ? "enabled" : "disabled"}`);
-      if (flag === "tooltipOverlayDebug") {
-        toggleTooltipOverlayDebug(input.checked);
-      }
-      if (flag === "layoutDebugPanel") {
-        toggleLayoutDebugPanel(input.checked);
-      }
     })
     .catch(() => {});
 }

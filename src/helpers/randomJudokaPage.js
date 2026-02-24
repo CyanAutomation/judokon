@@ -34,7 +34,8 @@ import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { setTestMode } from "./testModeUtils.js";
-import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./featureFlags.js";
+import { initFeatureFlags, featureFlagsEmitter } from "./featureFlags.js";
+import { isDebugProfileEnabled } from "./debugProfiles.js";
 import { getFallbackJudoka } from "./judokaUtils.js";
 import { showSnackbar } from "./showSnackbar.js";
 import { createDrawCardStateMachine, updateDrawButtonLabel } from "./drawCardStateMachine.js";
@@ -76,10 +77,9 @@ export async function initFeatureFlagState() {
       motionEffects: hasMatchMedia
         ? !window.matchMedia("(prefers-reduced-motion: reduce)").matches
         : true,
+      debugProfiles: { ui: false, battle: false, cli: false },
       featureFlags: {
-        enableTestMode: { enabled: false },
-        enableCardInspector: { enabled: false },
-        tooltipOverlayDebug: { enabled: false }
+        enableTestMode: { enabled: false }
       }
     };
     try {
@@ -127,8 +127,8 @@ export async function initFeatureFlagState() {
 
   setTestMode(resolveInitialFlagEnabled("enableTestMode"));
   applyMotionPreference(settings.motionEffects);
-  toggleInspectorPanels(resolveInitialFlagEnabled("enableCardInspector"));
-  toggleTooltipOverlayDebug(resolveInitialFlagEnabled("tooltipOverlayDebug"));
+  toggleInspectorPanels(isDebugProfileEnabled("ui", { settings }));
+  toggleTooltipOverlayDebug(isDebugProfileEnabled("ui", { settings }));
 
   const prefersReducedMotion =
     !settings.motionEffects ||
@@ -411,7 +411,7 @@ async function displayCard({
         cardContainer,
         prefersReducedMotion,
         onSelect,
-        { enableInspector: isEnabled("enableCardInspector") }
+        { enableInspector: isDebugProfileEnabled("ui") }
       );
 
       // Validate that card element was actually created in the DOM
@@ -434,7 +434,7 @@ async function displayCard({
         gokyoLookup,
         cardContainer,
         prefersReducedMotion,
-        isEnabled("enableCardInspector")
+        isDebugProfileEnabled("ui")
       );
       showSnackbar("Unable to draw a new card. Showing a fallback.");
       stateMachine.transition("ERROR");
@@ -627,8 +627,8 @@ export async function setupRandomJudokaPage() {
     currentPrefersReducedMotion = shouldReduceMotionSync();
     currentSoundEnabled = getSetting("sound") !== false;
     drawButton.dataset.soundEnabled = String(currentSoundEnabled);
-    toggleInspectorPanels(isEnabled("enableCardInspector"));
-    toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
+    toggleInspectorPanels(isDebugProfileEnabled("ui"));
+    toggleTooltipOverlayDebug(isDebugProfileEnabled("ui"));
   });
 
   if (!dataLoaded) {

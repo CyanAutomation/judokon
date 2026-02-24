@@ -7,6 +7,11 @@
   "displayMode": "light",
   "fullNavigationMap": false,
   "aiDifficulty": "easy",
+  "debugProfiles": {
+    "ui": false,
+    "battle": false,
+    "cli": false
+  },
   "tooltipIds": {
     "sound": "settings.sound",
     "motionEffects": "settings.motionEffects",
@@ -27,7 +32,9 @@
     },
     "battleStateProgress": {
       "enabled": false,
-      "tooltipId": "settings.battleStateProgress"
+      "tooltipId": "settings.battleStateProgress",
+      "devOnly": true,
+      "hidden": true
     },
     "cliShortcuts": {
       "enabled": true,
@@ -35,12 +42,15 @@
     },
     "cliVerbose": {
       "enabled": false,
-      "tooltipId": "settings.cliVerbose"
+      "tooltipId": "settings.cliVerbose",
+      "devOnly": true,
+      "hidden": true
     },
     "enableCardInspector": {
       "enabled": false,
       "tooltipId": "settings.enableCardInspector",
-      "devOnly": true
+      "devOnly": true,
+      "hidden": true
     },
     "enableTestMode": {
       "enabled": false,
@@ -50,7 +60,8 @@
     "layoutDebugPanel": {
       "enabled": false,
       "tooltipId": "settings.layoutDebugPanel",
-      "devOnly": true
+      "devOnly": true,
+      "hidden": true
     },
     "opponentDelayMessage": {
       "enabled": true,
@@ -77,7 +88,26 @@
     "tooltipOverlayDebug": {
       "enabled": false,
       "tooltipId": "settings.tooltipOverlayDebug",
-      "devOnly": true
+      "devOnly": true,
+      "hidden": true
+    },
+    "debugProfileUi": {
+      "enabled": false,
+      "tooltipId": "settings.debugProfiles.ui",
+      "devOnly": true,
+      "hidden": true
+    },
+    "debugProfileBattle": {
+      "enabled": false,
+      "tooltipId": "settings.debugProfiles.battle",
+      "devOnly": true,
+      "hidden": true
+    },
+    "debugProfileCli": {
+      "enabled": false,
+      "tooltipId": "settings.debugProfiles.cli",
+      "devOnly": true,
+      "hidden": true
     }
   }
 }

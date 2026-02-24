@@ -61,6 +61,16 @@
       "description": "Difficulty level for AI stat selection.",
       "default": "easy"
     },
+    "debugProfiles": {
+      "type": "object",
+      "description": "Grouped developer debug profiles.",
+      "properties": {
+        "ui": { "type": "boolean" },
+        "battle": { "type": "boolean" },
+        "cli": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
     "tooltipIds": {
       "type": "object",
       "description": "Mapping of setting keys to tooltip identifiers.",
@@ -116,7 +126,8 @@
     "tooltips",
     "showCardOfTheDay",
     "displayMode",
-    "fullNavigationMap"
+    "fullNavigationMap",
+    "debugProfiles"
   ],
   "additionalProperties": false
 }

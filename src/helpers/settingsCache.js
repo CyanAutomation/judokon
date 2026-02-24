@@ -16,6 +16,7 @@ function cloneSettings(settings) {
     ...settings,
     tooltipIds: settings.tooltipIds ? { ...settings.tooltipIds } : undefined,
     gameModes: settings.gameModes ? { ...settings.gameModes } : undefined,
+    debugProfiles: settings.debugProfiles ? { ...settings.debugProfiles } : undefined,
     featureFlags: settings.featureFlags
       ? Object.fromEntries(
           Object.entries(settings.featureFlags).map(([name, flag]) => [name, { ...flag }])

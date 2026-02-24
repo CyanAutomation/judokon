@@ -47,7 +47,7 @@ function cancelPendingWork() {
 
 function applyOverlayState(state) {
   measureDebugFlagToggle(
-    "tooltipOverlayDebug",
+    "debugProfiles.ui",
     () => {
       document.body.classList.toggle("tooltip-overlay-debug", state);
       document.body.setAttribute(
@@ -121,7 +121,7 @@ function applyFallbackState(state) {
  */
 export function toggleTooltipOverlayDebug(enabled) {
   const nextState = Boolean(enabled);
-  recordDebugState("tooltipOverlayDebug", nextState);
+  recordDebugState("debugProfiles.ui", nextState);
   pendingState = nextState;
   if (typeof document === "undefined" || !document.body) {
     if (typeof console !== "undefined" && (shouldShowTestLogs() || isConsoleMocked(console.info))) {
