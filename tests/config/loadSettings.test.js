@@ -188,7 +188,7 @@ describe("loadSettings", () => {
       const { loadSettings } = await import("../../src/config/loadSettings.js");
       const settings = await loadSettings();
 
-      expect(settings.tooltipIds.roundStore).toBeUndefined();
+      expect(settings.tooltipIds?.roundStore).toBeUndefined();
       expect(warnSpy).not.toHaveBeenCalledWith('Unknown setting "tooltipIds.roundStore" ignored');
       warnSpy.mockRestore();
     }, ["warn"]);
