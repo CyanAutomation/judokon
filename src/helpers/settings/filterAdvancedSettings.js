@@ -32,20 +32,20 @@ function getSearchableTokens(item) {
  * Update the search results status text.
  *
  * @param {HTMLElement | null} statusNode - Live region node.
- * @param {number} matchCount - Number of matched feature flags.
- * @param {number} totalCount - Total number of feature flags.
+ * @param {number} matchCount - Number of matched developer settings.
+ * @param {number} totalCount - Total number of developer settings.
  * @param {boolean} hasQuery - Whether the user entered a search term.
  * @returns {void}
  */
 function announceSearchStatus(statusNode, matchCount, totalCount, hasQuery) {
   if (!statusNode) return;
-  const allMessage = `Showing all ${totalCount} feature flags`;
-  const filteredMessage = `Showing ${matchCount} of ${totalCount} feature flags`;
+  const allMessage = `Showing all ${totalCount} developer settings`;
+  const filteredMessage = `Showing ${matchCount} of ${totalCount} developer settings`;
   statusNode.textContent = hasQuery ? filteredMessage : allMessage;
 }
 
 /**
- * Apply the current search filter to the feature flags container.
+ * Apply the current search filter to the developer settings container.
  *
  * @param {HTMLInputElement} input - Search input element.
  * @param {HTMLElement} container - Feature flags container.

@@ -9,7 +9,7 @@ import {
 } from "./uiHelpers.js";
 import { onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { initBattleStateProgress } from "../battleStateProgress.js";
-import { isEnabled } from "../featureFlags.js";
+import { isDebugProfileEnabled } from "../debugProfiles.js";
 import { initTooltips } from "../tooltip.js";
 import { handleReplay } from "./roundManager.js";
 
@@ -197,7 +197,7 @@ export async function setupUIBindings(view) {
   onBattleEvent("statButtons:enable", statButtonsEnableListener);
   onBattleEvent("statButtons:disable", statButtonsDisableListener);
 
-  if (isEnabled("battleStateProgress")) {
+  if (isDebugProfileEnabled("battle")) {
     const cleanupBattleStateProgress = await initBattleStateProgress();
     if (cleanupBattleStateProgress) {
       window.addEventListener("pagehide", cleanupBattleStateProgress, { once: true });

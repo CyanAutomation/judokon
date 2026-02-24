@@ -468,7 +468,7 @@ describe("renderSettingsControls", () => {
     addSpy.mockRestore();
   });
 
-  it("renders missing feature flags from defaults", async () => {
+  it("renders debug profile toggles independent from legacy feature flags", async () => {
     const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
     const withoutFlag = {
       ...baseSettings,
@@ -477,7 +477,7 @@ describe("renderSettingsControls", () => {
     delete withoutFlag.featureFlags.layoutDebugPanel;
     currentFlags = withoutFlag.featureFlags;
     renderSettingsControls(withoutFlag, [], tooltipMap);
-    const input = document.getElementById("feature-layout-debug-panel");
+    const input = document.getElementById("debug-profile-ui");
     expect(input).toBeTruthy();
     expect(input.checked).toBe(false);
   });

@@ -5,7 +5,7 @@ import {
   getOrLoadGokyoLookup
 } from "./cardSelection.js";
 import { loadSettings } from "../settingsStorage.js";
-import { isEnabled } from "../featureFlags.js";
+import { isDebugProfileEnabled } from "../debugProfiles.js";
 
 /**
  * Retrieve and prepare opponent judoka for rendering.
@@ -30,7 +30,7 @@ export async function getOpponentCardData() {
   try {
     await loadSettings();
   } catch {}
-  const enableInspector = isEnabled("enableCardInspector");
+  const enableInspector = isDebugProfileEnabled("ui");
   clearOpponentJudoka();
   return { ...judoka, lookup, enableInspector };
 }

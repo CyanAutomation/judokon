@@ -4,6 +4,7 @@ import { escapeHTML } from "./utils.js";
 import { marked } from "../vendor/marked.esm.js";
 import { loadSettings } from "./settingsStorage.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
+import { isDebugProfileEnabled } from "./debugProfiles.js";
 import { getSanitizer } from "./sanitizeHtml.js";
 import { debugLog } from "./debug.js";
 
@@ -363,14 +364,7 @@ export function initTooltips(root = globalThis.document, container) {
       if (disposed) return cleanup;
       const settings = await loadSettings();
       if (disposed) return cleanup;
-      // Priority: window.__FF_OVERRIDES > settings.featureFlags > false
-      const hasOverride =
-        typeof window !== "undefined" &&
-        window.__FF_OVERRIDES &&
-        Object.prototype.hasOwnProperty.call(window.__FF_OVERRIDES, "tooltipOverlayDebug");
-      overlay = hasOverride
-        ? !!window.__FF_OVERRIDES.tooltipOverlayDebug
-        : Boolean(settings.featureFlags?.tooltipOverlayDebug?.enabled);
+      overlay = isDebugProfileEnabled("ui", { settings });
       if (!settings.tooltips) {
         toggleTooltipOverlayDebug(false);
         notifyReady();

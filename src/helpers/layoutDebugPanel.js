@@ -124,7 +124,7 @@ function scheduleOutlineRender(selectorList) {
       pendingSelectorList = null;
       try {
         measureDebugFlagToggle(
-          "layoutDebugPanel",
+          "debugProfiles.ui",
           () => {
             clearOutlines();
             applyOutlines(activeSelectors);

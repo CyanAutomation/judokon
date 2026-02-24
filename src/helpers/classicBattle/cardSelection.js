@@ -2,6 +2,7 @@ import { generateRandomCard } from "../randomCard.js";
 import { getRandomJudoka } from "../cardUtils.js";
 import { loadSettings } from "../settingsStorage.js";
 import { isEnabled } from "../featureFlags.js";
+import { isDebugProfileEnabled } from "../debugProfiles.js";
 import { fetchJson } from "../dataUtils.js";
 import { createGokyoLookup } from "../utils.js";
 import { DATA_DIR } from "../constants.js";
@@ -430,7 +431,7 @@ export async function drawCards(options = {}) {
     placeholderRenderer = renderOpponentPlaceholder,
     fallbackProvider = getFallbackJudoka,
     loadSettingsFn = loadSettings,
-    inspectorFlagReader = () => isEnabled("enableCardInspector"),
+    inspectorFlagReader = () => isDebugProfileEnabled("ui"),
     qaLogger = qaInfo,
     cardFactory = defaultCardFactory,
     lazyPortraitSetup,

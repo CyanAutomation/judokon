@@ -2,7 +2,12 @@ import { normalizeDisplayMode } from "../helpers/displayMode.js";
 
 const LEGACY_IGNORED_UNKNOWN_SETTINGS = new Set([
   "featureFlags.roundStore",
-  "tooltipIds.roundStore"
+  "tooltipIds.roundStore",
+  "featureFlags.battleStateProgress",
+  "featureFlags.cliVerbose",
+  "featureFlags.enableCardInspector",
+  "featureFlags.layoutDebugPanel",
+  "featureFlags.tooltipOverlayDebug"
 ]);
 
 const SETTINGS_KEY = "settings";
@@ -33,9 +38,11 @@ function mergeObject(base, override, defaults, path = []) {
   for (const [key, value] of Object.entries(override)) {
     if (!(key in defaults)) {
       const unknownPath = [...path, key].join(".");
-      if (!LEGACY_IGNORED_UNKNOWN_SETTINGS.has(unknownPath)) {
-        console.warn(`Unknown setting "${unknownPath}" ignored`);
+      if (LEGACY_IGNORED_UNKNOWN_SETTINGS.has(unknownPath)) {
+        result[key] = value;
+        continue;
       }
+      console.warn(`Unknown setting "${unknownPath}" ignored`);
       continue;
     }
 
@@ -69,9 +76,11 @@ function mergeKnown(base, override, defaults, path = []) {
   for (const [key, value] of Object.entries(override)) {
     if (!(key in defaults)) {
       const unknownPath = [...path, key].join(".");
-      if (!LEGACY_IGNORED_UNKNOWN_SETTINGS.has(unknownPath)) {
-        console.warn(`Unknown setting "${unknownPath}" ignored`);
+      if (LEGACY_IGNORED_UNKNOWN_SETTINGS.has(unknownPath)) {
+        result[key] = value;
+        continue;
       }
+      console.warn(`Unknown setting "${unknownPath}" ignored`);
       continue;
     }
 

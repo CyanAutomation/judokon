@@ -16,7 +16,8 @@ import { onDomReady } from "./domReady.js";
 import { initTooltips, getTooltips } from "./tooltip.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
-import { initFeatureFlags, isEnabled } from "./featureFlags.js";
+import { initFeatureFlags } from "./featureFlags.js";
+import { isDebugProfileEnabled } from "./debugProfiles.js";
 import { showSnackbar } from "./showSnackbar.js";
 import { initDebugFlagHud } from "./debugFlagHud.js";
 
@@ -203,8 +204,8 @@ function initializeControls(settings) {
       applyDisplayMode(currentSettings.displayMode);
     });
     applyMotionPreference(currentSettings.motionEffects);
-    toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
-    toggleLayoutDebugPanel(isEnabled("layoutDebugPanel"));
+    toggleTooltipOverlayDebug(isDebugProfileEnabled("ui", { settings: currentSettings }));
+    toggleLayoutDebugPanel(isDebugProfileEnabled("ui", { settings: currentSettings }));
     renderSwitches(latestGameModes, latestTooltipMap);
     showSnackbar("Settings restored to defaults");
   });
@@ -466,8 +467,8 @@ async function initializeSettingsPage() {
 function applyInitialSettings(settings) {
   applyDisplayMode(settings.displayMode);
   applyMotionPreference(settings.motionEffects);
-  toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
-  toggleLayoutDebugPanel(isEnabled("layoutDebugPanel"));
+  toggleTooltipOverlayDebug(isDebugProfileEnabled("ui", { settings }));
+  toggleLayoutDebugPanel(isDebugProfileEnabled("ui", { settings }));
 }
 
 function showLoadSettingsError() {

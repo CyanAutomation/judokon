@@ -76,28 +76,34 @@
       "description": "Run deterministic matches for testing."
     },
     "enableCardInspector": {
-      "label": "Card Inspector",
-      "description": "Reveal raw card JSON in a collapsible panel."
+      "label": "Card Inspector (Legacy)",
+      "description": "Legacy toggle now covered by the UI Debug Profile."
     },
     "showCardOfTheDay": {
       "label": "Card Of The Day",
       "description": "Highlight a featured judoka on the home page."
-    },
-    "tooltipOverlayDebug": {
-      "label": "Tooltip Overlay Debug",
-      "description": "Outline tooltip targets to debug placement."
-    },
-    "layoutDebugPanel": {
-      "label": "Layout Debug Outlines",
-      "description": "Show element outlines to inspect page layout."
     },
     "battleStateBadge": {
       "label": "Battle State Badge",
       "description": "Show the current match state in the header for testing."
     },
     "battleStateProgress": {
-      "label": "Battle State Progress",
-      "description": "Show match state sequence below the battle area for testing."
+      "label": "Battle State Progress (Legacy)",
+      "description": "Legacy toggle now covered by the Battle Debug Profile."
+    },
+    "debugProfiles": {
+      "ui": {
+        "label": "UI Debug Profile",
+        "description": "Enable UI debug tools (layout outlines, tooltip overlay, and card inspector)."
+      },
+      "battle": {
+        "label": "Battle Debug Profile",
+        "description": "Enable battle debugging overlays such as state progression diagnostics."
+      },
+      "cli": {
+        "label": "CLI Debug Profile",
+        "description": "Enable verbose CLI diagnostics during battle sessions."
+      }
     },
     "skipRoundCooldown": {
       "label": "Skip Round Cooldown",
@@ -108,8 +114,8 @@
       "description": "Use number keys 1–5 to select stats quickly."
     },
     "cliVerbose": {
-      "label": "CLI Verbose Logging",
-      "description": "Show state transition logs in the battle CLI."
+      "label": "CLI Verbose Logging (Legacy)",
+      "description": "Legacy toggle now covered by the CLI Debug Profile."
     },
     "cliShortcuts": {
       "label": "CLI Shortcuts",
@@ -126,6 +132,14 @@
     "scanlines": {
       "label": "Scanlines Effect",
       "description": "Add a retro scanline overlay to the CLI battle mode for a more authentic feel."
+    },
+    "tooltipOverlayDebug": {
+      "label": "Tooltip Overlay Debug (Legacy)",
+      "description": "Legacy toggle now covered by the UI Debug Profile."
+    },
+    "layoutDebugPanel": {
+      "label": "Layout Debug Outlines (Legacy)",
+      "description": "Legacy toggle now covered by the UI Debug Profile."
     },
     "roundModify": {
       "label": "Round Modify",

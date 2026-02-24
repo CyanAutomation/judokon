@@ -16,7 +16,8 @@ import { applyMotionPreference } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";
 import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
-import { initFeatureFlags, isEnabled } from "./featureFlags.js";
+import { initFeatureFlags } from "./featureFlags.js";
+import { isDebugProfileEnabled } from "./debugProfiles.js";
 import { updateSetting } from "./settingsStorage.js";
 
 async function init() {
@@ -31,8 +32,8 @@ async function init() {
       } catch {}
     }
     applyMotionPreference(settings.motionEffects);
-    toggleLayoutDebugPanel(isEnabled("layoutDebugPanel"));
-    toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
+    toggleLayoutDebugPanel(isDebugProfileEnabled("ui", { settings }));
+    toggleTooltipOverlayDebug(isDebugProfileEnabled("ui", { settings }));
   } catch (error) {
     console.error("Failed to apply display mode:", error);
   }
