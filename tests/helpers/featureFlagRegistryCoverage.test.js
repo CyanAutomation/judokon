@@ -13,10 +13,19 @@ function collectFlagLiterals(grepOutput) {
 
 describe("feature flag registry coverage", () => {
   it("contains every literal flag used by isEnabled/setFlag callsites", () => {
-    const output = execSync(
-      'rg -n "\\b(?:isEnabled|setFlag)\\(\\s*[\'\\"]([A-Za-z0-9_]+)[\'\\"]" src',
-      { encoding: "utf8" }
-    );
+    let output;
+    try {
+      output = execSync(
+        'rg -n "\\b(?:isEnabled|setFlag)\\(\\s*[\'\\"]([A-Za-z0-9_]+)[\'\\"]" src',
+        { encoding: "utf8" }
+      );
+    } catch (error) {
+      // rg exits with non-zero when no matches found
+      if (error.status === 1 && !error.stdout) {
+        throw new Error("No feature flag callsites found in src/. Registry coverage test cannot validate anything.");
+      }
+      throw error;
+    }
     const flags = collectFlagLiterals(output);
     expect(flags.size).toBeGreaterThan(0);
 
