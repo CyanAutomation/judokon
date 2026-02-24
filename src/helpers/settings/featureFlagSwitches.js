@@ -16,6 +16,20 @@ function getDebugProfileDescription(profile, tooltipMap) {
   return tooltipMap[`settings.debugProfiles.${profile}.description`] || "";
 }
 
+/**
+ * Render grouped debug profile toggles in the settings UI.
+ *
+ * @pseudocode
+ * 1. Iterate through the fixed debug profile order.
+ * 2. Build toggle label, description, and checked state for each profile.
+ * 3. Render a switch and wire change handling to persist profile state.
+ * 4. Apply UI debug side effects when the `ui` profile changes.
+ *
+ * @param {HTMLElement} container - Element that receives rendered debug profile toggles.
+ * @param {() => Record<string, any>} getCurrentSettings - Getter for current settings snapshot.
+ * @param {Record<string, string>} [tooltipMap={}] - Localized tooltip content map.
+ * @returns {void}
+ */
 export function renderDebugProfileSwitches(container, getCurrentSettings, tooltipMap = {}) {
   DEBUG_PROFILE_ORDER.forEach((profile) => {
     const label = getDebugProfileLabel(profile, tooltipMap);
