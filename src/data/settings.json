@@ -18,21 +18,9 @@
   },
   "gameModes": {},
   "featureFlags": {
-    "enableTestMode": {
-      "enabled": false,
-      "tooltipId": "settings.enableTestMode"
-    },
-    "enableCardInspector": {
-      "enabled": false,
-      "tooltipId": "settings.enableCardInspector"
-    },
-    "tooltipOverlayDebug": {
-      "enabled": false,
-      "tooltipId": "settings.tooltipOverlayDebug"
-    },
-    "layoutDebugPanel": {
-      "enabled": false,
-      "tooltipId": "settings.layoutDebugPanel"
+    "autoSelect": {
+      "enabled": true,
+      "tooltipId": "settings.autoSelect"
     },
     "battleStateBadge": {
       "enabled": false,
@@ -42,26 +30,60 @@
       "enabled": false,
       "tooltipId": "settings.battleStateProgress"
     },
-    "statHotkeys": {
+    "cliShortcuts": {
       "enabled": true,
-      "tooltipId": "settings.statHotkeys"
+      "tooltipId": "settings.cliShortcuts"
     },
     "cliVerbose": {
       "enabled": false,
       "tooltipId": "settings.cliVerbose"
     },
-    "cliShortcuts": {
-      "enabled": true,
-      "tooltipId": "settings.cliShortcuts"
+    "enableCardInspector": {
+      "enabled": false,
+      "tooltipId": "settings.enableCardInspector",
+      "devOnly": true
+    },
+    "enableTestMode": {
+      "enabled": false,
+      "tooltipId": "settings.enableTestMode",
+      "devOnly": true
+    },
+    "layoutDebugPanel": {
+      "enabled": false,
+      "tooltipId": "settings.layoutDebugPanel",
+      "devOnly": true
     },
     "opponentDelayMessage": {
       "enabled": true,
       "tooltipId": "settings.opponentDelayMessage"
     },
+    "roundModify": {
+      "enabled": false,
+      "tooltipId": "settings.roundModify",
+      "hidden": true,
+      "qaOnly": true
+    },
     "roundStore": {
       "enabled": true,
       "tooltipId": "settings.roundStore",
       "hidden": true
+    },
+    "scanlines": {
+      "enabled": false,
+      "tooltipId": "settings.scanlines"
+    },
+    "skipRoundCooldown": {
+      "enabled": false,
+      "tooltipId": "settings.skipRoundCooldown"
+    },
+    "statHotkeys": {
+      "enabled": true,
+      "tooltipId": "settings.statHotkeys"
+    },
+    "tooltipOverlayDebug": {
+      "enabled": false,
+      "tooltipId": "settings.tooltipOverlayDebug",
+      "devOnly": true
     }
   }
 }

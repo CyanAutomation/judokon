@@ -2,6 +2,10 @@ import { loadSettings } from "../config/loadSettings.js";
 import { updateSetting } from "./settingsStorage.js";
 import { setCachedSettings } from "./settingsCache.js";
 import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
+import {
+  FEATURE_FLAG_REGISTRY,
+  assertRegisteredFeatureFlag
+} from "../config/featureFlagRegistry.js";
 
 /**
  * Feature flag system providing enable/disable patterns for experimental and beta features.
@@ -182,7 +186,7 @@ function dispatchFeatureFlagChange(detail) {
   }
 }
 
-let cachedFlags = { ...DEFAULT_SETTINGS.featureFlags };
+let cachedFlags = { ...FEATURE_FLAG_REGISTRY };
 
 /**
  * Initialize feature flags from persisted settings.
@@ -201,7 +205,7 @@ export async function initFeatureFlags() {
     settings = await loadSettings();
     // Merge defaults with any persisted featureFlags so new flags are present by default
     const mergedFlags = {
-      ...DEFAULT_SETTINGS.featureFlags,
+      ...FEATURE_FLAG_REGISTRY,
       ...(settings.featureFlags || {})
     };
     cachedFlags = mergedFlags;
@@ -209,7 +213,7 @@ export async function initFeatureFlags() {
     setCachedSettings({ ...settings, featureFlags: mergedFlags });
   } catch {
     settings = { ...DEFAULT_SETTINGS };
-    cachedFlags = { ...DEFAULT_SETTINGS.featureFlags };
+    cachedFlags = { ...FEATURE_FLAG_REGISTRY };
     setCachedSettings(settings);
   }
   dispatchFeatureFlagChange({ flag: null });
@@ -234,6 +238,7 @@ export function isEnabled(flag) {
       return !!o[flag];
     }
   } catch {}
+  assertRegisteredFeatureFlag(flag, "isEnabled");
   return cachedFlags[flag]?.enabled ?? false;
 }
 
@@ -242,7 +247,7 @@ export function isEnabled(flag) {
  *
  * @pseudocode
  * 1. Call `loadSettings()` to retrieve current settings.
- * 2. Optionally warn if `flag` is not in `DEFAULT_SETTINGS.featureFlags`.
+ * 2. Assert `flag` exists in the canonical feature flag registry.
  * 3. Merge existing flag data with `{ enabled: value }` into `settings.featureFlags`.
  * 4. Persist the merged object with `updateSetting('featureFlags', merged)`.
  * 5. Update `cachedFlags` with the saved flags.
@@ -258,9 +263,7 @@ export async function setFlag(flag, value) {
   const rawFlags = settings.featureFlags;
   const currentFlags =
     rawFlags && typeof rawFlags === "object" && !Array.isArray(rawFlags) ? rawFlags : {};
-  if (!Object.hasOwn(DEFAULT_SETTINGS.featureFlags, flag)) {
-    console.warn(`Unknown feature flag: ${flag}`);
-  }
+  assertRegisteredFeatureFlag(flag, "setFlag");
   const updatedFlags = {
     ...currentFlags,
     [flag]: { ...(currentFlags[flag] || {}), enabled: value }
@@ -306,7 +309,7 @@ if (typeof window !== "undefined") {
         const stored = JSON.parse(e.newValue);
         if (stored.featureFlags) {
           const mergedFlags = {
-            ...DEFAULT_SETTINGS.featureFlags,
+            ...FEATURE_FLAG_REGISTRY,
             ...(stored.featureFlags || {})
           };
           cachedFlags = mergedFlags;
