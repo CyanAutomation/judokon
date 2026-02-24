@@ -146,7 +146,7 @@ describe("setFlag", () => {
     }
   });
 
-  it("throws for unknown flags in isEnabled and setFlag", async () => {
+  it("returns false for unknown flags in isEnabled and throws in setFlag", async () => {
     vi.resetModules();
     const loadSettings = vi.fn().mockResolvedValue({
       ...DEFAULT_SETTINGS,
@@ -159,7 +159,7 @@ describe("setFlag", () => {
 
     try {
       const { isEnabled, setFlag } = await import("../../src/helpers/featureFlags.js");
-      expect(() => isEnabled("missingFlag")).toThrow(/unknown flag/i);
+      expect(isEnabled("missingFlag")).toBe(false);
       await expect(setFlag("missingFlag", true)).rejects.toThrow(/unknown flag/i);
       expect(updateSetting).not.toHaveBeenCalled();
     } finally {
