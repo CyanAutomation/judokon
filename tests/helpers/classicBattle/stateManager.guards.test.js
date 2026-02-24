@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createStateManager } from "../../../src/helpers/classicBattle/stateManager.js";
-import * as featureFlags from "../../../src/helpers/featureFlags.js";
 import {
   CLASSIC_BATTLE_STATES,
   buildClassicBattleStateTable
@@ -15,7 +14,7 @@ import "./commonMocks.js";
  * if either player has reached the match win target.
  *
  * @pseudocode
- * 2. Test FF_ROUND_MODIFY guard (admin flag).
+ * 2. Test internal round modification guard behavior.
  * 3. Test WIN_CONDITION_MET guard with various score scenarios.
  * 5. Test matchPointReached -> matchDecision transition with guard.
  */
@@ -31,6 +30,7 @@ describe("stateManager guard evaluation", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    delete globalThis.__JUDOKON_ALLOW_INTERNAL_ROUND_MODIFICATION__;
   });
 
   describe("WIN_CONDITION_MET guard", () => {
@@ -345,8 +345,9 @@ describe("stateManager guard evaluation", () => {
       expect(machine.getState()).toBe("roundResolve");
     });
 
-    it("should allow roundModifyFlag branch when roundModify flag is enabled in context", async () => {
-      context = { flags: { roundModify: true } };
+    it("should allow roundModifyFlag branch when internal overlay config and runtime guard are enabled", async () => {
+      context = { internalConfig: { enableRoundModificationOverlay: true } };
+      globalThis.__JUDOKON_ALLOW_INTERNAL_ROUND_MODIFICATION__ = true;
       machine = await createStateManager(
         {},
         context,
@@ -367,9 +368,8 @@ describe("stateManager guard evaluation", () => {
       expect(machine.getState()).toBe("roundModification");
     });
 
-    it("should allow roundModifyFlag branch when global roundModify flag is enabled", async () => {
-      vi.spyOn(featureFlags, "isEnabled").mockImplementation((flag) => flag === "roundModify");
-      context = {};
+    it("should block roundModifyFlag when runtime guard is not enabled", async () => {
+      context = { internalConfig: { enableRoundModificationOverlay: true } };
       machine = await createStateManager(
         {},
         context,
@@ -386,8 +386,8 @@ describe("stateManager guard evaluation", () => {
       expect(machine.getState()).toBe("interruptRound");
 
       const result = await machine.dispatch("roundModifyFlag");
-      expect(result).toBe(true);
-      expect(machine.getState()).toBe("roundModification");
+      expect(result).toBe(false);
+      expect(machine.getState()).toBe("interruptRound");
     });
 
     it("keeps core timeout transition identical with flags enabled or disabled", async () => {
@@ -419,15 +419,15 @@ describe("stateManager guard evaluation", () => {
     });
   });
 
-  describe("FF_ROUND_MODIFY guard", () => {
-    it("should handle FF_ROUND_MODIFY guard (admin flag)", async () => {
+  describe("internal round modification guard", () => {
+    it("should handle internal round modification guard declaration", async () => {
       // This test verifies the guard mechanism works for admin flags
       // Actual feature flag behavior is tested elsewhere
       context = {};
       machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
 
       expect(machine.getState()).toBe("waitingForMatchStart");
-      // The FF_ROUND_MODIFY guard is tested via roundModifyFlag event in interruptRound state
+      // The internal guard is tested via roundModifyFlag event in interruptRound state
     });
   });
 

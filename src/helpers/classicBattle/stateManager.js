@@ -3,7 +3,7 @@ import { debugLog, shouldSuppressDebugOutput } from "./debugLog.js";
 import { error as logError, warn as logWarn, debug as logDebug } from "../logger.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { reconcileProjectionAuthority } from "./stateOwnership.js";
-import { isEnabled } from "../featureFlags.js";
+import { isInternalRoundModificationEnabled } from "./roundModificationOverlay.js";
 
 // Constants
 const DEFAULT_INITIAL_STATE = "waitingForMatchStart";
@@ -16,16 +16,15 @@ const VALIDATION_WARN_ENABLED = true;
 function isRoundModifyEnabled(context, guardOverrides) {
   if (
     guardOverrides &&
-    Object.prototype.hasOwnProperty.call(guardOverrides, GUARD_CONDITIONS.FF_ROUND_MODIFY)
+    Object.prototype.hasOwnProperty.call(
+      guardOverrides,
+      GUARD_CONDITIONS.INTERNAL_ROUND_MODIFICATION_ENABLED
+    )
   ) {
-    return !!guardOverrides[GUARD_CONDITIONS.FF_ROUND_MODIFY];
+    return !!guardOverrides[GUARD_CONDITIONS.INTERNAL_ROUND_MODIFICATION_ENABLED];
   }
 
-  if (context?.flags && Object.prototype.hasOwnProperty.call(context.flags, "roundModify")) {
-    return context.flags.roundModify === true;
-  }
-
-  return Boolean(isEnabled("roundModify"));
+  return isInternalRoundModificationEnabled(context);
 }
 
 function isWinConditionMet(context) {
@@ -62,7 +61,7 @@ function evaluateGuard(guardCondition, context, guardOverrides) {
   if (!guardCondition) return true;
 
   switch (guardCondition) {
-    case GUARD_CONDITIONS.FF_ROUND_MODIFY:
+    case GUARD_CONDITIONS.INTERNAL_ROUND_MODIFICATION_ENABLED:
       return isRoundModifyEnabled(context, guardOverrides);
     case GUARD_CONDITIONS.WIN_CONDITION_MET:
       return isWinConditionMet(context);

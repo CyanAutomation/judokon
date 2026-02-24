@@ -25,13 +25,13 @@
  * @typedef {Object} BattleStateTrigger
  * @property {string} on - Event name that triggers transition
  * @property {string} target - Target state name
- * @property {string} [guard] - Optional condition (e.g., "FF_ROUND_MODIFY")
+ * @property {string} [guard] - Optional condition (e.g., "INTERNAL_ROUND_MODIFICATION_ENABLED")
  * @property {string} [note] - Clarification for complex logic
  * @property {boolean} [uiPacing] - True when transition exists only for surface-level pacing.
  * @property {'canonicalCrossSurface'|'surfacePacing'} [classification] - Transition class for cross-surface parity.
  *
  * Expected guard conditions:
- * - FF_ROUND_MODIFY: boolean, admin-only feature flag
+ * - INTERNAL_ROUND_MODIFICATION_ENABLED: boolean, internal admin-only gate
  * - playerScore >= winTarget || opponentScore >= winTarget: score comparison
  *
  * @type {BattleState[]}
@@ -42,11 +42,11 @@
  * Use these to avoid typos and enable refactoring across the codebase.
  *
  * @typedef {Object} ClassicBattleGuards
- * @property {string} FF_ROUND_MODIFY - Admin-only feature flag for round modification
+ * @property {string} INTERNAL_ROUND_MODIFICATION_ENABLED - Internal admin-only gate for round modification overlay
  * @property {string} WIN_CONDITION_MET - Evaluate if either player has reached the win target
  */
 export const GUARD_CONDITIONS = {
-  FF_ROUND_MODIFY: "FF_ROUND_MODIFY",
+  INTERNAL_ROUND_MODIFICATION_ENABLED: "INTERNAL_ROUND_MODIFICATION_ENABLED",
   WIN_CONDITION_MET: "playerScore >= winTarget || opponentScore >= winTarget"
 };
 
@@ -335,7 +335,7 @@ export const ROUND_MODIFICATION_OVERLAY_STATES = [
       {
         on: "roundModifyFlag",
         target: "roundModification",
-        guard: GUARD_CONDITIONS.FF_ROUND_MODIFY
+        guard: GUARD_CONDITIONS.INTERNAL_ROUND_MODIFICATION_ENABLED
       }
     ]
   },
