@@ -119,4 +119,44 @@ describe("battleCLI countdown", () => {
     const skipRoundEvents = flagEvents.filter((event) => event.flag === "skipRoundCooldown");
     expect(skipRoundEvents).toHaveLength(0);
   });
+
+  it("falls back to autoSelect when createRoundTimer throws even if cancellation was set", async () => {
+    vi.doMock("../../src/helpers/timers/createRoundTimer.js", () => ({
+      createRoundTimer: vi.fn(() => {
+        throw new Error("timer init failed");
+      })
+    }));
+
+    const mod = await loadBattleCLI({ autoSelect: true });
+    await mod.init();
+
+    mod.startSelectionCountdown(5);
+    await advanceTimersAndFlushPending(timers, 0);
+
+    const marker = document.getElementById("auto-select-marker");
+    expect(marker?.dataset.triggerCount ?? "0").toBe("1");
+  });
+
+  it("emits statSelectionStalled when createRoundTimer throws and autoSelect is disabled", async () => {
+    vi.doMock("../../src/helpers/timers/createRoundTimer.js", () => ({
+      createRoundTimer: vi.fn(() => {
+        throw new Error("timer init failed");
+      })
+    }));
+
+    const mod = await loadBattleCLI({ autoSelect: false });
+    await mod.init();
+
+    const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
+    const emitSpy = vi.spyOn(battleEvents, "emitBattleEvent");
+
+    mod.startSelectionCountdown(5);
+    await advanceTimersAndFlushPending(timers, 0);
+
+    const stalledCalls = emitSpy.mock.calls.filter(
+      ([eventName]) => eventName === "statSelectionStalled"
+    );
+    expect(stalledCalls).toHaveLength(1);
+    emitSpy.mockRestore();
+  });
 });
