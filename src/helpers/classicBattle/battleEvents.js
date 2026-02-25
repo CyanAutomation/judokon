@@ -274,6 +274,10 @@ let activeBattleEventBus = createBattleEventBus();
  */
 export function setActiveBattleEventBus(bus) {
   if (bus && typeof bus.on === "function" && typeof bus.emit === "function") {
+    if (bus === activeBattleEventBus) {
+      return activeBattleEventBus;
+    }
+    activeBattleEventBus?.dispose?.();
     activeBattleEventBus = bus;
   }
   return activeBattleEventBus;
@@ -364,9 +368,7 @@ export function emitBattleEventWithAliases(type, detail, options = {}) {
  * 3. Return the new bus for explicit test wiring.
  */
 export function __resetBattleEventTarget() {
-  const bus = createBattleEventBus();
-  setActiveBattleEventBus(bus);
-  return bus;
+  return setActiveBattleEventBus(createBattleEventBus());
 }
 
 /**
