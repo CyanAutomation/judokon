@@ -72,6 +72,34 @@
   width: min(960px, 100%);
 }
 
+.settings-primary-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(var(--space-md), 3vw, var(--space-xl));
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.settings-form > .settings-primary-columns {
+  grid-column: 1 / -1;
+}
+
+.settings-primary-columns > .modern-card,
+.modern-card,
+.modern-card > .settings-section,
+.settings-section > fieldset,
+.settings-section > div,
+.settings-section > .settings-form {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.modern-card {
+  overflow: hidden;
+}
+
 .settings-section {
   border: none;
   margin: 0 0 var(--space-lg);
@@ -163,6 +191,12 @@
   border-top-left-radius: 0;
   border-top-right-radius: 0;
   margin-top: -1px;
+}
+
+.settings-section[open] > :not(summary) {
+  position: relative;
+  inset: auto;
+  max-width: 100%;
 }
 
 .advanced-settings-search {
@@ -539,6 +573,10 @@
 }
 
 @media (max-width: 768px) {
+  .settings-primary-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .settings-links-list {
     grid-template-columns: 1fr;
   }
