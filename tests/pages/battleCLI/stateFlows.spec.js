@@ -15,6 +15,12 @@ function getRoundMessageText() {
   return document.getElementById("round-message")?.textContent ?? "";
 }
 
+async function flushAsyncCycles(count = 8) {
+  for (let i = 0; i < count; i += 1) {
+    await Promise.resolve();
+  }
+}
+
 describe("battleCLI state flows", () => {
   afterEach(async () => {
     await cleanupBattleCLI();
@@ -187,5 +193,76 @@ describe("battleCLI state flows", () => {
 
     expect(log?.textContent).toBe("");
     expect(roundManager.resetGame).toHaveBeenCalled();
+  });
+
+  it("ignores rapid double-click on Play Again while restart is in flight", async () => {
+    const dispatchIntentSpy = vi.fn().mockResolvedValue({ accepted: true, rejected: false });
+
+    await setupBattleCLI({
+      html: '<a data-testid="home-link" href="/index.html"></a>',
+      createBattleInstanceFactory: () => ({
+        dispatchIntent: dispatchIntentSpy,
+        init: vi.fn(async () => ({ dispatch: vi.fn() })),
+        dispose: vi.fn()
+      })
+    });
+
+    const eventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    const roundManager = await import("../../../src/helpers/classicBattle/roundManager.js");
+
+    roundManager.resetGame.mockClear();
+    dispatchIntentSpy.mockClear();
+
+    eventsMod.emitBattleEvent("matchOver");
+    const playAgain = document.getElementById("play-again-button");
+    expect(playAgain).toBeTruthy();
+
+    playAgain?.click();
+    playAgain?.click();
+
+    expect(playAgain?.disabled).toBe(true);
+
+    await flushAsyncCycles();
+
+    expect(roundManager.resetGame).toHaveBeenCalledTimes(1);
+    const startClickedCalls = dispatchIntentSpy.mock.calls.filter(
+      ([name]) => name === "startClicked"
+    );
+    expect(startClickedCalls).toHaveLength(1);
+  });
+
+  it("ignores rapid double-click on Next while continue dispatch is in flight", async () => {
+    const dispatchIntentSpy = vi.fn().mockResolvedValue({ accepted: true, rejected: false });
+
+    await setupBattleCLI({
+      autoSelect: false,
+      createBattleInstanceFactory: () => ({
+        dispatchIntent: dispatchIntentSpy,
+        init: vi.fn(async () => ({ dispatch: vi.fn() })),
+        dispose: vi.fn()
+      })
+    });
+
+    const { emitBattleEvent } = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    const { setAutoContinue } = await import(
+      "../../../src/helpers/classicBattle/orchestratorHandlers.js"
+    );
+
+    dispatchIntentSpy.mockClear();
+    setAutoContinue(false);
+    emitBattleEvent("battleStateChange", { from: "roundSelect", to: "roundDisplay" });
+
+    const nextButton = document.getElementById("next-round-button");
+    expect(nextButton).toBeTruthy();
+
+    nextButton?.click();
+    nextButton?.click();
+
+    expect(nextButton?.disabled).toBe(true);
+
+    await flushAsyncCycles();
+
+    const continueCalls = dispatchIntentSpy.mock.calls.filter(([name]) => name === "continue");
+    expect(continueCalls).toHaveLength(1);
   });
 });
