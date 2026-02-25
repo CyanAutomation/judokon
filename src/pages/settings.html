@@ -91,90 +91,92 @@
                 Tailor JU-DO-KON! to your play style with theme, accessibility, and feature
                 controls.
               </p>
-              <div class="modern-hero__actions">
-                <a class="primary-button modern-hero__cta" href="#display-settings-container"
-                  >Adjust display mode</a
-                >
-              </div>
-              <fieldset
-                id="display-settings-container"
-                class="modern-hero__display-mode game-mode-toggle-container settings-form"
-                aria-describedby="modern-hero-preview-description"
-              >
-                <legend class="modern-hero__display-mode-legend">Display mode</legend>
-                <div
-                  class="settings-item display-mode-group"
-                  role="radiogroup"
-                  aria-label="Display Mode"
-                >
-                  <div class="display-mode-flex">
-                    <label class="display-mode-option" data-mode="light">
-                      <input
-                        type="radio"
-                        id="display-mode-light"
-                        name="display-mode"
-                        value="light"
-                        tabindex="0"
-                        form="settings-form"
-                      />
-                      <span class="display-mode-option__pill">
-                        <span class="display-mode-option__icon" aria-hidden="true">
-                          <svg
-                            class="display-mode-option__icon-svg"
-                            viewBox="0 0 24 24"
-                            focusable="false"
-                            aria-hidden="true"
-                          >
-                            <circle cx="12" cy="12" r="4.5" fill="currentColor"></circle>
-                            <g
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="1.6"
-                              stroke-linecap="round"
-                            >
-                              <line x1="12" y1="2.2" x2="12" y2="5"></line>
-                              <line x1="12" y1="19" x2="12" y2="21.8"></line>
-                              <line x1="4.22" y1="4.22" x2="6.2" y2="6.2"></line>
-                              <line x1="17.8" y1="17.8" x2="19.78" y2="19.78"></line>
-                              <line x1="2.2" y1="12" x2="5" y2="12"></line>
-                              <line x1="19" y1="12" x2="21.8" y2="12"></line>
-                              <line x1="4.22" y1="19.78" x2="6.2" y2="17.8"></line>
-                              <line x1="17.8" y1="6.2" x2="19.78" y2="4.22"></line>
-                            </g>
-                          </svg>
-                        </span>
-                        <span class="display-mode-option__label">Light</span>
-                      </span>
-                    </label>
-                    <label class="display-mode-option" data-mode="dark">
-                      <input
-                        type="radio"
-                        id="display-mode-dark"
-                        name="display-mode"
-                        value="dark"
-                        tabindex="-1"
-                        form="settings-form"
-                      />
-                      <span class="display-mode-option__pill">
-                        <span class="display-mode-option__icon" aria-hidden="true">
-                          <svg
-                            class="display-mode-option__icon-svg"
-                            viewBox="0 0 24 24"
-                            focusable="false"
-                            aria-hidden="true"
-                          >
-                            <path
-                              d="M15.5 3.5a8 8 0 1 0 5 13.86A8.5 8.5 0 0 1 15.5 3.5Z"
-                              fill="currentColor"
-                            ></path>
-                          </svg>
-                        </span>
-                        <span class="display-mode-option__label">Dark</span>
-                      </span>
-                    </label>
-                  </div>
+              <div class="modern-hero__control-cluster" aria-label="Quick display controls">
+                <div class="modern-hero__actions">
+                  <a class="primary-button modern-hero__cta" href="#display-settings-container"
+                    >Adjust display mode</a
+                  >
                 </div>
-              </fieldset>
+                <fieldset
+                  id="display-settings-container"
+                  class="modern-hero__display-mode game-mode-toggle-container settings-form"
+                  aria-describedby="modern-hero-preview-description"
+                >
+                  <legend class="modern-hero__display-mode-legend">Display mode</legend>
+                  <div
+                    class="settings-item display-mode-group"
+                    role="radiogroup"
+                    aria-label="Display Mode"
+                  >
+                    <div class="display-mode-flex">
+                      <label class="display-mode-option" data-mode="light">
+                        <input
+                          type="radio"
+                          id="display-mode-light"
+                          name="display-mode"
+                          value="light"
+                          tabindex="0"
+                          form="settings-form"
+                        />
+                        <span class="display-mode-option__pill">
+                          <span class="display-mode-option__icon" aria-hidden="true">
+                            <svg
+                              class="display-mode-option__icon-svg"
+                              viewBox="0 0 24 24"
+                              focusable="false"
+                              aria-hidden="true"
+                            >
+                              <circle cx="12" cy="12" r="4.5" fill="currentColor"></circle>
+                              <g
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.6"
+                                stroke-linecap="round"
+                              >
+                                <line x1="12" y1="2.2" x2="12" y2="5"></line>
+                                <line x1="12" y1="19" x2="12" y2="21.8"></line>
+                                <line x1="4.22" y1="4.22" x2="6.2" y2="6.2"></line>
+                                <line x1="17.8" y1="17.8" x2="19.78" y2="19.78"></line>
+                                <line x1="2.2" y1="12" x2="5" y2="12"></line>
+                                <line x1="19" y1="12" x2="21.8" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="6.2" y2="17.8"></line>
+                                <line x1="17.8" y1="6.2" x2="19.78" y2="4.22"></line>
+                              </g>
+                            </svg>
+                          </span>
+                          <span class="display-mode-option__label">Light</span>
+                        </span>
+                      </label>
+                      <label class="display-mode-option" data-mode="dark">
+                        <input
+                          type="radio"
+                          id="display-mode-dark"
+                          name="display-mode"
+                          value="dark"
+                          tabindex="-1"
+                          form="settings-form"
+                        />
+                        <span class="display-mode-option__pill">
+                          <span class="display-mode-option__icon" aria-hidden="true">
+                            <svg
+                              class="display-mode-option__icon-svg"
+                              viewBox="0 0 24 24"
+                              focusable="false"
+                              aria-hidden="true"
+                            >
+                              <path
+                                d="M15.5 3.5a8 8 0 1 0 5 13.86A8.5 8.5 0 0 1 15.5 3.5Z"
+                                fill="currentColor"
+                              ></path>
+                            </svg>
+                          </span>
+                          <span class="display-mode-option__label">Dark</span>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </fieldset>
+              </div>
             </div>
             <p id="modern-hero-preview-description" class="visually-hidden">
               Visual preview of the available display mode themes: light and dark.
