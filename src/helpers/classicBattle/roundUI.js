@@ -232,13 +232,8 @@ export async function startRoundCooldown(resolved, config = {}) {
 }
 
 function createRoundStartGuard(seconds, abortSignal) {
-  const target = getBattleEventTarget?.();
-  const canListen =
-    target &&
-    typeof target.addEventListener === "function" &&
-    typeof target.removeEventListener === "function";
-
   let onRoundStarted = null;
+  let listeningTarget = null;
   let recoveryTimeoutId = null;
   let waitResolved = false;
   let resolveWait = () => {};
@@ -258,12 +253,49 @@ function createRoundStartGuard(seconds, abortSignal) {
     recoveryTimeoutId = null;
   }
 
-  function register() {
-    if (!canListen) {
-      resolveWait();
+  function isEventTargetLike(target) {
+    return (
+      target &&
+      typeof target.addEventListener === "function" &&
+      typeof target.removeEventListener === "function"
+    );
+  }
+
+  function resolveActiveTarget() {
+    const target = getBattleEventTarget?.();
+    return isEventTargetLike(target) ? target : null;
+  }
+
+  function removeListenerSafely(eventTarget) {
+    if (!isEventTargetLike(eventTarget) || !onRoundStarted) {
       return;
     }
+    try {
+      eventTarget.removeEventListener("roundStarted", onRoundStarted);
+    } catch {}
+  }
 
+  function syncRoundStartListenerTarget() {
+    if (!onRoundStarted) {
+      return false;
+    }
+
+    const nextTarget = resolveActiveTarget();
+    if (nextTarget === listeningTarget) {
+      return !!listeningTarget;
+    }
+
+    removeListenerSafely(listeningTarget);
+    listeningTarget = nextTarget;
+    if (!listeningTarget) {
+      return false;
+    }
+
+    listeningTarget.addEventListener("roundStarted", onRoundStarted);
+    return true;
+  }
+
+  function register() {
     onRoundStarted = () => {
       clearRecoveryTimeout();
       resolveWait();
@@ -272,7 +304,10 @@ function createRoundStartGuard(seconds, abortSignal) {
       } catch {}
     };
 
-    target.addEventListener("roundStarted", onRoundStarted);
+    if (!syncRoundStartListenerTarget()) {
+      resolveWait();
+      return;
+    }
 
     if (abortSignal && typeof abortSignal.addEventListener === "function") {
       const handleAbort = () => {
@@ -293,7 +328,7 @@ function createRoundStartGuard(seconds, abortSignal) {
   }
 
   function scheduleRecovery() {
-    if (!canListen || waitResolved) {
+    if (waitResolved || !syncRoundStartListenerTarget()) {
       resolveWait();
       return;
     }
@@ -315,22 +350,15 @@ function createRoundStartGuard(seconds, abortSignal) {
     );
   }
 
-  function removeListenerSafely(eventTarget) {
-    if (!eventTarget || typeof eventTarget.removeEventListener !== "function" || !onRoundStarted) {
-      return;
-    }
-    try {
-      eventTarget.removeEventListener("roundStarted", onRoundStarted);
-    } catch {}
-  }
-
   function cleanup() {
     clearRecoveryTimeout();
     detachAbortListener();
-    removeListenerSafely(target);
-    if (target !== getBattleEventTarget?.()) {
-      removeListenerSafely(getBattleEventTarget?.());
+    removeListenerSafely(listeningTarget);
+    const activeTarget = resolveActiveTarget();
+    if (activeTarget !== listeningTarget) {
+      removeListenerSafely(activeTarget);
     }
+    listeningTarget = null;
     onRoundStarted = null;
     resolveWait();
   }

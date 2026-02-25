@@ -245,8 +245,9 @@ describe("startRoundCooldown", () => {
     });
     const { startRoundCooldown } = await import("../../../src/helpers/classicBattle/roundUI.js");
 
-    await startRoundCooldown({ timer, renderer: vi.fn() }, { seconds: 1 });
+    const cooldownPromise = startRoundCooldown({ timer, renderer: vi.fn() }, { seconds: 1 });
     await timers.advanceTimersByTimeAsync(2000);
+    await cooldownPromise;
 
     expect(emitSpy).not.toHaveBeenCalledWith("game:reset-ui", {});
   });
@@ -267,6 +268,34 @@ describe("startRoundCooldown", () => {
       ([eventName, detail]) => eventName === "game:reset-ui" && JSON.stringify(detail) === "{}"
     );
     expect(resetCalls).toHaveLength(1);
+  });
+
+  it("rebinds roundStarted listener when active battle bus changes before recovery wait", async () => {
+    vi.resetModules();
+    const events = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    const initialBus = events.__resetBattleEventTarget();
+    const initialTarget = initialBus.getTarget();
+    const initialAddSpy = vi.spyOn(initialTarget, "addEventListener");
+    const initialRemoveSpy = vi.spyOn(initialTarget, "removeEventListener");
+    const emitSpy = vi.spyOn(events, "emitBattleEvent");
+    let replacementBus = null;
+    const timer = createCooldownTimer(async () => {
+      replacementBus = events.createBattleEventBus();
+      events.setActiveBattleEventBus(replacementBus);
+      setTimeout(() => {
+        replacementBus.emit("roundStarted", { round: 2 });
+      }, 0);
+    });
+    const { startRoundCooldown } = await import("../../../src/helpers/classicBattle/roundUI.js");
+
+    const cooldownPromise = startRoundCooldown({ timer, renderer: vi.fn() }, { seconds: 1 });
+    await timers.advanceTimersByTimeAsync(1);
+    await cooldownPromise;
+
+    expect(replacementBus).toBeTruthy();
+    expect(initialAddSpy).toHaveBeenCalledWith("roundStarted", expect.any(Function));
+    expect(initialRemoveSpy).toHaveBeenCalledWith("roundStarted", expect.any(Function));
+    expect(emitSpy).not.toHaveBeenCalledWith("game:reset-ui", {});
   });
 
   it("cancels pending recovery timeout and listener on teardown abort", async () => {
