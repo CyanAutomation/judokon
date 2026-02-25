@@ -94,7 +94,8 @@ import {
   updateScoreLine,
   clearVerboseLog,
   ensureVerboseScrollHandling,
-  refreshVerboseScrollIndicators
+  refreshVerboseScrollIndicators,
+  resetVerboseScrollHandling
 } from "./dom.js";
 import { createCliDomFragment } from "./cliDomTemplate.js";
 import { resolveRoundForTest as resolveRoundForTestHelper } from "./testSupport.js";
@@ -3755,6 +3756,7 @@ function handlePageHide() {
 export function unwireEvents() {
   cleanupEngineSubscriptions();
   uninstallEventBindings();
+  resetVerboseScrollHandling();
   if (eventsWired) {
     if (typeof window !== "undefined") {
       window.removeEventListener("keydown", onKeyDown);
