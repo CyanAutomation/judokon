@@ -3142,10 +3142,21 @@ function handleMatchOver() {
     id: "play-again-button",
     className: "primary-button"
   });
+  let playAgainInFlight = false;
   btn.addEventListener("click", async () => {
-    await resetMatch();
-    section.remove();
-    await triggerMatchStart();
+    if (playAgainInFlight) return;
+    playAgainInFlight = true;
+    btn.disabled = true;
+    try {
+      await resetMatch();
+      section.remove();
+      await triggerMatchStart();
+    } finally {
+      if (section.isConnected) {
+        btn.disabled = false;
+      }
+      playAgainInFlight = false;
+    }
   });
   section.append(btn);
   try {
@@ -3259,11 +3270,25 @@ function ensureNextRoundButton() {
     btn.className = "primary-button";
     btn.textContent = "Next";
     btn.setAttribute("aria-label", "Continue to next round");
-    btn.addEventListener("click", async () => {
+    let continueInFlight = false;
+    btn.addEventListener("click", async (event) => {
+      try {
+        event?.preventDefault?.();
+        event?.stopPropagation?.();
+      } catch {}
+      if (continueInFlight) return;
+      continueInFlight = true;
+      btn.disabled = true;
       clearCooldownTimers();
       try {
         await dispatchIntent("continue");
-      } catch {}
+      } catch {
+      } finally {
+        if (btn.isConnected) {
+          btn.disabled = false;
+        }
+        continueInFlight = false;
+      }
     });
     section.appendChild(btn);
     main.appendChild(section);
