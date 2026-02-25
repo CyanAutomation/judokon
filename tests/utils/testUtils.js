@@ -218,7 +218,7 @@ function createHeaderStub() {
   const wrapper = document.createElement("div");
   wrapper.className = "modern-header__theme-toggle";
   wrapper.setAttribute("role", "group");
-  wrapper.setAttribute("aria-label", "Display mode");
+  wrapper.setAttribute("aria-label", "Quick Theme Toggle");
 
   const createOption = (value, tabIndex) => {
     const label = document.createElement("label");
@@ -276,7 +276,7 @@ function createHeroStub() {
   const cta = document.createElement("a");
   cta.className = "primary-button modern-hero__cta";
   cta.href = "#display-settings-container";
-  cta.textContent = "Adjust display mode";
+  cta.textContent = "Open display preferences";
   actions.append(cta);
 
   const fieldset = document.createElement("fieldset");
@@ -286,12 +286,12 @@ function createHeroStub() {
 
   const legend = document.createElement("legend");
   legend.className = "modern-hero__display-mode-legend";
-  legend.textContent = "Display mode";
+  legend.textContent = "Display Preferences";
 
   const group = document.createElement("div");
   group.className = "settings-item display-mode-group";
   group.setAttribute("role", "radiogroup");
-  group.setAttribute("aria-label", "Display Mode");
+  group.setAttribute("aria-label", "Display Preferences");
 
   const flex = document.createElement("div");
   flex.className = "display-mode-flex";

@@ -48,8 +48,15 @@
             </ol>
           </nav>
           <div class="modern-header__actions">
-            <div class="modern-header__theme-toggle" role="group" aria-label="Display mode">
-              <span class="modern-header__theme-label" id="header-theme-toggle-label">Theme</span>
+            <div
+              class="modern-header__theme-toggle"
+              role="group"
+              aria-label="Quick Theme Toggle"
+              aria-describedby="header-theme-toggle-help"
+            >
+              <span class="modern-header__theme-label" id="header-theme-toggle-label"
+                >Quick Theme Toggle</span
+              >
               <div
                 class="modern-header__theme-controls"
                 aria-labelledby="header-theme-toggle-label"
@@ -75,7 +82,13 @@
                   Dark
                 </label>
               </div>
-              <a class="modern-header__anchor" href="#display-settings-container">More options</a>
+              <a class="modern-header__anchor" href="#display-settings-container"
+                >Display preferences</a
+              >
+              <p id="header-theme-toggle-help" class="settings-description">
+                Fast switch for Light/Dark mode. The Display Preferences section below stays in
+                sync.
+              </p>
             </div>
           </div>
         </div>
@@ -94,19 +107,19 @@
               <div class="modern-hero__control-cluster" aria-label="Quick display controls">
                 <div class="modern-hero__actions">
                   <a class="primary-button modern-hero__cta" href="#display-settings-container"
-                    >Adjust display mode</a
+                    >Open display preferences</a
                   >
                 </div>
                 <fieldset
                   id="display-settings-container"
                   class="modern-hero__display-mode game-mode-toggle-container settings-form"
-                  aria-describedby="modern-hero-preview-description"
+                  aria-describedby="display-settings-help modern-hero-preview-description"
                 >
-                  <legend class="modern-hero__display-mode-legend">Display mode</legend>
+                  <legend class="modern-hero__display-mode-legend">Display Preferences</legend>
                   <div
                     class="settings-item display-mode-group"
                     role="radiogroup"
-                    aria-label="Display Mode"
+                    aria-label="Display Preferences"
                   >
                     <div class="display-mode-flex">
                       <label class="display-mode-option" data-mode="light">
@@ -175,6 +188,10 @@
                       </label>
                     </div>
                   </div>
+                  <p id="display-settings-help" class="settings-description">
+                    Primary theme controls with full context. Changes made here immediately update
+                    the header quick toggle.
+                  </p>
                 </fieldset>
               </div>
             </div>
