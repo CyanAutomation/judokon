@@ -37,7 +37,8 @@ import { getSetting } from "../../helpers/settingsCache.js";
 import { initDebugFlagHud } from "../../helpers/debugFlagHud.js";
 import {
   skipRoundCooldownIfEnabled,
-  updateBattleStateBadge
+  updateBattleStateBadge,
+  showFatalInitError
 } from "../../helpers/classicBattle/uiHelpers.js";
 import { getStateSnapshot } from "../../helpers/classicBattle/battleDebug.js";
 import { autoSelectStat } from "../../helpers/classicBattle/autoSelectStat.js";
@@ -3983,13 +3984,26 @@ export async function init() {
   wireEvents();
 }
 
+function runInitSafely() {
+  init().catch((error) => {
+    console.error("battleCLI: init failed", error);
+    try {
+      if (typeof showFatalInitError === "function") {
+        showFatalInitError(error);
+      }
+    } catch (fatalError) {
+      console.error("battleCLI: fatal error display failed", fatalError);
+    }
+  });
+}
+
 if (typeof window === "undefined" || !window.__TEST__) {
   if (!hasDocument) {
-    init();
+    runInitSafely();
   } else if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
+    document.addEventListener("DOMContentLoaded", runInitSafely);
   } else {
-    init();
+    runInitSafely();
   }
 }
 
