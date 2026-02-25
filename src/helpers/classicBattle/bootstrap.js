@@ -209,7 +209,7 @@ export function createBattleClassic() {
     readyPromise,
     controller,
     dispose: () => {
-      // Reserved for future teardown hooks.
+      controller.dispose();
     }
   };
 }

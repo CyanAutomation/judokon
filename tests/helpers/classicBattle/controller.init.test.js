@@ -6,8 +6,10 @@ const controllerModule = `${helpersPath}/classicBattle/controller.js`;
 const orchestratorMock = vi.hoisted(() => {
   const module = {
     initClassicBattleOrchestrator: vi.fn().mockResolvedValue({ start: vi.fn() }),
+    disposeClassicBattleOrchestrator: vi.fn(),
     __reset() {
       module.initClassicBattleOrchestrator.mockClear();
+      module.disposeClassicBattleOrchestrator.mockClear();
     }
   };
   return module;
@@ -20,7 +22,28 @@ const battleEngineFacadeMock = vi.hoisted(() => {
     resumeTimer: vi.fn(),
     engine: null,
     createBattleEngine: vi.fn(() => {
-      module.engine = { id: Symbol("engine") };
+      const listeners = new Map();
+      module.engine = {
+        id: Symbol("engine"),
+        on: vi.fn((eventName, handler) => {
+          if (!listeners.has(eventName)) {
+            listeners.set(eventName, new Set());
+          }
+          listeners.get(eventName).add(handler);
+          return () => {
+            listeners.get(eventName)?.delete(handler);
+          };
+        }),
+        off: vi.fn((eventName, handler) => {
+          listeners.get(eventName)?.delete(handler);
+        }),
+        emit: (eventName, detail) => {
+          for (const handler of listeners.get(eventName) || []) {
+            handler(detail);
+          }
+        },
+        listenerCount: (eventName) => (listeners.get(eventName) || new Set()).size
+      };
       return module.engine;
     }),
     getEngine: vi.fn(() => module.engine),
@@ -40,33 +63,21 @@ vi.mock("../../../src/helpers/classicBattle/orchestrator.js", () => orchestrator
 vi.mock("../../../src/helpers/BattleEngine.js", () => battleEngineFacadeMock);
 
 describe("ClassicBattleController.init", () => {
-  /** @type {ReturnType<typeof vi.fn>} */
   let fetchMock;
-  /** @type {typeof globalThis.fetch} */
   let originalFetch;
-  /** @type {typeof window} */
   let originalWindow;
-  /** @type {{ addEventListener: ReturnType<typeof vi.fn>, removeEventListener: ReturnType<typeof vi.fn>, __FF_OVERRIDES?: Record<string, unknown>, __testMode?: boolean }} */
   let windowStub;
-  /** @type {import("../../../src/helpers/testModeUtils.js").seededRandom} */
   let seededRandom;
-  /** @type {import("../../../src/helpers/testModeUtils.js").isTestModeEnabled} */
   let isTestModeEnabled;
-  /** @type {import("../../../src/helpers/testModeUtils.js").getCurrentSeed} */
   let getCurrentSeed;
-  /** @type {import("../../../src/helpers/testModeUtils.js").setTestMode} */
   let setTestMode;
-  /** @type {import("../../../src/helpers/featureFlags.js").featureFlagsEmitter} */
   let featureFlagsEmitter;
-  /** @type {((event: Event) => void)[]} */
   let registeredFlagListeners;
-  /**
-   * @param {ReturnType<typeof vi.spyOn>} addListenerSpy
-   */
+
   const registerFlagChangeListeners = (addListenerSpy) => {
     const extractedListeners = (addListenerSpy?.mock?.calls || [])
       .filter(([eventName, handler]) => eventName === "change" && typeof handler === "function")
-      .map(([, handler]) => /** @type {(event: Event) => void} */ (handler));
+      .map(([, handler]) => handler);
     registeredFlagListeners.push(...extractedListeners);
     addListenerSpy?.mockRestore?.();
   };
@@ -177,5 +188,57 @@ describe("ClassicBattleController.init", () => {
     expect(isTestModeEnabled()).toBe(true);
     const secondDeterministic = seededRandom();
     expect(secondDeterministic).toBeCloseTo(firstDeterministic, 15);
+  });
+
+  it("does not multiply listeners when init is called multiple times", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ featureFlags: { enableTestMode: { enabled: false } } })
+    });
+
+    const addListenerSpy = vi.spyOn(featureFlagsEmitter, "addEventListener");
+    const removeListenerSpy = vi.spyOn(featureFlagsEmitter, "removeEventListener");
+    const { ClassicBattleController } = await import(controllerModule);
+    const controller = new ClassicBattleController();
+
+    await controller.init();
+    await controller.init();
+
+    expect(addListenerSpy).toHaveBeenCalledTimes(2);
+    expect(removeListenerSpy).toHaveBeenCalledTimes(1);
+    expect(battleEngineFacadeMock.engine.listenerCount("roundStarted")).toBe(1);
+
+    registerFlagChangeListeners(addListenerSpy);
+    removeListenerSpy.mockRestore();
+  });
+
+  it("dispose removes listeners and prevents subsequent callbacks", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ featureFlags: { enableTestMode: { enabled: false } } })
+    });
+
+    const addListenerSpy = vi.spyOn(featureFlagsEmitter, "addEventListener");
+    const removeListenerSpy = vi.spyOn(featureFlagsEmitter, "removeEventListener");
+    const { ClassicBattleController } = await import(controllerModule);
+    const controller = new ClassicBattleController();
+    const featureFlagCallback = vi.fn();
+
+    controller.addEventListener("featureFlagsChange", featureFlagCallback);
+    await controller.init();
+
+    registerFlagChangeListeners(addListenerSpy);
+    featureFlagCallback.mockClear();
+
+    controller.dispose();
+
+    expect(removeListenerSpy).toHaveBeenCalledTimes(1);
+    expect(battleEngineFacadeMock.engine.listenerCount("roundStarted")).toBe(0);
+
+    featureFlagsEmitter.dispatchEvent(new Event("change"));
+    battleEngineFacadeMock.engine.emit("roundStarted", { round: 3 });
+    expect(featureFlagCallback).not.toHaveBeenCalled();
+
+    removeListenerSpy.mockRestore();
   });
 });
