@@ -125,6 +125,12 @@ export class ClassicBattleController extends EventTarget {
    * @returns {void}
    */
   dispose() {
+    if (this.battleInstance && typeof this.battleInstance.dispose === "function") {
+      this.battleInstance.dispose();
+    }
+    this.battleInstance = null;
+    this.store.orchestrator = null;
+
     if (this.featureFlagsChangeHandler) {
       featureFlagsEmitter.removeEventListener("change", this.featureFlagsChangeHandler);
       this.featureFlagsChangeHandler = null;
