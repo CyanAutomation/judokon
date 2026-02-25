@@ -258,6 +258,47 @@ test.describe("Settings page", () => {
     await expect.poll(async () => status.evaluate((el) => el.hidden)).toBe(true);
   });
 
+  test("general settings expansion stays within its column and avoids overlap", async ({
+    page
+  }) => {
+    const generalDetails = page.locator('details[data-section-id="general"]');
+    const gameModesCard = page
+      .locator('details[data-section-id="gameModes"]')
+      .locator("xpath=ancestor::div[contains(@class, 'modern-card')][1]");
+    const generalCard = generalDetails.locator(
+      "xpath=ancestor::div[contains(@class, 'modern-card')][1]"
+    );
+
+    await expect(generalDetails).toHaveJSProperty("open", true);
+    await expect(gameModesCard).toBeVisible();
+
+    const bounds = await page.evaluate(() => {
+      const generalDetailsEl = document.querySelector('details[data-section-id="general"]');
+      const gameModesDetailsEl = document.querySelector('details[data-section-id="gameModes"]');
+      const generalCardEl = generalDetailsEl?.closest(".modern-card");
+      const gameModesCardEl = gameModesDetailsEl?.closest(".modern-card");
+      if (!generalCardEl || !gameModesCardEl || !generalDetailsEl) {
+        return null;
+      }
+
+      const generalRect = generalDetailsEl.getBoundingClientRect();
+      const generalCardRect = generalCardEl.getBoundingClientRect();
+      const gameModesRect = gameModesCardEl.getBoundingClientRect();
+
+      return {
+        generalRight: generalRect.right,
+        generalCardRight: generalCardRect.right,
+        gameModesLeft: gameModesRect.left,
+        horizontalGap: gameModesRect.left - generalRect.right
+      };
+    });
+
+    expect(bounds).not.toBeNull();
+    expect(bounds.generalRight).toBeLessThanOrEqual(bounds.generalCardRight + 1);
+    expect(bounds.generalRight).toBeLessThanOrEqual(bounds.gameModesLeft + 1);
+    expect(bounds.horizontalGap).toBeGreaterThanOrEqual(-1);
+    await expect(generalCard).toHaveCSS("overflow", "hidden");
+  });
   test("toggle switches surface hover and focus feedback", async ({ page }) => {
     await openSections(page, ["general"]);
     const label = page.locator("label[for='sound-toggle']");
