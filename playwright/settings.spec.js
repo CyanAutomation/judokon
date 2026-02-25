@@ -258,46 +258,124 @@ test.describe("Settings page", () => {
     await expect.poll(async () => status.evaluate((el) => el.hidden)).toBe(true);
   });
 
-  test("general settings expansion stays within its column and avoids overlap", async ({
-    page
-  }) => {
-    const generalDetails = page.locator('details[data-section-id="general"]');
-    const gameModesCard = page
-      .locator('details[data-section-id="gameModes"]')
-      .locator("xpath=ancestor::div[contains(@class, 'modern-card')][1]");
-    const generalCard = generalDetails.locator(
-      "xpath=ancestor::div[contains(@class, 'modern-card')][1]"
+  test("expanded sections stay in flow and preserve spacing/order", async ({ page }) => {
+    const sectionIds = ["general", "gameModes", "advanced", "links"];
+    const getCardMetrics = async () =>
+      page.evaluate((ids) => {
+        const metrics = {};
+        for (const id of ids) {
+          const details = document.querySelector(`details[data-section-id="${id}"]`);
+          const card = details?.closest(".modern-card");
+          if (!details || !card) {
+            continue;
+          }
+          const rect = card.getBoundingClientRect();
+          const styles = getComputedStyle(card);
+          metrics[id] = {
+            top: rect.top,
+            bottom: rect.bottom,
+            left: rect.left,
+            right: rect.right,
+            width: rect.width,
+            height: rect.height,
+            minHeight: styles.minHeight,
+            open: details.open
+          };
+        }
+
+        const columns = document.querySelector(".settings-primary-columns");
+        const columnStyles = columns ? getComputedStyle(columns) : null;
+
+        return {
+          metrics,
+          gridAutoRows: columnStyles?.gridAutoRows ?? "",
+          rowGap: columnStyles?.rowGap ?? "",
+          firstRowTopDelta:
+            metrics.general && metrics.gameModes
+              ? Math.abs(metrics.general.top - metrics.gameModes.top)
+              : null
+        };
+      }, sectionIds);
+
+    const closeSection = async (id) => {
+      const details = page.locator(`details[data-section-id="${id}"]`);
+      if (await details.evaluate((el) => el.open)) {
+        await details.locator("summary").click();
+        await expect(details).toHaveJSProperty("open", false);
+      }
+    };
+
+    await closeSection("general");
+    await closeSection("gameModes");
+
+    const baseline = await getCardMetrics();
+    expect(baseline.gridAutoRows).toBe("auto");
+    expect(Number.parseFloat(baseline.rowGap)).toBeGreaterThan(0);
+    expect(baseline.metrics.gameModes.height).toBeGreaterThan(60);
+    expect(Number.parseFloat(baseline.metrics.gameModes.minHeight)).toBeGreaterThan(0);
+
+    await openSections(page, ["general"]);
+    const afterGeneralOpen = await getCardMetrics();
+
+    expect(afterGeneralOpen.firstRowTopDelta).toBeLessThanOrEqual(1);
+    expect(afterGeneralOpen.metrics.gameModes.height).toBeCloseTo(
+      baseline.metrics.gameModes.height,
+      0
+    );
+    expect(afterGeneralOpen.metrics.general.height).toBeGreaterThan(
+      baseline.metrics.general.height + 40
+    );
+    expect(afterGeneralOpen.metrics.advanced.top).toBeGreaterThan(
+      baseline.metrics.advanced.top + 20
     );
 
-    await expect(generalDetails).toHaveJSProperty("open", true);
-    await expect(gameModesCard).toBeVisible();
-
-    const bounds = await page.evaluate(() => {
-      const generalDetailsEl = document.querySelector('details[data-section-id="general"]');
-      const gameModesDetailsEl = document.querySelector('details[data-section-id="gameModes"]');
-      const generalCardEl = generalDetailsEl?.closest(".modern-card");
-      const gameModesCardEl = gameModesDetailsEl?.closest(".modern-card");
-      if (!generalCardEl || !gameModesCardEl || !generalDetailsEl) {
-        return null;
+    for (const id of sectionIds) {
+      await openSections(page, [id]);
+      const state = await getCardMetrics();
+      const values = Object.values(state.metrics);
+      for (let i = 0; i < values.length - 1; i++) {
+        for (let j = i + 1; j < values.length; j++) {
+          const a = values[i];
+          const b = values[j];
+          const horizontalOverlap = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+          const verticalOverlap = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+          expect(horizontalOverlap > 0 && verticalOverlap > 0).toBe(false);
+        }
       }
+    }
+  });
 
-      const generalRect = generalDetailsEl.getBoundingClientRect();
-      const generalCardRect = generalCardEl.getBoundingClientRect();
-      const gameModesRect = gameModesCardEl.getBoundingClientRect();
+  test("settings cards stack into one column on narrower widths", async ({ page }) => {
+    await page.setViewportSize({ width: 900, height: 1200 });
+    await waitForSettingsReady(page);
+
+    const narrowLayout = await page.evaluate(() => {
+      const columns = document.querySelector(".settings-primary-columns");
+      const styles = columns ? getComputedStyle(columns) : null;
+      const cards = Array.from(columns?.querySelectorAll(":scope > .modern-card") ?? []).map(
+        (card) => {
+          const rect = card.getBoundingClientRect();
+          return {
+            left: rect.left,
+            top: rect.top,
+            width: rect.width
+          };
+        }
+      );
 
       return {
-        generalRight: generalRect.right,
-        generalCardRight: generalCardRect.right,
-        gameModesLeft: gameModesRect.left,
-        horizontalGap: gameModesRect.left - generalRect.right
+        templateColumns: styles?.gridTemplateColumns ?? "",
+        rowGap: styles?.rowGap ?? "",
+        cards
       };
     });
 
-    expect(bounds).not.toBeNull();
-    expect(bounds.generalRight).toBeLessThanOrEqual(bounds.generalCardRight + 1);
-    expect(bounds.generalRight).toBeLessThanOrEqual(bounds.gameModesLeft + 1);
-    expect(bounds.horizontalGap).toBeGreaterThanOrEqual(-1);
-    await expect(generalCard).toHaveCSS("overflow", "hidden");
+    expect(narrowLayout.templateColumns.split(" ").length).toBe(1);
+    expect(Number.parseFloat(narrowLayout.rowGap)).toBeGreaterThan(0);
+    expect(Math.abs(narrowLayout.cards[0].left - narrowLayout.cards[1].left)).toBeLessThanOrEqual(
+      1
+    );
+    expect(narrowLayout.cards[1].top).toBeGreaterThan(narrowLayout.cards[0].top + 20);
   });
   test("toggle switches surface hover and focus feedback", async ({ page }) => {
     await openSections(page, ["general"]);
