@@ -45,11 +45,7 @@ export function renderDebugProfileSwitches(container, getCurrentSettings, toolti
     const { element: wrapper, input } = toggle;
     if (!input) return;
     input.dataset.flag = `debugProfiles.${profile}`;
-    const desc = document.createElement("p");
-    desc.className = "settings-description";
-    desc.id = `${id}-desc`;
-    desc.textContent = description;
-    wrapper.appendChild(desc);
+    const desc = toggle.setDescription(description, { id: `${id}-desc` });
     input.setAttribute("aria-describedby", desc.id);
     input.addEventListener("change", async () => {
       const previous = !input.checked;
@@ -184,11 +180,9 @@ export function renderFeatureFlagSwitches(
     });
     const { element: wrapper, input } = toggle;
     if (input) input.dataset.flag = flag;
-    const desc = document.createElement("p");
-    desc.className = "settings-description";
-    desc.id = `feature-${kebab}-desc`;
-    desc.textContent = description;
-    wrapper.appendChild(desc);
+    const desc = toggle.setDescription(description, {
+      id: `feature-${kebab}-desc`
+    });
     if (input) {
       input.setAttribute("aria-describedby", desc.id);
       input.removeAttribute("tabindex");

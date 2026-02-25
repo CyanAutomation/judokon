@@ -11,11 +11,13 @@ describe("ToggleSwitch", () => {
       tooltipId: "settings.sound"
     });
     const { element, input } = toggle;
+    const controlRow = element.querySelector(".settings-item__control-row");
     const label = element.querySelector("label.switch");
     const slider = element.querySelector(".slider");
     const span = element.querySelector("span");
 
     expect(element.className).toBe("settings-item");
+    expect(controlRow).toBeInstanceOf(HTMLDivElement);
     expect(label).toBeInstanceOf(HTMLLabelElement);
     expect(label?.htmlFor).toBe("sound-toggle");
     expect(input?.id).toBe("sound-toggle");
@@ -46,5 +48,19 @@ describe("ToggleSwitch", () => {
     const toggle = new ToggleSwitch("Changeable");
     toggle.setChecked(true);
     expect(toggle.isChecked()).toBe(true);
+  });
+
+  it("creates a description row when description content is set", () => {
+    const toggle = new ToggleSwitch("Sound");
+    const description = toggle.setDescription("Enable or mute game audio.", {
+      id: "sound-desc"
+    });
+
+    expect(description).toBeInstanceOf(HTMLParagraphElement);
+    expect(description.id).toBe("sound-desc");
+    expect(description.textContent).toBe("Enable or mute game audio.");
+    expect(toggle.element.querySelector(".settings-item__description-row")).toBeInstanceOf(
+      HTMLDivElement
+    );
   });
 });

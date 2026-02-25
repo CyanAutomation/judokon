@@ -3,10 +3,11 @@
  *
  * @pseudocode
  * 1. Create a wrapper div with class `settings-item`.
- * 2. Build a label containing a checkbox input, slider div and text span.
- * 3. Apply provided options such as `id`, `name`, `checked`, `aria-label` and `tooltipId` to the input.
- * 4. Append the label to the wrapper and store references to the wrapper and input.
- * 5. Wire a change event to keep the instance's `checked` state in sync with the input element.
+ * 2. Create a control row to keep toggle controls aligned across items.
+ * 3. Build a label containing a checkbox input, slider div and text span.
+ * 4. Apply provided options such as `id`, `name`, `checked`, `aria-label` and `tooltipId` to the input.
+ * 5. Append the label into the control row and store references to the wrapper and input.
+ * 6. Wire a change event to keep the instance's `checked` state in sync with the input element.
  */
 export class ToggleSwitch {
   /**
@@ -23,6 +24,9 @@ export class ToggleSwitch {
 
     this.element = document.createElement("div");
     this.element.className = "settings-item";
+
+    const controlRow = document.createElement("div");
+    controlRow.className = "settings-item__control-row";
 
     const label = document.createElement("label");
     label.className = "switch";
@@ -43,9 +47,11 @@ export class ToggleSwitch {
     span.textContent = labelText;
 
     label.append(input, slider, span);
-    this.element.appendChild(label);
+    controlRow.appendChild(label);
+    this.element.appendChild(controlRow);
 
     this.input = input;
+    this.controlRow = controlRow;
     this.checked = input.checked;
     input.addEventListener("change", () => {
       this.checked = input.checked;
@@ -67,5 +73,33 @@ export class ToggleSwitch {
   setChecked(value) {
     this.input.checked = value;
     this.checked = value;
+  }
+
+  /**
+   * Add or update description content for this switch.
+   *
+   * @param {string} text - Description text.
+   * @param {{ id?: string }} [options] - Description options.
+   * @returns {HTMLParagraphElement} Description element.
+   */
+  setDescription(text, options = {}) {
+    if (!this.descriptionRow) {
+      this.descriptionRow = document.createElement("div");
+      this.descriptionRow.className = "settings-item__description-row";
+      this.element.appendChild(this.descriptionRow);
+    }
+
+    if (!this.descriptionElement) {
+      this.descriptionElement = document.createElement("p");
+      this.descriptionElement.className = "settings-description";
+      this.descriptionRow.appendChild(this.descriptionElement);
+    }
+
+    if (options.id) {
+      this.descriptionElement.id = options.id;
+    }
+
+    this.descriptionElement.textContent = text;
+    return this.descriptionElement;
   }
 }
