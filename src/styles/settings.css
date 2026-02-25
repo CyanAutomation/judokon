@@ -201,6 +201,7 @@
 .settings-section[open] > :not(summary) {
   position: static;
   max-width: 100%;
+  overflow-x: clip;
 }
 
 .advanced-settings-search {
