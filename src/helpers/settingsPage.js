@@ -228,7 +228,8 @@ function createControlsRefs() {
     typewriterToggle: document.getElementById("typewriter-toggle"),
     tooltipsToggle: document.getElementById("tooltips-toggle"),
     cardOfTheDayToggle: document.getElementById("card-of-the-day-toggle"),
-    fullNavigationMapToggle: document.getElementById("full-navigation-map-toggle")
+    fullNavigationMapToggle: document.getElementById("full-navigation-map-toggle"),
+    scanlinesToggle: document.getElementById("scanlines-toggle")
   };
   return {
     controls,

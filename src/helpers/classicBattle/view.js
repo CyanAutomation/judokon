@@ -1,7 +1,8 @@
 import {
   setBattleStateBadgeEnabled,
   applyBattleFeatureFlags,
-  setSkipRoundCooldownFeatureMarker
+  setSkipRoundCooldownFeatureMarker,
+  isSkipRoundCooldownEnabled
 } from "./uiHelpers.js";
 import setupScheduler from "./setupScheduler.js";
 import setupUIBindings from "./setupUIBindings.js";
@@ -28,7 +29,7 @@ export class ClassicBattleView {
     this.controller = controller;
     const handleFeatureFlagsChange = () => {
       setBattleStateBadgeEnabled(controller.isEnabled("battleStateBadge"));
-      setSkipRoundCooldownFeatureMarker(controller.isEnabled("skipRoundCooldown"));
+      setSkipRoundCooldownFeatureMarker(isSkipRoundCooldownEnabled());
       try {
         window.__disableSnackbars = controller.isEnabled("enableTestMode");
       } catch {}

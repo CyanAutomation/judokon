@@ -51,6 +51,10 @@
       "type": "boolean",
       "description": "Enable the full navigation map overlay."
     },
+    "scanlines": {
+      "type": "boolean",
+      "description": "Enable the retro scanline overlay in CLI battle mode."
+    },
     "aiDifficulty": {
       "type": "string",
       "enum": [

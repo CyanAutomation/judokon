@@ -104,7 +104,7 @@ describe("battleCLI countdown", () => {
     expect(countdown.textContent).toBe("");
   });
 
-  it("parses skipRoundCooldown query param", async () => {
+  it("ignores skipRoundCooldown query param in production URL parsing", async () => {
     const mod = await loadBattleCLI({
       autoSelect: true,
       url: "http://localhost/?skipRoundCooldown=1"
@@ -116,24 +116,7 @@ describe("battleCLI countdown", () => {
 
     await mod.init();
 
-    const featureFlags = await import("../../src/helpers/featureFlags.js");
-    const skipRoundEvents = flagEvents.filter((event) => event.flag === "skipRoundCooldown");
-    expect(skipRoundEvents.some((event) => event.value === true)).toBe(true);
-    expect(featureFlags.isEnabled("skipRoundCooldown")).toBe(true);
-  });
-
-  it("does not override skipRoundCooldown flag when query param missing", async () => {
-    const mod = await loadBattleCLI({ autoSelect: true });
-    const flagEvents = [];
-    mod.featureFlagsEmitter.addEventListener("change", (event) => {
-      flagEvents.push(event.detail);
-    });
-
-    await mod.init();
-
-    const featureFlags = await import("../../src/helpers/featureFlags.js");
     const skipRoundEvents = flagEvents.filter((event) => event.flag === "skipRoundCooldown");
     expect(skipRoundEvents).toHaveLength(0);
-    expect(featureFlags.isEnabled("skipRoundCooldown")).toBe(false);
   });
 });
