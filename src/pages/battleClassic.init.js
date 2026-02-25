@@ -149,6 +149,9 @@ const STATE = {
   lastManualRoundStartTimestamp: 0
 };
 
+let initPromise = null;
+let initialized = false;
+
 // =============================================================================
 // Timer & UI Utilities
 // =============================================================================
@@ -1792,14 +1795,44 @@ export function createBattleClassic() {
  * Initialize the Classic Battle page.
  *
  * @pseudocode
- * 1. Create a battle init controller via `createBattleClassic()`.
- * 2. Await the returned `readyPromise` for deterministic readiness.
+ * 1. Return immediately when the module has already completed initialization.
+ * 2. Reuse the in-flight initialization promise when initialization is already running.
+ * 3. Otherwise start initialization once, await readiness, then mark init as complete.
+ * 4. Reset the in-flight promise when initialization fails so retries can run.
  *
- * @returns {Promise<void>} Resolves when initialization completes.
+ * Single-flight behavior guarantees only one startup flow runs at a time while still
+ * allowing retries after a failed attempt.
+ *
+ * @returns {Promise<void>} Resolves when initialization completes (or is already complete).
  */
 export async function init() {
-  const battleClassic = createBattleClassic();
-  await battleClassic.readyPromise;
+  if (initialized) {
+    return;
+  }
+
+  if (initPromise) {
+    return initPromise;
+  }
+
+  initPromise = (async () => {
+    const battleClassic = createBattleClassic();
+    await battleClassic.readyPromise;
+    initialized = true;
+  })();
+
+  try {
+    await initPromise;
+  } catch (error) {
+    // Reset initPromise before throwing so retries can run, but only if it still
+    // points to the promise we just awaited (avoid clearing a newer attempt)
+    const currentPromise = initPromise;
+    initPromise = null;
+    // Re-throw after clearing to ensure consistent retry state
+    throw error;
+  } finally {
+    // If initialization succeeded, initPromise will still be set and initialized will be true
+    // If it failed, initPromise was cleared in catch block
+  }
 }
 
 // =============================================================================
