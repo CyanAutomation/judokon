@@ -97,7 +97,7 @@
 }
 
 .modern-card {
-  overflow: hidden;
+  position: relative;
 }
 
 .settings-section {
@@ -197,6 +197,7 @@
   position: relative;
   inset: auto;
   max-width: 100%;
+  overflow-x: clip;
 }
 
 .advanced-settings-search {
