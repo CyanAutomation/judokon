@@ -1747,8 +1747,8 @@ export function startSelectionCountdown(seconds = 30) {
   })();
 
   let remaining = normalizedSeconds;
-  const finish = async () => {
-    if (selectionCancelled) return;
+  const finish = async ({ force = false } = {}) => {
+    if (selectionCancelled && !force) return;
     // Clear UI and cancel any residual listeners
     stopSelectionCountdown();
     try {
@@ -1812,7 +1812,7 @@ export function startSelectionCountdown(seconds = 30) {
     }, 1000);
   } catch {
     // As a last resort, run finish to avoid stalling
-    finish();
+    finish({ force: true });
   }
 }
 
