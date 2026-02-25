@@ -216,38 +216,133 @@ export async function startRoundCooldown(resolved, config = {}) {
       emitBattleEvent("nextRoundCountdownStarted", { durationMs: numericDuration * 1000 });
     }
   } catch {}
-  await startTimerSafely(timer, seconds);
+  const roundStartGuard = createRoundStartGuard(seconds, config?.abortSignal);
+
   try {
-    // console.debug(`classicBattle.trace cooldown:end t=${Date.now()} secs=${seconds}`);
-  } catch {}
-  try {
-    const target = getBattleEventTarget?.();
-    if (target && typeof target.addEventListener === "function") {
-      let started = false;
-      const onStart = () => {
-        started = true;
-        target.removeEventListener("roundStarted", onStart);
-        try {
-          // console.debug(`classicBattle.trace cooldown:observedRoundStarted t=${Date.now()}`);
-        } catch {}
-      };
-      target.addEventListener("roundStarted", onStart);
-      // After a short post-cooldown buffer, check if round started; if not, recover.
-      setTimeout(
-        () => {
-          try {
-            if (!started) {
-              try {
-                // console.debug(`classicBattle.trace cooldown:recoveryResetUI t=${Date.now()}`);
-              } catch {}
-              emitBattleEvent("game:reset-ui", {});
-            }
-          } catch {}
-        },
-        Math.max(250, Number(seconds) * 1000 + 250)
-      );
+    roundStartGuard.register();
+    await startTimerSafely(timer, seconds);
+    try {
+      // console.debug(`classicBattle.trace cooldown:end t=${Date.now()} secs=${seconds}`);
+    } catch {}
+    roundStartGuard.scheduleRecovery();
+    await roundStartGuard.wait();
+  } finally {
+    roundStartGuard.cleanup();
+  }
+}
+
+function createRoundStartGuard(seconds, abortSignal) {
+  const target = getBattleEventTarget?.();
+  const canListen =
+    target &&
+    typeof target.addEventListener === "function" &&
+    typeof target.removeEventListener === "function";
+
+  let onRoundStarted = null;
+  let recoveryTimeoutId = null;
+  let waitResolved = false;
+  let resolveWait = () => {};
+  let detachAbortListener = () => {};
+
+  const waitPromise = new Promise((resolve) => {
+    resolveWait = () => {
+      if (waitResolved) return;
+      waitResolved = true;
+      resolve();
+    };
+  });
+
+  function clearRecoveryTimeout() {
+    if (recoveryTimeoutId === null) return;
+    clearTimeout(recoveryTimeoutId);
+    recoveryTimeoutId = null;
+  }
+
+  function register() {
+    if (!canListen) {
+      resolveWait();
+      return;
     }
-  } catch {}
+
+    onRoundStarted = () => {
+      clearRecoveryTimeout();
+      resolveWait();
+      try {
+        // console.debug(`classicBattle.trace cooldown:observedRoundStarted t=${Date.now()}`);
+      } catch {}
+    };
+
+    target.addEventListener("roundStarted", onRoundStarted);
+
+    if (abortSignal && typeof abortSignal.addEventListener === "function") {
+      const handleAbort = () => {
+        clearRecoveryTimeout();
+        resolveWait();
+      };
+      if (abortSignal.aborted) {
+        handleAbort();
+      } else {
+        abortSignal.addEventListener("abort", handleAbort, { once: true });
+        detachAbortListener = () => {
+          try {
+            abortSignal.removeEventListener("abort", handleAbort);
+          } catch {}
+        };
+      }
+    }
+  }
+
+  function scheduleRecovery() {
+    if (!canListen || waitResolved) {
+      resolveWait();
+      return;
+    }
+
+    const numericSeconds = Number(seconds);
+    const durationMs = Number.isFinite(numericSeconds) ? numericSeconds * 1000 : 0;
+    recoveryTimeoutId = setTimeout(
+      () => {
+        clearRecoveryTimeout();
+        try {
+          // console.debug(`classicBattle.trace cooldown:recoveryResetUI t=${Date.now()}`);
+        } catch {}
+        try {
+          emitBattleEvent("game:reset-ui", {});
+        } catch {}
+        resolveWait();
+      },
+      Math.max(250, durationMs + 250)
+    );
+  }
+
+  function removeListenerSafely(eventTarget) {
+    if (!eventTarget || typeof eventTarget.removeEventListener !== "function" || !onRoundStarted) {
+      return;
+    }
+    try {
+      eventTarget.removeEventListener("roundStarted", onRoundStarted);
+    } catch {}
+  }
+
+  function cleanup() {
+    clearRecoveryTimeout();
+    detachAbortListener();
+    removeListenerSafely(target);
+    if (target !== getBattleEventTarget?.()) {
+      removeListenerSafely(getBattleEventTarget?.());
+    }
+    onRoundStarted = null;
+    resolveWait();
+  }
+
+  return {
+    register,
+    scheduleRecovery,
+    wait() {
+      return waitPromise;
+    },
+    cleanup
+  };
 }
 
 function extractTimer(resolved) {

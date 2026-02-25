@@ -1,4 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
 vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
   showMessage: vi.fn(),
@@ -100,11 +101,35 @@ describe("resolveCooldownDependencies", () => {
 });
 
 describe("startRoundCooldown", () => {
+  let timers;
+
+  beforeEach(() => {
+    timers = useCanonicalTimers();
+  });
+
+  afterEach(() => {
+    timers?.runOnlyPendingTimers();
+    timers?.cleanup();
+  });
+  function createCooldownTimer(startImpl = async () => {}) {
+    return {
+      on: vi.fn(),
+      off: vi.fn(),
+      start: vi.fn(startImpl)
+    };
+  }
+
+  function createAbortedSignal() {
+    const controller = new AbortController();
+    controller.abort();
+    return controller.signal;
+  }
+
   it("waits for delayed opponent prompt when timestamp is missing", async () => {
     vi.resetModules();
     const waitForDelayedOpponentPromptDisplay = vi.fn(async () => {});
     const getOpponentPromptTimestamp = vi.fn(() => NaN);
-    const timer = { start: vi.fn(async () => {}) };
+    const timer = createCooldownTimer();
     const renderer = vi.fn();
     const { startRoundCooldown } = await import("../../../src/helpers/classicBattle/roundUI.js");
 
@@ -116,7 +141,8 @@ describe("startRoundCooldown", () => {
         rendererOptions: { promptPollIntervalMs: 90 },
         promptBudget: { bufferMs: 50, totalMs: 190 },
         waitForDelayedOpponentPromptDisplay,
-        getOpponentPromptTimestamp
+        getOpponentPromptTimestamp,
+        abortSignal: createAbortedSignal()
       }
     );
 
@@ -136,7 +162,7 @@ describe("startRoundCooldown", () => {
     vi.resetModules();
     const waitForDelayedOpponentPromptDisplay = vi.fn(async () => {});
     const getOpponentPromptTimestamp = vi.fn(() => Date.now());
-    const timer = { start: vi.fn(async () => {}) };
+    const timer = createCooldownTimer();
     const renderer = vi.fn();
     const { startRoundCooldown } = await import("../../../src/helpers/classicBattle/roundUI.js");
 
@@ -148,7 +174,8 @@ describe("startRoundCooldown", () => {
         rendererOptions: { promptPollIntervalMs: 60 },
         promptBudget: null,
         waitForDelayedOpponentPromptDisplay,
-        getOpponentPromptTimestamp
+        getOpponentPromptTimestamp,
+        abortSignal: createAbortedSignal()
       }
     );
 
@@ -162,7 +189,7 @@ describe("startRoundCooldown", () => {
     const getOpponentPromptTimestamp = vi.fn(() => {
       throw new Error("timestamp fail");
     });
-    const timer = { start: vi.fn(async () => {}) };
+    const timer = createCooldownTimer();
     const renderer = vi.fn();
     const { startRoundCooldown } = await import("../../../src/helpers/classicBattle/roundUI.js");
 
@@ -173,7 +200,8 @@ describe("startRoundCooldown", () => {
         delayOpponentMessage: true,
         rendererOptions: { promptPollIntervalMs: 45 },
         waitForDelayedOpponentPromptDisplay,
-        getOpponentPromptTimestamp
+        getOpponentPromptTimestamp,
+        abortSignal: createAbortedSignal()
       }
     );
 
@@ -188,7 +216,7 @@ describe("startRoundCooldown", () => {
       .mockRejectedValueOnce(new Error("first"))
       .mockResolvedValueOnce(undefined);
     const getOpponentPromptTimestamp = vi.fn(() => NaN);
-    const timer = { start: vi.fn(async () => {}) };
+    const timer = createCooldownTimer();
     const renderer = vi.fn();
     const { startRoundCooldown } = await import("../../../src/helpers/classicBattle/roundUI.js");
 
@@ -199,12 +227,79 @@ describe("startRoundCooldown", () => {
         delayOpponentMessage: true,
         rendererOptions: { promptPollIntervalMs: 33 },
         waitForDelayedOpponentPromptDisplay,
-        getOpponentPromptTimestamp
+        getOpponentPromptTimestamp,
+        abortSignal: createAbortedSignal()
       }
     );
 
     expect(waitForDelayedOpponentPromptDisplay).toHaveBeenCalledTimes(2);
     expect(timer.start).toHaveBeenCalledWith(8);
+  });
+  it("does not emit recovery reset when round starts at cooldown completion", async () => {
+    vi.resetModules();
+    const events = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    const bus = events.__resetBattleEventTarget();
+    const emitSpy = vi.spyOn(events, "emitBattleEvent");
+    const timer = createCooldownTimer(async () => {
+      bus.emit("roundStarted", { round: 2 });
+    });
+    const { startRoundCooldown } = await import("../../../src/helpers/classicBattle/roundUI.js");
+
+    await startRoundCooldown({ timer, renderer: vi.fn() }, { seconds: 1 });
+    await timers.advanceTimersByTimeAsync(2000);
+
+    expect(emitSpy).not.toHaveBeenCalledWith("game:reset-ui", {});
+  });
+
+  it("emits recovery reset once when round never starts", async () => {
+    vi.resetModules();
+    const events = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    events.__resetBattleEventTarget();
+    const emitSpy = vi.spyOn(events, "emitBattleEvent");
+    const timer = createCooldownTimer();
+    const { startRoundCooldown } = await import("../../../src/helpers/classicBattle/roundUI.js");
+
+    const cooldownPromise = startRoundCooldown({ timer, renderer: vi.fn() }, { seconds: 1 });
+    await timers.advanceTimersByTimeAsync(1300);
+    await cooldownPromise;
+
+    const resetCalls = emitSpy.mock.calls.filter(
+      ([eventName, detail]) => eventName === "game:reset-ui" && JSON.stringify(detail) === "{}"
+    );
+    expect(resetCalls).toHaveLength(1);
+  });
+
+  it("cancels pending recovery timeout and listener on teardown abort", async () => {
+    vi.resetModules();
+    const events = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    const bus = events.__resetBattleEventTarget();
+    const addSpy = vi.spyOn(bus.getTarget(), "addEventListener");
+    const removeSpy = vi.spyOn(bus.getTarget(), "removeEventListener");
+    const emitSpy = vi.spyOn(events, "emitBattleEvent");
+    const controller = new AbortController();
+    const timer = createCooldownTimer(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => {
+            controller.abort();
+            resolve();
+          }, 10);
+        })
+    );
+    const { startRoundCooldown } = await import("../../../src/helpers/classicBattle/roundUI.js");
+
+    const cooldownPromise = startRoundCooldown(
+      { timer, renderer: vi.fn() },
+      { seconds: 5, abortSignal: controller.signal }
+    );
+
+    await timers.advanceTimersByTimeAsync(20);
+    await cooldownPromise;
+    await timers.advanceTimersByTimeAsync(6000);
+
+    expect(addSpy).toHaveBeenCalledWith("roundStarted", expect.any(Function));
+    expect(removeSpy).toHaveBeenCalledWith("roundStarted", expect.any(Function));
+    expect(emitSpy).not.toHaveBeenCalledWith("game:reset-ui", {});
   });
 });
 
