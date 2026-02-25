@@ -1,19 +1,22 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-const { capturedDeps, modalControl, initControl, viewControl } = vi.hoisted(() => ({
-  capturedDeps: { current: null },
-  modalControl: {
-    waitForCallback: false,
-    releaseCallback: null
-  },
-  initControl: {
-    failWith: null
-  },
-  viewControl: {
-    failWith: null
-  }
-}));
+const { capturedDeps, modalControl, initControl, viewControl, controllerDisposeMock } = vi.hoisted(
+  () => ({
+    capturedDeps: { current: null },
+    modalControl: {
+      waitForCallback: false,
+      releaseCallback: null
+    },
+    initControl: {
+      failWith: null
+    },
+    viewControl: {
+      failWith: null
+    },
+    controllerDisposeMock: vi.fn()
+  })
+);
 
 vi.mock("../../../src/helpers/domReady.js", () => ({
   onDomReady: () => {}
@@ -47,6 +50,9 @@ vi.mock("../../../src/helpers/classicBattle/controller.js", () => ({
       if (typeof modalControl.releaseCallback === "function") {
         await modalControl.releaseCallback();
       }
+    }
+    dispose() {
+      controllerDisposeMock();
     }
   }
 }));
@@ -106,6 +112,7 @@ describe("classic battle bootstrap wiring", () => {
     initControl.failWith = null;
     capturedDeps.current = null;
     viewControl.failWith = null;
+    controllerDisposeMock.mockClear();
     delete window.battleReadyPromise;
   });
   test("injects waitForOpponentCard from runtime utility and uses the real implementation", async () => {
@@ -149,6 +156,17 @@ describe("classic battle bootstrap wiring", () => {
 
     resolveInit();
     await expect(bootstrapPromise).resolves.toEqual({ debug: true });
+  });
+
+  test("dispose delegates to controller.dispose", async () => {
+    const { createBattleClassic } = await import("../../../src/helpers/classicBattle/bootstrap.js");
+
+    const battleClassic = createBattleClassic();
+    await battleClassic.readyPromise;
+
+    battleClassic.dispose();
+
+    expect(controllerDisposeMock).toHaveBeenCalledTimes(1);
   });
 
   test("rejects when initialization fails", async () => {

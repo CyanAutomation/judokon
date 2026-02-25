@@ -33,6 +33,10 @@ export class ClassicBattleController extends EventTarget {
     this.waitForOpponentCard = waitForOpponentCard;
     this.timerControls = { startCoolDown, pauseTimer, resumeTimer };
     this.battleInstance = null;
+    this.featureFlagsChangeHandler = null;
+    this.engineRoundStartedHandler = null;
+    this.engineRoundStartedUnsubscribe = null;
+    this.boundEngine = null;
   }
 
   /** @returns {ReturnType<typeof createBattleStore>} */
@@ -45,14 +49,15 @@ export class ClassicBattleController extends EventTarget {
    * @returns {Promise<void>}
    */
   async init() {
+    this.dispose();
     await initFeatureFlags();
     this.#syncTestMode();
     this.#emitFeatureFlags();
-    const handleFeatureFlagsChange = () => {
+    this.featureFlagsChangeHandler = () => {
       this.#syncTestMode();
       this.#emitFeatureFlags();
     };
-    featureFlagsEmitter.addEventListener("change", handleFeatureFlagsChange);
+    featureFlagsEmitter.addEventListener("change", this.featureFlagsChangeHandler);
 
     // Create the battle engine and assign it to the store
     createBattleEngine();
@@ -86,7 +91,8 @@ export class ClassicBattleController extends EventTarget {
     if (!engine || typeof engine.on !== "function") {
       return;
     }
-    engine.on("roundStarted", (detail) => {
+    this.boundEngine = engine;
+    this.engineRoundStartedHandler = (detail) => {
       const roundNumber = Number(detail?.round);
       if (!Number.isFinite(roundNumber)) {
         return;
@@ -102,7 +108,46 @@ export class ClassicBattleController extends EventTarget {
           applyRoundUI: (store, round) => applyRoundUI(store, round, undefined, { skipTimer: true })
         }
       ).catch(() => {});
-    });
+    };
+
+    const unsubscribe = engine.on("roundStarted", this.engineRoundStartedHandler);
+    this.engineRoundStartedUnsubscribe = typeof unsubscribe === "function" ? unsubscribe : null;
+  }
+
+  /**
+   * Remove listeners registered during `init`.
+   *
+   * @pseudocode
+   * 1. Remove feature flag change listener when present.
+   * 2. Unsubscribe the engine round-start listener via returned unsubscribe function.
+   * 3. Fallback to `engine.off` when an explicit unsubscribe function is unavailable.
+   *
+   * @returns {void}
+   */
+  dispose() {
+    if (this.featureFlagsChangeHandler) {
+      featureFlagsEmitter.removeEventListener("change", this.featureFlagsChangeHandler);
+      this.featureFlagsChangeHandler = null;
+    }
+
+    if (typeof this.engineRoundStartedUnsubscribe === "function") {
+      this.engineRoundStartedUnsubscribe();
+      this.engineRoundStartedUnsubscribe = null;
+      this.engineRoundStartedHandler = null;
+      this.boundEngine = null;
+      return;
+    }
+
+    if (
+      this.boundEngine &&
+      this.engineRoundStartedHandler &&
+      typeof this.boundEngine.off === "function"
+    ) {
+      this.boundEngine.off("roundStarted", this.engineRoundStartedHandler);
+    }
+
+    this.engineRoundStartedHandler = null;
+    this.boundEngine = null;
   }
 
   /**
