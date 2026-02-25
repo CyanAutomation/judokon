@@ -39,3 +39,11 @@ Optional hygiene checks:
 grep -RInE "console\.(warn|error)\(" tests --exclude=client_embeddings.json | grep -v "tests/utils/console.js"
 grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle 2>/dev/null
 ```
+
+## Deterministic Battle Test Hooks
+
+For production pages, do not rely on URL params for test-only behavior. Use `src/helpers/testApi.js` hooks instead:
+
+- `window.__TEST_API.init.configureClassicBattle({ skipRoundCooldown: true })` for cooldown skipping.
+- `window.__TEST_API.timers.skipCooldown()` to advance cooldown deterministically.
+- `window.__FF_OVERRIDES` only for explicit test overrides when bootstrapping a page under automation.

@@ -5,6 +5,7 @@
   "tooltips": true,
   "showCardOfTheDay": false,
   "displayMode": "light",
+  "scanlines": false,
   "fullNavigationMap": false,
   "aiDifficulty": "easy",
   "debugProfiles": {
@@ -18,7 +19,8 @@
     "typewriterEffect": "settings.typewriterEffect",
     "tooltips": "settings.tooltips",
     "showCardOfTheDay": "settings.showCardOfTheDay",
-    "fullNavigationMap": "settings.fullNavigationMap"
+    "fullNavigationMap": "settings.fullNavigationMap",
+    "scanlines": "settings.scanlines"
   },
   "gameModes": {},
   "featureFlags": {
@@ -72,14 +74,6 @@
       "tooltipId": "settings.roundModify",
       "hidden": true,
       "qaOnly": true
-    },
-    "scanlines": {
-      "enabled": false,
-      "tooltipId": "settings.scanlines"
-    },
-    "skipRoundCooldown": {
-      "enabled": false,
-      "tooltipId": "settings.skipRoundCooldown"
     },
     "statHotkeys": {
       "enabled": true,

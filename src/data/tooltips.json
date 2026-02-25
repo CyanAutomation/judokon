@@ -105,10 +105,6 @@
         "description": "Enable verbose CLI diagnostics during battle sessions."
       }
     },
-    "skipRoundCooldown": {
-      "label": "Skip Round Cooldown",
-      "description": "Start the next round immediately without a cooldown."
-    },
     "statHotkeys": {
       "label": "Stat Hotkeys",
       "description": "Use number keys 1–5 to select stats quickly."

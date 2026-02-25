@@ -1,4 +1,18 @@
 import { isEnabled } from "../featureFlags.js";
+
+function readSkipRoundCooldownOverride() {
+  try {
+    if (typeof window === "undefined") return false;
+    const overrides = window.__FF_OVERRIDES;
+    return !!(
+      overrides &&
+      Object.prototype.hasOwnProperty.call(overrides, "skipRoundCooldown") &&
+      overrides.skipRoundCooldown
+    );
+  } catch {
+    return false;
+  }
+}
 import { STATS } from "../BattleEngine.js";
 
 import { showSnackbar } from "../showSnackbar.js";
@@ -57,18 +71,32 @@ const STAT_COMPARISON_ANIMATION_DURATION = 500;
 export const INITIAL_SCOREBOARD_TEXT = "You: 0 Opponent: 0";
 
 /**
+ * Resolve whether skip-round-cooldown test override is active.
+ *
+ * @returns {boolean} True when explicit test overrides request cooldown skipping.
+ * @pseudocode
+ * 1. Read `window.__FF_OVERRIDES.skipRoundCooldown` when available.
+ * 2. For compatibility with mocked test harnesses, also check `isEnabled("skipRoundCooldown")`.
+ * 3. Return true if either source is enabled.
+ */
+export function isSkipRoundCooldownEnabled() {
+  return readSkipRoundCooldownOverride() || isEnabled("skipRoundCooldown");
+}
+
+/**
  * Determine whether round cooldowns should be skipped and optionally invoke a fast path.
  *
  * @param {{ onSkip?: () => void }} [options]
  * @returns {boolean} True when the skip flag is active.
  * @pseudocode
- * 1. Resolve the `skipRoundCooldown` feature flag state.
- * 2. If disabled, return `false` immediately.
- * 3. When enabled and an `onSkip` callback is provided, execute it defensively.
- * 4. Return `true` to indicate the skip flag is active.
+ * 1. Resolve skip state from explicit test overrides (`window.__FF_OVERRIDES.skipRoundCooldown`).
+ * 2. For backward compatibility in local test harnesses, also check `isEnabled("skipRoundCooldown")`.
+ * 3. If disabled, return `false` immediately.
+ * 4. When enabled and an `onSkip` callback is provided, execute it defensively.
+ * 5. Return `true` to indicate skip is active.
  */
 export function skipRoundCooldownIfEnabled(options = {}) {
-  const enabled = isEnabled("skipRoundCooldown");
+  const enabled = isSkipRoundCooldownEnabled();
   setSkipRoundCooldownFeatureMarker(enabled);
   if (!enabled) return false;
   const { onSkip } = options || {};

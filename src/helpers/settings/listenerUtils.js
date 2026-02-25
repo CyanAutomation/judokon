@@ -48,7 +48,8 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
     typewriterToggle,
     tooltipsToggle,
     cardOfTheDayToggle,
-    fullNavigationMapToggle
+    fullNavigationMapToggle,
+    scanlinesToggle
   } = controls;
   const displayRadioArray = displayRadios ? Array.from(displayRadios) : [];
   const headerRadioArray = headerThemeRadios ? Array.from(headerThemeRadios) : [];
@@ -258,6 +259,23 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
         showSnackbar(
           `Full navigation map ${fullNavigationMapToggle.checked ? "enabled" : "disabled"}`
         );
+      })
+      .catch(() => {});
+  });
+  scanlinesToggle?.addEventListener("change", (e) => {
+    const prev = !scanlinesToggle.checked;
+    Promise.resolve(
+      handleUpdate(
+        "scanlines",
+        scanlinesToggle.checked,
+        () => {
+          scanlinesToggle.checked = prev;
+        },
+        e.target
+      )
+    )
+      .then(() => {
+        showSnackbar(`Scanlines effect ${scanlinesToggle.checked ? "enabled" : "disabled"}`);
       })
       .catch(() => {});
   });
