@@ -47,10 +47,13 @@ describe("battleEvents bus swap safety", () => {
     oldBus.on("swap:event", listener);
 
     setActiveBattleEventBus(oldBus);
+    oldBus.emit("swap:event", { beforeSwap: true });
+    expect(listener).toHaveBeenCalledTimes(1);
+
     const replacement = createBattleEventBus();
     setActiveBattleEventBus(replacement);
 
-    oldBus.emit("swap:event", { replaced: true });
-    expect(listener).not.toHaveBeenCalled();
+    oldBus.emit("swap:event", { afterSwap: true });
+    expect(listener).toHaveBeenCalledTimes(1);
   });
 });
