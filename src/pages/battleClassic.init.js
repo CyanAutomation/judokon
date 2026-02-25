@@ -1823,8 +1823,15 @@ export async function init() {
   try {
     await initPromise;
   } catch (error) {
+    // Reset initPromise before throwing so retries can run, but only if it still
+    // points to the promise we just awaited (avoid clearing a newer attempt)
+    const currentPromise = initPromise;
     initPromise = null;
+    // Re-throw after clearing to ensure consistent retry state
     throw error;
+  } finally {
+    // If initialization succeeded, initPromise will still be set and initialized will be true
+    // If it failed, initPromise was cleared in catch block
   }
 }
 
