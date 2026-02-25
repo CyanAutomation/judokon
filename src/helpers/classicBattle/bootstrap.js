@@ -102,6 +102,8 @@ export function createBattleClassic() {
   let resolveStart;
   let rejectStart;
   let hasSettledStart = false;
+  let isDisposed = false;
+  const cleanupCallbacks = [];
   const readyPromise = new Promise((resolve, reject) => {
     resolveStart = (value) => {
       if (hasSettledStart) {
@@ -141,18 +143,58 @@ export function createBattleClassic() {
     }
   }
 
+  function registerCleanup(candidate) {
+    if (typeof candidate === "function") {
+      cleanupCallbacks.push(candidate);
+    }
+  }
+
+  function clearBootstrapGlobals() {
+    if (!canAccessWindow()) {
+      return;
+    }
+    const keysToClear = [
+      "battleStore",
+      "__initCalled",
+      "__handlersRegistered",
+      "__battleDiagnostics",
+      "__classicbattledebugapi"
+    ];
+    for (const key of keysToClear) {
+      try {
+        delete window[key];
+      } catch {}
+    }
+  }
+
   async function startCallback() {
     try {
+      if (isDisposed) {
+        resolveStart(undefined);
+        return;
+      }
       view.bindController(controller);
       await controller.init();
+      if (isDisposed) {
+        resolveStart(undefined);
+        return;
+      }
       await view.init();
-      bindUIHelperEventHandlers();
-      bindRoundFlowControllerOnce();
+      if (isDisposed) {
+        resolveStart(undefined);
+        return;
+      }
+      registerCleanup(bindUIHelperEventHandlers());
+      registerCleanup(bindRoundFlowControllerOnce());
       // Critical: Register round UI event handlers including round.start listener
       // that dismisses countdown/opponent snackbars when Next is clicked.
       // Bug: If this call is missing, snackbars persist across rounds.
       // See: tests/helpers/classicBattle/bootstrap-event-handlers.test.js
-      bindRoundUIEventHandlersDynamic();
+      registerCleanup(bindRoundUIEventHandlersDynamic());
+      if (isDisposed) {
+        resolveStart(undefined);
+        return;
+      }
       if (canAccessWindow()) {
         window.__initCalled = true;
         window.__handlersRegistered = true;
@@ -205,12 +247,28 @@ export function createBattleClassic() {
 
   void start();
 
+  const dispose = () => {
+    if (isDisposed) {
+      return;
+    }
+    isDisposed = true;
+
+    while (cleanupCallbacks.length > 0) {
+      const cleanup = cleanupCallbacks.pop();
+      try {
+        cleanup?.();
+      } catch {}
+    }
+
+    controller.dispose();
+    clearBootstrapGlobals();
+    resolveStart(undefined);
+  };
+
   return {
     readyPromise,
     controller,
-    dispose: () => {
-      controller.dispose();
-    }
+    dispose
   };
 }
 
