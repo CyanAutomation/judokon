@@ -178,11 +178,9 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
     if (mode.category) wrapper.dataset.category = mode.category;
     if (typeof mode.order !== "undefined") wrapper.dataset.order = String(mode.order);
     if (mode.description) {
-      const desc = document.createElement("p");
-      desc.className = "settings-description";
-      desc.id = `mode-${mode.id}-desc`;
-      desc.textContent = mode.description;
-      wrapper.appendChild(desc);
+      const desc = toggle.setDescription(mode.description, {
+        id: `mode-${mode.id}-desc`
+      });
       if (input) input.setAttribute("aria-describedby", desc.id);
     }
     container.appendChild(wrapper);

@@ -41,6 +41,13 @@
 }
 
 :root {
+  --settings-item-padding-block: var(--space-sm);
+  --settings-item-padding-inline: var(--space-md);
+  --settings-item-row-gap: var(--space-xs);
+  --settings-item-column-gap: clamp(var(--space-md), 2.5vw, var(--space-lg));
+  --settings-description-max-width: 52ch;
+}
+:root {
   --settings-section-bg: color-mix(in srgb, var(--color-surface) 88%, var(--color-primary) 12%);
   --settings-section-border: color-mix(in srgb, var(--color-text) 12%, transparent);
   --settings-search-bg: color-mix(in srgb, var(--color-surface) 92%, var(--color-primary) 8%);
@@ -350,12 +357,48 @@
   }
 }
 
+.settings-item {
+  display: grid;
+  grid-template-columns: minmax(15rem, 20rem) minmax(0, 1fr);
+  column-gap: var(--settings-item-column-gap);
+  row-gap: var(--settings-item-row-gap);
+  align-items: center;
+  padding: var(--settings-item-padding-block) var(--settings-item-padding-inline);
+  border-radius: var(--radius-md);
+}
+
+.settings-item__control-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.settings-item__description-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .settings-item {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .settings-item__description-row {
+    padding-inline-start: 0;
+  }
+}
+
 /* Toggle switch styles */
 .switch {
   position: relative;
-  display: inline-flex;
+  display: inline-grid;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: var(--space-sm);
+  justify-items: start;
+  column-gap: var(--space-sm);
+  row-gap: 0;
   cursor: pointer;
   padding: var(--space-xs) var(--space-sm);
   border-radius: var(--radius-lg);
@@ -557,9 +600,9 @@
 .settings-description,
 .flag-description {
   font-size: var(--font-small);
-  margin-block-start: var(--space-xs);
-  margin-block-end: var(--space-sm);
-  line-height: 1.4;
+  margin: 0;
+  line-height: 1.55;
+  max-inline-size: var(--settings-description-max-width);
   color: var(--color-text);
 }
 

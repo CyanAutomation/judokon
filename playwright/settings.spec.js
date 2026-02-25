@@ -377,6 +377,71 @@ test.describe("Settings page", () => {
     );
     expect(narrowLayout.cards[1].top).toBeGreaterThan(narrowLayout.cards[0].top + 20);
   });
+
+  test("setting items keep aligned controls and constrained description copy", async ({ page }) => {
+    await openSections(page, ["general", "gameModes", "advanced"]);
+
+    const layout = await page.evaluate(() => {
+      const items = Array.from(document.querySelectorAll(".settings-item"));
+      const switchNodes = Array.from(document.querySelectorAll(".settings-item .switch .slider"));
+      const sliderLefts = switchNodes.map((slider) =>
+        Math.round(slider.getBoundingClientRect().left)
+      );
+      const uniqueSliderColumns = new Set(sliderLefts);
+      const sampleDescription = document.querySelector("#card-of-the-day-desc");
+      const sampleDescriptionStyle = sampleDescription ? getComputedStyle(sampleDescription) : null;
+      const firstItem = document.querySelector("#general-settings-container .settings-item");
+      const firstItemStyle = firstItem ? getComputedStyle(firstItem) : null;
+
+      return {
+        itemCount: items.length,
+        uniqueSliderColumns: uniqueSliderColumns.size,
+        itemColumns: firstItemStyle?.gridTemplateColumns ?? "",
+        lineHeight: sampleDescriptionStyle?.lineHeight ?? "",
+        maxWidth: sampleDescriptionStyle?.maxInlineSize ?? ""
+      };
+    });
+
+    expect(layout.itemCount).toBeGreaterThan(6);
+    expect(layout.uniqueSliderColumns).toBe(1);
+    expect(layout.itemColumns.split(" ").length).toBe(2);
+    expect(Number.parseFloat(layout.lineHeight)).toBeGreaterThanOrEqual(20);
+    expect(Number.parseFloat(layout.maxWidth)).toBeGreaterThanOrEqual(50);
+  });
+
+  test("setting items stack control row above description row on small viewports", async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 640, height: 1200 });
+    await waitForSettingsReady(page);
+    await openSections(page, ["general"]);
+
+    const mobileLayout = await page.evaluate(() => {
+      const item = document.querySelector("#general-settings-container .settings-item");
+      const controlRow = item?.querySelector(".settings-item__control-row");
+      const descriptionRow = item?.querySelector(".settings-item__description-row");
+      if (!item || !controlRow || !descriptionRow) {
+        return null;
+      }
+
+      const itemStyle = getComputedStyle(item);
+      const controlRect = controlRow.getBoundingClientRect();
+      const descriptionRect = descriptionRow.getBoundingClientRect();
+
+      return {
+        columns: itemStyle.gridTemplateColumns,
+        controlBottom: controlRect.bottom,
+        descriptionTop: descriptionRect.top,
+        leftDelta: Math.abs(controlRect.left - descriptionRect.left)
+      };
+    });
+
+    expect(mobileLayout).not.toBeNull();
+    expect(mobileLayout.columns.split(" ").length).toBe(1);
+    expect(mobileLayout.descriptionTop).toBeGreaterThan(mobileLayout.controlBottom);
+    expect(mobileLayout.leftDelta).toBeLessThanOrEqual(2);
+  });
+
   test("toggle switches surface hover and focus feedback", async ({ page }) => {
     await openSections(page, ["general"]);
     const label = page.locator("label[for='sound-toggle']");

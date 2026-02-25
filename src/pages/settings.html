@@ -220,107 +220,131 @@
                   class="game-mode-toggle-container settings-form"
                 >
                   <div class="settings-item">
-                    <label for="sound-toggle" class="switch">
-                      <input
-                        type="checkbox"
-                        id="sound-toggle"
-                        name="sound"
-                        aria-label="Sound"
-                        aria-describedby="sound-desc"
-                        data-tooltip-id="settings.sound"
-                        checked
-                      />
-                      <div class="slider round"></div>
-                      <span>Sound</span>
-                    </label>
-                    <p id="sound-desc" class="settings-description">Enable or mute game audio.</p>
+                    <div class="settings-item__control-row">
+                      <label for="sound-toggle" class="switch">
+                        <input
+                          type="checkbox"
+                          id="sound-toggle"
+                          name="sound"
+                          aria-label="Sound"
+                          aria-describedby="sound-desc"
+                          data-tooltip-id="settings.sound"
+                          checked
+                        />
+                        <div class="slider round"></div>
+                        <span>Sound</span>
+                      </label>
+                    </div>
+                    <div class="settings-item__description-row">
+                      <p id="sound-desc" class="settings-description">Enable or mute game audio.</p>
+                    </div>
                   </div>
                   <div class="settings-item">
-                    <label for="motion-toggle" class="switch">
-                      <input
-                        type="checkbox"
-                        id="motion-toggle"
-                        name="motion"
-                        aria-label="Motion Effects"
-                        aria-describedby="motion-desc"
-                        data-tooltip-id="settings.motionEffects"
-                        checked
-                      />
-                      <div class="slider round"></div>
-                      <span>Motion Effects</span>
-                    </label>
-                    <p id="motion-desc" class="settings-description">
-                      Disable animations for a calmer interface.
-                    </p>
+                    <div class="settings-item__control-row">
+                      <label for="motion-toggle" class="switch">
+                        <input
+                          type="checkbox"
+                          id="motion-toggle"
+                          name="motion"
+                          aria-label="Motion Effects"
+                          aria-describedby="motion-desc"
+                          data-tooltip-id="settings.motionEffects"
+                          checked
+                        />
+                        <div class="slider round"></div>
+                        <span>Motion Effects</span>
+                      </label>
+                    </div>
+                    <div class="settings-item__description-row">
+                      <p id="motion-desc" class="settings-description">
+                        Disable animations for a calmer interface.
+                      </p>
+                    </div>
                   </div>
                   <div class="settings-item">
-                    <label for="typewriter-toggle" class="switch">
-                      <input
-                        type="checkbox"
-                        id="typewriter-toggle"
-                        name="typewriter"
-                        aria-label="Typewriter Effect"
-                        aria-describedby="typewriter-desc"
-                        data-tooltip-id="settings.typewriterEffect"
-                      />
-                      <div class="slider round"></div>
-                      <span>Typewriter Effect</span>
-                    </label>
-                    <p id="typewriter-desc" class="settings-description">
-                      Toggle the quote typing animation.
-                    </p>
+                    <div class="settings-item__control-row">
+                      <label for="typewriter-toggle" class="switch">
+                        <input
+                          type="checkbox"
+                          id="typewriter-toggle"
+                          name="typewriter"
+                          aria-label="Typewriter Effect"
+                          aria-describedby="typewriter-desc"
+                          data-tooltip-id="settings.typewriterEffect"
+                        />
+                        <div class="slider round"></div>
+                        <span>Typewriter Effect</span>
+                      </label>
+                    </div>
+                    <div class="settings-item__description-row">
+                      <p id="typewriter-desc" class="settings-description">
+                        Toggle the quote typing animation.
+                      </p>
+                    </div>
                   </div>
                   <div class="settings-item">
-                    <label for="tooltips-toggle" class="switch">
-                      <input
-                        type="checkbox"
-                        id="tooltips-toggle"
-                        name="tooltips"
-                        aria-label="Tooltips"
-                        aria-describedby="tooltips-desc"
-                        data-tooltip-id="settings.tooltips"
-                        checked
-                      />
-                      <div class="slider round"></div>
-                      <span>Tooltips</span>
-                    </label>
-                    <p id="tooltips-desc" class="settings-description">
-                      Show or hide helpful tooltips.
-                    </p>
+                    <div class="settings-item__control-row">
+                      <label for="tooltips-toggle" class="switch">
+                        <input
+                          type="checkbox"
+                          id="tooltips-toggle"
+                          name="tooltips"
+                          aria-label="Tooltips"
+                          aria-describedby="tooltips-desc"
+                          data-tooltip-id="settings.tooltips"
+                          checked
+                        />
+                        <div class="slider round"></div>
+                        <span>Tooltips</span>
+                      </label>
+                    </div>
+                    <div class="settings-item__description-row">
+                      <p id="tooltips-desc" class="settings-description">
+                        Show or hide helpful tooltips.
+                      </p>
+                    </div>
                   </div>
                   <div class="settings-item">
-                    <label for="card-of-the-day-toggle" class="switch">
-                      <input
-                        type="checkbox"
-                        id="card-of-the-day-toggle"
-                        name="cardOfTheDay"
-                        aria-label="Card of the Day"
-                        aria-describedby="card-of-the-day-desc"
-                        data-tooltip-id="settings.showCardOfTheDay"
-                      />
-                      <div class="slider round"></div>
-                      <span>Card of the Day</span>
-                    </label>
-                    <p id="card-of-the-day-desc" class="settings-description">
-                      Display a rotating featured card on the landing screen.
-                    </p>
+                    <div class="settings-item__control-row">
+                      <label for="card-of-the-day-toggle" class="switch">
+                        <input
+                          type="checkbox"
+                          id="card-of-the-day-toggle"
+                          name="cardOfTheDay"
+                          aria-label="Card of the Day"
+                          aria-describedby="card-of-the-day-desc"
+                          data-tooltip-id="settings.showCardOfTheDay"
+                        />
+                        <div class="slider round"></div>
+                        <span>Card of the Day</span>
+                      </label>
+                    </div>
+                    <div class="settings-item__description-row">
+                      <p id="card-of-the-day-desc" class="settings-description">
+                        Display a rotating featured card on the landing screen.
+                      </p>
+                    </div>
                   </div>
                   <div class="settings-item">
-                    <label for="full-navigation-map-toggle" class="switch">
-                      <input
-                        type="checkbox"
-                        id="full-navigation-map-toggle"
-                        name="fullNavigationMap"
-                        aria-label="Full Navigation Map"
-                        aria-describedby="full-navigation-map-desc"
-                        data-tooltip-id="settings.fullNavigationMap"
-                      />
-                      <div class="slider round"></div>
-                      <span>Full Navigation Map</span>
-                    </label>
-                    <p id="full-navigation-map-desc" class="settings-description">
-                      Display an overlay map linking to every page.
-                    </p>
+                    <div class="settings-item__control-row">
+                      <label for="full-navigation-map-toggle" class="switch">
+                        <input
+                          type="checkbox"
+                          id="full-navigation-map-toggle"
+                          name="fullNavigationMap"
+                          aria-label="Full Navigation Map"
+                          aria-describedby="full-navigation-map-desc"
+                          data-tooltip-id="settings.fullNavigationMap"
+                        />
+                        <div class="slider round"></div>
+                        <span>Full Navigation Map</span>
+                      </label>
+                    </div>
+                    <div class="settings-item__description-row">
+                      <p id="full-navigation-map-desc" class="settings-description">
+                        Display an overlay map linking to every page.
+                      </p>
+                    </div>
                   </div>
                 </fieldset>
               </details>
