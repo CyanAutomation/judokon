@@ -12,7 +12,8 @@ const CONTROL_MAP = [
     control: "fullNavigationMapToggle",
     setting: "fullNavigationMap",
     descId: "full-navigation-map-desc"
-  }
+  },
+  { control: "scanlinesToggle", setting: "scanlines", descId: "scanlines-desc" }
 ];
 
 /**

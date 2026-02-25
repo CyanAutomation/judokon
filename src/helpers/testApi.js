@@ -1632,6 +1632,7 @@ const initApi = {
    *   roundTimerMs?: number|null,
    *   cooldownMs?: number|null,
    *   showRoundSelectModal?: boolean,
+   *   skipRoundCooldown?: boolean,
    *   enableTestMode?: boolean,
    *   seed?: number|null,
    *   pointsToWin?: number|null,
@@ -1646,6 +1647,7 @@ const initApi = {
       roundTimerMs,
       cooldownMs,
       showRoundSelectModal = true,
+      skipRoundCooldown = false,
       enableTestMode = true,
       seed = null,
       pointsToWin = null,
@@ -1740,6 +1742,11 @@ const initApi = {
           overrides.showRoundSelectModal = true;
         } else {
           delete overrides.showRoundSelectModal;
+        }
+        if (skipRoundCooldown) {
+          overrides.skipRoundCooldown = true;
+        } else {
+          delete overrides.skipRoundCooldown;
         }
         globalTarget.__FF_OVERRIDES = overrides;
       }

@@ -33,6 +33,7 @@ import {
   featureFlagsEmitter
 } from "../../helpers/featureFlags.js";
 import { isDebugProfileEnabled } from "../../helpers/debugProfiles.js";
+import { getSetting } from "../../helpers/settingsCache.js";
 import { initDebugFlagHud } from "../../helpers/debugFlagHud.js";
 import {
   skipRoundCooldownIfEnabled,
@@ -266,6 +267,10 @@ export async function dispatchIntent(eventName, payload) {
  * @param {string} eventName
  * @param {*} [payload]
  * @returns {Promise<{accepted: boolean, rejected: boolean, reason?: string, result?: unknown, error?: Error}>}
+ * @pseudocode
+ * 1. Accept intent name and payload from legacy callers.
+ * 2. Delegate directly to `dispatchIntent`.
+ * 3. Return the normalized dispatch response unchanged.
  */
 export async function safeDispatch(eventName, payload) {
   return dispatchIntent(eventName, payload);
@@ -318,7 +323,6 @@ let flagsListenersWired = false;
 let flagsListenerCleanupCallbacks = [];
 let engineUnsubscribers = [];
 let toggleVerboseFromFlags = null;
-let applyScanlinesFromFlags = () => {};
 let updateVerboseFromFlags = () => {};
 const SHORTCUT_HINT_MESSAGES = {
   default:
@@ -388,9 +392,6 @@ function handleFeatureFlagsChange(event) {
   }
   if (!flag || flag === "statHotkeys") {
     updateControlsHint();
-  }
-  if (!flag || flag === "scanlines") {
-    applyScanlinesFromFlags();
   }
   refreshVerboseScrollIndicators();
 }
@@ -512,7 +513,6 @@ try {
       cleanupFlagsListeners();
       cleanupEngineSubscriptions();
       toggleVerboseFromFlags = null;
-      applyScanlinesFromFlags = () => {};
       updateVerboseFromFlags = () => {};
 
       // Cache state
@@ -3420,7 +3420,6 @@ function parseUrlFlags() {
   const flags = [
     "battleStateBadge",
     "battleStateProgress",
-    "skipRoundCooldown",
     "statHotkeys",
     "cliShortcuts",
     "autoSelect",
@@ -3453,7 +3452,7 @@ export async function setupFlags() {
       return;
     }
     try {
-      const scanlinesEnabled = !!isEnabled("scanlines");
+      const scanlinesEnabled = !!getSetting("scanlines");
       const body = document.body;
       if (body?.classList) {
         body.classList.toggle("scanlines", scanlinesEnabled);
@@ -3591,10 +3590,6 @@ export async function setupFlags() {
       const v = params.get("verbose");
       await toggleVerbose(v === "1" || v === "true");
     }
-    if (params.has("skipRoundCooldown")) {
-      const skip = params.get("skipRoundCooldown") === "1";
-      setFlag("skipRoundCooldown", skip);
-    }
     if (params.has("autoContinue")) {
       const v = params.get("autoContinue");
       setAutoContinue(!(v === "0" || v === "false"));
@@ -3602,7 +3597,6 @@ export async function setupFlags() {
   } catch {}
   updateVerbose();
   toggleVerboseFromFlags = toggleVerbose;
-  applyScanlinesFromFlags = applyScanlines;
   updateVerboseFromFlags = updateVerbose;
   updateStateBadgeVisibility();
   updateBattleStateBadge(getStateSnapshot().state);
@@ -3776,7 +3770,6 @@ export function unwireEvents() {
   }
   cleanupFlagsListeners();
   toggleVerboseFromFlags = null;
-  applyScanlinesFromFlags = () => {};
   updateVerboseFromFlags = () => {};
 }
 
