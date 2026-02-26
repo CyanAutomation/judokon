@@ -764,6 +764,16 @@ export const __test = {
   getSelectionTimers() {
     return { selectionTimer, selectionInterval };
   },
+  getSelectionCountdownState() {
+    return {
+      selectionTimer,
+      selectionInterval,
+      selectionFinishFn,
+      selectionTickHandler,
+      selectionExpiredHandler,
+      selectionCancelled
+    };
+  },
   pauseTimers,
   getPausedTimes() {
     return { selection: pausedSelectionRemaining, cooldown: pausedCooldownRemaining };
@@ -1529,6 +1539,9 @@ function stopSelectionCountdown() {
   } catch {}
   selectionTimer = null;
   selectionInterval = null;
+  selectionFinishFn = null;
+  selectionTickHandler = null;
+  selectionExpiredHandler = null;
   const el = byId("cli-countdown");
   if (el) {
     delete el.dataset.status;
@@ -1729,9 +1742,9 @@ export async function selectStat(stat) {
  *   else emit "statSelectionStalled"
  */
 export function startSelectionCountdown(seconds = 30) {
+  stopSelectionCountdown();
   const el = byId("cli-countdown");
   if (!el) return;
-  stopSelectionCountdown();
   const normalizedSeconds = (() => {
     try {
       const overrideSeconds = Number(
