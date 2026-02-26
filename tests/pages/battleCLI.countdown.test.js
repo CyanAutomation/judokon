@@ -159,4 +159,40 @@ describe("battleCLI countdown", () => {
     expect(stalledCalls).toHaveLength(1);
     emitSpy.mockRestore();
   });
+
+  it("cleans up active countdown state when cli-countdown element is missing", async () => {
+    vi.doUnmock("../../src/helpers/timers/createRoundTimer.js");
+    const mod = await loadBattleCLI({ autoSelect: false });
+    await mod.init();
+
+    const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
+    const emitSpy = vi.spyOn(battleEvents, "emitBattleEvent");
+
+    mod.startSelectionCountdown(3);
+    const beforeState = mod.getSelectionCountdownState();
+    expect(beforeState.selectionTimer).toBeTruthy();
+    expect(beforeState.selectionInterval).toBeTruthy();
+    expect(beforeState.selectionFinishFn).toBeTypeOf("function");
+
+    const countdown = document.getElementById("cli-countdown");
+    countdown?.remove();
+
+    mod.startSelectionCountdown(3);
+
+    const afterState = mod.getSelectionCountdownState();
+    expect(afterState.selectionTimer).toBeNull();
+    expect(afterState.selectionInterval).toBeNull();
+    expect(afterState.selectionFinishFn).toBeNull();
+    expect(afterState.selectionTickHandler).toBeNull();
+    expect(afterState.selectionExpiredHandler).toBeNull();
+    expect(afterState.selectionCancelled).toBe(true);
+
+    await advanceTimersAndFlushPending(timers, 5000);
+
+    const stalledCalls = emitSpy.mock.calls.filter(
+      ([eventName]) => eventName === "statSelectionStalled"
+    );
+    expect(stalledCalls).toHaveLength(0);
+    emitSpy.mockRestore();
+  });
 });
