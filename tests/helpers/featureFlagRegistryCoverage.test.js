@@ -22,7 +22,9 @@ describe("feature flag registry coverage", () => {
     } catch (error) {
       // rg exits with non-zero when no matches found
       if (error.status === 1 && !error.stdout) {
-        throw new Error("No feature flag callsites found in src/. Registry coverage test cannot validate anything.");
+        throw new Error(
+          "No feature flag callsites found in src/. Registry coverage test cannot validate anything."
+        );
       }
       throw error;
     }
